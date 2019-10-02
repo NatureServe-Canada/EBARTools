@@ -2,11 +2,12 @@ import collections
 import arcpy
 
 
-datum_dict = {'North America Albers Equal Area Conic': 102008,
-              'WGS84': 4326,
-              'World Geodetic System 1984': 4326,
-              'NAD27': 4267,
-              'North American Datum 1927': 4267}
+# WKIDs for datums/SRSs
+srs_dict = {'North America Albers Equal Area Conic': 102008,
+            'WGS84': 4326,
+            'World Geodetic System 1984': 4326,
+            'NAD27': 4267,
+            'North American Datum 1927': 4267}
 
 
 def displayMessage(messages, msg):
@@ -83,6 +84,7 @@ def checkAddInputDataset(geodatabase, dataset_name, dataset_organization, datase
                          dataset_type, date_received, restrictions):
     """If Dataset already exists (name, source, date), return id and true; otherwise, add and return id and false"""
     input_dataset_id = None
+
     # existing
     with arcpy.da.SearchCursor(geodatabase + '/InputDataset', ['InputDatasetID'],
                                "DatasetName = '" + dataset_name + "' AND DatasetSource = '" + dataset_source + "' AND " +
@@ -92,6 +94,7 @@ def checkAddInputDataset(geodatabase, dataset_name, dataset_organization, datase
         if input_dataset_id:
             del row
             return input_dataset_id, True
+
     # new
     dataset_fields = ['DatasetName', 'DatasetOrganization', 'DatasetContact', 'DatasetSource', 'DatasetType',
                       'DateReceived', 'Restrictions']

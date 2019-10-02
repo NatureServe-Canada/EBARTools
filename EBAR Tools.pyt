@@ -10,7 +10,7 @@
 
 # import python packages
 import arcpy
-import ImportGBIFTool
+import ImportPointsTool
 
 
 class Toolbox(object):
@@ -20,15 +20,14 @@ class Toolbox(object):
         self.alias = ''
 
         # List of tool classes associated with this toolbox
-        self.tools = [ImportGBIF]
+        self.tools = [ImportPoint]
 
 
-class ImportGBIF(object):
+class ImportPoint(object):
     def __init__(self):
         """Define the tool (tool name is the name of the class)."""
-        self.label = 'Import GBIF'
-        self.description = 'Imports Global Biodiversity Information System (https://www.gbif.org/) data into the ' + \
-                           'InputDataset and InputPoint tables of the EBAR geodatabase'
+        self.label = 'Import Points'
+        self.description = 'Imports point data into the InputDataset and InputPoint tables of the EBAR geodatabase'
         self.canRunInBackground = True
 
     def getParameterInfo(self):
@@ -70,6 +69,6 @@ class ImportGBIF(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        igt = ImportGBIFTool.ImportGBIFTool()
-        igt.RunImportGBIFTool(parameters, messages)
+        ipt = ImportPointsTool.ImportPointsTool()
+        ipt.RunImportPointsTool(parameters, messages)
         return
