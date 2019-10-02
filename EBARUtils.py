@@ -79,6 +79,39 @@ def setNewID(table, id_field, object_id):
         del row
 
 
+def checkAddInputDataset(geodatabase, dataset_name, dataset_organization, dataset_contact, dataset_source,
+                         dataset_type, date_received, restrictions):
+    """If Dataset already exists (name, source, date), return id and true; otherwise, add and return id and false"""
+    input_dataset_id = None
+    # existing
+    with arcpy.da.SearchCursor(geodatabase + '/InputDataset', ['InputDatasetID'],
+                               "DatasetName = '" + dataset_name + "' AND DatasetSource = '" + dataset_source + "' AND " +
+                               "DateReceived = date '" + date_received + "'") as cursor:
+        for row in searchCursor(cursor):
+            input_dataset_id = row['InputDatasetID']
+        if input_dataset_id:
+            del row
+            return input_dataset_id, True
+    # new
+    dataset_fields = ['DatasetName', 'DatasetOrganization', 'DatasetContact', 'DatasetSource', 'DatasetType',
+                      'DateReceived', 'Restrictions']
+    with arcpy.da.InsertCursor(geodatabase + '/InputDataset', dataset_fields) as cursor:
+        input_dataset_id = cursor.insertRow([dataset_name, dataset_organization, dataset_contact, dataset_source,
+                                             dataset_type, date_received, restrictions])
+    return input_dataset_id, False
+
+
+def readSpecies(geodatabase):
+    """read existing species into dict and return"""
+    species_dict = {}
+    with arcpy.da.SearchCursor(geodatabase + '/Species', ['ScientificName', 'SpeciesID']) as cursor:
+        for row in searchCursor(cursor):
+            species_dict[row['ScientificName']] = row['SpeciesID']
+    if len(species_dict) > 0:
+        del row
+    return species_dict
+
+
 def checkAddSpecies(species_dict, geodatabase, scientific_name):
     """If Scientific Name already in Species table, return id and true; otherwise, add and return id and false"""
     ret_val = None
@@ -86,13 +119,6 @@ def checkAddSpecies(species_dict, geodatabase, scientific_name):
     # existing
     if scientific_name in species_dict:
         return species_dict[scientific_name], True
-    #with arcpy.da.SearchCursor(geodatabase + '/Species', ['SpeciesID'],
-    #                           "ScientificName = '" + scientific_name + "'") as cursor:
-    #    for row in searchCursor(cursor):
-    #        ret_val = row['SpeciesID']
-    #    if ret_val:
-    #        del row
-    #        return ret_val
 
     # new
     with arcpy.da.InsertCursor(geodatabase + '/Species', ['ScientificName']) as cursor:
@@ -102,3 +128,18 @@ def checkAddSpecies(species_dict, geodatabase, scientific_name):
     setNewID(geodatabase + '/Species', 'SpeciesID', species_id)
     species_dict[scientific_name] = species_id
     return species_id, False
+
+
+def readDatasetSourceUniqueIDs(geodatabase, dataset_source):
+    """read existing unique ids for dataset source into dict and return"""
+    unique_ids_dict = {}
+    point_dataset_join = arcpy.AddJoin_management(geodatabase + '/InputPoint', 'InputDatasetID',
+                                                  geodatabase + '/InputDataset', 'InputDatasetID')
+    with arcpy.da.SearchCursor(point_dataset_join,
+                               ['InputPoint.InputPointID', 'InputPoint.DatasetSourceUniqueID'], 
+                               "InputDataset.DatasetSource = '" + dataset_source + "'") as cursor:
+        for row in searchCursor(cursor):
+            unique_ids_dict[row['InputPoint.DatasetSourceUniqueID']] = row['InputPoint.InputPointID']
+    if len(unique_ids_dict) > 0:
+        del row
+    return unique_ids_dict

@@ -116,52 +116,46 @@ class ImportGBIFTool:
         if parameters:
             param_raw_data_file = parameters[0].valueAsText
             param_geodatabase = parameters[1].valueAsText
-            param_dataset_organization = parameters[2].valueAsText
-            param_dataset_contact = parameters[3].valueAsText
-            param_dataset_source = parameters[4].valueAsText
-            param_dataset_type = parameters[5].valueAsText
-            param_date_received = parameters[6].valueAsText
-            param_restrictions = parameters[7].valueAsText
+            param_dataset_name = parameters[2].valueAsText
+            param_dataset_organization = parameters[3].valueAsText
+            param_dataset_contact = parameters[4].valueAsText
+            param_dataset_source = parameters[5].valueAsText
+            param_dataset_type = parameters[6].valueAsText
+            param_date_received = parameters[7].valueAsText
+            param_restrictions = parameters[8].valueAsText
         else:
             # for debugging, hard code parameters
             param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/GBIF_Yukon.csv'
             param_geodatabase = 'C:/GIS/EBAR/EBAR_outputs.gdb'
+            param_dataset_name = 'GBIF for YK'
             param_dataset_organization = 'Global Biodiversity Information Facility'
             param_dataset_contact = 'https://www.gbif.org'
             param_dataset_source = 'GBIF'
             param_dataset_type = 'CSV'
-            param_date_received = 'September 28, 2019'
+            param_date_received = 'October 2, 2019'
             param_restrictions = ''
 
         # check parameters
 
-        # add InputDataset row
-        EBARUtils.displayMessage(messages, 'Adding dataset')
-        dataset_fields = ['DatasetOrganization', 'DatasetContact', 'DatasetSource', 'DatasetType', 'DateReceived',
-                          'Restrictions']
-        with arcpy.da.InsertCursor(param_geodatabase + '/InputDataset', dataset_fields) as cursor:
-            input_dataset_id = cursor.insertRow([param_dataset_organization, param_dataset_contact,
-                                                 param_dataset_source, param_dataset_type, param_date_received,
-                                                 param_restrictions])
+        # check/add InputDataset row
+        EBARUtils.displayMessage(messages, 'Checking for dataset and adding if new')
+        input_dataset_id, dataset_exists = EBARUtils.checkAddInputDataset(param_geodatabase,
+                                                                          param_dataset_name,
+                                                                          param_dataset_organization,
+                                                                          param_dataset_contact,
+                                                                          param_dataset_source,
+                                                                          param_dataset_type,
+                                                                          param_date_received,
+                                                                          param_restrictions)
         EBARUtils.setNewID(param_geodatabase + '/InputDataset', 'InputDatasetID', input_dataset_id)
 
         # read existing species into dict
         EBARUtils.displayMessage(messages, 'Reading existing species')
-        species_dict = {}
-        with arcpy.da.SearchCursor(param_geodatabase + '/Species', ['ScientificName', 'SpeciesID']) as cursor:
-            for row in EBARUtils.searchCursor(cursor):
-                species_dict[row['ScientificName']] = row['SpeciesID']
+        species_dict = EBARUtils.readSpecies(param_geodatabase)
 
         # read existing GBIF IDs into dict
         EBARUtils.displayMessage(messages, 'Reading existing GBIF IDs')
-        gbif_dict = {}
-        point_dataset_join = arcpy.AddJoin_management(param_geodatabase + '/InputPoint', 'InputDatasetID',
-                                                      param_geodatabase + '/InputDataset', 'InputDatasetID')
-        with arcpy.da.SearchCursor(point_dataset_join,
-                                   ['InputPoint.InputPointID', 'InputPoint.DatasetSourceUniqueID'], 
-                                   "InputDataset.DatasetSource = 'GBIF'") as cursor:
-            for row in EBARUtils.searchCursor(cursor):
-                gbif_dict[row['InputPoint.DatasetSourceUniqueID']] = row['InputPoint.InputPointID']
+        gbif_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, 'GBIF')
 
         # try to open data file as a csv
         infile = open(param_raw_data_file, 'r', encoding='ANSI')
