@@ -26,6 +26,8 @@ import datetime
 #               'recordedBy', 'institutionCode', 'informationWithheld', 'occurrenceRemarks', 'dateIdentified',
 #               'references','verbatimLocality','identifiedBy']
 gbif_fields = {'unique_id': 'gbifID',
+               'uri': 'occurrenceID',
+               'license': 'license',
                'scientific_name': 'species',
                'longitude': 'decimalLongitude',
                'latitude': 'decimalLatitude',
@@ -44,17 +46,19 @@ gbif_fields = {'unique_id': 'gbifID',
 #                  'license', 'georeferenceverificationstatus', 'eventdate', 'individualcount',
 #                  'catalognumber', 'locality', 'locationremarks', 'occurrenceremarks', 'coordinateprecision'
 vertnet_fields = {'unique_id': 'occurrenceid',
-                 'scientific_name': 'name',
-                 'longitude': 'longitude',
-                 'latitude': 'latitude',
-                 'srs': 'geodeticdatum',
-                 'year': 'year',
-                 'month': 'month',
-                 'day': 'day',
-                 'accuracy': 'coordinateuncertaintyinmeters',
-                 'basis_of_record': 'basisofrecord',
-                 'individual_count': 'individualcount'
-                }
+                  'uri': 'occurrenceid',
+                  'license': 'license',
+                  'scientific_name': 'name',
+                  'longitude': 'longitude',
+                  'latitude': 'latitude',
+                  'srs': 'geodeticdatum',
+                  'year': 'year',
+                  'month': 'month',
+                  'day': 'day',
+                  'accuracy': 'coordinateuncertaintyinmeters',
+                  'basis_of_record': 'basisofrecord',
+                  'individual_count': 'individualcount'
+                 }
 
 
 class ImportPointsTool:
@@ -111,10 +115,11 @@ class ImportPointsTool:
             individual_count = int(file_line[field_dict['individual_count']])
 
         # insert, set new id and return
-        point_fields = ['SHAPE@XY', 'InputDatasetID', 'DatasetSourceUniqueID', 'SpeciesID', 'MinDate', 'MaxDate',
-                        'Accuracy', 'CurrentHistorical', 'IndividualCount']
+        point_fields = ['SHAPE@XY', 'InputDatasetID', 'DatasetSourceUniqueID', 'URI', 'License', 'SpeciesID',
+                        'MinDate', 'MaxDate', 'Accuracy', 'CurrentHistorical', 'IndividualCount']
         with arcpy.da.InsertCursor(geodatabase + '/InputPoint', point_fields) as cursor:
             input_point_id = cursor.insertRow([output_point, input_dataset_id, str(file_line[field_dict['unique_id']]),
+                                               file_line[field_dict['uri']], file_line[field_dict['license']],
                                                species_id, None, max_date, accuracy, current_historical,
                                                individual_count])
         EBARUtils.setNewID(geodatabase + '/InputPoint', 'InputPointID', input_point_id)
@@ -153,16 +158,16 @@ class ImportPointsTool:
         else:
             # for debugging, hard code parameters
             param_geodatabase = 'C:/GIS/EBAR/EBAR_outputs.gdb'
-            #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/GBIF_Yukon.csv'
-            #param_dataset_name = 'GBIF for YK'
-            #param_dataset_organization = 'Global Biodiversity Information Facility'
-            #param_dataset_contact = 'https://www.gbif.org'
-            #param_dataset_source = 'GBIF'
-            param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/vertnet.csv'
-            param_dataset_name = 'VerNet Marmot'
-            param_dataset_organization = 'National Science Foundation'
-            param_dataset_contact = 'http://vertnet.org/'
-            param_dataset_source = 'VertNet'
+            param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/GBIF_Yukon.csv'
+            param_dataset_name = 'GBIF for YK'
+            param_dataset_organization = 'Global Biodiversity Information Facility'
+            param_dataset_contact = 'https://www.gbif.org'
+            param_dataset_source = 'GBIF'
+            #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/vertnet.csv'
+            #param_dataset_name = 'VerNet Marmot'
+            #param_dataset_organization = 'National Science Foundation'
+            #param_dataset_contact = 'http://vertnet.org/'
+            #param_dataset_source = 'VertNet'
             param_dataset_type = 'CSV'
             param_date_received = 'October 2, 2019'
             param_restrictions = ''
@@ -209,7 +214,7 @@ class ImportPointsTool:
                                                                    file_line[field_dict['scientific_name']])
             # check/add point for current line
             input_point_id, point_exists = self.checkAddPoint(id_dict, param_geodatabase, input_dataset_id,
-                                                                  species_id, file_line, field_dict)
+                                                              species_id, file_line, field_dict)
             if point_exists:
                 duplicates += 1
 
