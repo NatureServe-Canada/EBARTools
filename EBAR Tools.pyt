@@ -32,16 +32,7 @@ class ImportPoint(object):
 
     def getParameterInfo(self):
         """Define parameter definitions"""
-        # Raw Data File parm
-        param_raw_data_file = arcpy.Parameter(
-            displayName ='Raw Data File',
-            name ='raw_data_file',
-            datatype ='DETextFile',
-            parameterType ='Required',
-            direction ='Input')
-        param_raw_data_file.filter.list = ['txt', 'csv']
-
-        # Geodatabase parm
+        # Geodatabase
         param_geodatabase = arcpy.Parameter(
             displayName ='Geodatabase',
             name ='geodatabase',
@@ -50,7 +41,76 @@ class ImportPoint(object):
             direction ='Input')
         param_geodatabase.filter.list = ['Local Database', 'Remote Database']
 
-        params = [param_raw_data_file, param_geodatabase]
+        # Raw Data File
+        param_raw_data_file = arcpy.Parameter(
+            displayName ='Raw Data File',
+            name ='raw_data_file',
+            datatype ='DEFile',
+            parameterType ='Required',
+            direction ='Input')
+        param_raw_data_file.filter.list = ['txt', 'csv']
+
+        # Dataset Name
+        param_dataset_name = arcpy.Parameter(
+            displayName ='Dataset Name',
+            name ='dataset_name',
+            datatype ='GPString',
+            parameterType ='Required',
+            direction ='Input')
+        
+        # Dataset Organization
+        param_dataset_organization = arcpy.Parameter(
+            displayName ='Dataset Organization',
+            name ='dataset_organization',
+            datatype ='GPString',
+            parameterType ='Required',
+            direction ='Input')
+        
+        # Dataset Contact
+        param_dataset_contact = arcpy.Parameter(
+            displayName ='Dataset Contact',
+            name ='dataset_contact',
+            datatype ='GPString',
+            parameterType ='Required',
+            direction ='Input')
+        
+        # Dataset Source
+        param_dataset_source = arcpy.Parameter(
+            displayName ='Dataset Source',
+            name ='dataset_source',
+            datatype ='GPString',
+            parameterType ='Required',
+            direction ='Input')
+        param_dataset_source.filter.list = ['GBIF', 'VertNet']
+
+        # Dataset Type
+        param_dataset_type = arcpy.Parameter(
+            displayName ='Dataset Type',
+            name ='dataset_type',
+            datatype ='GPString',
+            parameterType ='Required',
+            direction ='Input')
+        param_dataset_type.filter.list = ['CSV']
+
+        # Date Received
+        param_date_received = arcpy.Parameter(
+            displayName ='Date Received',
+            name ='date_received',
+            datatype ='GPDate',
+            parameterType ='Required',
+            direction ='Input')
+
+        # Dataset Restrictions
+        param_dataset_restrictions = arcpy.Parameter(
+            displayName ='Dataset Restrictions',
+            name ='dataset_restrictions',
+            datatype ='GPString',
+            parameterType ='Optional',
+            direction ='Input')
+        
+        params = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_organization,
+                  param_dataset_contact, param_dataset_source, param_dataset_type, param_date_received,
+                  param_dataset_restrictions]
         return params
 
     def isLicensed(self):
