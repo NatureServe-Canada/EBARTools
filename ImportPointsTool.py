@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 # Project: Ecosytem-based Automated Range Mapping (EBAR)
 # Credits: Randal Greene, Christine Terwissen
 # © NatureServe Canada 2019 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
@@ -6,14 +8,16 @@
 # ArcGIS Python tool for importing point data into the
 # InputDataset and InputPoint tables of the EBAR geodatabase
 
-# Note: normally called from EBAR Tools.pyt,
-# unless doing interactive debugging (see controlling process at the end of this file)
+# Notes:
+# - Normally called from EBAR Tools.pyt, unless doing interactive debugging
+#   (see controlling process at the end of this file)
 
 
 # import Python packages
 #import sys
 import EBARUtils
 import arcpy
+import io
 import csv
 import datetime
 #import locale
@@ -198,7 +202,7 @@ class ImportPointsTool:
         id_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, param_dataset_source)
 
         # try to open data file as a csv
-        infile = open(param_raw_data_file, 'r', encoding='ANSI')
+        infile = io.open(param_raw_data_file, 'r', encoding='mbcs')
         reader = csv.DictReader(infile)
 
         # process all file lines

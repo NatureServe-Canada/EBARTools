@@ -5,7 +5,9 @@
 # Program: EBAR Tools.pyt
 # ArcGIS Python toolbox for importing species datasets and generating EBAR maps
 
-# Note: following 120 maximum line length "convention"
+# Notes:
+# - following 120 maximum line length "convention"
+# - tested with ArcGIS Pro 2.4
 
 
 # import python packages

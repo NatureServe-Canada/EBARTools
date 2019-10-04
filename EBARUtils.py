@@ -1,3 +1,13 @@
+# encoding: utf-8
+
+# Project: Ecosytem-based Automated Range Mapping (EBAR)
+# Credits: Randal Greene, Christine Terwissen
+# © NatureServe Canada 2019 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+
+# Program: EBARUtils.py
+# Code shared by ArcGIS Python tools in the EBAR Tools Python Toolbox
+
+
 import collections
 import arcpy
 
@@ -136,9 +146,9 @@ def checkAddSpecies(species_dict, geodatabase, scientific_name):
 def readDatasetSourceUniqueIDs(geodatabase, dataset_source):
     """read existing unique ids for dataset source into dict and return"""
     unique_ids_dict = {}
-    point_dataset_join = arcpy.AddJoin_management(geodatabase + '/InputPoint', 'InputDatasetID',
-                                                  geodatabase + '/InputDataset', 'InputDatasetID')
-    with arcpy.da.SearchCursor(point_dataset_join,
+    arcpy.MakeFeatureLayer_management(geodatabase + '/InputPoint', 'point_layer')
+    arcpy.AddJoin_management('point_layer', 'InputDatasetID', geodatabase + '/InputDataset', 'InputDatasetID')
+    with arcpy.da.SearchCursor('point_layer',
                                ['InputPoint.InputPointID', 'InputPoint.DatasetSourceUniqueID'], 
                                "InputDataset.DatasetSource = '" + dataset_source + "'") as cursor:
         for row in searchCursor(cursor):
