@@ -39,6 +39,7 @@ gbif_fields = {'unique_id': 'gbifID',
                'year': 'year',
                'month': 'month',
                'day': 'day',
+               'date': None,
                'accuracy': 'coordinateUncertaintyInMeters',
                'basis_of_record': 'basisOfRecord',
                'individual_count': 'individualCount'
@@ -48,7 +49,7 @@ gbif_fields = {'unique_id': 'gbifID',
 #                  'identificationqualifier', 'coordinateuncertaintyinmeters', 'year', 'basisofrecord',
 #                  'geodeticdatum', 'georeferenceprotocol', 'stateprovince', 'verbatimlocality', 'references',
 #                  'license', 'georeferenceverificationstatus', 'eventdate', 'individualcount',
-#                  'catalognumber', 'locality', 'locationremarks', 'occurrenceremarks', 'coordinateprecision'
+#                  'catalognumber', 'locality', 'locationremarks', 'occurrenceremarks', 'coordinateprecision']
 vertnet_fields = {'unique_id': 'occurrenceid',
                   'uri': 'occurrenceid',
                   'license': 'license',
@@ -59,10 +60,29 @@ vertnet_fields = {'unique_id': 'occurrenceid',
                   'year': 'year',
                   'month': 'month',
                   'day': 'day',
+                  'date': 'eventdate',
                   'accuracy': 'coordinateuncertaintyinmeters',
                   'basis_of_record': 'basisofrecord',
                   'individual_count': 'individualcount'
                  }
+
+#ecoengine_fields = ['url', 'key', 'longitude', 'latitude', 'observation_type', 'name', source','locality',
+#                    'coordinate_uncertainty_in_meters', 'recorded_by', 'prov', 'begin_date']
+ecoengine_fields = {'unique_id': 'key',
+                    'uri': 'url',
+                    'license': None,
+                    'scientific_name': 'name',
+                    'longitude': 'longitude',
+                    'latitude': 'latitude',
+                    'srs': None,
+                    'year': None,
+                    'month': None,
+                    'day': None,
+                    'date': 'begin_date',
+                    'accuracy': 'coordinate_uncertainty_in_meters',
+                    'basis_of_record': 'observation_type',
+                    'individual_count': None
+                   }
 
 
 class ImportPointsTool:
@@ -70,7 +90,7 @@ class ImportPointsTool:
     def __init__(self):
         pass
 
-    def checkAddPoint(self, id_dict, geodatabase, input_dataset_id, species_id, file_line, field_dict):
+    def CheckAddPoint(self, id_dict, geodatabase, input_dataset_id, species_id, file_line, field_dict):
         """If point already exists, return id and true; otherwise, add and return id and false"""
         # check for existing point with same unique_id within the dataset source
         if str(file_line[field_dict['unique_id']]) in id_dict:
@@ -79,23 +99,36 @@ class ImportPointsTool:
         # add new
         # Geometry/Shape
         input_point = arcpy.Point(float(file_line[field_dict['longitude']]), float(file_line[field_dict['latitude']]))
-        input_geometry = arcpy.PointGeometry(input_point, 
-                                             arcpy.SpatialReference(EBARUtils.srs_dict[file_line[field_dict['srs']]]))
+        # assume WGS84 if not provided
+        srs = EBARUtils.srs_dict['WGS84']
+        if field_dict['srs']:
+            srs = EBARUtils.srs_dict[file_line[field_dict['srs']]]
+        input_geometry = arcpy.PointGeometry(input_point, arcpy.SpatialReference(srs))
         output_geometry = input_geometry.projectAs(
             arcpy.SpatialReference(EBARUtils.srs_dict['North America Albers Equal Area Conic']))
         output_point = output_geometry.lastPoint
 
+        # License
+        license = None
+        if field_dict['license']:
+            license = file_line[field_dict['license']]
+
         # MaxDate
         max_date = None
-        if file_line[field_dict['year']] != 'NA':
-            max_year = int(file_line[field_dict['year']])
-            max_month = 1
-            if file_line[field_dict['month']] != 'NA':
-                max_month = int(file_line[field_dict['month']])
-            max_day = 1
-            if file_line[field_dict['day']] != 'NA':
-                max_day = int(file_line[field_dict['day']])
-            max_date = datetime.datetime(max_year, max_month, max_day)
+        if field_dict['date']:
+            # date field
+            max_date = datetime.datetime.strptime(file_line[field_dict['date']], '%Y-%m-%d')
+        if not max_date:
+            # separate ymd fields
+            if file_line[field_dict['year']] != 'NA':
+                max_year = int(file_line[field_dict['year']])
+                max_month = 1
+                if file_line[field_dict['month']] != 'NA':
+                    max_month = int(file_line[field_dict['month']])
+                max_day = 1
+                if file_line[field_dict['day']] != 'NA':
+                    max_day = int(file_line[field_dict['day']])
+                max_date = datetime.datetime(max_year, max_month, max_day)
 
         # Accuracy
         accuracy = None
@@ -108,24 +141,24 @@ class ImportPointsTool:
             current_historical = 'H'
         else:
             if max_date:
-                if datetime.datetime.now().year - int(file_line[field_dict['year']]) > 40:
+                if (datetime.datetime.now().year - max_date.year) > 40:
                     current_historical = 'H'
             else:
                 current_historical = 'U'
 
         # IndividualCount
         individual_count = None
-        if file_line[field_dict['individual_count']] != 'NA':
-            individual_count = int(file_line[field_dict['individual_count']])
+        if field_dict['individual_count']:
+            if file_line[field_dict['individual_count']] != 'NA':
+                individual_count = int(file_line[field_dict['individual_count']])
 
         # insert, set new id and return
         point_fields = ['SHAPE@XY', 'InputDatasetID', 'DatasetSourceUniqueID', 'URI', 'License', 'SpeciesID',
                         'MinDate', 'MaxDate', 'Accuracy', 'CurrentHistorical', 'IndividualCount']
         with arcpy.da.InsertCursor(geodatabase + '/InputPoint', point_fields) as cursor:
             input_point_id = cursor.insertRow([output_point, input_dataset_id, str(file_line[field_dict['unique_id']]),
-                                               file_line[field_dict['uri']], file_line[field_dict['license']],
-                                               species_id, None, max_date, accuracy, current_historical,
-                                               individual_count])
+                                               file_line[field_dict['uri']], license, species_id, None, max_date,
+                                               accuracy, current_historical, individual_count])
         EBARUtils.setNewID(geodatabase + '/InputPoint', 'InputPointID', input_point_id)
         id_dict[str(file_line[field_dict['unique_id']])] = input_point_id
         return input_point_id, False
@@ -161,25 +194,33 @@ class ImportPointsTool:
             param_restrictions = parameters[8].valueAsText
         else:
             # for debugging, hard code parameters
-            param_geodatabase = 'C:/GIS/EBAR/EBAR_outputs.gdb'
-            param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/GBIF_Yukon.csv'
-            param_dataset_name = 'GBIF for YK'
-            param_dataset_organization = 'Global Biodiversity Information Facility'
-            param_dataset_contact = 'https://www.gbif.org'
-            param_dataset_source = 'GBIF'
+            #param_geodatabase = 'C:/GIS/EBAR/EBAR_outputs.gdb'
+            #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/GBIF_Yukon.csv'
+            #param_dataset_name = 'GBIF for YK'
+            #param_dataset_organization = 'Global Biodiversity Information Facility'
+            #param_dataset_contact = 'https://www.gbif.org'
+            #param_dataset_source = 'GBIF'
             #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/vertnet.csv'
             #param_dataset_name = 'VerNet Marmot'
             #param_dataset_organization = 'National Science Foundation'
             #param_dataset_contact = 'http://vertnet.org/'
             #param_dataset_source = 'VertNet'
+            param_geodatabase = 'C:/GIS/EBAR/EBAR_outputs.gdb'
+            param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/ecoengine.csv'
+            param_dataset_name = 'Ecoengine Microseris'
+            param_dataset_organization = 'Berkeley Ecoinformatics Engine'
+            param_dataset_contact = 'https://ecoengine.berkeley.edu/'
+            param_dataset_source = 'Ecoengine'
             param_dataset_type = 'CSV'
-            param_date_received = 'October 2, 2019'
+            param_date_received = 'October 4, 2019'
             param_restrictions = ''
 
         # check parameters
         field_dict = gbif_fields
         if param_dataset_source == 'VertNet':
             field_dict = vertnet_fields
+        elif param_dataset_source == 'Ecoengine':
+            field_dict = ecoengine_fields
 
         # check/add InputDataset row
         EBARUtils.displayMessage(messages, 'Checking for dataset and adding if new')
@@ -202,7 +243,7 @@ class ImportPointsTool:
         id_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, param_dataset_source)
 
         # try to open data file as a csv
-        infile = io.open(param_raw_data_file, 'r', encoding='mbcs')
+        infile = io.open(param_raw_data_file, 'r', encoding='mbcs') # mbcs encoding is Windows ANSI
         reader = csv.DictReader(infile)
 
         # process all file lines
@@ -217,7 +258,7 @@ class ImportPointsTool:
             species_id, species_exists = EBARUtils.checkAddSpecies(species_dict, param_geodatabase,
                                                                    file_line[field_dict['scientific_name']])
             # check/add point for current line
-            input_point_id, point_exists = self.checkAddPoint(id_dict, param_geodatabase, input_dataset_id,
+            input_point_id, point_exists = self.CheckAddPoint(id_dict, param_geodatabase, input_dataset_id,
                                                               species_id, file_line, field_dict)
             if point_exists:
                 duplicates += 1
