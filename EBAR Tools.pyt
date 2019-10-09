@@ -7,7 +7,7 @@
 
 # Notes:
 # - following 120 maximum line length "convention"
-# - tested with ArcGIS Pro 2.4.1 and ArcMap 10.4.1
+# - tested with ArcGIS Pro 2.4.2 and ArcMap 10.4.1
 
 
 # import python packages
@@ -83,7 +83,7 @@ class ImportPoint(object):
             datatype ='GPString',
             parameterType ='Required',
             direction ='Input')
-        param_dataset_source.filter.list = ['GBIF', 'VertNet', 'Ecoengine']
+        param_dataset_source.filter.list = ['GBIF', 'VertNet', 'Ecoengine', 'iNaturalist', 'BISON']
 
         # Dataset Type
         param_dataset_type = arcpy.Parameter(

@@ -40,10 +40,10 @@ gbif_fields = {'unique_id': 'gbifID',
                'month': 'month',
                'day': 'day',
                'date': None,
+               'coordinates_obscured': None,
                'accuracy': 'coordinateUncertaintyInMeters',
                'basis_of_record': 'basisOfRecord',
-               'individual_count': 'individualCount'
-              }
+               'individual_count': 'individualCount'}
 
 #vertnet_fields = ['name', 'longitude', 'latitude', 'prov', 'month', 'verbatimcoordinatesystem', 'day', 'occurrenceid',
 #                  'identificationqualifier', 'coordinateuncertaintyinmeters', 'year', 'basisofrecord',
@@ -61,10 +61,10 @@ vertnet_fields = {'unique_id': 'occurrenceid',
                   'month': 'month',
                   'day': 'day',
                   'date': 'eventdate',
+                  'coordinates_obscured': None,
                   'accuracy': 'coordinateuncertaintyinmeters',
                   'basis_of_record': 'basisofrecord',
-                  'individual_count': 'individualcount'
-                 }
+                  'individual_count': 'individualcount'}
 
 #ecoengine_fields = ['url', 'key', 'longitude', 'latitude', 'observation_type', 'name', source','locality',
 #                    'coordinate_uncertainty_in_meters', 'recorded_by', 'prov', 'begin_date']
@@ -79,10 +79,55 @@ ecoengine_fields = {'unique_id': 'key',
                     'month': None,
                     'day': None,
                     'date': 'begin_date',
+                    'coordinates_obscured': None,
                     'accuracy': 'coordinate_uncertainty_in_meters',
                     'basis_of_record': 'observation_type',
-                    'individual_count': None
-                   }
+                    'individual_count': None}
+
+#inaturalist_fields = ['id', 'observed_on_string', 'observed_on', 'time_observed_at', 'time_zone', 'out_of_range',
+#                      'user_id', 'user_login', 'created_at', 'quality_grade', 'license', 'url', 'image_url',
+#                      'sound_url', 'tag_list', 'description', 'id_please', 'num_identification_agreements',
+#                      'num_identification_disagreements', 'captive_cultivated', 'place_guess', 'latitude',
+#                      'longitude', 'positional_accuracy', 'private_place_guess', 'private_latitude',
+#                      'private_longitude', 'private_positional_accuracy', 'geoprivacy', 'taxon_geoprivacy',
+#                      'coordinates_obscured', 'positioning_method', 'positioning_device', 'place_town_name',
+#                      'place_county_name', 'place_state_name', 'place_country_name', 'place_admin1_name',
+#                      'place_admin2_name', 'species_guess', 'scientific_name', 'common_name', 'iconic_taxon_name',
+#                      'taxon_id']
+inaturalist_fields = {'unique_id': 'id',
+                      'uri': 'url',
+                      'license': 'license',
+                      'scientific_name': 'scientific_name',
+                      'longitude': 'longitude',
+                      'latitude': 'latitude',
+                      'srs': None,
+                      'year': None,
+                      'month': None,
+                      'day': None,
+                      'date': 'observed_on',
+                      'coordinates_obscured': 'coordinates_obscured',
+                      'accuracy': 'positional_accuracy',
+                      'basis_of_record': None,
+                      'individual_count': None}
+
+#bison_fields = ['catalogNumber', 'providedScientificName', 'name', 'ambiguous', 'generalComments', 'verbatimLocality',
+#                'occurrenceID', 'longitude', 'basisOfRecord', 'collectionID', 'institutionID', 'license', 'latitude',
+#                'provider', 'centroid', 'date', 'year', 'recordedBy', 'prov', 'geo']
+bison_fields = {'unique_id': 'occurrenceID',
+                'uri': None,
+                'license': 'license',
+                'scientific_name': 'name',
+                'longitude': 'longitude',
+                'latitude': 'latitude',
+                'srs': None,
+                'year': 'year',
+                'month': None,
+                'day': None,
+                'date': 'date',
+                'coordinates_obscured': None,
+                'accuracy': None,
+                'basis_of_record': 'basisOfRecord',
+                'individual_count': None}
 
 
 class ImportPointsTool:
@@ -98,15 +143,22 @@ class ImportPointsTool:
 
         # add new
         # Geometry/Shape
-        input_point = arcpy.Point(float(file_line[field_dict['longitude']]), float(file_line[field_dict['latitude']]))
-        # assume WGS84 if not provided
-        srs = EBARUtils.srs_dict['WGS84']
-        if field_dict['srs']:
-            srs = EBARUtils.srs_dict[file_line[field_dict['srs']]]
-        input_geometry = arcpy.PointGeometry(input_point, arcpy.SpatialReference(srs))
-        output_geometry = input_geometry.projectAs(
-            arcpy.SpatialReference(EBARUtils.srs_dict['North America Albers Equal Area Conic']))
-        output_point = output_geometry.lastPoint
+        output_point = None
+        if file_line[field_dict['longitude']] != 'NA' and file_line[field_dict['latitude']] != 'NA':
+            input_point = arcpy.Point(float(file_line[field_dict['longitude']]), float(file_line[field_dict['latitude']]))
+            # assume WGS84 if not provided
+            srs = EBARUtils.srs_dict['WGS84']
+            if field_dict['srs']:
+                srs = EBARUtils.srs_dict[file_line[field_dict['srs']]]
+            input_geometry = arcpy.PointGeometry(input_point, arcpy.SpatialReference(srs))
+            output_geometry = input_geometry.projectAs(
+                arcpy.SpatialReference(EBARUtils.srs_dict['North America Albers Equal Area Conic']))
+            output_point = output_geometry.lastPoint
+
+        # URI
+        uri = None
+        if field_dict['uri']:
+            uri = file_line[field_dict['uri']]
 
         # License
         license = None
@@ -117,7 +169,8 @@ class ImportPointsTool:
         max_date = None
         if field_dict['date']:
             # date field
-            max_date = datetime.datetime.strptime(file_line[field_dict['date']], '%Y-%m-%d')
+            if file_line[field_dict['date']] != 'NA':
+                max_date = datetime.datetime.strptime(file_line[field_dict['date']], '%Y-%m-%d')
         if not max_date:
             # separate ymd fields
             if file_line[field_dict['year']] != 'NA':
@@ -130,16 +183,26 @@ class ImportPointsTool:
                     max_day = int(file_line[field_dict['day']])
                 max_date = datetime.datetime(max_year, max_month, max_day)
 
+        # CoordinatesObscured
+        coordinates_obscured = None
+        if field_dict['coordinates_obscured']:
+            if file_line[field_dict['coordinates_obscured']] in (True, 'TRUE', 'true', 'T', 't', 1):
+                coordinates_obscured = True
+            if file_line[field_dict['coordinates_obscured']] in (False, 'FALSE', 'false', 'F', 'f', 0):
+                coordinates_obscured = False
+
         # Accuracy
         accuracy = None
-        if file_line[field_dict['accuracy']] != 'NA':
-            accuracy = round(float(file_line[field_dict['accuracy']]))
+        if field_dict['accuracy']:
+            if file_line[field_dict['accuracy']] != 'NA':
+                accuracy = round(float(file_line[field_dict['accuracy']]))
 
         # CurrentHistorical
         current_historical = 'C'
-        if file_line[field_dict['basis_of_record']] == 'FOSSIL_SPECIMEN':
-            current_historical = 'H'
-        else:
+        if field_dict['basis_of_record']:
+            if file_line[field_dict['basis_of_record']] == 'FOSSIL_SPECIMEN':
+                current_historical = 'H'
+        if current_historical == 'C':
             if max_date:
                 if (datetime.datetime.now().year - max_date.year) > 40:
                     current_historical = 'H'
@@ -154,10 +217,11 @@ class ImportPointsTool:
 
         # insert, set new id and return
         point_fields = ['SHAPE@XY', 'InputDatasetID', 'DatasetSourceUniqueID', 'URI', 'License', 'SpeciesID',
-                        'MinDate', 'MaxDate', 'Accuracy', 'CurrentHistorical', 'IndividualCount']
+                        'MinDate', 'MaxDate', 'CoordinatesObscured', 'Accuracy', 'CurrentHistorical',
+                        'IndividualCount']
         with arcpy.da.InsertCursor(geodatabase + '/InputPoint', point_fields) as cursor:
             input_point_id = cursor.insertRow([output_point, input_dataset_id, str(file_line[field_dict['unique_id']]),
-                                               file_line[field_dict['uri']], license, species_id, None, max_date,
+                                               uri, license, species_id, None, max_date, coordinates_obscured,
                                                accuracy, current_historical, individual_count])
         EBARUtils.setNewID(geodatabase + '/InputPoint', 'InputPointID', input_point_id)
         id_dict[str(file_line[field_dict['unique_id']])] = input_point_id
@@ -194,25 +258,53 @@ class ImportPointsTool:
             param_restrictions = parameters[8].valueAsText
         else:
             # for debugging, hard code parameters
-            #param_geodatabase = 'C:/GIS/EBAR/EBAR_outputs.gdb'
+            param_geodatabase = 'C:/GIS/EBAR/EBAR_outputs.gdb'
+
             #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/GBIF_Yukon.csv'
             #param_dataset_name = 'GBIF for YK'
             #param_dataset_organization = 'Global Biodiversity Information Facility'
             #param_dataset_contact = 'https://www.gbif.org'
             #param_dataset_source = 'GBIF'
+            #param_dataset_type = 'CSV'
+            #param_date_received = 'September 28, 2019'
+            #param_restrictions = ''
+
             #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/vertnet.csv'
             #param_dataset_name = 'VerNet Marmot'
             #param_dataset_organization = 'National Science Foundation'
             #param_dataset_contact = 'http://vertnet.org/'
             #param_dataset_source = 'VertNet'
-            param_geodatabase = 'C:/GIS/EBAR/EBAR_outputs.gdb'
-            param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/ecoengine.csv'
-            param_dataset_name = 'Ecoengine Microseris'
-            param_dataset_organization = 'Berkeley Ecoinformatics Engine'
-            param_dataset_contact = 'https://ecoengine.berkeley.edu/'
-            param_dataset_source = 'Ecoengine'
+            #param_dataset_type = 'CSV'
+            #param_date_received = 'September 30, 2019'
+            #param_restrictions = ''
+
+            #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/ecoengine.csv'
+            #param_dataset_name = 'Ecoengine Microseris'
+            #param_dataset_organization = 'Berkeley Ecoinformatics Engine'
+            #param_dataset_contact = 'https://ecoengine.berkeley.edu/'
+            #param_dataset_source = 'Ecoengine'
+            #param_dataset_type = 'CSV'
+            #param_date_received = 'September 30, 2019'
+            #param_restrictions = ''
+
+            #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/' + \
+            #    'All_CDN_Research_Unobsc_Data.csv'
+            ##param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/inat_test.csv'
+            #param_dataset_name = 'iNaturalist All Canadian Unobscured Research Grade'
+            #param_dataset_organization = 'California Academy of Sciences and the National Geographic Society'
+            #param_dataset_contact = 'https://www.inaturalist.org/'
+            #param_dataset_source = 'iNaturalist'
+            #param_dataset_type = 'CSV'
+            #param_date_received = 'October 2, 2019'
+            #param_restrictions = ''
+
+            param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/bison.csv'
+            param_dataset_name = 'BISON Microseris and Marmota'
+            param_dataset_organization = 'United States Geological Survey'
+            param_dataset_contact = 'https://bison.usgs.gov/'
+            param_dataset_source = 'BISON'
             param_dataset_type = 'CSV'
-            param_date_received = 'October 4, 2019'
+            param_date_received = 'September 30, 2019'
             param_restrictions = ''
 
         # check parameters
@@ -221,6 +313,10 @@ class ImportPointsTool:
             field_dict = vertnet_fields
         elif param_dataset_source == 'Ecoengine':
             field_dict = ecoengine_fields
+        elif param_dataset_source == 'iNaturalist':
+            field_dict = inaturalist_fields
+        elif param_dataset_source == 'BISON':
+            field_dict = bison_fields
 
         # check/add InputDataset row
         EBARUtils.displayMessage(messages, 'Checking for dataset and adding if new')
