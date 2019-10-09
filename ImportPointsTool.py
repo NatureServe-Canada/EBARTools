@@ -129,6 +129,34 @@ bison_fields = {'unique_id': 'occurrenceID',
                 'basis_of_record': 'basisOfRecord',
                 'individual_count': None}
 
+#canadensys_fields = ['dcterms:license', 'institutionCode', 'collectionCode', 'datasetName', 'basisOfRecord',
+#                     'occurrenceID', 'catalogNumber', 'recordNumber', 'recordedBy', 'individualCount', 'sex',
+#                     'reproductiveCondition', 'establishmentMeans', 'occurrenceStatus', 'occurrenceRemarks',
+#                     'eventID', 'eventDate', 'year', 'month', 'locationID', 'country', 'countryCode', 'stateProvince',
+#                     'locality', 'minimumElevationInMeters', 'maximumElevationInMeters', 'maximumDepthInMeters',
+#                     'maximumDepthInMeters', 'locationRemarks', 'decimalLatitude', 'decimalLongitude',
+#                     'coordinateUncertaintyInMeters', 'verbatimLatitude', 'verbatimLongitude',
+#                     'verbatimCoordinateSystem', 'georeference_verification_status', 'identificationQualifier',
+#                     'typeStatus', 'identifiedBy', 'dateIdentified', 'identificationVerificationStatus',
+#                     'taxonConceptID', 'scientificName', 'kingdom', 'phylum', 'class', 'order', 'family', 'genus',
+#                     'taxonRank', 'vernacularName', 'species', 'verbatimIdentificationQualifier', 'provenance',
+#                     'recordID', 'verbatimBasisOfRecord']
+canadensys_fields = {'unique_id': 'occurrenceID',
+                     'uri': None,
+                     'license': 'dcterms:license',
+                     'scientific_name': 'species',
+                     'longitude': 'decimalLongitude',
+                     'latitude': 'decimalLatitude',
+                     'srs': 'verbatimCoordinateSystem',
+                     'year': 'year',
+                     'month': 'month',
+                     'day': None,
+                     'date': 'eventDate',
+                     'coordinates_obscured': None,
+                     'accuracy': 'coordinateUncertaintyInMeters',
+                     'basis_of_record': 'basisOfRecord',
+                     'individual_count': 'individualCount'}
+
 
 class ImportPointsTool:
     """Import point data into the InputDataset and InputPoint tables of the EBAR geodatabase"""
@@ -144,12 +172,14 @@ class ImportPointsTool:
         # add new
         # Geometry/Shape
         output_point = None
-        if file_line[field_dict['longitude']] != 'NA' and file_line[field_dict['latitude']] != 'NA':
+        if (file_line[field_dict['longitude']] not in ('NA', '') and
+            file_line[field_dict['latitude']] not in ('NA', '')):
             input_point = arcpy.Point(float(file_line[field_dict['longitude']]), float(file_line[field_dict['latitude']]))
             # assume WGS84 if not provided
             srs = EBARUtils.srs_dict['WGS84']
             if field_dict['srs']:
-                srs = EBARUtils.srs_dict[file_line[field_dict['srs']]]
+                if file_line[field_dict['srs']] not in ('unknown', ''):
+                    srs = EBARUtils.srs_dict[file_line[field_dict['srs']]]
             input_geometry = arcpy.PointGeometry(input_point, arcpy.SpatialReference(srs))
             output_geometry = input_geometry.projectAs(
                 arcpy.SpatialReference(EBARUtils.srs_dict['North America Albers Equal Area Conic']))
@@ -194,7 +224,7 @@ class ImportPointsTool:
         # Accuracy
         accuracy = None
         if field_dict['accuracy']:
-            if file_line[field_dict['accuracy']] != 'NA':
+            if file_line[field_dict['accuracy']] not in ('NA', ''):
                 accuracy = round(float(file_line[field_dict['accuracy']]))
 
         # CurrentHistorical
@@ -212,7 +242,7 @@ class ImportPointsTool:
         # IndividualCount
         individual_count = None
         if field_dict['individual_count']:
-            if file_line[field_dict['individual_count']] != 'NA':
+            if file_line[field_dict['individual_count']] not in ('NA', ''):
                 individual_count = int(file_line[field_dict['individual_count']])
 
         # insert, set new id and return
@@ -298,13 +328,23 @@ class ImportPointsTool:
             #param_date_received = 'October 2, 2019'
             #param_restrictions = ''
 
-            param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/bison.csv'
-            param_dataset_name = 'BISON Microseris and Marmota'
-            param_dataset_organization = 'United States Geological Survey'
-            param_dataset_contact = 'https://bison.usgs.gov/'
-            param_dataset_source = 'BISON'
+            #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/bison.csv'
+            #param_dataset_name = 'BISON Microseris and Marmota'
+            #param_dataset_organization = 'United States Geological Survey'
+            #param_dataset_contact = 'https://bison.usgs.gov/'
+            #param_dataset_source = 'BISON'
+            #param_dataset_type = 'CSV'
+            #param_date_received = 'September 30, 2019'
+            #param_restrictions = ''
+
+            param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/' + \
+                'Canadensys-records-2019-10-09.csv'
+            param_dataset_name = 'Canadensys Polygonum'
+            param_dataset_organization = 'Université de Montréal Biodiversity Centre'
+            param_dataset_contact = 'http://www.canadensys.net/'
+            param_dataset_source = 'Canadensys'
             param_dataset_type = 'CSV'
-            param_date_received = 'September 30, 2019'
+            param_date_received = 'October 9, 2019'
             param_restrictions = ''
 
         # check parameters
@@ -317,6 +357,8 @@ class ImportPointsTool:
             field_dict = inaturalist_fields
         elif param_dataset_source == 'BISON':
             field_dict = bison_fields
+        elif param_dataset_source == 'Canadensys':
+            field_dict = canadensys_fields
 
         # check/add InputDataset row
         EBARUtils.displayMessage(messages, 'Checking for dataset and adding if new')
