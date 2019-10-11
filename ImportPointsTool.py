@@ -36,12 +36,14 @@ gbif_fields = {'unique_id': 'gbifID',
                'longitude': 'decimalLongitude',
                'latitude': 'decimalLatitude',
                'srs': 'geodeticDatum',
+               'coordinates_obscured': None,
+               'private_longitude': None,
+               'private_latitude': None,
+               'accuracy': 'coordinateUncertaintyInMeters',
                'year': 'year',
                'month': 'month',
                'day': 'day',
                'date': None,
-               'coordinates_obscured': None,
-               'accuracy': 'coordinateUncertaintyInMeters',
                'basis_of_record': 'basisOfRecord',
                'individual_count': 'individualCount'}
 
@@ -57,12 +59,14 @@ vertnet_fields = {'unique_id': 'occurrenceid',
                   'longitude': 'longitude',
                   'latitude': 'latitude',
                   'srs': 'geodeticdatum',
+                  'coordinates_obscured': None,
+                  'private_longitude': None,
+                  'private_latitude': None,
+                  'accuracy': 'coordinateuncertaintyinmeters',
                   'year': 'year',
                   'month': 'month',
                   'day': 'day',
                   'date': 'eventdate',
-                  'coordinates_obscured': None,
-                  'accuracy': 'coordinateuncertaintyinmeters',
                   'basis_of_record': 'basisofrecord',
                   'individual_count': 'individualcount'}
 
@@ -75,12 +79,14 @@ ecoengine_fields = {'unique_id': 'key',
                     'longitude': 'longitude',
                     'latitude': 'latitude',
                     'srs': None,
+                    'coordinates_obscured': None,
+                    'private_longitude': None,
+                    'private_latitude': None,
+                    'accuracy': 'coordinate_uncertainty_in_meters',
                     'year': None,
                     'month': None,
                     'day': None,
                     'date': 'begin_date',
-                    'coordinates_obscured': None,
-                    'accuracy': 'coordinate_uncertainty_in_meters',
                     'basis_of_record': 'observation_type',
                     'individual_count': None}
 
@@ -101,12 +107,14 @@ inaturalist_fields = {'unique_id': 'id',
                       'longitude': 'longitude',
                       'latitude': 'latitude',
                       'srs': None,
+                      'coordinates_obscured': 'coordinates_obscured',
+                      'private_longitude': 'private_longitude',
+                      'private_latitude': 'private_latitude',
+                      'accuracy': 'positional_accuracy',
                       'year': None,
                       'month': None,
                       'day': None,
                       'date': 'observed_on',
-                      'coordinates_obscured': 'coordinates_obscured',
-                      'accuracy': 'positional_accuracy',
                       'basis_of_record': None,
                       'individual_count': None}
 
@@ -120,12 +128,14 @@ bison_fields = {'unique_id': 'occurrenceID',
                 'longitude': 'longitude',
                 'latitude': 'latitude',
                 'srs': None,
+                'coordinates_obscured': None,
+                'private_longitude': None,
+                'private_latitude': None,
+                'accuracy': None,
                 'year': 'year',
                 'month': None,
                 'day': None,
                 'date': 'date',
-                'coordinates_obscured': None,
-                'accuracy': None,
                 'basis_of_record': 'basisOfRecord',
                 'individual_count': None}
 
@@ -148,12 +158,14 @@ canadensys_fields = {'unique_id': 'occurrenceID',
                      'longitude': 'decimalLongitude',
                      'latitude': 'decimalLatitude',
                      'srs': 'verbatimCoordinateSystem',
+                     'coordinates_obscured': None,
+                     'private_longitude': None,
+                     'private_latitude': None,
+                     'accuracy': 'coordinateUncertaintyInMeters',
                      'year': 'year',
                      'month': 'month',
                      'day': None,
                      'date': 'eventDate',
-                     'coordinates_obscured': None,
-                     'accuracy': 'coordinateUncertaintyInMeters',
                      'basis_of_record': 'basisOfRecord',
                      'individual_count': 'individualCount'}
 
@@ -170,21 +182,6 @@ class ImportPointsTool:
             return id_dict[str(file_line[field_dict['unique_id']])], True
 
         # add new
-        # Geometry/Shape
-        output_point = None
-        if (file_line[field_dict['longitude']] not in ('NA', '') and
-            file_line[field_dict['latitude']] not in ('NA', '')):
-            input_point = arcpy.Point(float(file_line[field_dict['longitude']]), float(file_line[field_dict['latitude']]))
-            # assume WGS84 if not provided
-            srs = EBARUtils.srs_dict['WGS84']
-            if field_dict['srs']:
-                if file_line[field_dict['srs']] not in ('unknown', ''):
-                    srs = EBARUtils.srs_dict[file_line[field_dict['srs']]]
-            input_geometry = arcpy.PointGeometry(input_point, arcpy.SpatialReference(srs))
-            output_geometry = input_geometry.projectAs(
-                arcpy.SpatialReference(EBARUtils.srs_dict['North America Albers Equal Area Conic']))
-            output_point = output_geometry.lastPoint
-
         # URI
         uri = None
         if field_dict['uri']:
@@ -221,13 +218,43 @@ class ImportPointsTool:
             if file_line[field_dict['coordinates_obscured']] in (False, 'FALSE', 'false', 'F', 'f', 0):
                 coordinates_obscured = False
 
+        # Geometry/Shape
+        output_point = None
+        input_point = None
+        private_coords = False
+        if coordinates_obscured:
+            # check for private lon/lat
+            if field_dict['private_longitude'] and field_dict['private_latitude']:
+                if (file_line[field_dict['private_longitude']] not in ('NA', '') and
+                    file_line[field_dict['private_latitude']] not in ('NA', '')):
+                    private_coords = True
+                    input_point = arcpy.Point(float(file_line[field_dict['private_longitude']]),
+                                              float(file_line[field_dict['private_latitude']]))
+        if not private_coords:
+            if (file_line[field_dict['longitude']] not in ('NA', '') and
+                file_line[field_dict['latitude']] not in ('NA', '')):
+                input_point = arcpy.Point(float(file_line[field_dict['longitude']]),
+                                          float(file_line[field_dict['latitude']]))
+        if input_point:
+            # assume WGS84 if not provided
+            srs = EBARUtils.srs_dict['WGS84']
+            if field_dict['srs']:
+                if file_line[field_dict['srs']] not in ('unknown', ''):
+                    srs = EBARUtils.srs_dict[file_line[field_dict['srs']]]
+            input_geometry = arcpy.PointGeometry(input_point, arcpy.SpatialReference(srs))
+            output_geometry = input_geometry.projectAs(
+                arcpy.SpatialReference(EBARUtils.srs_dict['North America Albers Equal Area Conic']))
+            output_point = output_geometry.lastPoint
+
         # Accuracy
         accuracy = None
-        if field_dict['accuracy']:
+        if private_coords:
+            accuracy = 26450
+        elif field_dict['accuracy']:
             if file_line[field_dict['accuracy']] not in ('NA', ''):
                 accuracy = round(float(file_line[field_dict['accuracy']]))
 
-        # CurrentHistorical
+        # CurrentHistorical (informs SpeciesEcoshape.Presence: C -> Present, U-> Presence Expected, H -> Historical)
         current_historical = 'C'
         if field_dict['basis_of_record']:
             if file_line[field_dict['basis_of_record']] == 'FOSSIL_SPECIMEN':
@@ -319,14 +346,14 @@ class ImportPointsTool:
 
             #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/' + \
             #    'All_CDN_Research_Unobsc_Data.csv'
-            ##param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/inat_test.csv'
-            #param_dataset_name = 'iNaturalist All Canadian Unobscured Research Grade'
-            #param_dataset_organization = 'California Academy of Sciences and the National Geographic Society'
-            #param_dataset_contact = 'https://www.inaturalist.org/'
-            #param_dataset_source = 'iNaturalist'
-            #param_dataset_type = 'CSV'
-            #param_date_received = 'October 2, 2019'
-            #param_restrictions = ''
+            param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/inat_test_obs.csv'
+            param_dataset_name = 'iNaturalist All Canadian Unobscured Research Grade'
+            param_dataset_organization = 'California Academy of Sciences and the National Geographic Society'
+            param_dataset_contact = 'https://www.inaturalist.org/'
+            param_dataset_source = 'iNaturalist'
+            param_dataset_type = 'CSV'
+            param_date_received = 'October 2, 2019'
+            param_restrictions = ''
 
             #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/bison.csv'
             #param_dataset_name = 'BISON Microseris and Marmota'
@@ -337,15 +364,15 @@ class ImportPointsTool:
             #param_date_received = 'September 30, 2019'
             #param_restrictions = ''
 
-            param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/' + \
-                'Canadensys-records-2019-10-09.csv'
-            param_dataset_name = 'Canadensys Polygonum'
-            param_dataset_organization = 'Université de Montréal Biodiversity Centre'
-            param_dataset_contact = 'http://www.canadensys.net/'
-            param_dataset_source = 'Canadensys'
-            param_dataset_type = 'CSV'
-            param_date_received = 'October 9, 2019'
-            param_restrictions = ''
+            #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/' + \
+            #    'Canadensys-records-2019-10-09.csv'
+            #param_dataset_name = 'Canadensys Polygonum'
+            #param_dataset_organization = 'Université de Montréal Biodiversity Centre'
+            #param_dataset_contact = 'http://www.canadensys.net/'
+            #param_dataset_source = 'Canadensys'
+            #param_dataset_type = 'CSV'
+            #param_date_received = 'October 9, 2019'
+            #param_restrictions = ''
 
         # check parameters
         field_dict = gbif_fields
