@@ -40,6 +40,7 @@ gbif_fields = {'unique_id': 'gbifID',
                'private_longitude': None,
                'private_latitude': None,
                'accuracy': 'coordinateUncertaintyInMeters',
+               'private_accuracy': None,
                'year': 'year',
                'month': 'month',
                'day': 'day',
@@ -63,6 +64,7 @@ vertnet_fields = {'unique_id': 'occurrenceid',
                   'private_longitude': None,
                   'private_latitude': None,
                   'accuracy': 'coordinateuncertaintyinmeters',
+                  'private_accuracy': None,
                   'year': 'year',
                   'month': 'month',
                   'day': 'day',
@@ -83,6 +85,7 @@ ecoengine_fields = {'unique_id': 'key',
                     'private_longitude': None,
                     'private_latitude': None,
                     'accuracy': 'coordinate_uncertainty_in_meters',
+                    'private_accuracy': None,
                     'year': None,
                     'month': None,
                     'day': None,
@@ -111,6 +114,7 @@ inaturalist_fields = {'unique_id': 'id',
                       'private_longitude': 'private_longitude',
                       'private_latitude': 'private_latitude',
                       'accuracy': 'positional_accuracy',
+                      'private_accuracy': 'private_positional_accuracy',
                       'year': None,
                       'month': None,
                       'day': None,
@@ -132,6 +136,7 @@ bison_fields = {'unique_id': 'occurrenceID',
                 'private_longitude': None,
                 'private_latitude': None,
                 'accuracy': None,
+                'private_accuracy': None,
                 'year': 'year',
                 'month': None,
                 'day': None,
@@ -162,6 +167,7 @@ canadensys_fields = {'unique_id': 'occurrenceID',
                      'private_longitude': None,
                      'private_latitude': None,
                      'accuracy': 'coordinateUncertaintyInMeters',
+                     'private_accuracy': None,
                      'year': 'year',
                      'month': 'month',
                      'day': None,
@@ -175,13 +181,33 @@ class ImportPointsTool:
     def __init__(self):
         pass
 
-    def CheckAddPoint(self, id_dict, geodatabase, input_dataset_id, species_id, file_line, field_dict):
-        """If point already exists, return id and true; otherwise, add and return id and false"""
-        # check for existing point with same unique_id within the dataset source
-        if str(file_line[field_dict['unique_id']]) in id_dict:
-            return id_dict[str(file_line[field_dict['unique_id']])], True
+    def CheckAddPoint(self, id_dict, geodatabase, dataset_source, input_dataset_id, species_id, file_line, field_dict):
+        """If point already exists, check if needs update; otherwise, add"""
+        # CoordinatesObscured
+        coordinates_obscured = None
+        if field_dict['coordinates_obscured']:
+            if file_line[field_dict['coordinates_obscured']] in (True, 'TRUE', 'true', 'T', 't', 1):
+                coordinates_obscured = True
+            if file_line[field_dict['coordinates_obscured']] in (False, 'FALSE', 'false', 'F', 'f', 0):
+                coordinates_obscured = False
 
-        # add new
+        # check for existing point with same unique_id within the dataset source
+        update = False
+        if str(file_line[field_dict['unique_id']]) in id_dict:
+            existing = True
+            if not coordinates_obscured:
+                # check if it has become unobscured
+                with arcpy.da.SearchCursor(geodatabase + '/InputPoint',
+                                           ['CoordinatesObscured'],
+                                           "DatasetSourceUniqueID = '" + str(file_line[field_dict['unique_id']]) +
+                                           "' AND InputDatasetID = " + str(input_dataset_id)) as cursor:
+                    for row in EBARUtils.searchCursor(cursor):
+                        update = row['CoordinatesObscured']
+                    del row
+            if not update:
+                # existing record that does not need to be updated
+                return id_dict[str(file_line[field_dict['unique_id']])], 'duplicate'
+
         # URI
         uri = None
         if field_dict['uri']:
@@ -209,14 +235,6 @@ class ImportPointsTool:
                 if file_line[field_dict['day']] != 'NA':
                     max_day = int(file_line[field_dict['day']])
                 max_date = datetime.datetime(max_year, max_month, max_day)
-
-        # CoordinatesObscured
-        coordinates_obscured = None
-        if field_dict['coordinates_obscured']:
-            if file_line[field_dict['coordinates_obscured']] in (True, 'TRUE', 'true', 'T', 't', 1):
-                coordinates_obscured = True
-            if file_line[field_dict['coordinates_obscured']] in (False, 'FALSE', 'false', 'F', 'f', 0):
-                coordinates_obscured = False
 
         # Geometry/Shape
         output_point = None
@@ -248,11 +266,14 @@ class ImportPointsTool:
 
         # Accuracy
         accuracy = None
-        if private_coords:
+        if coordinates_obscured and not private_coords:
             accuracy = 26450
-        elif field_dict['accuracy']:
+        elif field_dict['accuracy'] and not private_coords:
             if file_line[field_dict['accuracy']] not in ('NA', ''):
                 accuracy = round(float(file_line[field_dict['accuracy']]))
+        elif field_dict['private_accuracy'] and private_coords:
+            if file_line[field_dict['private_accuracy']] not in ('NA', ''):
+                accuracy = round(float(file_line[field_dict['private_accuracy']]))
 
         # CurrentHistorical (informs SpeciesEcoshape.Presence: C -> Present, U-> Presence Expected, H -> Historical)
         current_historical = 'C'
@@ -272,19 +293,32 @@ class ImportPointsTool:
             if file_line[field_dict['individual_count']] not in ('NA', ''):
                 individual_count = int(file_line[field_dict['individual_count']])
 
-        # insert, set new id and return
-        point_fields = ['SHAPE@XY', 'InputDatasetID', 'DatasetSourceUniqueID', 'URI', 'License', 'SpeciesID',
-                        'MinDate', 'MaxDate', 'CoordinatesObscured', 'Accuracy', 'CurrentHistorical',
-                        'IndividualCount']
-        with arcpy.da.InsertCursor(geodatabase + '/InputPoint', point_fields) as cursor:
-            input_point_id = cursor.insertRow([output_point, input_dataset_id, str(file_line[field_dict['unique_id']]),
-                                               uri, license, species_id, None, max_date, coordinates_obscured,
-                                               accuracy, current_historical, individual_count])
-        EBARUtils.setNewID(geodatabase + '/InputPoint', 'InputPointID', input_point_id)
-        id_dict[str(file_line[field_dict['unique_id']])] = input_point_id
-        return input_point_id, False
+        # update or insert
+        if update:
+            with arcpy.da.UpdateCursor(geodatabase + '/InputPoint',
+                                       ['SHAPE@XY', 'InputPointID', 'CoordinatesObscured', 'Accuracy'],
+                                       "DatasetSourceUniqueID = '" + str(file_line[field_dict['unique_id']]) +
+                                       "' AND InputDatasetID = " + str(input_dataset_id)) as cursor:
+                for row in EBARUtils.updateCursor(cursor):
+                    input_point_id = row['InputPointID']
+                    cursor.updateRow([output_point, input_point_id, coordinates_obscured, accuracy])
+                del row
+            return input_point_id, 'updated'
+        else:
+            # insert, set new id and return
+            point_fields = ['SHAPE@XY', 'InputDatasetID', 'DatasetSourceUniqueID', 'URI', 'License', 'SpeciesID',
+                            'MinDate', 'MaxDate', 'CoordinatesObscured', 'Accuracy', 'CurrentHistorical',
+                            'IndividualCount']
+            with arcpy.da.InsertCursor(geodatabase + '/InputPoint', point_fields) as cursor:
+                input_point_id = cursor.insertRow([output_point, input_dataset_id, str(file_line[field_dict['unique_id']]),
+                                                   uri, license, species_id, None, max_date, coordinates_obscured,
+                                                   accuracy, current_historical, individual_count])
+            EBARUtils.setNewID(geodatabase + '/InputPoint', 'InputPointID', input_point_id)
+            id_dict[str(file_line[field_dict['unique_id']])] = input_point_id
+            return input_point_id, 'new'
 
     def RunImportPointsTool(self, parameters, messages):
+        # debugging/testing
         #print(locale.getpreferredencoding())
         #return
 
@@ -304,6 +338,7 @@ class ImportPointsTool:
         # make variables for parms
         EBARUtils.displayMessage(messages, 'Processing parameters')
         if parameters:
+            # passed from tool user interface
             param_geodatabase = parameters[0].valueAsText
             param_raw_data_file = parameters[1].valueAsText
             param_dataset_name = parameters[2].valueAsText
@@ -345,8 +380,9 @@ class ImportPointsTool:
             #param_restrictions = ''
 
             #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/' + \
-            #    'All_CDN_Research_Unobsc_Data.csv'
-            param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/inat_test_obs.csv'
+            #    'All_CDN_iNat_Data.csv'
+            param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/' + \
+                'All_CDN_iNat_Data_test.csv'
             param_dataset_name = 'iNaturalist All Canadian Unobscured Research Grade'
             param_dataset_organization = 'California Academy of Sciences and the National Geographic Society'
             param_dataset_contact = 'https://www.inaturalist.org/'
@@ -415,6 +451,7 @@ class ImportPointsTool:
         EBARUtils.displayMessage(messages, 'Processing file lines')
         count = 0
         duplicates = 0
+        updates = 0
         for file_line in reader:
             count += 1
             if count % 1000 == 0:
@@ -423,14 +460,17 @@ class ImportPointsTool:
             species_id, species_exists = EBARUtils.checkAddSpecies(species_dict, param_geodatabase,
                                                                    file_line[field_dict['scientific_name']])
             # check/add point for current line
-            input_point_id, point_exists = self.CheckAddPoint(id_dict, param_geodatabase, input_dataset_id,
-                                                              species_id, file_line, field_dict)
-            if point_exists:
+            input_point_id, status = self.CheckAddPoint(id_dict, param_geodatabase, param_dataset_source,
+                                                        input_dataset_id, species_id, file_line, field_dict)
+            if status == 'duplicate':
                 duplicates += 1
+            elif status == 'updated':
+                updates += 1
 
         # summary and end time
         EBARUtils.displayMessage(messages, 'Processed ' + str(count))
         EBARUtils.displayMessage(messages, 'Duplicates ' + str(duplicates))
+        EBARUtils.displayMessage(messages, 'Updates ' + str(updates))
         end_time = datetime.datetime.now()
         EBARUtils.displayMessage(messages, 'End time: ' + str(end_time))
         elapsed_time = end_time - start_time
