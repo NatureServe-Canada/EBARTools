@@ -29,7 +29,8 @@ import datetime
 #               'issues', 'license', 'geodeticDatum', 'countryCode', 'locality', 'gbifID', 'occurrenceID',
 #               'recordedBy', 'institutionCode', 'informationWithheld', 'occurrenceRemarks', 'dateIdentified',
 #               'references','verbatimLocality','identifiedBy']
-gbif_fields = {'unique_id': 'gbifID',
+gbif_fields = {'quality_grade': None,
+               'unique_id': 'gbifID',
                'uri': 'occurrenceID',
                'license': 'license',
                'scientific_name': 'species',
@@ -53,7 +54,8 @@ gbif_fields = {'unique_id': 'gbifID',
 #                  'geodeticdatum', 'georeferenceprotocol', 'stateprovince', 'verbatimlocality', 'references',
 #                  'license', 'georeferenceverificationstatus', 'eventdate', 'individualcount',
 #                  'catalognumber', 'locality', 'locationremarks', 'occurrenceremarks', 'coordinateprecision']
-vertnet_fields = {'unique_id': 'occurrenceid',
+vertnet_fields = {'quality_grade': None,
+                  'unique_id': 'occurrenceid',
                   'uri': 'occurrenceid',
                   'license': 'license',
                   'scientific_name': 'name',
@@ -74,7 +76,8 @@ vertnet_fields = {'unique_id': 'occurrenceid',
 
 #ecoengine_fields = ['url', 'key', 'longitude', 'latitude', 'observation_type', 'name', source','locality',
 #                    'coordinate_uncertainty_in_meters', 'recorded_by', 'prov', 'begin_date']
-ecoengine_fields = {'unique_id': 'key',
+ecoengine_fields = {'quality_grade': None,
+                    'unique_id': 'key',
                     'uri': 'url',
                     'license': None,
                     'scientific_name': 'name',
@@ -103,7 +106,8 @@ ecoengine_fields = {'unique_id': 'key',
 #                      'place_county_name', 'place_state_name', 'place_country_name', 'place_admin1_name',
 #                      'place_admin2_name', 'species_guess', 'scientific_name', 'common_name', 'iconic_taxon_name',
 #                      'taxon_id']
-inaturalist_fields = {'unique_id': 'id',
+inaturalist_fields = {'quality_grade': 'quality_grade',
+                      'unique_id': 'id',
                       'uri': 'url',
                       'license': 'license',
                       'scientific_name': 'scientific_name',
@@ -125,7 +129,8 @@ inaturalist_fields = {'unique_id': 'id',
 #bison_fields = ['catalogNumber', 'providedScientificName', 'name', 'ambiguous', 'generalComments', 'verbatimLocality',
 #                'occurrenceID', 'longitude', 'basisOfRecord', 'collectionID', 'institutionID', 'license', 'latitude',
 #                'provider', 'centroid', 'date', 'year', 'recordedBy', 'prov', 'geo']
-bison_fields = {'unique_id': 'occurrenceID',
+bison_fields = {'quality_grade': None,
+                'unique_id': 'occurrenceID',
                 'uri': None,
                 'license': 'license',
                 'scientific_name': 'name',
@@ -156,7 +161,8 @@ bison_fields = {'unique_id': 'occurrenceID',
 #                     'taxonConceptID', 'scientificName', 'kingdom', 'phylum', 'class', 'order', 'family', 'genus',
 #                     'taxonRank', 'vernacularName', 'species', 'verbatimIdentificationQualifier', 'provenance',
 #                     'recordID', 'verbatimBasisOfRecord']
-canadensys_fields = {'unique_id': 'occurrenceID',
+canadensys_fields = {'quality_grade': None,
+                     'unique_id': 'occurrenceID',
                      'uri': None,
                      'license': 'dcterms:license',
                      'scientific_name': 'species',
@@ -183,6 +189,11 @@ class ImportPointsTool:
 
     def CheckAddPoint(self, id_dict, geodatabase, dataset_source, input_dataset_id, species_id, file_line, field_dict):
         """If point already exists, check if needs update; otherwise, add"""
+        # grade
+        quality_grade = 'research'
+        if field_dict['quality_grade']:
+            quality_grade = file_line[field_dict['quality_grade']]
+
         # CoordinatesObscured
         coordinates_obscured = None
         if field_dict['coordinates_obscured']:
@@ -192,13 +203,22 @@ class ImportPointsTool:
                 coordinates_obscured = False
 
         # check for existing point with same unique_id within the dataset source
+        delete = False
         update = False
         if str(file_line[field_dict['unique_id']]) in id_dict:
-            existing = True
+            # already exists
+            if quality_grade != 'research':
+                # delete it because it has been downgraded
+                with arcpy.da.SearchCursor(geodatabase + '/InputPoint', ['CoordinatesObscured'],
+                                           "DatasetSourceUniqueID = '" + str(file_line[field_dict['unique_id']]) +
+                                           "' AND InputDatasetID = " + str(input_dataset_id)) as cursor:
+                    for row in cursor:
+                        cursor.deleteRow()
+                    del row
+                    return id_dict[str(file_line[field_dict['unique_id']])], 'deleted'
             if not coordinates_obscured:
                 # check if it has become unobscured
-                with arcpy.da.SearchCursor(geodatabase + '/InputPoint',
-                                           ['CoordinatesObscured'],
+                with arcpy.da.SearchCursor(geodatabase + '/InputPoint', ['CoordinatesObscured'],
                                            "DatasetSourceUniqueID = '" + str(file_line[field_dict['unique_id']]) +
                                            "' AND InputDatasetID = " + str(input_dataset_id)) as cursor:
                     for row in EBARUtils.searchCursor(cursor):
@@ -207,6 +227,10 @@ class ImportPointsTool:
             if not update:
                 # existing record that does not need to be updated
                 return id_dict[str(file_line[field_dict['unique_id']])], 'duplicate'
+
+        # don't add non research grade
+        if quality_grade != 'research':
+            return None, 'non-research'
 
         # URI
         uri = None
@@ -379,10 +403,10 @@ class ImportPointsTool:
             #param_date_received = 'September 30, 2019'
             #param_restrictions = ''
 
-            #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/' + \
-            #    'All_CDN_iNat_Data.csv'
             param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/' + \
-                'All_CDN_iNat_Data_test.csv'
+                'All_CDN_iNat_Data.csv'
+            #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/' + \
+            #    'All_CDN_iNat_Data_test.csv'
             param_dataset_name = 'iNaturalist All Canadian Unobscured Research Grade'
             param_dataset_organization = 'California Academy of Sciences and the National Geographic Society'
             param_dataset_contact = 'https://www.inaturalist.org/'
@@ -452,6 +476,8 @@ class ImportPointsTool:
         count = 0
         duplicates = 0
         updates = 0
+        non_research = 0
+        deleted = 0
         for file_line in reader:
             count += 1
             if count % 1000 == 0:
@@ -466,11 +492,18 @@ class ImportPointsTool:
                 duplicates += 1
             elif status == 'updated':
                 updates += 1
+            elif status == 'non-research':
+                non_research += 1
+            elif status == 'deleted':
+                non_research += 1
+                deleted += 1
 
         # summary and end time
         EBARUtils.displayMessage(messages, 'Processed ' + str(count))
         EBARUtils.displayMessage(messages, 'Duplicates ' + str(duplicates))
         EBARUtils.displayMessage(messages, 'Updates ' + str(updates))
+        EBARUtils.displayMessage(messages, 'Non-research ' + str(non_research))
+        EBARUtils.displayMessage(messages, 'Deleted ' + str(deleted))
         end_time = datetime.datetime.now()
         EBARUtils.displayMessage(messages, 'End time: ' + str(end_time))
         elapsed_time = end_time - start_time
