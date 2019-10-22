@@ -189,6 +189,37 @@ class ImportPointsTool:
 
     def CheckAddPoint(self, id_dict, geodatabase, dataset_source, input_dataset_id, species_id, file_line, field_dict):
         """If point already exists, check if needs update; otherwise, add"""
+        # MaxDate
+        max_date = None
+        if field_dict['date']:
+            # date field
+            if file_line[field_dict['date']] != 'NA':
+                max_date = datetime.datetime.strptime(file_line[field_dict['date']], '%Y-%m-%d')
+        if not max_date:
+            # separate ymd fields
+            if file_line[field_dict['year']] != 'NA':
+                max_year = int(file_line[field_dict['year']])
+                max_month = 1
+                if file_line[field_dict['month']] != 'NA':
+                    max_month = int(file_line[field_dict['month']])
+                max_day = 1
+                if file_line[field_dict['day']] != 'NA':
+                    max_day = int(file_line[field_dict['day']])
+                max_date = datetime.datetime(max_year, max_month, max_day)
+
+        # CurrentHistorical (informs SpeciesEcoshape.Presence: C -> Present, U-> Presence Expected, H -> Historical)
+        # [consider evaluating when generating range map instead of during import]
+        if field_dict['basis_of_record']:
+            if file_line[field_dict['basis_of_record']] == 'FOSSIL_SPECIMEN':
+                # reject fossils records
+                return None, 'fossil'
+        current_historical = 'C'
+        if max_date:
+            if (datetime.datetime.now().year - max_date.year) > 40:
+                current_historical = 'H'
+        else:
+            current_historical = 'U'
+
         # grade
         quality_grade = 'research'
         if field_dict['quality_grade']:
@@ -242,24 +273,6 @@ class ImportPointsTool:
         if field_dict['license']:
             license = file_line[field_dict['license']]
 
-        # MaxDate
-        max_date = None
-        if field_dict['date']:
-            # date field
-            if file_line[field_dict['date']] != 'NA':
-                max_date = datetime.datetime.strptime(file_line[field_dict['date']], '%Y-%m-%d')
-        if not max_date:
-            # separate ymd fields
-            if file_line[field_dict['year']] != 'NA':
-                max_year = int(file_line[field_dict['year']])
-                max_month = 1
-                if file_line[field_dict['month']] != 'NA':
-                    max_month = int(file_line[field_dict['month']])
-                max_day = 1
-                if file_line[field_dict['day']] != 'NA':
-                    max_day = int(file_line[field_dict['day']])
-                max_date = datetime.datetime(max_year, max_month, max_day)
-
         # Geometry/Shape
         output_point = None
         input_point = None
@@ -298,18 +311,6 @@ class ImportPointsTool:
         elif field_dict['private_accuracy'] and private_coords:
             if file_line[field_dict['private_accuracy']] not in ('NA', ''):
                 accuracy = round(float(file_line[field_dict['private_accuracy']]))
-
-        # CurrentHistorical (informs SpeciesEcoshape.Presence: C -> Present, U-> Presence Expected, H -> Historical)
-        current_historical = 'C'
-        if field_dict['basis_of_record']:
-            if file_line[field_dict['basis_of_record']] == 'FOSSIL_SPECIMEN':
-                current_historical = 'H'
-        if current_historical == 'C':
-            if max_date:
-                if (datetime.datetime.now().year - max_date.year) > 40:
-                    current_historical = 'H'
-            else:
-                current_historical = 'U'
 
         # IndividualCount
         individual_count = None
@@ -376,14 +377,14 @@ class ImportPointsTool:
             # for debugging, hard code parameters
             param_geodatabase = 'C:/GIS/EBAR/EBAR_outputs.gdb'
 
-            #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/GBIF_Yukon.csv'
-            #param_dataset_name = 'GBIF for YK'
-            #param_dataset_organization = 'Global Biodiversity Information Facility'
-            #param_dataset_contact = 'https://www.gbif.org'
-            #param_dataset_source = 'GBIF'
-            #param_dataset_type = 'CSV'
-            #param_date_received = 'September 28, 2019'
-            #param_restrictions = ''
+            param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/GBIF_Yukon.csv'
+            param_dataset_name = 'GBIF for YK'
+            param_dataset_organization = 'Global Biodiversity Information Facility'
+            param_dataset_contact = 'https://www.gbif.org'
+            param_dataset_source = 'GBIF'
+            param_dataset_type = 'CSV'
+            param_date_received = 'September 28, 2019'
+            param_restrictions = ''
 
             #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/vertnet.csv'
             #param_dataset_name = 'VerNet Marmot'
@@ -403,17 +404,17 @@ class ImportPointsTool:
             #param_date_received = 'September 30, 2019'
             #param_restrictions = ''
 
-            param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/' + \
-                'All_CDN_iNat_Data.csv'
             #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/' + \
-            #    'All_CDN_iNat_Data_test.csv'
-            param_dataset_name = 'iNaturalist All Canadian Unobscured Research Grade'
-            param_dataset_organization = 'California Academy of Sciences and the National Geographic Society'
-            param_dataset_contact = 'https://www.inaturalist.org/'
-            param_dataset_source = 'iNaturalist'
-            param_dataset_type = 'CSV'
-            param_date_received = 'October 2, 2019'
-            param_restrictions = ''
+            #    'All_CDN_iNat_Data.csv'
+            ##param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/' + \
+            ##    'All_CDN_iNat_Data_test.csv'
+            #param_dataset_name = 'iNaturalist All Canadian Unobscured Research Grade'
+            #param_dataset_organization = 'California Academy of Sciences and the National Geographic Society'
+            #param_dataset_contact = 'https://www.inaturalist.org/'
+            #param_dataset_source = 'iNaturalist'
+            #param_dataset_type = 'CSV'
+            #param_date_received = 'October 2, 2019'
+            #param_restrictions = ''
 
             #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/bison.csv'
             #param_dataset_name = 'BISON Microseris and Marmota'
@@ -474,6 +475,7 @@ class ImportPointsTool:
         # process all file lines
         EBARUtils.displayMessage(messages, 'Processing file lines')
         count = 0
+        fossils = 0
         duplicates = 0
         updates = 0
         non_research = 0
@@ -488,7 +490,9 @@ class ImportPointsTool:
             # check/add point for current line
             input_point_id, status = self.CheckAddPoint(id_dict, param_geodatabase, param_dataset_source,
                                                         input_dataset_id, species_id, file_line, field_dict)
-            if status == 'duplicate':
+            if status == 'fossil':
+                fossil += 1
+            elif status == 'duplicate':
                 duplicates += 1
             elif status == 'updated':
                 updates += 1
@@ -500,10 +504,11 @@ class ImportPointsTool:
 
         # summary and end time
         EBARUtils.displayMessage(messages, 'Processed ' + str(count))
+        EBARUtils.displayMessage(messages, 'Fossils ' + str(fossils))
         EBARUtils.displayMessage(messages, 'Duplicates ' + str(duplicates))
-        EBARUtils.displayMessage(messages, 'Updates ' + str(updates))
+        EBARUtils.displayMessage(messages, 'Duplicates updated ' + str(updates))
         EBARUtils.displayMessage(messages, 'Non-research ' + str(non_research))
-        EBARUtils.displayMessage(messages, 'Deleted ' + str(deleted))
+        EBARUtils.displayMessage(messages, 'Non-research deleted ' + str(deleted))
         end_time = datetime.datetime.now()
         EBARUtils.displayMessage(messages, 'End time: ' + str(end_time))
         elapsed_time = end_time - start_time
