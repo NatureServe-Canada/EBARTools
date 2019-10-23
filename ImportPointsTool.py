@@ -48,6 +48,25 @@ gbif_fields = {'quality_grade': None,
                'date': None,
                'basis_of_record': 'basisOfRecord',
                'individual_count': 'individualCount'}
+ncc_gbif_fields = {'quality_grade': None,
+                   'unique_id': 'gbifID',
+                   'uri': 'occurrence',
+                   'license': 'license',
+                   'scientific_name': 'species',
+                   'longitude': 'decimalLon',
+                   'latitude': 'decimalLat',
+                   'srs': None,
+                   'coordinates_obscured': None,
+                   'private_longitude': None,
+                   'private_latitude': None,
+                   'accuracy': 'coordinate',
+                   'private_accuracy': None,
+                   'year': 'year_',
+                   'month': 'month_',
+                   'day': 'day_',
+                   'date': 'eventDate',
+                   'basis_of_record': 'basisOfRec',
+                   'individual_count': None}
 
 #vertnet_fields = ['name', 'longitude', 'latitude', 'prov', 'month', 'verbatimcoordinatesystem', 'day', 'occurrenceid',
 #                  'identificationqualifier', 'coordinateuncertaintyinmeters', 'year', 'basisofrecord',
@@ -193,17 +212,21 @@ class ImportPointsTool:
         max_date = None
         if field_dict['date']:
             # date field
-            if file_line[field_dict['date']] != 'NA':
-                max_date = datetime.datetime.strptime(file_line[field_dict['date']], '%Y-%m-%d')
+            if file_line[field_dict['date']] not in ('NA', ''):
+                if len(file_line[field_dict['date']]) == 20:
+                    max_date_time = datetime.datetime.strptime(file_line[field_dict['date']], '%Y-%m-%dT%H:%M:%SZ')
+                    max_date = max_date_time.date()
+                else:
+                    max_date = datetime.datetime.strptime(file_line[field_dict['date']], '%Y-%m-%d')
         if not max_date:
             # separate ymd fields
-            if file_line[field_dict['year']] != 'NA':
+            if file_line[field_dict['year']] not in ('NA', ''):
                 max_year = int(file_line[field_dict['year']])
                 max_month = 1
-                if file_line[field_dict['month']] != 'NA':
+                if file_line[field_dict['month']] not in ('NA', ''):
                     max_month = int(file_line[field_dict['month']])
                 max_day = 1
-                if file_line[field_dict['day']] != 'NA':
+                if file_line[field_dict['day']] not in ('NA', ''):
                     max_day = int(file_line[field_dict['day']])
                 max_date = datetime.datetime(max_year, max_month, max_day)
 
@@ -377,14 +400,23 @@ class ImportPointsTool:
             # for debugging, hard code parameters
             param_geodatabase = 'C:/GIS/EBAR/EBAR_outputs.gdb'
 
-            param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/GBIF_Yukon.csv'
-            param_dataset_name = 'GBIF for YK'
+            param_raw_data_file = 'C:/GIS/EBAR/NCC/NCC_Merge_GBIF.csv'
+            param_dataset_name = 'NCC GBIF Endemics'
             param_dataset_organization = 'Global Biodiversity Information Facility'
             param_dataset_contact = 'https://www.gbif.org'
-            param_dataset_source = 'GBIF'
+            param_dataset_source = 'NCC_GBIF'
             param_dataset_type = 'CSV'
-            param_date_received = 'September 28, 2019'
+            param_date_received = 'October 15, 2019'
             param_restrictions = ''
+
+            #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/GBIF_Yukon.csv'
+            #param_dataset_name = 'GBIF for YK'
+            #param_dataset_organization = 'Global Biodiversity Information Facility'
+            #param_dataset_contact = 'https://www.gbif.org'
+            #param_dataset_source = 'GBIF'
+            #param_dataset_type = 'CSV'
+            #param_date_received = 'September 28, 2019'
+            #param_restrictions = ''
 
             #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/vertnet.csv'
             #param_dataset_name = 'VerNet Marmot'
@@ -437,7 +469,9 @@ class ImportPointsTool:
 
         # check parameters
         field_dict = gbif_fields
-        if param_dataset_source == 'VertNet':
+        if param_dataset_source == 'NCC_GBIF':
+            field_dict = ncc_gbif_fields
+        elif param_dataset_source == 'VertNet':
             field_dict = vertnet_fields
         elif param_dataset_source == 'Ecoengine':
             field_dict = ecoengine_fields
@@ -449,6 +483,7 @@ class ImportPointsTool:
             field_dict = canadensys_fields
 
         # check/add InputDataset row
+        dataset = param_dataset_name + ', ' + param_dataset_source + ', ' + str(param_date_received)
         EBARUtils.displayMessage(messages, 'Checking for dataset and adding if new')
         input_dataset_id, dataset_exists = EBARUtils.checkAddInputDataset(param_geodatabase,
                                                                           param_dataset_name,
