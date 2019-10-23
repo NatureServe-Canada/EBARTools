@@ -24,11 +24,6 @@ import datetime
 
 
 # field mapping dictionaries for data sources
-#gbif_fields = ['basisOfRecord', 'individualCount', 'scientificName', 'species', 'decimalLongitude',
-#               'decimalLatitude', 'coordinateUncertaintyInMeters', 'stateProvince', 'year', 'month', 'day',
-#               'issues', 'license', 'geodeticDatum', 'countryCode', 'locality', 'gbifID', 'occurrenceID',
-#               'recordedBy', 'institutionCode', 'informationWithheld', 'occurrenceRemarks', 'dateIdentified',
-#               'references','verbatimLocality','identifiedBy']
 gbif_fields = {'quality_grade': None,
                'unique_id': 'gbifID',
                'uri': 'occurrenceID',
@@ -48,6 +43,7 @@ gbif_fields = {'quality_grade': None,
                'date': None,
                'basis_of_record': 'basisOfRecord',
                'individual_count': 'individualCount'}
+
 ncc_gbif_fields = {'quality_grade': None,
                    'unique_id': 'gbifID',
                    'uri': 'occurrence',
@@ -68,11 +64,6 @@ ncc_gbif_fields = {'quality_grade': None,
                    'basis_of_record': 'basisOfRec',
                    'individual_count': None}
 
-#vertnet_fields = ['name', 'longitude', 'latitude', 'prov', 'month', 'verbatimcoordinatesystem', 'day', 'occurrenceid',
-#                  'identificationqualifier', 'coordinateuncertaintyinmeters', 'year', 'basisofrecord',
-#                  'geodeticdatum', 'georeferenceprotocol', 'stateprovince', 'verbatimlocality', 'references',
-#                  'license', 'georeferenceverificationstatus', 'eventdate', 'individualcount',
-#                  'catalognumber', 'locality', 'locationremarks', 'occurrenceremarks', 'coordinateprecision']
 vertnet_fields = {'quality_grade': None,
                   'unique_id': 'occurrenceid',
                   'uri': 'occurrenceid',
@@ -93,8 +84,6 @@ vertnet_fields = {'quality_grade': None,
                   'basis_of_record': 'basisofrecord',
                   'individual_count': 'individualcount'}
 
-#ecoengine_fields = ['url', 'key', 'longitude', 'latitude', 'observation_type', 'name', source','locality',
-#                    'coordinate_uncertainty_in_meters', 'recorded_by', 'prov', 'begin_date']
 ecoengine_fields = {'quality_grade': None,
                     'unique_id': 'key',
                     'uri': 'url',
@@ -115,16 +104,6 @@ ecoengine_fields = {'quality_grade': None,
                     'basis_of_record': 'observation_type',
                     'individual_count': None}
 
-#inaturalist_fields = ['id', 'observed_on_string', 'observed_on', 'time_observed_at', 'time_zone', 'out_of_range',
-#                      'user_id', 'user_login', 'created_at', 'quality_grade', 'license', 'url', 'image_url',
-#                      'sound_url', 'tag_list', 'description', 'id_please', 'num_identification_agreements',
-#                      'num_identification_disagreements', 'captive_cultivated', 'place_guess', 'latitude',
-#                      'longitude', 'positional_accuracy', 'private_place_guess', 'private_latitude',
-#                      'private_longitude', 'private_positional_accuracy', 'geoprivacy', 'taxon_geoprivacy',
-#                      'coordinates_obscured', 'positioning_method', 'positioning_device', 'place_town_name',
-#                      'place_county_name', 'place_state_name', 'place_country_name', 'place_admin1_name',
-#                      'place_admin2_name', 'species_guess', 'scientific_name', 'common_name', 'iconic_taxon_name',
-#                      'taxon_id']
 inaturalist_fields = {'quality_grade': 'quality_grade',
                       'unique_id': 'id',
                       'uri': 'url',
@@ -145,9 +124,6 @@ inaturalist_fields = {'quality_grade': 'quality_grade',
                       'basis_of_record': None,
                       'individual_count': None}
 
-#bison_fields = ['catalogNumber', 'providedScientificName', 'name', 'ambiguous', 'generalComments', 'verbatimLocality',
-#                'occurrenceID', 'longitude', 'basisOfRecord', 'collectionID', 'institutionID', 'license', 'latitude',
-#                'provider', 'centroid', 'date', 'year', 'recordedBy', 'prov', 'geo']
 bison_fields = {'quality_grade': None,
                 'unique_id': 'occurrenceID',
                 'uri': None,
@@ -168,18 +144,6 @@ bison_fields = {'quality_grade': None,
                 'basis_of_record': 'basisOfRecord',
                 'individual_count': None}
 
-#canadensys_fields = ['dcterms:license', 'institutionCode', 'collectionCode', 'datasetName', 'basisOfRecord',
-#                     'occurrenceID', 'catalogNumber', 'recordNumber', 'recordedBy', 'individualCount', 'sex',
-#                     'reproductiveCondition', 'establishmentMeans', 'occurrenceStatus', 'occurrenceRemarks',
-#                     'eventID', 'eventDate', 'year', 'month', 'locationID', 'country', 'countryCode', 'stateProvince',
-#                     'locality', 'minimumElevationInMeters', 'maximumElevationInMeters', 'maximumDepthInMeters',
-#                     'maximumDepthInMeters', 'locationRemarks', 'decimalLatitude', 'decimalLongitude',
-#                     'coordinateUncertaintyInMeters', 'verbatimLatitude', 'verbatimLongitude',
-#                     'verbatimCoordinateSystem', 'georeference_verification_status', 'identificationQualifier',
-#                     'typeStatus', 'identifiedBy', 'dateIdentified', 'identificationVerificationStatus',
-#                     'taxonConceptID', 'scientificName', 'kingdom', 'phylum', 'class', 'order', 'family', 'genus',
-#                     'taxonRank', 'vernacularName', 'species', 'verbatimIdentificationQualifier', 'provenance',
-#                     'recordID', 'verbatimBasisOfRecord']
 canadensys_fields = {'quality_grade': None,
                      'unique_id': 'occurrenceID',
                      'uri': None,
@@ -200,6 +164,26 @@ canadensys_fields = {'quality_grade': None,
                      'basis_of_record': 'basisOfRecord',
                      'individual_count': 'individualCount'}
 
+ncc_endemics_fields = {'quality_grade': None,
+                       'unique_id': 'OBSERVATIO',
+                       'uri': None,
+                       'license': None,
+                       'scientific_name': 'SCIENTIFIC',
+                       'longitude': 'latitude',
+                       'latitude': 'longitude',
+                       'srs': None,
+                       'coordinates_obscured': None,
+                       'private_longitude': None,
+                       'private_latitude': None,
+                       'accuracy': None,
+                       'private_accuracy': None,
+                       'year': 'OBSERVAT_3',
+                       'month': None,
+                       'day': None,
+                       'date': 'OBSERVAT_2',
+                       'basis_of_record': None,
+                       'individual_count': None}
+
 
 class ImportPointsTool:
     """Import point data into the InputDataset and InputPoint tables of the EBAR geodatabase"""
@@ -216,19 +200,25 @@ class ImportPointsTool:
                 if len(file_line[field_dict['date']]) == 20:
                     max_date_time = datetime.datetime.strptime(file_line[field_dict['date']], '%Y-%m-%dT%H:%M:%SZ')
                     max_date = max_date_time.date()
+                elif str(len(file_line[field_dict['date']])) in ('18', '19'):
+                    max_date_time = datetime.datetime.strptime(file_line[field_dict['date']], '%Y-%m-%d %H:%M:%S')
+                    max_date = max_date_time.date()
                 else:
                     max_date = datetime.datetime.strptime(file_line[field_dict['date']], '%Y-%m-%d')
         if not max_date:
             # separate ymd fields
-            if file_line[field_dict['year']] not in ('NA', ''):
-                max_year = int(file_line[field_dict['year']])
-                max_month = 1
-                if file_line[field_dict['month']] not in ('NA', ''):
-                    max_month = int(file_line[field_dict['month']])
-                max_day = 1
-                if file_line[field_dict['day']] not in ('NA', ''):
-                    max_day = int(file_line[field_dict['day']])
-                max_date = datetime.datetime(max_year, max_month, max_day)
+            if field_dict['year']:
+                if file_line[field_dict['year']] not in ('NA', ''):
+                    max_year = int(file_line[field_dict['year']])
+                    max_month = 1
+                    if field_dict['month']:
+                        if file_line[field_dict['month']] not in ('NA', ''):
+                            max_month = int(file_line[field_dict['month']])
+                    max_day = 1
+                    if field_dict['day']:
+                        if file_line[field_dict['day']] not in ('NA', ''):
+                            max_day = int(file_line[field_dict['day']])
+                    max_date = datetime.datetime(max_year, max_month, max_day)
 
         # CurrentHistorical (informs SpeciesEcoshape.Presence: C -> Present, U-> Presence Expected, H -> Historical)
         # [consider evaluating when generating range map instead of during import]
@@ -400,15 +390,6 @@ class ImportPointsTool:
             # for debugging, hard code parameters
             param_geodatabase = 'C:/GIS/EBAR/EBAR_outputs.gdb'
 
-            param_raw_data_file = 'C:/GIS/EBAR/NCC/NCC_Merge_GBIF.csv'
-            param_dataset_name = 'NCC GBIF Endemics'
-            param_dataset_organization = 'Global Biodiversity Information Facility'
-            param_dataset_contact = 'https://www.gbif.org'
-            param_dataset_source = 'NCC_GBIF'
-            param_dataset_type = 'CSV'
-            param_date_received = 'October 15, 2019'
-            param_restrictions = ''
-
             #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/GBIF_Yukon.csv'
             #param_dataset_name = 'GBIF for YK'
             #param_dataset_organization = 'Global Biodiversity Information Facility'
@@ -416,6 +397,15 @@ class ImportPointsTool:
             #param_dataset_source = 'GBIF'
             #param_dataset_type = 'CSV'
             #param_date_received = 'September 28, 2019'
+            #param_restrictions = ''
+
+            #param_raw_data_file = 'C:/GIS/EBAR/NCC/NCC_Merge_GBIF.csv'
+            #param_dataset_name = 'NCC GBIF Endemics'
+            #param_dataset_organization = 'Global Biodiversity Information Facility'
+            #param_dataset_contact = 'Andrea Hebb'
+            #param_dataset_source = 'NCC_GBIF'
+            #param_dataset_type = 'CSV'
+            #param_date_received = 'October 15, 2019'
             #param_restrictions = ''
 
             #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/vertnet.csv'
@@ -467,6 +457,15 @@ class ImportPointsTool:
             #param_date_received = 'October 9, 2019'
             #param_restrictions = ''
 
+            param_raw_data_file = 'C:/GIS/EBAR/NCC/NCC_Species_Obs_20190521.csv'
+            param_dataset_name = 'NCC Endemics'
+            param_dataset_organization = 'Nature Conservancy of Canada'
+            param_dataset_contact = 'Andrea Hebb'
+            param_dataset_source = 'NCCEndemics'
+            param_dataset_type = 'CSV'
+            param_date_received = 'October 15, 2019'
+            param_restrictions = ''
+
         # check parameters
         field_dict = gbif_fields
         if param_dataset_source == 'NCC_GBIF':
@@ -481,10 +480,12 @@ class ImportPointsTool:
             field_dict = bison_fields
         elif param_dataset_source == 'Canadensys':
             field_dict = canadensys_fields
+        if param_dataset_source == 'NCCEndemics':
+            field_dict = ncc_endemics_fields
 
         # check/add InputDataset row
         dataset = param_dataset_name + ', ' + param_dataset_source + ', ' + str(param_date_received)
-        EBARUtils.displayMessage(messages, 'Checking for dataset and adding if new')
+        EBARUtils.displayMessage(messages, 'Checking for dataset [' + dataset + '] and adding if new')
         input_dataset_id, dataset_exists = EBARUtils.checkAddInputDataset(param_geodatabase,
                                                                           param_dataset_name,
                                                                           param_dataset_organization,
