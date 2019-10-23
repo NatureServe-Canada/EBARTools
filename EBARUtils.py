@@ -10,7 +10,7 @@
 
 import collections
 import arcpy
-
+import math
 
 # WKIDs for datums/SRSs
 srs_dict = {'North America Albers Equal Area Conic': 102008,
@@ -156,3 +156,14 @@ def readDatasetSourceUniqueIDs(geodatabase, dataset_source):
     if len(unique_ids_dict) > 0:
         del row
     return unique_ids_dict
+
+
+def estimateAccuracy(latitude):
+    """calcualte the diagonal of a square 0.2 x 0.2 km at the provided latitude"""
+    # create line 0.2 km wide
+    line_wgs84 = arcpy.Polyline(arcpy.Array([arcpy.Point(-95.9, latitude), arcpy.Point(-96.1, latitude)]), srs_dict['WGS84'])
+    # project line
+    line_albers = line_wgs84.projectAs(
+        arcpy.SpatialReference(srs_dict['North America Albers Equal Area Conic']))
+    # use pythagorean theoren to calculate diagonal of square with height approximated and width as above
+    return math.sqrt((111000 ** 2) + (line_albers.length ** 2))

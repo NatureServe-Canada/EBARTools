@@ -192,6 +192,51 @@ class ImportPointsTool:
 
     def CheckAddPoint(self, id_dict, geodatabase, dataset_source, input_dataset_id, species_id, file_line, field_dict):
         """If point already exists, check if needs update; otherwise, add"""
+        # CoordinatesObscured
+        coordinates_obscured = None
+        if field_dict['coordinates_obscured']:
+            if file_line[field_dict['coordinates_obscured']] in (True, 'TRUE', 'true', 'T', 't', 1):
+                coordinates_obscured = True
+            if file_line[field_dict['coordinates_obscured']] in (False, 'FALSE', 'false', 'F', 'f', 0):
+                coordinates_obscured = False
+
+        # Geometry/Shape
+        input_point = None
+        output_point = None
+        private_coords = False
+        if coordinates_obscured:
+            # check for private lon/lat
+            if field_dict['private_longitude'] and field_dict['private_latitude']:
+                if (file_line[field_dict['private_longitude']] not in ('NA', '') and
+                    file_line[field_dict['private_latitude']] not in ('NA', '')):
+                    private_coords = True
+                    input_point = arcpy.Point(float(file_line[field_dict['private_longitude']]),
+                                              float(file_line[field_dict['private_latitude']]))
+        if not private_coords:
+            if (file_line[field_dict['longitude']] not in ('NA', '') and
+                file_line[field_dict['latitude']] not in ('NA', '')):
+                input_point = arcpy.Point(float(file_line[field_dict['longitude']]),
+                                          float(file_line[field_dict['latitude']]))
+        if input_point:
+            # assume WGS84 if not provided
+            srs = EBARUtils.srs_dict['WGS84']
+            if field_dict['srs']:
+                if file_line[field_dict['srs']] not in ('unknown', ''):
+                    srs = EBARUtils.srs_dict[file_line[field_dict['srs']]]
+            input_geometry = arcpy.PointGeometry(input_point, arcpy.SpatialReference(srs))
+            output_geometry = input_geometry.projectAs(
+                arcpy.SpatialReference(EBARUtils.srs_dict['North America Albers Equal Area Conic']))
+            output_point = output_geometry.lastPoint
+        if not output_point:
+            return None, 'no_coords'
+
+        # Accuracy
+        accuracy = None
+        if (not coordinates_obscured) or private_coords:
+            accuracy = round(float(file_line[field_dict['accuracy']]))
+        else:
+            accuracy = EBARUtils.estimateAccuracy(input_point.Y)
+
         # MaxDate
         max_date = None
         if field_dict['date']:
@@ -220,31 +265,24 @@ class ImportPointsTool:
                             max_day = int(file_line[field_dict['day']])
                     max_date = datetime.datetime(max_year, max_month, max_day)
 
-        # CurrentHistorical (informs SpeciesEcoshape.Presence: C -> Present, U-> Presence Expected, H -> Historical)
-        # [consider evaluating when generating range map instead of during import]
+        # reject fossils records
         if field_dict['basis_of_record']:
             if file_line[field_dict['basis_of_record']] == 'FOSSIL_SPECIMEN':
-                # reject fossils records
                 return None, 'fossil'
-        current_historical = 'C'
-        if max_date:
-            if (datetime.datetime.now().year - max_date.year) > 40:
-                current_historical = 'H'
-        else:
-            current_historical = 'U'
+
+        # CurrentHistorical (informs SpeciesEcoshape.Presence: C -> Present, U-> Presence Expected, H -> Historical)
+        # [consider evaluating when generating range map instead of during import]
+        #current_historical = 'C'
+        #if max_date:
+        #    if (datetime.datetime.now().year - max_date.year) > 40:
+        #        current_historical = 'H'
+        #else:
+        #    current_historical = 'U'
 
         # grade
         quality_grade = 'research'
         if field_dict['quality_grade']:
             quality_grade = file_line[field_dict['quality_grade']]
-
-        # CoordinatesObscured
-        coordinates_obscured = None
-        if field_dict['coordinates_obscured']:
-            if file_line[field_dict['coordinates_obscured']] in (True, 'TRUE', 'true', 'T', 't', 1):
-                coordinates_obscured = True
-            if file_line[field_dict['coordinates_obscured']] in (False, 'FALSE', 'false', 'F', 'f', 0):
-                coordinates_obscured = False
 
         # check for existing point with same unique_id within the dataset source
         delete = False
@@ -286,45 +324,6 @@ class ImportPointsTool:
         if field_dict['license']:
             license = file_line[field_dict['license']]
 
-        # Geometry/Shape
-        output_point = None
-        input_point = None
-        private_coords = False
-        if coordinates_obscured:
-            # check for private lon/lat
-            if field_dict['private_longitude'] and field_dict['private_latitude']:
-                if (file_line[field_dict['private_longitude']] not in ('NA', '') and
-                    file_line[field_dict['private_latitude']] not in ('NA', '')):
-                    private_coords = True
-                    input_point = arcpy.Point(float(file_line[field_dict['private_longitude']]),
-                                              float(file_line[field_dict['private_latitude']]))
-        if not private_coords:
-            if (file_line[field_dict['longitude']] not in ('NA', '') and
-                file_line[field_dict['latitude']] not in ('NA', '')):
-                input_point = arcpy.Point(float(file_line[field_dict['longitude']]),
-                                          float(file_line[field_dict['latitude']]))
-        if input_point:
-            # assume WGS84 if not provided
-            srs = EBARUtils.srs_dict['WGS84']
-            if field_dict['srs']:
-                if file_line[field_dict['srs']] not in ('unknown', ''):
-                    srs = EBARUtils.srs_dict[file_line[field_dict['srs']]]
-            input_geometry = arcpy.PointGeometry(input_point, arcpy.SpatialReference(srs))
-            output_geometry = input_geometry.projectAs(
-                arcpy.SpatialReference(EBARUtils.srs_dict['North America Albers Equal Area Conic']))
-            output_point = output_geometry.lastPoint
-
-        # Accuracy
-        accuracy = None
-        if coordinates_obscured and not private_coords:
-            accuracy = 26450
-        elif field_dict['accuracy'] and not private_coords:
-            if file_line[field_dict['accuracy']] not in ('NA', ''):
-                accuracy = round(float(file_line[field_dict['accuracy']]))
-        elif field_dict['private_accuracy'] and private_coords:
-            if file_line[field_dict['private_accuracy']] not in ('NA', ''):
-                accuracy = round(float(file_line[field_dict['private_accuracy']]))
-
         # IndividualCount
         individual_count = None
         if field_dict['individual_count']:
@@ -345,12 +344,11 @@ class ImportPointsTool:
         else:
             # insert, set new id and return
             point_fields = ['SHAPE@XY', 'InputDatasetID', 'DatasetSourceUniqueID', 'URI', 'License', 'SpeciesID',
-                            'MinDate', 'MaxDate', 'CoordinatesObscured', 'Accuracy', 'CurrentHistorical',
-                            'IndividualCount']
+                            'MinDate', 'MaxDate', 'CoordinatesObscured', 'Accuracy', 'IndividualCount']
             with arcpy.da.InsertCursor(geodatabase + '/InputPoint', point_fields) as cursor:
-                input_point_id = cursor.insertRow([output_point, input_dataset_id, str(file_line[field_dict['unique_id']]),
-                                                   uri, license, species_id, None, max_date, coordinates_obscured,
-                                                   accuracy, current_historical, individual_count])
+                input_point_id = cursor.insertRow([output_point, input_dataset_id,
+                                                   str(file_line[field_dict['unique_id']]), uri, license, species_id,
+                                                   None, max_date, coordinates_obscured, accuracy, individual_count])
             EBARUtils.setNewID(geodatabase + '/InputPoint', 'InputPointID', input_point_id)
             id_dict[str(file_line[field_dict['unique_id']])] = input_point_id
             return input_point_id, 'new'
@@ -428,15 +426,15 @@ class ImportPointsTool:
 
             #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/' + \
             #    'All_CDN_iNat_Data.csv'
-            ##param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/' + \
-            ##    'All_CDN_iNat_Data_test.csv'
-            #param_dataset_name = 'iNaturalist All Canadian Unobscured Research Grade'
-            #param_dataset_organization = 'California Academy of Sciences and the National Geographic Society'
-            #param_dataset_contact = 'https://www.inaturalist.org/'
-            #param_dataset_source = 'iNaturalist'
-            #param_dataset_type = 'CSV'
-            #param_date_received = 'October 2, 2019'
-            #param_restrictions = ''
+            param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/' + \
+                'Real_Data/All_CDN_Research_Unobsc_Data_test.csv'
+            param_dataset_name = 'iNaturalist All Canadian Unobscured Research Grade'
+            param_dataset_organization = 'California Academy of Sciences and the National Geographic Society'
+            param_dataset_contact = 'https://www.inaturalist.org/'
+            param_dataset_source = 'iNaturalist'
+            param_dataset_type = 'CSV'
+            param_date_received = 'October 2, 2019'
+            param_restrictions = ''
 
             #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/bison.csv'
             #param_dataset_name = 'BISON Microseris and Marmota'
@@ -457,14 +455,14 @@ class ImportPointsTool:
             #param_date_received = 'October 9, 2019'
             #param_restrictions = ''
 
-            param_raw_data_file = 'C:/GIS/EBAR/NCC/NCC_Species_Obs_20190521.csv'
-            param_dataset_name = 'NCC Endemics'
-            param_dataset_organization = 'Nature Conservancy of Canada'
-            param_dataset_contact = 'Andrea Hebb'
-            param_dataset_source = 'NCCEndemics'
-            param_dataset_type = 'CSV'
-            param_date_received = 'October 15, 2019'
-            param_restrictions = ''
+            #param_raw_data_file = 'C:/GIS/EBAR/NCC/NCC_Species_Obs_20190521.csv'
+            #param_dataset_name = 'NCC Endemics'
+            #param_dataset_organization = 'Nature Conservancy of Canada'
+            #param_dataset_contact = 'Andrea Hebb'
+            #param_dataset_source = 'NCCEndemics'
+            #param_dataset_type = 'CSV'
+            #param_date_received = 'October 15, 2019'
+            #param_restrictions = ''
 
         # check parameters
         field_dict = gbif_fields
@@ -511,26 +509,31 @@ class ImportPointsTool:
         # process all file lines
         EBARUtils.displayMessage(messages, 'Processing file lines')
         count = 0
+        no_coords = 0
         fossils = 0
         duplicates = 0
         updates = 0
         non_research = 0
         deleted = 0
         for file_line in reader:
-            count += 1
-            if count % 1000 == 0:
-                EBARUtils.displayMessage(messages, 'Processed ' + str(count))
             # check/add species for current line
             species_id, species_exists = EBARUtils.checkAddSpecies(species_dict, param_geodatabase,
                                                                    file_line[field_dict['scientific_name']])
             # check/add point for current line
             input_point_id, status = self.CheckAddPoint(id_dict, param_geodatabase, param_dataset_source,
                                                         input_dataset_id, species_id, file_line, field_dict)
-            if status == 'fossil':
+            # increment/report counts
+            count += 1
+            if count % 1000 == 0:
+                EBARUtils.displayMessage(messages, 'Processed ' + str(count))
+            if status == 'no_coords':
+                no_coords += 1
+            elif status == 'fossil':
                 fossil += 1
             elif status == 'duplicate':
                 duplicates += 1
             elif status == 'updated':
+                duplicates += 1
                 updates += 1
             elif status == 'non-research':
                 non_research += 1
@@ -540,6 +543,7 @@ class ImportPointsTool:
 
         # summary and end time
         EBARUtils.displayMessage(messages, 'Processed ' + str(count))
+        EBARUtils.displayMessage(messages, 'No coordinates ' + str(no_coords))
         EBARUtils.displayMessage(messages, 'Fossils ' + str(fossils))
         EBARUtils.displayMessage(messages, 'Duplicates ' + str(duplicates))
         EBARUtils.displayMessage(messages, 'Duplicates updated ' + str(updates))
