@@ -38,7 +38,12 @@ class GenerateRangeMapTool:
         EBARUtils.displayMessage(messages, 'Start time: ' + str(start_time))
 
         # settings
-        #arcpy.gp.overwriteOutput = True
+        arcpy.gp.overwriteOutput = True
+        # buffer size in metres, used if Accuracy not provided
+        default_buffer_size = 10
+        # proportion of buffer polygon that must be within ecoshape to get Present; other gets Presence Expected
+        buffer_percent_overlap = 0.25
+
         if not messages:
             # for debugging, set workspace location
             arcpy.env.workspace = 'C:/GIS/EBAR/EBAR_outputs.gdb'
@@ -87,8 +92,26 @@ class GenerateRangeMapTool:
             EBARUtils.setNewID(param_geodatabase + '/RangeMap', 'RangeMapID', range_map_id)
             EBARUtils.displayMessage(messages, 'Range Map added')
 
+        # select all points for species and buffer
+        arcpy.MakeFeatureLayer_management(param_geodatabase + '\InputPoint', 'input_point_layer')
+        arcpy.SelectLayerByAttribute_management('input_point_layer', 'NEW_SELECTION', 'SpeciesID = ' + str(species_id))
+        EBARUtils.displayMessage(messages, 'Input Points selected')
+        EBARUtils.checkAddField('input_point_layer', 'buffer', 'LONG')
+        code_block = '''
+def GetBuffer(accuracy):
+    ret = accuracy
+    if not ret:
+        ret = ''' + str(default_buffer_size) + '''
+    return ret'''
+        arcpy.CalculateField_management('input_point_layer', 'buffer', 'GetBuffer(!Accuracy!)', 'PYTHON3', code_block)
+        if arcpy.Exists('TempPointBuffer'):
+            arcpy.Delete_management('TempPointBuffer')
+        arcpy.Buffer_analysis('input_point_layer', 'TempPointBuffer', 'buffer')
+        EBARUtils.displayMessage(messages, 'Input Points buffered')
+
         return
             
+
 # controlling process
 if __name__ == '__main__':
     grm = GenerateRangeMapTool()

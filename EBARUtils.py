@@ -114,6 +114,15 @@ def checkAddInputDataset(geodatabase, dataset_name, dataset_organization, datase
     return input_dataset_id, False
 
 
+def checkAddField(table, field_name, field_type):
+    desc = arcpy.Describe(table)
+    for field in desc.fields:
+        if field.name == field_name:
+            return True
+    arcpy.AddField_management(table, field_name, field_type)
+    return False
+
+
 def readSpecies(geodatabase):
     """read existing species into dict and return"""
     species_dict = {}
