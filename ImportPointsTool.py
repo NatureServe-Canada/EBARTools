@@ -14,7 +14,8 @@
 
 
 # import Python packages
-#import sys
+import sys
+import traceback
 import EBARUtils
 import arcpy
 import io
@@ -235,7 +236,8 @@ class ImportPointsTool:
         accuracy = None
         if (not coordinates_obscured) or private_coords:
             if field_dict['accuracy']:
-                accuracy = round(float(file_line[field_dict['accuracy']]))
+                if file_line[field_dict['accuracy']] not in ('NA', ''):
+                    accuracy = round(float(file_line[field_dict['accuracy']]))
         else:
             accuracy = EBARUtils.estimateAccuracy(input_point.Y)
 
@@ -287,18 +289,22 @@ class ImportPointsTool:
                 with arcpy.da.SearchCursor(geodatabase + '/InputPoint', ['CoordinatesObscured'],
                                            "DatasetSourceUniqueID = '" + str(file_line[field_dict['unique_id']]) +
                                            "' AND InputDatasetID = " + str(input_dataset_id)) as cursor:
+                    row = None
                     for row in cursor:
                         cursor.deleteRow()
-                    del row
+                    if row:
+                        del row
                     return id_dict[str(file_line[field_dict['unique_id']])], 'deleted'
             if not coordinates_obscured:
                 # check if it has become unobscured
                 with arcpy.da.SearchCursor(geodatabase + '/InputPoint', ['CoordinatesObscured'],
                                            "DatasetSourceUniqueID = '" + str(file_line[field_dict['unique_id']]) +
                                            "' AND InputDatasetID = " + str(input_dataset_id)) as cursor:
+                    row = None
                     for row in EBARUtils.searchCursor(cursor):
                         update = row['CoordinatesObscured']
-                    del row
+                    if row:
+                        del row
             if not update:
                 # existing record that does not need to be updated
                 return id_dict[str(file_line[field_dict['unique_id']])], 'duplicate'
@@ -381,14 +387,14 @@ class ImportPointsTool:
             # for debugging, hard code parameters
             param_geodatabase = 'C:/GIS/EBAR/EBAR_outputs.gdb'
 
-            #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/GBIF_Yukon.csv'
-            #param_dataset_name = 'GBIF for YK'
-            #param_dataset_organization = 'Global Biodiversity Information Facility'
-            #param_dataset_contact = 'https://www.gbif.org'
-            #param_dataset_source = 'GBIF'
-            #param_dataset_type = 'CSV'
-            #param_date_received = 'September 28, 2019'
-            #param_restrictions = ''
+            param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/gbif_test.csv'
+            param_dataset_name = 'GBIF test'
+            param_dataset_organization = 'Global Biodiversity Information Facility'
+            param_dataset_contact = 'https://www.gbif.org'
+            param_dataset_source = 'GBIF'
+            param_dataset_type = 'CSV'
+            param_date_received = 'September 28, 2019'
+            param_restrictions = ''
 
             #param_raw_data_file = 'C:/GIS/EBAR/NCC/NCC_Merge_GBIF.csv'
             #param_dataset_name = 'NCC GBIF Endemics'
@@ -448,14 +454,14 @@ class ImportPointsTool:
             #param_date_received = 'October 9, 2019'
             #param_restrictions = ''
 
-            param_raw_data_file = 'C:/GIS/EBAR/NCC/NCC_Species_Obs_20190521.csv'
-            param_dataset_name = 'NCC Endemics'
-            param_dataset_organization = 'Nature Conservancy of Canada'
-            param_dataset_contact = 'Andrea Hebb'
-            param_dataset_source = 'NCCEndemics'
-            param_dataset_type = 'CSV'
-            param_date_received = 'October 15, 2019'
-            param_restrictions = ''
+            #param_raw_data_file = 'C:/GIS/EBAR/NCC/NCC_Species_Obs_20190521.csv'
+            #param_dataset_name = 'NCC Endemics'
+            #param_dataset_organization = 'Nature Conservancy of Canada'
+            #param_dataset_contact = 'Andrea Hebb'
+            #param_dataset_source = 'NCCEndemics'
+            #param_dataset_type = 'CSV'
+            #param_date_received = 'October 15, 2019'
+            #param_restrictions = ''
 
         # check parameters
         field_dict = gbif_fields
@@ -508,44 +514,61 @@ class ImportPointsTool:
         updates = 0
         non_research = 0
         deleted = 0
-        for file_line in reader:
-            # check/add species for current line
-            species_id, species_exists = EBARUtils.checkAddSpecies(species_dict, param_geodatabase,
-                                                                   file_line[field_dict['scientific_name']])
-            # check/add point for current line
-            input_point_id, status = self.CheckAddPoint(id_dict, param_geodatabase, param_dataset_source,
-                                                        input_dataset_id, species_id, file_line, field_dict)
-            # increment/report counts
-            count += 1
-            if count % 1000 == 0:
-                EBARUtils.displayMessage(messages, 'Processed ' + str(count))
-            if status == 'no_coords':
-                no_coords += 1
-            elif status == 'fossil':
-                fossil += 1
-            elif status == 'duplicate':
-                duplicates += 1
-            elif status == 'updated':
-                duplicates += 1
-                updates += 1
-            elif status == 'non-research':
-                non_research += 1
-            elif status == 'deleted':
-                non_research += 1
-                deleted += 1
+        try:
+            for file_line in reader:
+                # check/add species for current line
+                species_id, species_exists = EBARUtils.checkAddSpecies(species_dict, param_geodatabase,
+                                                                       file_line[field_dict['scientific_name']])
+                # check/add point for current line
+                input_point_id, status = self.CheckAddPoint(id_dict, param_geodatabase, param_dataset_source,
+                                                            input_dataset_id, species_id, file_line, field_dict)
+                # increment/report counts
+                count += 1
+                if count % 1000 == 0:
+                    EBARUtils.displayMessage(messages, 'Processed ' + str(count))
+                if status == 'no_coords':
+                    no_coords += 1
+                elif status == 'fossil':
+                    fossil += 1
+                elif status == 'duplicate':
+                    duplicates += 1
+                elif status == 'updated':
+                    duplicates += 1
+                    updates += 1
+                elif status == 'non-research':
+                    non_research += 1
+                elif status == 'deleted':
+                    non_research += 1
+                    deleted += 1
+        except:
+            # output error messages in exception so that summary gets displayed in finally
+            EBARUtils.displayMessage(messages, '\nERROR processing file row ' + str(count + 1))
+            tb = sys.exc_info()[2]
+            tbinfo = ''
+            for tbitem in traceback.format_tb(tb):
+                tbinfo += tbitem
+            #tbinfo = traceback.format_tb(tb)[0]
+            pymsgs = 'Python ERROR:\nTraceback info:\n' + tbinfo + 'Error Info:\n' + str(sys.exc_info()[1])
+            EBARUtils.displayMessage(messages, pymsgs)
+            arcmsgs = 'ArcPy ERROR:\n' + arcpy.GetMessages(2)
+            EBARUtils.displayMessage(messages, arcmsgs)
+            EBARUtils.displayMessage(messages, '')
 
-        # summary and end time
-        EBARUtils.displayMessage(messages, 'Processed ' + str(count))
-        EBARUtils.displayMessage(messages, 'No coordinates ' + str(no_coords))
-        EBARUtils.displayMessage(messages, 'Fossils ' + str(fossils))
-        EBARUtils.displayMessage(messages, 'Duplicates ' + str(duplicates))
-        EBARUtils.displayMessage(messages, 'Duplicates updated ' + str(updates))
-        EBARUtils.displayMessage(messages, 'Non-research ' + str(non_research))
-        EBARUtils.displayMessage(messages, 'Non-research deleted ' + str(deleted))
-        end_time = datetime.datetime.now()
-        EBARUtils.displayMessage(messages, 'End time: ' + str(end_time))
-        elapsed_time = end_time - start_time
-        EBARUtils.displayMessage(messages, 'Elapsed time: ' + str(elapsed_time))
+        finally:
+            # summary and end time
+            EBARUtils.displayMessage(messages, 'Summary:')
+            EBARUtils.displayMessage(messages, 'Processed ' + str(count))
+            EBARUtils.displayMessage(messages, 'No coordinates ' + str(no_coords))
+            EBARUtils.displayMessage(messages, 'Fossils ' + str(fossils))
+            EBARUtils.displayMessage(messages, 'Duplicates ' + str(duplicates))
+            EBARUtils.displayMessage(messages, 'Duplicates updated ' + str(updates))
+            EBARUtils.displayMessage(messages, 'Non-research ' + str(non_research))
+            EBARUtils.displayMessage(messages, 'Non-research deleted ' + str(deleted))
+            end_time = datetime.datetime.now()
+            EBARUtils.displayMessage(messages, 'End time: ' + str(end_time))
+            elapsed_time = end_time - start_time
+            EBARUtils.displayMessage(messages, 'Elapsed time: ' + str(elapsed_time))
+
         return
 
 
