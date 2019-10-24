@@ -22,7 +22,7 @@ class Toolbox(object):
         self.alias = ''
 
         # List of tool classes associated with this toolbox
-        self.tools = [ImportPoint]
+        self.tools = [ImportPoint, GenerateRangeMap]
 
 
 class ImportPoint(object):
@@ -140,4 +140,73 @@ class ImportPoint(object):
         """The source code of the tool."""
         ipt = ImportPointsTool.ImportPointsTool()
         ipt.RunImportPointsTool(parameters, messages)
+        return
+
+
+class GenerateRangeMap(object):
+    def __init__(self):
+        """Define the tool (tool name is the name of the class)."""
+        self.label = 'Generate Range Map'
+        self.description = 'Generate Range Map for a species from available spatial data'
+        self.canRunInBackground = True
+
+    def getParameterInfo(self):
+        """Define parameter definitions"""
+        # Geodatabase
+        param_geodatabase = arcpy.Parameter(
+            displayName ='Geodatabase',
+            name ='geodatabase',
+            datatype ='DEWorkspace',
+            parameterType ='Required',
+            direction ='Input')
+        param_geodatabase.filter.list = ['Local Database', 'Remote Database']
+
+        # Species
+        param_species = arcpy.Parameter(
+            displayName ='Species Scientific Name',
+            name ='species',
+            datatype ='GPString',
+            parameterType ='Required',
+            direction ='Input')
+
+        # Range Version
+        param_version = arcpy.Parameter(
+            displayName ='Range Version',
+            name ='range_version',
+            datatype ='GPString',
+            parameterType ='Required',
+            direction ='Input')
+        param_version.value = '1.0'
+
+        # Range Stage
+        param_stage = arcpy.Parameter(
+            displayName ='Range Stage',
+            name ='range_stage',
+            datatype ='GPString',
+            parameterType ='Required',
+            direction ='Input')
+        param_stage.filter.list = ['Auto-generated', 'Expert reviewed', 'Published']
+        param_stage.value = 'Auto-generated'
+
+        params = [param_geodatabase, param_species, param_version, param_stage]
+        return params
+
+    def isLicensed(self):
+        """Set whether tool is licensed to execute."""
+        return True
+
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal validation is performed.  This method is " + \
+        "called whenever a parameter has been changed."""
+        return
+
+    def updateMessages(self, parameters):
+        """Modify the messages created by internal validation for each tool parameter.  This method is called " " \
+        "after internal validation."""
+        return
+
+    def execute(self, parameters, messages):
+        """The source code of the tool."""
+        grm = GenerateRangeMapTool.GenerateRangeMapTool()
+        grm.RunGenerateRangeMapTool(parameters, messages)
         return

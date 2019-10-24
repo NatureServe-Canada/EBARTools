@@ -362,7 +362,7 @@ class ImportPointsTool:
         #arcpy.gp.overwriteOutput = True
         if not messages:
             # for debugging, set workspace location
-            arcpy.env.workspace = 'C:/GIS/EBAR/EBAR_outputs.gdb'
+                arcpy.env.workspace = 'C:/GIS/EBAR/EBAR_outputs.gdb'
 
         # make variables for parms
         EBARUtils.displayMessage(messages, 'Processing parameters')
