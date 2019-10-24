@@ -83,7 +83,14 @@ class ImportPoint(object):
             datatype ='GPString',
             parameterType ='Required',
             direction ='Input')
-        param_dataset_source.filter.list = ['GBIF', 'VertNet', 'Ecoengine', 'iNaturalist', 'BISON', 'Canadensys']
+        param_dataset_source.filter.list = ['GBIF',
+                                            'NCC_GBIF',
+                                            'VertNet',
+                                            'Ecoengine',
+                                            'iNaturalist',
+                                            'BISON',
+                                            'Canadensys',
+                                            'NCCEndemics']
 
         # Dataset Type
         param_dataset_type = arcpy.Parameter(

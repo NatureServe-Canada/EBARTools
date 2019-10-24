@@ -193,12 +193,13 @@ class ImportPointsTool:
     def CheckAddPoint(self, id_dict, geodatabase, dataset_source, input_dataset_id, species_id, file_line, field_dict):
         """If point already exists, check if needs update; otherwise, add"""
         # CoordinatesObscured
-        coordinates_obscured = None
+        coordinates_obscured = False
+        #coordinates_obscured = None
         if field_dict['coordinates_obscured']:
             if file_line[field_dict['coordinates_obscured']] in (True, 'TRUE', 'true', 'T', 't', 1):
                 coordinates_obscured = True
-            if file_line[field_dict['coordinates_obscured']] in (False, 'FALSE', 'false', 'F', 'f', 0):
-                coordinates_obscured = False
+            #if file_line[field_dict['coordinates_obscured']] in (False, 'FALSE', 'false', 'F', 'f', 0):
+            #    coordinates_obscured = False
 
         # Geometry/Shape
         input_point = None
@@ -233,7 +234,8 @@ class ImportPointsTool:
         # Accuracy
         accuracy = None
         if (not coordinates_obscured) or private_coords:
-            accuracy = round(float(file_line[field_dict['accuracy']]))
+            if field_dict['accuracy']:
+                accuracy = round(float(file_line[field_dict['accuracy']]))
         else:
             accuracy = EBARUtils.estimateAccuracy(input_point.Y)
 
@@ -269,15 +271,6 @@ class ImportPointsTool:
         if field_dict['basis_of_record']:
             if file_line[field_dict['basis_of_record']] == 'FOSSIL_SPECIMEN':
                 return None, 'fossil'
-
-        # CurrentHistorical (informs SpeciesEcoshape.Presence: C -> Present, U-> Presence Expected, H -> Historical)
-        # [consider evaluating when generating range map instead of during import]
-        #current_historical = 'C'
-        #if max_date:
-        #    if (datetime.datetime.now().year - max_date.year) > 40:
-        #        current_historical = 'H'
-        #else:
-        #    current_historical = 'U'
 
         # grade
         quality_grade = 'research'
@@ -426,15 +419,15 @@ class ImportPointsTool:
 
             #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/' + \
             #    'All_CDN_iNat_Data.csv'
-            param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/' + \
-                'Real_Data/All_CDN_Research_Unobsc_Data_test.csv'
-            param_dataset_name = 'iNaturalist All Canadian Unobscured Research Grade'
-            param_dataset_organization = 'California Academy of Sciences and the National Geographic Society'
-            param_dataset_contact = 'https://www.inaturalist.org/'
-            param_dataset_source = 'iNaturalist'
-            param_dataset_type = 'CSV'
-            param_date_received = 'October 2, 2019'
-            param_restrictions = ''
+            #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/' + \
+            #    'Real_Data/All_CDN_Research_Unobsc_Data_test.csv'
+            #param_dataset_name = 'iNaturalist All Canadian Unobscured Research Grade'
+            #param_dataset_organization = 'California Academy of Sciences and the National Geographic Society'
+            #param_dataset_contact = 'https://www.inaturalist.org/'
+            #param_dataset_source = 'iNaturalist'
+            #param_dataset_type = 'CSV'
+            #param_date_received = 'October 2, 2019'
+            #param_restrictions = ''
 
             #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/bison.csv'
             #param_dataset_name = 'BISON Microseris and Marmota'
@@ -455,14 +448,14 @@ class ImportPointsTool:
             #param_date_received = 'October 9, 2019'
             #param_restrictions = ''
 
-            #param_raw_data_file = 'C:/GIS/EBAR/NCC/NCC_Species_Obs_20190521.csv'
-            #param_dataset_name = 'NCC Endemics'
-            #param_dataset_organization = 'Nature Conservancy of Canada'
-            #param_dataset_contact = 'Andrea Hebb'
-            #param_dataset_source = 'NCCEndemics'
-            #param_dataset_type = 'CSV'
-            #param_date_received = 'October 15, 2019'
-            #param_restrictions = ''
+            param_raw_data_file = 'C:/GIS/EBAR/NCC/NCC_Species_Obs_20190521.csv'
+            param_dataset_name = 'NCC Endemics'
+            param_dataset_organization = 'Nature Conservancy of Canada'
+            param_dataset_contact = 'Andrea Hebb'
+            param_dataset_source = 'NCCEndemics'
+            param_dataset_type = 'CSV'
+            param_date_received = 'October 15, 2019'
+            param_restrictions = ''
 
         # check parameters
         field_dict = gbif_fields
