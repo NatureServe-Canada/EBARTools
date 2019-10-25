@@ -137,17 +137,20 @@ def checkAddSpecies(species_dict, geodatabase, scientific_name):
     """If Scientific Name already in Species table, return id and true; otherwise, add and return id and false"""
     ret_val = None
 
+    # capitalize first letter only
+    cap_name = scientific_name.capitalize()
+
     # existing
-    if scientific_name in species_dict:
-        return species_dict[scientific_name], True
+    if cap_name in species_dict:
+        return species_dict[cap_name], True
 
     # new
     with arcpy.da.InsertCursor(geodatabase + '/Species', ['ScientificName']) as cursor:
-        species_id = cursor.insertRow([scientific_name])
+        species_id = cursor.insertRow([cap_name])
 
     # id of new
     setNewID(geodatabase + '/Species', 'SpeciesID', species_id)
-    species_dict[scientific_name] = species_id
+    species_dict[cap_name] = species_id
     return species_id, False
 
 
