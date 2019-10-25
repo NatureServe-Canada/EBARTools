@@ -16,180 +16,251 @@
 # import Python packages
 import sys
 import traceback
-import EBARUtils
 import arcpy
 import io
 import csv
 import datetime
 #import locale
-
-
-# field mapping dictionaries for data sources
-gbif_fields = {'quality_grade': None,
-               'unique_id': 'gbifID',
-               'uri': 'occurrenceID',
-               'license': 'license',
-               'scientific_name': 'species',
-               'longitude': 'decimalLongitude',
-               'latitude': 'decimalLatitude',
-               'srs': 'geodeticDatum',
-               'coordinates_obscured': None,
-               'private_longitude': None,
-               'private_latitude': None,
-               'accuracy': 'coordinateUncertaintyInMeters',
-               'private_accuracy': None,
-               'year': 'year',
-               'month': 'month',
-               'day': 'day',
-               'date': None,
-               'basis_of_record': 'basisOfRecord',
-               'individual_count': 'individualCount'}
-
-ncc_gbif_fields = {'quality_grade': None,
-                   'unique_id': 'gbifID',
-                   'uri': 'occurrence',
-                   'license': 'license',
-                   'scientific_name': 'species',
-                   'longitude': 'decimalLon',
-                   'latitude': 'decimalLat',
-                   'srs': None,
-                   'coordinates_obscured': None,
-                   'private_longitude': None,
-                   'private_latitude': None,
-                   'accuracy': 'coordinate',
-                   'private_accuracy': None,
-                   'year': 'year_',
-                   'month': 'month_',
-                   'day': 'day_',
-                   'date': 'eventDate',
-                   'basis_of_record': 'basisOfRec',
-                   'individual_count': None}
-
-vertnet_fields = {'quality_grade': None,
-                  'unique_id': 'occurrenceid',
-                  'uri': 'occurrenceid',
-                  'license': 'license',
-                  'scientific_name': 'name',
-                  'longitude': 'longitude',
-                  'latitude': 'latitude',
-                  'srs': 'geodeticdatum',
-                  'coordinates_obscured': None,
-                  'private_longitude': None,
-                  'private_latitude': None,
-                  'accuracy': 'coordinateuncertaintyinmeters',
-                  'private_accuracy': None,
-                  'year': 'year',
-                  'month': 'month',
-                  'day': 'day',
-                  'date': 'eventdate',
-                  'basis_of_record': 'basisofrecord',
-                  'individual_count': 'individualcount'}
-
-ecoengine_fields = {'quality_grade': None,
-                    'unique_id': 'key',
-                    'uri': 'url',
-                    'license': None,
-                    'scientific_name': 'name',
-                    'longitude': 'longitude',
-                    'latitude': 'latitude',
-                    'srs': None,
-                    'coordinates_obscured': None,
-                    'private_longitude': None,
-                    'private_latitude': None,
-                    'accuracy': 'coordinate_uncertainty_in_meters',
-                    'private_accuracy': None,
-                    'year': None,
-                    'month': None,
-                    'day': None,
-                    'date': 'begin_date',
-                    'basis_of_record': 'observation_type',
-                    'individual_count': None}
-
-inaturalist_fields = {'quality_grade': 'quality_grade',
-                      'unique_id': 'id',
-                      'uri': 'url',
-                      'license': 'license',
-                      'scientific_name': 'scientific_name',
-                      'longitude': 'longitude',
-                      'latitude': 'latitude',
-                      'srs': None,
-                      'coordinates_obscured': 'coordinates_obscured',
-                      'private_longitude': 'private_longitude',
-                      'private_latitude': 'private_latitude',
-                      'accuracy': 'positional_accuracy',
-                      'private_accuracy': 'private_positional_accuracy',
-                      'year': None,
-                      'month': None,
-                      'day': None,
-                      'date': 'observed_on',
-                      'basis_of_record': None,
-                      'individual_count': None}
-
-bison_fields = {'quality_grade': None,
-                'unique_id': 'occurrenceID',
-                'uri': None,
-                'license': 'license',
-                'scientific_name': 'name',
-                'longitude': 'longitude',
-                'latitude': 'latitude',
-                'srs': None,
-                'coordinates_obscured': None,
-                'private_longitude': None,
-                'private_latitude': None,
-                'accuracy': None,
-                'private_accuracy': None,
-                'year': 'year',
-                'month': None,
-                'day': None,
-                'date': 'date',
-                'basis_of_record': 'basisOfRecord',
-                'individual_count': None}
-
-canadensys_fields = {'quality_grade': None,
-                     'unique_id': 'occurrenceID',
-                     'uri': None,
-                     'license': 'dcterms:license',
-                     'scientific_name': 'species',
-                     'longitude': 'decimalLongitude',
-                     'latitude': 'decimalLatitude',
-                     'srs': 'verbatimCoordinateSystem',
-                     'coordinates_obscured': None,
-                     'private_longitude': None,
-                     'private_latitude': None,
-                     'accuracy': 'coordinateUncertaintyInMeters',
-                     'private_accuracy': None,
-                     'year': 'year',
-                     'month': 'month',
-                     'day': None,
-                     'date': 'eventDate',
-                     'basis_of_record': 'basisOfRecord',
-                     'individual_count': 'individualCount'}
-
-ncc_endemics_fields = {'quality_grade': None,
-                       'unique_id': 'OBSERVATIO',
-                       'uri': None,
-                       'license': None,
-                       'scientific_name': 'SCIENTIFIC',
-                       'longitude': 'latitude',
-                       'latitude': 'longitude',
-                       'srs': None,
-                       'coordinates_obscured': None,
-                       'private_longitude': None,
-                       'private_latitude': None,
-                       'accuracy': None,
-                       'private_accuracy': None,
-                       'year': 'OBSERVAT_3',
-                       'month': None,
-                       'day': None,
-                       'date': 'OBSERVAT_2',
-                       'basis_of_record': None,
-                       'individual_count': None}
+import EBARUtils
+import PointsFieldMapping
 
 
 class ImportPointsTool:
     """Import point data into the InputDataset and InputPoint tables of the EBAR geodatabase"""
     def __init__(self):
         pass
+
+    def RunImportPointsTool(self, parameters, messages):
+        # debugging/testing
+        #print(locale.getpreferredencoding())
+        #return
+
+        # check out any needed extension licenses
+        #arcpy.CheckOutExtension('Spatial')
+
+        # start time
+        start_time = datetime.datetime.now()
+        EBARUtils.displayMessage(messages, 'Start time: ' + str(start_time))
+
+        # settings
+        #arcpy.gp.overwriteOutput = True
+        if not messages:
+            # for debugging, set workspace location
+                arcpy.env.workspace = 'C:/GIS/EBAR/EBAR_outputs.gdb'
+
+        # make variables for parms
+        EBARUtils.displayMessage(messages, 'Processing parameters')
+        if parameters:
+            # passed from tool user interface
+            param_geodatabase = parameters[0].valueAsText
+            param_raw_data_file = parameters[1].valueAsText
+            param_dataset_name = parameters[2].valueAsText
+            param_dataset_organization = parameters[3].valueAsText
+            param_dataset_contact = parameters[4].valueAsText
+            param_dataset_source = parameters[5].valueAsText
+            param_dataset_type = parameters[6].valueAsText
+            param_date_received = parameters[7].valueAsText
+            param_restrictions = parameters[8].valueAsText
+        else:
+            # for debugging, hard code parameters
+            param_geodatabase = 'C:/GIS/EBAR/EBAR_outputs.gdb'
+
+            #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/gbif_test.csv'
+            #param_dataset_name = 'GBIF test'
+            #param_dataset_organization = 'Global Biodiversity Information Facility'
+            #param_dataset_contact = 'https://www.gbif.org'
+            #param_dataset_source = 'GBIF'
+            #param_dataset_type = 'CSV'
+            #param_date_received = 'September 28, 2019'
+            #param_restrictions = None
+
+            #param_raw_data_file = 'C:/GIS/EBAR/NCC/NCC_Merge_GBIF.csv'
+            #param_dataset_name = 'NCC GBIF Endemics'
+            #param_dataset_organization = 'Global Biodiversity Information Facility'
+            #param_dataset_contact = 'Andrea Hebb'
+            #param_dataset_source = 'NCC_GBIF'
+            #param_dataset_type = 'CSV'
+            #param_date_received = 'October 15, 2019'
+            #param_restrictions = None
+
+            #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/vertnet.csv'
+            #param_dataset_name = 'VerNet Marmot'
+            #param_dataset_organization = 'National Science Foundation'
+            #param_dataset_contact = 'http://vertnet.org/'
+            #param_dataset_source = 'VertNet'
+            #param_dataset_type = 'CSV'
+            #param_date_received = 'September 30, 2019'
+            #param_restrictions = None
+
+            #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/ecoengine.csv'
+            #param_dataset_name = 'Ecoengine Microseris'
+            #param_dataset_organization = 'Berkeley Ecoinformatics Engine'
+            #param_dataset_contact = 'https://ecoengine.berkeley.edu/'
+            #param_dataset_source = 'Ecoengine'
+            #param_dataset_type = 'CSV'
+            #param_date_received = 'September 30, 2019'
+            #param_restrictions = None
+
+            #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/' + \
+            #    'All_CDN_iNat_Data.csv'
+            #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/' + \
+            #    'Real_Data/All_CDN_Research_Unobsc_Data_test.csv'
+            #param_dataset_name = 'iNaturalist All Canadian Unobscured Research Grade'
+            #param_dataset_organization = 'California Academy of Sciences and the National Geographic Society'
+            #param_dataset_contact = 'https://www.inaturalist.org/'
+            #param_dataset_source = 'iNaturalist'
+            #param_dataset_type = 'CSV'
+            #param_date_received = 'October 2, 2019'
+            #param_restrictions = None
+
+            #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/bison.csv'
+            #param_dataset_name = 'BISON Microseris and Marmota'
+            #param_dataset_organization = 'United States Geological Survey'
+            #param_dataset_contact = 'https://bison.usgs.gov/'
+            #param_dataset_source = 'BISON'
+            #param_dataset_type = 'CSV'
+            #param_date_received = 'September 30, 2019'
+            #param_restrictions = None
+
+            #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/' + \
+            #    'Canadensys-records-2019-10-09.csv'
+            #param_dataset_name = 'Canadensys Polygonum'
+            #param_dataset_organization = 'Université de Montréal Biodiversity Centre'
+            #param_dataset_contact = 'http://www.canadensys.net/'
+            #param_dataset_source = 'Canadensys'
+            #param_dataset_type = 'CSV'
+            #param_date_received = 'October 9, 2019'
+            #param_restrictions = None
+
+            #param_raw_data_file = 'C:/GIS/EBAR/NCC/NCC_Species_Obs_20190521.csv'
+            #param_dataset_name = 'NCC Endemics'
+            #param_dataset_organization = 'Nature Conservancy of Canada'
+            #param_dataset_contact = 'Andrea Hebb'
+            #param_dataset_source = 'NCCEndemics'
+            #param_dataset_type = 'CSV'
+            #param_date_received = 'October 15, 2019'
+            #param_restrictions = None
+
+            param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/Real_Data/' + \
+                'Endemics_idigbio_capname.csv'
+            param_dataset_name = 'iDigBio Endemics'
+            param_dataset_organization = 'Integrated Digital Biocollection'
+            param_dataset_contact = 'https://www.idigbio.org/'
+            param_dataset_source = 'iDigBio'
+            param_dataset_type = 'CSV'
+            param_date_received = 'October 15, 2019'
+            param_restrictions = None
+
+        # check parameters
+        if param_dataset_source == 'GBIF':
+            field_dict = PointsFieldMapping.gbif_fields
+        elif param_dataset_source == 'NCC_GBIF':
+            field_dict = PointsFieldMapping.ncc_gbif_fields
+        elif param_dataset_source == 'VertNet':
+            field_dict = PointsFieldMapping.vertnet_fields
+        elif param_dataset_source == 'Ecoengine':
+            field_dict = PointsFieldMapping.ecoengine_fields
+        elif param_dataset_source == 'iNaturalist':
+            field_dict = PointsFieldMapping.inaturalist_fields
+        elif param_dataset_source == 'BISON':
+            field_dict = PointsFieldMapping.bison_fields
+        elif param_dataset_source == 'Canadensys':
+            field_dict = PointsFieldMapping.canadensys_fields
+        elif param_dataset_source == 'NCCEndemics':
+            field_dict = PointsFieldMapping.ncc_endemics_fields
+        elif param_dataset_source == 'iDigBio':
+            field_dict = PointsFieldMapping.idigbio_fields
+
+        # check/add InputDataset row
+        dataset = param_dataset_name + ', ' + param_dataset_source + ', ' + str(param_date_received)
+        EBARUtils.displayMessage(messages, 'Checking for dataset [' + dataset + '] and adding if new')
+        input_dataset_id, dataset_exists = EBARUtils.checkAddInputDataset(param_geodatabase,
+                                                                          param_dataset_name,
+                                                                          param_dataset_organization,
+                                                                          param_dataset_contact,
+                                                                          param_dataset_source,
+                                                                          param_dataset_type,
+                                                                          param_date_received,
+                                                                          param_restrictions)
+        EBARUtils.setNewID(param_geodatabase + '/InputDataset', 'InputDatasetID', input_dataset_id)
+
+        # read existing species into dict
+        EBARUtils.displayMessage(messages, 'Reading existing species')
+        species_dict = EBARUtils.readSpecies(param_geodatabase)
+
+        # read existing unique IDs into dict
+        EBARUtils.displayMessage(messages, 'Reading existing unique IDs')
+        id_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, param_dataset_source)
+
+        # try to open data file as a csv
+        infile = io.open(param_raw_data_file, 'r', encoding='mbcs') # mbcs encoding is Windows ANSI
+        reader = csv.DictReader(infile)
+
+        # process all file lines
+        EBARUtils.displayMessage(messages, 'Processing file lines')
+        count = 0
+        no_coords = 0
+        fossils = 0
+        duplicates = 0
+        updates = 0
+        non_research = 0
+        deleted = 0
+        try:
+            for file_line in reader:
+                # check/add species for current line
+                species_id, species_exists = EBARUtils.checkAddSpecies(species_dict, param_geodatabase,
+                                                                       file_line[field_dict['scientific_name']])
+                # check/add point for current line
+                input_point_id, status = self.CheckAddPoint(id_dict, param_geodatabase, param_dataset_source,
+                                                            input_dataset_id, species_id, file_line, field_dict)
+                # increment/report counts
+                count += 1
+                if count % 1000 == 0:
+                    EBARUtils.displayMessage(messages, 'Processed ' + str(count))
+                if status == 'no_coords':
+                    no_coords += 1
+                elif status == 'fossil':
+                    fossil += 1
+                elif status == 'duplicate':
+                    duplicates += 1
+                elif status == 'updated':
+                    duplicates += 1
+                    updates += 1
+                elif status == 'non-research':
+                    non_research += 1
+                elif status == 'deleted':
+                    non_research += 1
+                    deleted += 1
+        except:
+            # output error messages in exception so that summary gets displayed in finally
+            EBARUtils.displayMessage(messages, '\nERROR processing file row ' + str(count + 1))
+            tb = sys.exc_info()[2]
+            tbinfo = ''
+            for tbitem in traceback.format_tb(tb):
+                tbinfo += tbitem
+            #tbinfo = traceback.format_tb(tb)[0]
+            pymsgs = 'Python ERROR:\nTraceback info:\n' + tbinfo + 'Error Info:\n' + str(sys.exc_info()[1])
+            EBARUtils.displayMessage(messages, pymsgs)
+            arcmsgs = 'ArcPy ERROR:\n' + arcpy.GetMessages(2)
+            EBARUtils.displayMessage(messages, arcmsgs)
+            EBARUtils.displayMessage(messages, '')
+
+        finally:
+            # summary and end time
+            EBARUtils.displayMessage(messages, 'Summary:')
+            EBARUtils.displayMessage(messages, 'Processed ' + str(count))
+            EBARUtils.displayMessage(messages, 'No coordinates ' + str(no_coords))
+            EBARUtils.displayMessage(messages, 'Fossils ' + str(fossils))
+            EBARUtils.displayMessage(messages, 'Duplicates ' + str(duplicates))
+            EBARUtils.displayMessage(messages, 'Duplicates updated ' + str(updates))
+            EBARUtils.displayMessage(messages, 'Non-research ' + str(non_research))
+            EBARUtils.displayMessage(messages, 'Non-research deleted ' + str(deleted))
+            end_time = datetime.datetime.now()
+            EBARUtils.displayMessage(messages, 'End time: ' + str(end_time))
+            elapsed_time = end_time - start_time
+            EBARUtils.displayMessage(messages, 'Elapsed time: ' + str(elapsed_time))
+
+        return
 
     def CheckAddPoint(self, id_dict, geodatabase, dataset_source, input_dataset_id, species_id, file_line, field_dict):
         """If point already exists, check if needs update; otherwise, add"""
@@ -351,225 +422,6 @@ class ImportPointsTool:
             EBARUtils.setNewID(geodatabase + '/InputPoint', 'InputPointID', input_point_id)
             id_dict[str(file_line[field_dict['unique_id']])] = input_point_id
             return input_point_id, 'new'
-
-    def RunImportPointsTool(self, parameters, messages):
-        # debugging/testing
-        #print(locale.getpreferredencoding())
-        #return
-
-        # check out any needed extension licenses
-        #arcpy.CheckOutExtension('Spatial')
-
-        # start time
-        start_time = datetime.datetime.now()
-        EBARUtils.displayMessage(messages, 'Start time: ' + str(start_time))
-
-        # settings
-        #arcpy.gp.overwriteOutput = True
-        if not messages:
-            # for debugging, set workspace location
-                arcpy.env.workspace = 'C:/GIS/EBAR/EBAR_outputs.gdb'
-
-        # make variables for parms
-        EBARUtils.displayMessage(messages, 'Processing parameters')
-        if parameters:
-            # passed from tool user interface
-            param_geodatabase = parameters[0].valueAsText
-            param_raw_data_file = parameters[1].valueAsText
-            param_dataset_name = parameters[2].valueAsText
-            param_dataset_organization = parameters[3].valueAsText
-            param_dataset_contact = parameters[4].valueAsText
-            param_dataset_source = parameters[5].valueAsText
-            param_dataset_type = parameters[6].valueAsText
-            param_date_received = parameters[7].valueAsText
-            param_restrictions = parameters[8].valueAsText
-        else:
-            # for debugging, hard code parameters
-            param_geodatabase = 'C:/GIS/EBAR/EBAR_outputs.gdb'
-
-            param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/gbif_test.csv'
-            param_dataset_name = 'GBIF test'
-            param_dataset_organization = 'Global Biodiversity Information Facility'
-            param_dataset_contact = 'https://www.gbif.org'
-            param_dataset_source = 'GBIF'
-            param_dataset_type = 'CSV'
-            param_date_received = 'September 28, 2019'
-            param_restrictions = ''
-
-            #param_raw_data_file = 'C:/GIS/EBAR/NCC/NCC_Merge_GBIF.csv'
-            #param_dataset_name = 'NCC GBIF Endemics'
-            #param_dataset_organization = 'Global Biodiversity Information Facility'
-            #param_dataset_contact = 'Andrea Hebb'
-            #param_dataset_source = 'NCC_GBIF'
-            #param_dataset_type = 'CSV'
-            #param_date_received = 'October 15, 2019'
-            #param_restrictions = ''
-
-            #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/vertnet.csv'
-            #param_dataset_name = 'VerNet Marmot'
-            #param_dataset_organization = 'National Science Foundation'
-            #param_dataset_contact = 'http://vertnet.org/'
-            #param_dataset_source = 'VertNet'
-            #param_dataset_type = 'CSV'
-            #param_date_received = 'September 30, 2019'
-            #param_restrictions = ''
-
-            #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/ecoengine.csv'
-            #param_dataset_name = 'Ecoengine Microseris'
-            #param_dataset_organization = 'Berkeley Ecoinformatics Engine'
-            #param_dataset_contact = 'https://ecoengine.berkeley.edu/'
-            #param_dataset_source = 'Ecoengine'
-            #param_dataset_type = 'CSV'
-            #param_date_received = 'September 30, 2019'
-            #param_restrictions = ''
-
-            #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/' + \
-            #    'All_CDN_iNat_Data.csv'
-            #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/' + \
-            #    'Real_Data/All_CDN_Research_Unobsc_Data_test.csv'
-            #param_dataset_name = 'iNaturalist All Canadian Unobscured Research Grade'
-            #param_dataset_organization = 'California Academy of Sciences and the National Geographic Society'
-            #param_dataset_contact = 'https://www.inaturalist.org/'
-            #param_dataset_source = 'iNaturalist'
-            #param_dataset_type = 'CSV'
-            #param_date_received = 'October 2, 2019'
-            #param_restrictions = ''
-
-            #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/bison.csv'
-            #param_dataset_name = 'BISON Microseris and Marmota'
-            #param_dataset_organization = 'United States Geological Survey'
-            #param_dataset_contact = 'https://bison.usgs.gov/'
-            #param_dataset_source = 'BISON'
-            #param_dataset_type = 'CSV'
-            #param_date_received = 'September 30, 2019'
-            #param_restrictions = ''
-
-            #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/' + \
-            #    'Canadensys-records-2019-10-09.csv'
-            #param_dataset_name = 'Canadensys Polygonum'
-            #param_dataset_organization = 'Université de Montréal Biodiversity Centre'
-            #param_dataset_contact = 'http://www.canadensys.net/'
-            #param_dataset_source = 'Canadensys'
-            #param_dataset_type = 'CSV'
-            #param_date_received = 'October 9, 2019'
-            #param_restrictions = ''
-
-            #param_raw_data_file = 'C:/GIS/EBAR/NCC/NCC_Species_Obs_20190521.csv'
-            #param_dataset_name = 'NCC Endemics'
-            #param_dataset_organization = 'Nature Conservancy of Canada'
-            #param_dataset_contact = 'Andrea Hebb'
-            #param_dataset_source = 'NCCEndemics'
-            #param_dataset_type = 'CSV'
-            #param_date_received = 'October 15, 2019'
-            #param_restrictions = ''
-
-        # check parameters
-        field_dict = gbif_fields
-        if param_dataset_source == 'NCC_GBIF':
-            field_dict = ncc_gbif_fields
-        elif param_dataset_source == 'VertNet':
-            field_dict = vertnet_fields
-        elif param_dataset_source == 'Ecoengine':
-            field_dict = ecoengine_fields
-        elif param_dataset_source == 'iNaturalist':
-            field_dict = inaturalist_fields
-        elif param_dataset_source == 'BISON':
-            field_dict = bison_fields
-        elif param_dataset_source == 'Canadensys':
-            field_dict = canadensys_fields
-        if param_dataset_source == 'NCCEndemics':
-            field_dict = ncc_endemics_fields
-
-        # check/add InputDataset row
-        dataset = param_dataset_name + ', ' + param_dataset_source + ', ' + str(param_date_received)
-        EBARUtils.displayMessage(messages, 'Checking for dataset [' + dataset + '] and adding if new')
-        input_dataset_id, dataset_exists = EBARUtils.checkAddInputDataset(param_geodatabase,
-                                                                          param_dataset_name,
-                                                                          param_dataset_organization,
-                                                                          param_dataset_contact,
-                                                                          param_dataset_source,
-                                                                          param_dataset_type,
-                                                                          param_date_received,
-                                                                          param_restrictions)
-        EBARUtils.setNewID(param_geodatabase + '/InputDataset', 'InputDatasetID', input_dataset_id)
-
-        # read existing species into dict
-        EBARUtils.displayMessage(messages, 'Reading existing species')
-        species_dict = EBARUtils.readSpecies(param_geodatabase)
-
-        # read existing unique IDs into dict
-        EBARUtils.displayMessage(messages, 'Reading existing unique IDs')
-        id_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, param_dataset_source)
-
-        # try to open data file as a csv
-        infile = io.open(param_raw_data_file, 'r', encoding='mbcs') # mbcs encoding is Windows ANSI
-        reader = csv.DictReader(infile)
-
-        # process all file lines
-        EBARUtils.displayMessage(messages, 'Processing file lines')
-        count = 0
-        no_coords = 0
-        fossils = 0
-        duplicates = 0
-        updates = 0
-        non_research = 0
-        deleted = 0
-        try:
-            for file_line in reader:
-                # check/add species for current line
-                species_id, species_exists = EBARUtils.checkAddSpecies(species_dict, param_geodatabase,
-                                                                       file_line[field_dict['scientific_name']])
-                # check/add point for current line
-                input_point_id, status = self.CheckAddPoint(id_dict, param_geodatabase, param_dataset_source,
-                                                            input_dataset_id, species_id, file_line, field_dict)
-                # increment/report counts
-                count += 1
-                if count % 1000 == 0:
-                    EBARUtils.displayMessage(messages, 'Processed ' + str(count))
-                if status == 'no_coords':
-                    no_coords += 1
-                elif status == 'fossil':
-                    fossil += 1
-                elif status == 'duplicate':
-                    duplicates += 1
-                elif status == 'updated':
-                    duplicates += 1
-                    updates += 1
-                elif status == 'non-research':
-                    non_research += 1
-                elif status == 'deleted':
-                    non_research += 1
-                    deleted += 1
-        except:
-            # output error messages in exception so that summary gets displayed in finally
-            EBARUtils.displayMessage(messages, '\nERROR processing file row ' + str(count + 1))
-            tb = sys.exc_info()[2]
-            tbinfo = ''
-            for tbitem in traceback.format_tb(tb):
-                tbinfo += tbitem
-            #tbinfo = traceback.format_tb(tb)[0]
-            pymsgs = 'Python ERROR:\nTraceback info:\n' + tbinfo + 'Error Info:\n' + str(sys.exc_info()[1])
-            EBARUtils.displayMessage(messages, pymsgs)
-            arcmsgs = 'ArcPy ERROR:\n' + arcpy.GetMessages(2)
-            EBARUtils.displayMessage(messages, arcmsgs)
-            EBARUtils.displayMessage(messages, '')
-
-        finally:
-            # summary and end time
-            EBARUtils.displayMessage(messages, 'Summary:')
-            EBARUtils.displayMessage(messages, 'Processed ' + str(count))
-            EBARUtils.displayMessage(messages, 'No coordinates ' + str(no_coords))
-            EBARUtils.displayMessage(messages, 'Fossils ' + str(fossils))
-            EBARUtils.displayMessage(messages, 'Duplicates ' + str(duplicates))
-            EBARUtils.displayMessage(messages, 'Duplicates updated ' + str(updates))
-            EBARUtils.displayMessage(messages, 'Non-research ' + str(non_research))
-            EBARUtils.displayMessage(messages, 'Non-research deleted ' + str(deleted))
-            end_time = datetime.datetime.now()
-            EBARUtils.displayMessage(messages, 'End time: ' + str(end_time))
-            elapsed_time = end_time - start_time
-            EBARUtils.displayMessage(messages, 'Elapsed time: ' + str(elapsed_time))
-
-        return
 
 
 # controlling process

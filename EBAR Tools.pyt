@@ -13,6 +13,8 @@
 # import python packages
 import arcpy
 import ImportPointsTool
+import datetime
+import locale
 
 
 class Toolbox(object):
@@ -90,7 +92,8 @@ class ImportPoint(object):
                                             'iNaturalist',
                                             'BISON',
                                             'Canadensys',
-                                            'NCCEndemics']
+                                            'NCCEndemics',
+                                            'iDigBio']
 
         # Dataset Type
         param_dataset_type = arcpy.Parameter(
@@ -108,6 +111,8 @@ class ImportPoint(object):
             datatype ='GPDate',
             parameterType ='Required',
             direction ='Input')
+        locale.setlocale(locale.LC_ALL, '')
+        param_date_received.value = datetime.datetime.now().strftime('%x')
 
         # Dataset Restrictions
         param_dataset_restrictions = arcpy.Parameter(

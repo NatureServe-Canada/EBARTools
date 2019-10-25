@@ -122,7 +122,6 @@ def checkAddField(table, field_name, field_type):
     arcpy.AddField_management(table, field_name, field_type)
     return False
 
-
 def readSpecies(geodatabase):
     """read existing species into dict and return"""
     species_dict = {}

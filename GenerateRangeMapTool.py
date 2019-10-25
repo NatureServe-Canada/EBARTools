@@ -4,9 +4,8 @@
 # Credits: Randal Greene, Christine Terwissen
 # © NatureServe Canada 2019 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
-# Program: ImportPointsTool.py
-# ArcGIS Python tool for importing point data into the
-# InputDataset and InputPoint tables of the EBAR geodatabase
+# Program: GenerateRangeMapTool.py
+# ArcGIS Python tool for generating EBAR range maps from spatial data
 
 # Notes:
 # - Normally called from EBAR Tools.pyt, unless doing interactive debugging
