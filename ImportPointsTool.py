@@ -294,7 +294,7 @@ class ImportPointsTool:
             # assume WGS84 if not provided
             srs = EBARUtils.srs_dict['WGS84']
             if field_dict['srs']:
-                if file_line[field_dict['srs']] not in ('unknown', ''):
+                if file_line[field_dict['srs']] not in ('unknown', 'not recorded', ''):
                     srs = EBARUtils.srs_dict[file_line[field_dict['srs']]]
             input_geometry = arcpy.PointGeometry(input_point, arcpy.SpatialReference(srs))
             output_geometry = input_geometry.projectAs(

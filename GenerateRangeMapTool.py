@@ -209,23 +209,38 @@ def GetBuffer(accuracy):
                     del row
         if not input_found:
             EBARUtils.displayMessage(messages, 'WARNING: No inputs/buffers overlap ecoshapes')
+            # terminate
             return
         EBARUtils.displayMessage(messages, 'Range Map Ecoshape records created')
+
+        # get ecoshape input counts by dataset
+        if arcpy.Exists('TempEcoshapeCountByDataset'):
+            arcpy.Delete_management('TempEcoshapeCountByDataset')
+        arcpy.Statistics_analysis('TempPairwiseIntersect', 'TempEcoshapeCountByDataset', [['InputPointID', 'COUNT']],
+                                  'EcoshapeID', 'InputDatasetID.DatasetSource')
+        EBARUtils.displayMessage(messages, 'Ecoshape input counts by Dataset determined')
+
+        # create RangeMapEcoshapeInputDataset records based on summary
+        ecoshape_summary = ''
+        with arcpy.da.InsertCursor(param_geodatabase + '\RangeMapEcoshapeInputDataset',
+                                   ['InputDatasetID', 'InputDataSummary']) as insert_cursor:
+            with arcpy.da.SearchCursor(param_geodatabase + '\RangeMapEcoshape',)
+            with arcpy.da.SearchCursor('TempEcoshapeCountByDataset',
+                                       ['EcoshapeID', 'InputDatasetID', 'FREQUENCY']) as search_cursor:
+                for row in EBARUtils.searchCursor(search_cursor):
+                    insert_cursor.InsertRow([row['])
 
         # get ecoshape input counts by source
         if arcpy.Exists('TempEcoshapeCountBySource'):
             arcpy.Delete_management('TempEcoshapeCountBySource')
         arcpy.MakeTableView_management('TempPairwiseIntersect', 'temp_pairwise_view')
         arcpy.AddJoin_management('temp_pairwise_view', 'InputDatasetID', 'InputDataset', 'InputDatasetID')
-        arcpy.Statistics_analysis('TempPairwiseIntersect', 'TempEcoshapeCountBySource', [['InputPointID', 'COUNT']],
+        arcpy.Statistics_analysis('temp_pairwise_view', 'TempEcoshapeCountBySource', [['InputPointID', 'COUNT']],
                                   'EcoshapeID', 'InputDataset.DatasetSource')
+        arcpy.RemoveJoin_management('temp_pairwise_view', 'InputDataset')
         EBARUtils.displayMessage(messages, 'Ecoshape input counts by Dataset Source determined')
 
-        # create RangeMapEcoshapeInputDataset records based on summary and combine into overall summary
-        ecoshape_summary = ''
-        with arcpy.da.InsertCursor(param_geodatabase + '\RangeMapEcoshapeInputDataset',
-                                   ['RangeMapID', 'EcoshapeID', 'Presence']) as insert_cursor:
-            pass
+        # get overall input counts by source
 
         # update range map ecoshapes
         with arcpy.da.UpdateCursor(param_geodatabase + '\RangeMapEcoshape',
