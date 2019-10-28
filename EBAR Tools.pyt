@@ -13,6 +13,7 @@
 # import python packages
 import arcpy
 import ImportPointsTool
+import ImportPolygonsTool
 import GenerateRangeMapTool
 import datetime
 import locale
@@ -25,10 +26,10 @@ class Toolbox(object):
         self.alias = ''
 
         # List of tool classes associated with this toolbox
-        self.tools = [ImportPoint, GenerateRangeMap]
+        self.tools = [ImportPoints, ImportPolygons, GenerateRangeMap]
 
 
-class ImportPoint(object):
+class ImportPoints(object):
     def __init__(self):
         """Define the tool (tool name is the name of the class)."""
         self.label = 'Import Points'
@@ -146,6 +147,122 @@ class ImportPoint(object):
         """The source code of the tool."""
         ipt = ImportPointsTool.ImportPointsTool()
         ipt.RunImportPointsTool(parameters, messages)
+        return
+
+
+class ImportPolygons(object):
+    def __init__(self):
+        """Define the tool (tool name is the name of the class)."""
+        self.label = 'Import Polygons'
+        self.description = 'Imports polygon data into the InputDataset and InputPolygon tables of the EBAR geodatabase'
+        self.canRunInBackground = True
+
+    def getParameterInfo(self):
+        """Define parameter definitions"""
+        # Geodatabase
+        param_geodatabase = arcpy.Parameter(
+            displayName ='Geodatabase',
+            name ='geodatabase',
+            datatype ='DEWorkspace',
+            parameterType ='Required',
+            direction ='Input')
+        param_geodatabase.filter.list = ['Local Database', 'Remote Database']
+
+        # Feature Class to Import
+        param_import_feature_class = arcpy.Parameter(
+            displayName ='Import Feature Class',
+            name ='import_feature_class',
+            datatype ='GPFeatureLayer',
+            parameterType ='Required',
+            direction ='Input')
+        param_import_feature_class.filter.list = ['Polygon']
+
+        # Dataset Name
+        param_dataset_name = arcpy.Parameter(
+            displayName ='Dataset Name',
+            name ='dataset_name',
+            datatype ='GPString',
+            parameterType ='Required',
+            direction ='Input')
+        
+        # Dataset Organization
+        param_dataset_organization = arcpy.Parameter(
+            displayName ='Dataset Organization',
+            name ='dataset_organization',
+            datatype ='GPString',
+            parameterType ='Required',
+            direction ='Input')
+        
+        # Dataset Contact
+        param_dataset_contact = arcpy.Parameter(
+            displayName ='Dataset Contact',
+            name ='dataset_contact',
+            datatype ='GPString',
+            parameterType ='Required',
+            direction ='Input')
+        
+        # Dataset Source
+        param_dataset_source = arcpy.Parameter(
+            displayName ='Dataset Source',
+            name ='dataset_source',
+            datatype ='GPString',
+            parameterType ='Required',
+            direction ='Input')
+        param_dataset_source.filter.list = ['ECCC Critical Habitat',
+                                            'NCC Literature']
+
+        # Dataset Type
+        param_dataset_type = arcpy.Parameter(
+            displayName ='Dataset Type',
+            name ='dataset_type',
+            datatype ='GPString',
+            parameterType ='Required',
+            direction ='Input')
+        param_dataset_type.filter.list = ['Critical Habitat',
+                                          'Element Occurrence',
+                                          'Range Estimate']
+
+        # Date Received
+        param_date_received = arcpy.Parameter(
+            displayName ='Date Received',
+            name ='date_received',
+            datatype ='GPDate',
+            parameterType ='Required',
+            direction ='Input')
+        locale.setlocale(locale.LC_ALL, '')
+        param_date_received.value = datetime.datetime.now().strftime('%x')
+
+        # Dataset Restrictions
+        param_dataset_restrictions = arcpy.Parameter(
+            displayName ='Dataset Restrictions',
+            name ='dataset_restrictions',
+            datatype ='GPString',
+            parameterType ='Optional',
+            direction ='Input')
+        
+        params = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_organization,
+                  param_dataset_contact, param_dataset_source, param_dataset_type, param_date_received,
+                  param_dataset_restrictions]
+        return params
+
+    def isLicensed(self):
+        """Set whether tool is licensed to execute."""
+        return True
+
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal validation is performed.  This method is " + \
+        "called whenever a parameter has been changed."""
+        return
+
+    def updateMessages(self, parameters):
+        """Modify the messages created by internal validation for each tool parameter.  This method is called " " \
+        "after internal validation."""
+        return
+
+    def execute(self, parameters, messages):
+        """The source code of the tool."""
+        ipt = ImportPolygonsTool.ImportPolygonsTool()
+        ipt.RunImportPolygonsTool(parameters, messages)
         return
 
 

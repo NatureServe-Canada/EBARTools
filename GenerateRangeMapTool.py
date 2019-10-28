@@ -41,6 +41,7 @@ class GenerateRangeMapTool:
         #arcpy.gp.overwriteOutput = True
         # buffer size in metres, used if Accuracy not provided
         default_buffer_size = 10
+        max_buffer_size = 100000
         # proportion of point buffer that must be within ecoshape to get Present; otherwise gets Presence Expected
         buffer_percent_overlap = 0.6
         if not messages:
@@ -58,7 +59,7 @@ class GenerateRangeMapTool:
         else:
             # for debugging, hard code parameters
             param_geodatabase = 'C:/GIS/EBAR/EBAR_outputs.gdb'
-            param_species = 'Sayornis phoebe'
+            param_species = 'Hyla versicolor'
             param_version = '1.0'
             param_stage = 'Auto-generated'
 
@@ -118,7 +119,7 @@ class GenerateRangeMapTool:
 
             # check for reviews in progress, and if so terminate
             arcpy.AddJoin_management('range_map_view', 'Review.ReviewID',
-                                        param_geodatabase + '/RangeMapEcoshapeReview', 'ReviewID', 'KEEP_COMMON')
+                                     param_geodatabase + '/RangeMapEcoshapeReview', 'ReviewID', 'KEEP_COMMON')
             with arcpy.da.SearchCursor('range_map_view',
                                        ['RangeMapEcoshapeReview.RangeMapEcoshapeReviewID']) as cursor:
                 for row in EBARUtils.searchCursor(cursor):
@@ -136,14 +137,16 @@ class GenerateRangeMapTool:
             arcpy.RemoveJoin_management('range_map_view', 'ReviewRequest')
 
             # no reviews completed or in progress, so delete any existing RangeMapEcoshape(InputDataset) records
+            EBARUtils.displayMessage(messages, 'Range Map already exists with but with no review(s) completed or in '
+                                               'progress, so existing Range Map Ecoshapes will be deleted')
             with arcpy.da.SearchCursor(param_geodatabase + '/RangeMapEcoshape', ['RangeMapEcoshapeID'],
                                        'RangeMapID = ' + str(range_map_id)) as rme_cursor:
                 for rme_row in EBARUtils.searchCursor(rme_cursor):
                     rmeid = False
                     with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshapeInputDataset',
                                                ['RangeMapEcoshpInputDatasetID'],
-                                               'RangeMapEcoshapeID = ' + \
-                                                   str(rme_row['RangeMapEcoshapeID'])) as rmeid_cursor:
+                                                'RangeMapEcoshapeID = ' + \
+                                                str(rme_row['RangeMapEcoshapeID'])) as rmeid_cursor:
                         for rmeid_row in rmeid_cursor:
                             rmeid_cursor.deleteRow()
                             rmeid = True
@@ -157,16 +160,14 @@ class GenerateRangeMapTool:
                     range_map_ecoshape = True
                 if range_map_ecoshape:
                     del rme_row
-                    EBARUtils.displayMessage(messages,
-                                             'Range Map already exists with but with no review(s) completed or in '
-                                             'progress, so existing Range Map Ecoshapes deleted')
+                    EBARUtils.displayMessage(messages, 'Existing Range Map Ecoshapes deleted')
 
         else:
             # create RangeMap record
             with arcpy.da.InsertCursor('range_map_view', ['PrimarySpeciesID', 'RangeVersion', 'RangeStage']) as cursor:
                 range_map_id = cursor.insertRow([species_id, param_version, param_stage])
             EBARUtils.setNewID(param_geodatabase + '/RangeMap', 'RangeMapID', 'OBJECTID = ' + str(range_map_id))
-            EBARUtils.displayMessage(messages, 'Range Map created')
+            EBARUtils.displayMessage(messages, 'Range Map record created')
 
         # select all points for species and buffer
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/InputPoint', 'input_point_layer')
@@ -178,6 +179,8 @@ def GetBuffer(accuracy):
     ret = accuracy
     if not ret:
         ret = ''' + str(default_buffer_size) + '''
+    if ret > ''' + str(max_buffer_size) + ''':
+        ret = ''' + str(max_buffer_size) + '''
     return ret'''
         arcpy.CalculateField_management('input_point_layer', 'buffer', 'GetBuffer(!Accuracy!)', 'PYTHON3', code_block)
         if arcpy.Exists('TempPointBuffer'):
