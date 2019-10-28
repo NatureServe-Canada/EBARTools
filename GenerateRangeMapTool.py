@@ -43,7 +43,9 @@ class GenerateRangeMapTool:
         default_buffer_size = 10
         max_buffer_size = 100000
         # proportion of point buffer that must be within ecoshape to get Present; otherwise gets Presence Expected
-        buffer_percent_overlap = 0.6
+        buffer_proportion_overlap = 0.6
+        # number of years beyond which Presence gets set to Historical
+        age_for_historical = 40
         if not messages:
             # for debugging, set workspace location
             arcpy.env.workspace = 'C:/GIS/EBAR/EBAR_outputs.gdb'
@@ -59,7 +61,7 @@ class GenerateRangeMapTool:
         else:
             # for debugging, hard code parameters
             param_geodatabase = 'C:/GIS/EBAR/EBAR_outputs.gdb'
-            param_species = 'Hyla versicolor'
+            param_species = 'Canis lupus lycaon'
             param_version = '1.0'
             param_stage = 'Auto-generated'
 
@@ -216,20 +218,23 @@ def GetBuffer(accuracy):
         # get max buffer proportion per ecoshape
         if arcpy.Exists('TempEcoshapeMaxBuffer'):
             arcpy.Delete_management('TempEcoshapeMaxBuffer')
-        arcpy.Statistics_analysis('pairwise_intersect_layer', 'TempEcoshapeMaxBuffer', [['BufferPropn', 'MAX']],
-                                  'EcoshapeID')
-        EBARUtils.displayMessage(messages, 'Maximum Buffer Proportion per Ecoshape determined')
+        arcpy.Statistics_analysis('pairwise_intersect_layer', 'TempEcoshapeMaxBuffer',
+                                  [['BufferPropn', 'MAX'], ['MaxDate', 'MAX']], 'EcoshapeID')
+        EBARUtils.displayMessage(messages, 'Maximum Buffer Proportion and Date per Ecoshape determined')
 
-        # create RangeMapEcoshape records based on percentage overlap rule
+        # create RangeMapEcoshape records based on proportion overlap and max date
         with arcpy.da.InsertCursor(param_geodatabase + '/RangeMapEcoshape',
                                    ['RangeMapID', 'EcoshapeID', 'Presence']) as insert_cursor:
             input_found = False
-            with arcpy.da.SearchCursor('TempEcoshapeMaxBuffer', ['EcoshapeID', 'MAX_BufferPropn']) as search_cursor:
+            with arcpy.da.SearchCursor('TempEcoshapeMaxBuffer',
+                                       ['EcoshapeID', 'MAX_BufferPropn', 'MAX_MaxDate']) as search_cursor:
                 for row in EBARUtils.searchCursor(search_cursor):
                     input_found = True
-                    presence = 'X'
-                    if row['MAX_BufferPropn'] >= buffer_percent_overlap:
-                        presence = 'P'
+                    presence = 'H'
+                    if (datetime.datetime.now().year - row['MAX_MaxDate'].year) <= age_for_historical:
+                        presence = 'X'
+                        if row['MAX_BufferPropn'] >= buffer_proportion_overlap:
+                            presence = 'P'
                     insert_cursor.insertRow([range_map_id, row['EcoshapeID'], presence])
                 if input_found:
                     del row
