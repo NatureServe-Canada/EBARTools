@@ -13,6 +13,7 @@
 # import python packages
 import arcpy
 import ImportPointsTool
+import GenerateRangeMapTool
 import datetime
 import locale
 

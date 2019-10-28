@@ -58,7 +58,7 @@ class GenerateRangeMapTool:
         else:
             # for debugging, hard code parameters
             param_geodatabase = 'C:/GIS/EBAR/EBAR_outputs.gdb'
-            param_species = 'Marmota vancouverensis'
+            param_species = 'Sayornis phoebe'
             param_version = '1.0'
             param_stage = 'Auto-generated'
 
@@ -190,6 +190,7 @@ def GetBuffer(accuracy):
             arcpy.Delete_management('TempPairwiseIntersect')
         arcpy.PairwiseIntersect_analysis(['TempPointBuffer',  param_geodatabase + '/Ecoshape'],
                                          'TempPairwiseIntersect')
+        arcpy.AddIndex_management('TempPairwiseIntersect', 'InputDatasetID', 'idid_idx')
         arcpy.MakeFeatureLayer_management('TempPairwiseIntersect', 'pairwise_intersect_layer')
         EBARUtils.displayMessage(messages, 'Buffered Points pairwise intersected with Ecoshapes')
 
@@ -254,7 +255,7 @@ def GetBuffer(accuracy):
                     with arcpy.da.SearchCursor('TempEcoshapeCountByDataset',
                                                ['EcoshapeID', 'InputDatasetID', 'FREQUENCY']) as search_cursor:
                         for row in EBARUtils.searchCursor(search_cursor):
-                            summary = str(row['FREQUENCY']) + ' input records'
+                            summary = str(row['FREQUENCY']) + ' input record(s)'
                             insert_cursor.insertRow([rme_row['RangeMapEcoshapeID'], row['InputDatasetID'], summary])
                         del row
                 del rme_row
@@ -270,7 +271,8 @@ def GetBuffer(accuracy):
         # get ecoshape input counts by source
         if arcpy.Exists('TempEcoshapeCountBySource'):
             arcpy.Delete_management('TempEcoshapeCountBySource')
-        arcpy.AddJoin_management('pairwise_intersect_layer', 'InputDatasetID', 'InputDataset', 'InputDatasetID')
+        arcpy.AddJoin_management('pairwise_intersect_layer', 'InputDatasetID',
+                                 param_geodatabase + '/InputDataset', 'InputDatasetID')
         arcpy.Statistics_analysis('pairwise_intersect_layer', 'TempEcoshapeCountBySource', [['InputPointID', 'COUNT']],
                                   ['EcoshapeID', 'InputDataset.DatasetSource'])
         EBARUtils.displayMessage(messages, 'Ecoshape input counts by Dataset Source determined')
@@ -285,7 +287,7 @@ def GetBuffer(accuracy):
                     summary = ''
                     for search_row in EBARUtils.searchCursor(search_cursor):
                         summary += search_row['InputDataset_DatasetSource'] + ': ' + str(search_row['FREQUENCY']) + \
-                            ' input records\n'
+                            ' input record(s)\n'
                     del search_row
                 update_cursor.updateRow([update_row['EcoshapeID'], summary])
             del update_row
@@ -308,7 +310,7 @@ def GetBuffer(accuracy):
                     summary = ''
                     for search_row in EBARUtils.searchCursor(search_cursor):
                         summary += search_row['InputDataset_DatasetSource'] + ': ' + str(search_row['FREQUENCY']) + \
-                            ' input records\n'
+                            ' input record(s)\n'
                     del search_row
                 update_cursor.updateRow([datetime.datetime.now(), summary])
         EBARUtils.displayMessage(messages, 'Range Map record updated with overall summary')
