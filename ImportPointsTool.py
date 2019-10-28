@@ -182,7 +182,7 @@ class ImportPointsTool:
                                                                           param_dataset_type,
                                                                           param_date_received,
                                                                           param_restrictions)
-        EBARUtils.setNewID(param_geodatabase + '/InputDataset', 'InputDatasetID', input_dataset_id)
+        EBARUtils.setNewID(param_geodatabase + '/InputDataset', 'InputDatasetID', 'OBJECTID = ' + input_dataset_id)
 
         # read existing species into dict
         EBARUtils.displayMessage(messages, 'Reading existing species')
@@ -419,7 +419,7 @@ class ImportPointsTool:
                 input_point_id = cursor.insertRow([output_point, input_dataset_id,
                                                    str(file_line[field_dict['unique_id']]), uri, license, species_id,
                                                    None, max_date, coordinates_obscured, accuracy, individual_count])
-            EBARUtils.setNewID(geodatabase + '/InputPoint', 'InputPointID', input_point_id)
+            EBARUtils.setNewID(geodatabase + '/InputPoint', 'InputPointID', 'OBJECTID = ' + input_point_id)
             id_dict[str(file_line[field_dict['unique_id']])] = input_point_id
             return input_point_id, 'new'
 

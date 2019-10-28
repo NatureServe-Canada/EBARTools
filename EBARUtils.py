@@ -81,12 +81,12 @@ def _name_cursor(cursor):
             yield MutableNamedTuple(zip(cursor.fields, row))
 
 
-def setNewID(table, id_field, object_id):
+def setNewID(table, id_field, where_clause):
     """Set id_field to object_id"""
-    with arcpy.da.UpdateCursor(table, [id_field], "OBJECTID = " + str(object_id)) as cursor:
+    with arcpy.da.UpdateCursor(table, ['OBJECTID', id_field], where_clause) as cursor:
         for row in updateCursor(cursor):
             # investigate more fool-proof method of assigning ID!!!
-            cursor.updateRow([object_id])
+            cursor.updateRow([row['OBJECTID'], row['OBJECTID']])
         del row
 
 
@@ -149,7 +149,7 @@ def checkAddSpecies(species_dict, geodatabase, scientific_name):
         species_id = cursor.insertRow([cap_name])
 
     # id of new
-    setNewID(geodatabase + '/Species', 'SpeciesID', species_id)
+    setNewID(geodatabase + '/Species', 'SpeciesID', 'OBJECTID = ' + species_id)
     species_dict[cap_name] = species_id
     return species_id, False
 
