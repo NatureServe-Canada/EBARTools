@@ -170,6 +170,8 @@ class ImportPointsTool:
             field_dict = PointsFieldMapping.ncc_endemics_fields
         elif param_dataset_source == 'iDigBio':
             field_dict = PointsFieldMapping.idigbio_fields
+        elif param_dataset_source == 'Other':
+            field_dict = PointsFieldMapping.other_fields
 
         # check/add InputDataset row
         dataset = param_dataset_name + ', ' + param_dataset_source + ', ' + str(param_date_received)

@@ -95,7 +95,8 @@ class ImportPoints(object):
                                             'BISON',
                                             'Canadensys',
                                             'NCCEndemics',
-                                            'iDigBio']
+                                            'iDigBio',
+                                            'Other']
 
         # Dataset Type
         param_dataset_type = arcpy.Parameter(
