@@ -26,9 +26,10 @@ srs_dict = {'North America Albers Equal Area Conic': 102008,
 def displayMessage(messages, msg):
     """Output message to arcpy message object or to Python standard output."""
     if messages:
-        if 'WARNING' in msg.upper():
+        upper_msg = msg.upper()
+        if 'WARNING' in upper_msg:
             messages.addWarningMessage(msg)
-        elif 'ERROR' in msg.upper() or 'EXCEPTION' in msg.upper():
+        elif 'ERROR' in uppe_msg or 'EXCEPTION' in upper_msg:
             messages.addErrorMessage(msg)
         else:
             messages.addMessage(msg)
@@ -171,7 +172,7 @@ def checkSpecies(scientific_name, geodatabase):
     return species_id
 
 
-def readDatasetSourceUniqueIDs(geodatabase, dataset_source):
+def readDatasetSourceUniquePointIDs(geodatabase, dataset_source):
     """read existing unique ids for dataset source into dict and return"""
     unique_ids_dict = {}
     arcpy.MakeFeatureLayer_management(geodatabase + '/InputPoint', 'point_layer')
@@ -187,11 +188,28 @@ def readDatasetSourceUniqueIDs(geodatabase, dataset_source):
 
 
 def estimateAccuracy(latitude):
-    """calcualte the diagonal of a square 0.2 x 0.2 km at the provided latitude"""
-    # create line 0.2 km wide
-    line_wgs84 = arcpy.Polyline(arcpy.Array([arcpy.Point(-95.9, latitude), arcpy.Point(-96.1, latitude)]), srs_dict['WGS84'])
-    # project line
-    line_albers = line_wgs84.projectAs(
-        arcpy.SpatialReference(srs_dict['North America Albers Equal Area Conic']))
-    # use pythagorean theoren to calculate diagonal of square with height approximated and width as above
-    return math.sqrt((111000 ** 2) + (line_albers.length ** 2))
+    """calculate the diagonal of a square 0.2 x 0.2 degrees at the provided latitude"""
+    # create diagonal line 0.2 degrees x 0.2 degrees
+    # start with lat/lon points
+    pta_wgs84 = arcpy.PointGeometry(arcpy.Point(-95.9, latitude + 0.1), arcpy.SpatialReference(srs_dict['WGS84']))
+    ptb_wgs84 = arcpy.PointGeometry(arcpy.Point(-96.1, latitude - 0.1), arcpy.SpatialReference(srs_dict['WGS84']))
+    # project to metres
+    pta_albers = pta_wgs84.projectAs(arcpy.SpatialReference(srs_dict['North America Albers Equal Area Conic']))
+    ptb_albers = ptb_wgs84.projectAs(arcpy.SpatialReference(srs_dict['North America Albers Equal Area Conic']))
+    # form line
+    line_albers = arcpy.Polyline(arcpy.Array([pta_albers.lastPoint, ptb_albers.lastPoint]),
+                                 arcpy.SpatialReference(srs_dict['North America Albers Equal Area Conic']))
+    return int(line_albers.length)
+
+    ## create line 0.2 degrees wide
+    ## start with lat/lon points
+    #pta_wgs84 = arcpy.PointGeometry(arcpy.Point(-95.9, latitude), arcpy.SpatialReference(srs_dict['WGS84']))
+    #ptb_wgs84 = arcpy.PointGeometry(arcpy.Point(-96.1, latitude), arcpy.SpatialReference(srs_dict['WGS84']))
+    ## project to metres
+    #pta_albers = pta_wgs84.projectAs(arcpy.SpatialReference(srs_dict['North America Albers Equal Area Conic']))
+    #ptb_albers = ptb_wgs84.projectAs(arcpy.SpatialReference(srs_dict['North America Albers Equal Area Conic']))
+    ## form line
+    #line_albers = arcpy.Polyline(arcpy.Array([pta_albers.lastPoint, ptb_albers.lastPoint]),
+    #                             arcpy.SpatialReference(srs_dict['North America Albers Equal Area Conic']))
+    ## use pythagorean theoren to calculate diagonal of square with height approximated and width as above
+    #return int(math.sqrt((22200 ** 2) + (line_albers.length ** 2)))

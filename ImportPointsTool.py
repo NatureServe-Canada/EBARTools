@@ -83,14 +83,14 @@ class ImportPointsTool:
             #param_date_received = 'October 15, 2019'
             #param_restrictions = None
 
-            param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/Real_Data/Endemics_vertnet.csv'
-            param_dataset_name = 'VerNet Endemics'
-            param_dataset_organization = 'National Science Foundation'
-            param_dataset_contact = 'http://vertnet.org/'
-            param_dataset_source = 'VertNet'
-            param_dataset_type = 'CSV'
-            param_date_received = 'October 15, 2019'
-            param_restrictions = None
+            #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/Real_Data/Endemics_vertnet.csv'
+            #param_dataset_name = 'VerNet Endemics'
+            #param_dataset_organization = 'National Science Foundation'
+            #param_dataset_contact = 'http://vertnet.org/'
+            #param_dataset_source = 'VertNet'
+            #param_dataset_type = 'CSV'
+            #param_date_received = 'October 15, 2019'
+            #param_restrictions = None
 
             #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/ecoengine.csv'
             #param_dataset_name = 'Ecoengine Microseris'
@@ -103,15 +103,15 @@ class ImportPointsTool:
 
             #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/' + \
             #    'All_CDN_iNat_Data.csv'
-            #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/' + \
-            #    'Real_Data/All_CDN_Research_Unobsc_Data_test.csv'
-            #param_dataset_name = 'iNaturalist All Canadian Unobscured Research Grade'
-            #param_dataset_organization = 'California Academy of Sciences and the National Geographic Society'
-            #param_dataset_contact = 'https://www.inaturalist.org/'
-            #param_dataset_source = 'iNaturalist'
-            #param_dataset_type = 'CSV'
-            #param_date_received = 'October 2, 2019'
-            #param_restrictions = None
+            param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/iNaturalist_Sensitive/' + \
+                'All_CDN_Research_Unobsc_Data_test.csv'
+            param_dataset_name = 'iNaturalist All Canadian Unobscured Research Grade'
+            param_dataset_organization = 'California Academy of Sciences and the National Geographic Society'
+            param_dataset_contact = 'https://www.inaturalist.org/'
+            param_dataset_source = 'iNaturalist'
+            param_dataset_type = 'CSV'
+            param_date_received = 'October 2, 2019'
+            param_restrictions = None
 
             #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/bison.csv'
             #param_dataset_name = 'BISON Microseris and Marmota'
@@ -193,7 +193,7 @@ class ImportPointsTool:
 
         # read existing unique IDs into dict
         EBARUtils.displayMessage(messages, 'Reading existing unique IDs')
-        id_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, param_dataset_source)
+        id_dict = EBARUtils.readDatasetSourceUniquePointIDs(param_geodatabase, param_dataset_source)
 
         # try to open data file as a csv
         infile = io.open(param_raw_data_file, 'r', encoding='mbcs') # mbcs encoding is Windows ANSI
