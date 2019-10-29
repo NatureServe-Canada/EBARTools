@@ -83,14 +83,14 @@ class ImportPointsTool:
             #param_date_received = 'October 15, 2019'
             #param_restrictions = None
 
-            #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/vertnet.csv'
-            #param_dataset_name = 'VerNet Marmot'
-            #param_dataset_organization = 'National Science Foundation'
-            #param_dataset_contact = 'http://vertnet.org/'
-            #param_dataset_source = 'VertNet'
-            #param_dataset_type = 'CSV'
-            #param_date_received = 'September 30, 2019'
-            #param_restrictions = None
+            param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/vertnet.csv'
+            param_dataset_name = 'VerNet Marmot'
+            param_dataset_organization = 'National Science Foundation'
+            param_dataset_contact = 'http://vertnet.org/'
+            param_dataset_source = 'VertNet'
+            param_dataset_type = 'CSV'
+            param_date_received = 'September 30, 2019'
+            param_restrictions = None
 
             #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/ecoengine.csv'
             #param_dataset_name = 'Ecoengine Microseris'
@@ -141,15 +141,15 @@ class ImportPointsTool:
             #param_date_received = 'October 15, 2019'
             #param_restrictions = None
 
-            param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/Real_Data/' + \
-                'Endemics_idigbio_capname.csv'
-            param_dataset_name = 'iDigBio Endemics'
-            param_dataset_organization = 'Integrated Digital Biocollection'
-            param_dataset_contact = 'https://www.idigbio.org/'
-            param_dataset_source = 'iDigBio'
-            param_dataset_type = 'CSV'
-            param_date_received = 'October 15, 2019'
-            param_restrictions = None
+            #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/Real_Data/' + \
+            #    'Endemics_idigbio_capname.csv'
+            #param_dataset_name = 'iDigBio Endemics'
+            #param_dataset_organization = 'Integrated Digital Biocollection'
+            #param_dataset_contact = 'https://www.idigbio.org/'
+            #param_dataset_source = 'iDigBio'
+            #param_dataset_type = 'CSV'
+            #param_date_received = 'October 15, 2019'
+            #param_restrictions = None
 
         # check parameters
         if param_dataset_source == 'GBIF':
@@ -184,7 +184,8 @@ class ImportPointsTool:
                                                                           param_dataset_type,
                                                                           param_date_received,
                                                                           param_restrictions)
-        EBARUtils.setNewID(param_geodatabase + '/InputDataset', 'InputDatasetID', 'OBJECTID = ' + input_dataset_id)
+        EBARUtils.setNewID(param_geodatabase + '/InputDataset', 'InputDatasetID', 'OBJECTID = ' + \
+                           str(input_dataset_id))
 
         # read existing species into dict
         EBARUtils.displayMessage(messages, 'Reading existing species')
@@ -421,7 +422,7 @@ class ImportPointsTool:
                 input_point_id = cursor.insertRow([output_point, input_dataset_id,
                                                    str(file_line[field_dict['unique_id']]), uri, license, species_id,
                                                    None, max_date, coordinates_obscured, accuracy, individual_count])
-            EBARUtils.setNewID(geodatabase + '/InputPoint', 'InputPointID', 'OBJECTID = ' + input_point_id)
+            EBARUtils.setNewID(geodatabase + '/InputPoint', 'InputPointID', 'OBJECTID = ' + str(input_point_id))
             id_dict[str(file_line[field_dict['unique_id']])] = input_point_id
             return input_point_id, 'new'
 

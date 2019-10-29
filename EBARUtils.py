@@ -149,7 +149,7 @@ def checkAddSpecies(species_dict, geodatabase, scientific_name):
         species_id = cursor.insertRow([cap_name])
 
     # id of new
-    setNewID(geodatabase + '/Species', 'SpeciesID', 'OBJECTID = ' + species_id)
+    setNewID(geodatabase + '/Species', 'SpeciesID', 'OBJECTID = ' + str(species_id))
     species_dict[cap_name] = species_id
     return species_id, False
 
