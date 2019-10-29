@@ -211,7 +211,8 @@ class ImportPolygons(object):
             parameterType ='Required',
             direction ='Input')
         param_dataset_source.filter.list = ['ECCC Critical Habitat',
-                                            'NCC Literature']
+                                            'NCC Literature',
+                                            'Other']
 
         # Dataset Type
         param_dataset_type = arcpy.Parameter(
@@ -222,6 +223,7 @@ class ImportPolygons(object):
             direction ='Input')
         param_dataset_type.filter.list = ['Critical Habitat',
                                           'Element Occurrence',
+                                          'Species Observations',
                                           'Range Estimate']
 
         # Date Received
