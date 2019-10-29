@@ -150,6 +150,7 @@ class GenerateRangeMapTool:
             # no reviews completed or in progress, so delete any existing related records
             EBARUtils.displayMessage(messages, 'Range Map already exists with but with no review(s) completed or in '
                                                'progress, so existing related records will be deleted')
+            # consider replacing the following code blocks with select then Delete Rows tools
             with arcpy.da.SearchCursor(param_geodatabase + '/RangeMapEcoshape', ['RangeMapEcoshapeID'],
                                        'RangeMapID = ' + str(range_map_id)) as rme_cursor:
                 for rme_row in EBARUtils.searchCursor(rme_cursor):
@@ -163,9 +164,9 @@ class GenerateRangeMapTool:
                             rmeid = True
                         if rmeid:
                             del rmeid_row
-            range_map_ecoshape = False
             with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape', ['RangeMapEcoshapeID'],
                                        'RangeMapID = ' + str(range_map_id)) as rme_cursor:
+                range_map_ecoshape = False
                 for rme_row in EBARUtils.updateCursor(rme_cursor):
                     rme_cursor.deleteRow()
                     range_map_ecoshape = True

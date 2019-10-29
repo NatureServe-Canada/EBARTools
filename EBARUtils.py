@@ -17,6 +17,8 @@ import math
 srs_dict = {'North America Albers Equal Area Conic': 102008,
             'WGS84': 4326,
             'World Geodetic System 1984': 4326,
+            'NAD83': 4269,
+            'North American Datum 1983': 4269,
             'NAD27': 4267,
             'North American Datum 1927': 4267}
 
@@ -84,10 +86,10 @@ def _name_cursor(cursor):
 
 def setNewID(table, id_field, where_clause):
     """Set id_field to object_id"""
-    with arcpy.da.UpdateCursor(table, ['OBJECTID', id_field], where_clause) as cursor:
+    with arcpy.da.UpdateCursor(table, ['OID@', id_field], where_clause) as cursor:
         for row in updateCursor(cursor):
             # investigate more fool-proof method of assigning ID!!!
-            cursor.updateRow([row['OBJECTID'], row['OBJECTID']])
+            cursor.updateRow([row['OID@'], row['OID@']])
         del row
 
 
@@ -122,6 +124,7 @@ def checkAddField(table, field_name, field_type):
             return True
     arcpy.AddField_management(table, field_name, field_type)
     return False
+
 
 def readSpecies(geodatabase):
     """read existing species into dict and return"""

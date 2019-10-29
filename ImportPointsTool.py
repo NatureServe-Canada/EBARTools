@@ -83,13 +83,13 @@ class ImportPointsTool:
             #param_date_received = 'October 15, 2019'
             #param_restrictions = None
 
-            param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/vertnet.csv'
-            param_dataset_name = 'VerNet Marmot'
+            param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/Real_Data/Endemics_vertnet.csv'
+            param_dataset_name = 'VerNet Endemics'
             param_dataset_organization = 'National Science Foundation'
             param_dataset_contact = 'http://vertnet.org/'
             param_dataset_source = 'VertNet'
             param_dataset_type = 'CSV'
-            param_date_received = 'September 30, 2019'
+            param_date_received = 'October 15, 2019'
             param_restrictions = None
 
             #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/ecoengine.csv'
@@ -360,7 +360,7 @@ class ImportPointsTool:
             # already exists
             if quality_grade != 'research':
                 # delete it because it has been downgraded
-                with arcpy.da.SearchCursor(geodatabase + '/InputPoint', ['CoordinatesObscured'],
+                with arcpy.da.UpdateCursor(geodatabase + '/InputPoint', ['CoordinatesObscured'],
                                            "DatasetSourceUniqueID = '" + str(file_line[field_dict['unique_id']]) +
                                            "' AND InputDatasetID = " + str(input_dataset_id)) as cursor:
                     row = None
