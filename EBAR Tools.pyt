@@ -15,6 +15,7 @@ import arcpy
 import ImportPointsTool
 import ImportPolygonsTool
 import GenerateRangeMapTool
+import EBARUtils
 import datetime
 import locale
 
@@ -293,6 +294,15 @@ class GenerateRangeMap(object):
             parameterType ='Required',
             direction ='Input')
 
+        # Secondary Species
+        param_secondary = arcpy.Parameter(
+            displayName ='Secondary Species',
+            name ='secondary_species',
+            datatype ='GPString',
+            parameterType ='Optional',
+            direction ='Input',
+            multiValue = True)
+
         # Range Version
         param_version = arcpy.Parameter(
             displayName ='Range Version',
@@ -312,7 +322,7 @@ class GenerateRangeMap(object):
         param_stage.filter.list = ['Auto-generated', 'Expert reviewed', 'Published']
         param_stage.value = 'Auto-generated'
 
-        params = [param_geodatabase, param_species, param_version, param_stage]
+        params = [param_geodatabase, param_species, param_secondary, param_version, param_stage]
         return params
 
     def isLicensed(self):
@@ -322,6 +332,19 @@ class GenerateRangeMap(object):
     def updateParameters(self, parameters):
         """Modify the values and properties of parameters before internal validation is performed.  This method is " + \
         "called whenever a parameter has been changed."""
+        # filter list of species
+        # make sure there is a geodatabase specified
+        if parameters[0].altered and parameters[0].value:
+            param_geodatabase = parameters[0].valueAsText
+            spec_list = []
+            with arcpy.da.SearchCursor(param_geodatabase + '/Species', ['ScientificName'],
+                                       sql_clause=(None,'ORDER BY ScientificName')) as cursor:
+                for row in EBARUtils.searchCursor(cursor):
+                    spec_list.append(row['ScientificName'])
+                if len(spec_list) > 0:
+                    del row
+            parameters[1].filter.list = spec_list
+            parameters[2].filter.list = spec_list
         return
 
     def updateMessages(self, parameters):

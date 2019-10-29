@@ -56,30 +56,39 @@ class GenerateRangeMapTool:
             # passed from tool user interface
             param_geodatabase = parameters[0].valueAsText
             param_species = parameters[1].valueAsText
-            param_version = parameters[2].valueAsText
-            param_stage = parameters[3].valueAsText
+            param_secondary = parameters[2].valueAsText
+            if param_secondary:
+                param_secondary = param_secondary.replace("'", '')
+                param_secondary = param_secondary.split(';')
+            param_version = parameters[3].valueAsText
+            param_stage = parameters[4].valueAsText
         else:
             # for debugging, hard code parameters
             param_geodatabase = 'C:/GIS/EBAR/EBAR_outputs.gdb'
-            param_species = 'Canis lupus lycaon'
+            param_species = 'Bombus bohemicus'
+            param_secondary = ['Bombus occidentalis', 'Bombus suckleyi']
             param_version = '1.0'
             param_stage = 'Auto-generated'
 
         # check for species
-        species_id = None
-        # capitalize first letter only
-        cap_name = param_species.capitalize()
-        with arcpy.da.SearchCursor(param_geodatabase + '/Species', ['SpeciesID'], "ScientificName = '" +
-                                   cap_name + "'", None) as cursor:
-            for row in EBARUtils.searchCursor(cursor):
-                species_id = row['SpeciesID']
-            if species_id:
-                # found
-                del row
-            else:
-                EBARUtils.displayMessage(messages, 'ERROR: Species not found')
-                # terminate with error
-                raise arcpy.ExecuteError
+        species_id = EBARUtils.checkSpecies(param_species, param_geodatabase)
+        if not species_id:
+            EBARUtils.displayMessage(messages, 'ERROR: Species not found')
+            # terminate with error
+            raise arcpy.ExecuteError
+
+        # check for secondary species
+        species_ids = str(species_id)
+        secondary_names = ''
+        if param_secondary:
+            for secondary in param_secondary:
+                secondary_id = EBARUtils.checkSpecies(secondary, param_geodatabase)
+                if not secondary_id:
+                    EBARUtils.displayMessage(messages, 'ERROR: Secondary species not found')
+                    # terminate with error
+                    raise arcpy.ExecuteError
+                species_ids += ',' + str(secondary_id)
+                secondary_names += secondary + ', '
 
         # check for range map record and add if necessary
         range_map_id = None
@@ -138,9 +147,9 @@ class GenerateRangeMapTool:
             arcpy.RemoveJoin_management('range_map_view', 'Review')
             arcpy.RemoveJoin_management('range_map_view', 'ReviewRequest')
 
-            # no reviews completed or in progress, so delete any existing RangeMapEcoshape(InputDataset) records
+            # no reviews completed or in progress, so delete any existing related records
             EBARUtils.displayMessage(messages, 'Range Map already exists with but with no review(s) completed or in '
-                                               'progress, so existing Range Map Ecoshapes will be deleted')
+                                               'progress, so existing related records will be deleted')
             with arcpy.da.SearchCursor(param_geodatabase + '/RangeMapEcoshape', ['RangeMapEcoshapeID'],
                                        'RangeMapID = ' + str(range_map_id)) as rme_cursor:
                 for rme_row in EBARUtils.searchCursor(rme_cursor):
@@ -162,18 +171,40 @@ class GenerateRangeMapTool:
                     range_map_ecoshape = True
                 if range_map_ecoshape:
                     del rme_row
-                    EBARUtils.displayMessage(messages, 'Existing Range Map Ecoshapes deleted')
+                    EBARUtils.displayMessage(messages, 'Existing Range Map Ecoshape records deleted')
+            existing_secondary = False
+            with arcpy.da.UpdateCursor(param_geodatabase + '/SecondarySpecies', ['SecondarySpeciesID'],
+                                       'RangeMapID = ' + str(range_map_id)) as es_cursor:
+                for es_row in EBARUtils.updateCursor(es_cursor):
+                    es_cursor.deleteRow()
+                    existing_secondary = True
+                if existing_secondary:
+                    del es_row
+                    EBARUtils.displayMessage(messages, 'Existing Secondary Species records deleted')
 
         else:
             # create RangeMap record
-            with arcpy.da.InsertCursor('range_map_view', ['PrimarySpeciesID', 'RangeVersion', 'RangeStage']) as cursor:
+            with arcpy.da.InsertCursor('range_map_view',
+                                       ['PrimarySpeciesID', 'RangeVersion', 'RangeStage']) as cursor:
                 range_map_id = cursor.insertRow([species_id, param_version, param_stage])
             EBARUtils.setNewID(param_geodatabase + '/RangeMap', 'RangeMapID', 'OBJECTID = ' + str(range_map_id))
             EBARUtils.displayMessage(messages, 'Range Map record created')
 
+        # create SecondarySpecies records
+        if param_secondary:
+            with arcpy.da.InsertCursor(param_geodatabase + '/SecondarySpecies',
+                                       ['RangeMapID', 'SpeciesID']) as cursor:
+                for secondary in param_secondary:
+                    secondary_id = EBARUtils.checkSpecies(secondary, param_geodatabase)
+                    cursor.insertRow([range_map_id, secondary_id])
+            EBARUtils.setNewID(param_geodatabase + '/SecondarySpecies', 'SecondarySpeciesID',
+                               'RangeMapID = ' + str(range_map_id))
+            EBARUtils.displayMessage(messages, 'Secondary Species records created')
+
         # select all points for species and buffer
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/InputPoint', 'input_point_layer')
-        arcpy.SelectLayerByAttribute_management('input_point_layer', 'NEW_SELECTION', 'SpeciesID = ' + str(species_id))
+        arcpy.SelectLayerByAttribute_management('input_point_layer', 'NEW_SELECTION',
+                                                'SpeciesID IN (' + species_ids + ')')
         EBARUtils.displayMessage(messages, 'Input Points selected')
         EBARUtils.checkAddField('input_point_layer', 'buffer', 'LONG')
         code_block = '''
@@ -294,8 +325,10 @@ def GetBuffer(accuracy):
                                                str(update_row['EcoshapeID'])) as search_cursor:
                     summary = ''
                     for search_row in EBARUtils.searchCursor(search_cursor):
+                        if len(summary) > 0:
+                            summary += ', '
                         summary += search_row['InputDataset_DatasetSource'] + ': ' + str(search_row['FREQUENCY']) + \
-                            ' input record(s)\n'
+                            ' input record(s)'
                     del search_row
                 update_cursor.updateRow([update_row['EcoshapeID'], summary])
             del update_row
@@ -310,17 +343,20 @@ def GetBuffer(accuracy):
         EBARUtils.displayMessage(messages, 'Overall input counts by Dataset Source determined')
 
         # update RangeMap date and metadata
-        with arcpy.da.UpdateCursor('range_map_view', ['RangeDate', 'RangeMetadata'],
+        with arcpy.da.UpdateCursor('range_map_view', ['RangeDate', 'RangeMetadata', 'RangeMapNotes'],
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
             for update_row in update_cursor:
                 with arcpy.da.SearchCursor('TempOverallCountBySource',
                                            ['InputDataset_DatasetSource', 'FREQUENCY']) as search_cursor:
                     summary = ''
                     for search_row in EBARUtils.searchCursor(search_cursor):
+                        if len(summary) > 0:
+                            summary += ', '
                         summary += search_row['InputDataset_DatasetSource'] + ': ' + str(search_row['FREQUENCY']) + \
-                            ' input record(s)\n'
+                            ' input record(s)'
                     del search_row
-                update_cursor.updateRow([datetime.datetime.now(), summary])
+                notes = 'Primary Species: ' + param_species + '; Secondary Species: ' + secondary_names
+                update_cursor.updateRow([datetime.datetime.now(), summary, notes])
         EBARUtils.displayMessage(messages, 'Range Map record updated with overall summary')
 
         # generate actual map!!!

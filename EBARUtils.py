@@ -12,6 +12,7 @@ import collections
 import arcpy
 import math
 
+
 # WKIDs for datums/SRSs
 srs_dict = {'North America Albers Equal Area Conic': 102008,
             'WGS84': 4326,
@@ -152,6 +153,19 @@ def checkAddSpecies(species_dict, geodatabase, scientific_name):
     setNewID(geodatabase + '/Species', 'SpeciesID', 'OBJECTID = ' + str(species_id))
     species_dict[cap_name] = species_id
     return species_id, False
+
+
+def checkSpecies(scientific_name, geodatabase):
+    """if exists return SpeciesID"""
+    species_id = None
+    with arcpy.da.SearchCursor(geodatabase + '/Species', ['SpeciesID'], "ScientificName = '" + \
+                               scientific_name + "'", None) as cursor:
+        for row in searchCursor(cursor):
+            species_id = row['SpeciesID']
+        if species_id:
+            # found
+            del row
+    return species_id
 
 
 def readDatasetSourceUniqueIDs(geodatabase, dataset_source):
