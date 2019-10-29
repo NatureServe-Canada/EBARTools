@@ -64,7 +64,7 @@ class ImportPolygonsTool:
             param_import_feature_class = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/gbif_test.csv'
             param_dataset_name = 'ECCC Critical Habitat'
             param_dataset_organization = 'Environment and Climate Change Canada'
-            param_dataset_contact = 'Chris Lauzon'
+            param_dataset_contact = 'http://data.ec.gc.ca/data/species/protectrestore/critical-habitat-species-at-risk-canada/'
             param_dataset_source = 'ECCC Critical Habitat'
             param_dataset_type = 'Critical Habitat'
             param_date_received = 'October 18, 2019'
