@@ -340,7 +340,7 @@ def GetBuffer(accuracy):
         if arcpy.Exists('TempOverallIntersect'):
             arcpy.Delete_management('TempOverallIntersect')
         # intersect in case some fall outside ecoshapes
-        arcpy.Intersect_analysis(['input_point_layer', param_geodatabase + '/Ecoshape'], 'TempOverallIntersect')
+        arcpy.PairwiseIntersect_analysis(['input_point_layer', param_geodatabase + '/Ecoshape'], 'TempOverallIntersect')
         arcpy.MakeFeatureLayer_management('TempOverallIntersect', 'intersect_layer')
         arcpy.AddJoin_management('intersect_layer', 'InputDatasetID',
                                  param_geodatabase + '/InputDataset', 'InputDatasetID', 'KEEP_COMMON')
