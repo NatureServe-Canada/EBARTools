@@ -29,7 +29,7 @@ def displayMessage(messages, msg):
         upper_msg = msg.upper()
         if 'WARNING' in upper_msg:
             messages.addWarningMessage(msg)
-        elif 'ERROR' in uppe_msg or 'EXCEPTION' in upper_msg:
+        elif 'ERROR' in upper_msg or 'EXCEPTION' in upper_msg:
             messages.addErrorMessage(msg)
         else:
             messages.addMessage(msg)
@@ -182,6 +182,21 @@ def readDatasetSourceUniquePointIDs(geodatabase, dataset_source):
                                "InputDataset.DatasetSource = '" + dataset_source + "'") as cursor:
         for row in searchCursor(cursor):
             unique_ids_dict[row['InputPoint.DatasetSourceUniqueID']] = row['InputPoint.InputPointID']
+    if len(unique_ids_dict) > 0:
+        del row
+    return unique_ids_dict
+
+
+def readDatasetSourceUniquePolygonIDs(geodatabase, dataset_source):
+    """read existing unique ids for dataset source into dict and return"""
+    unique_ids_dict = {}
+    arcpy.MakeFeatureLayer_management(geodatabase + '/InputPolygon', 'polygon_layer')
+    arcpy.AddJoin_management('polygon_layer', 'InputDatasetID', geodatabase + '/InputDataset', 'InputDatasetID')
+    with arcpy.da.SearchCursor('polygon_layer',
+                               ['InputPolygon.InputPolygonID', 'InputPolygon.DatasetSourceUniqueID'], 
+                               "InputDataset.DatasetSource = '" + dataset_source + "'") as cursor:
+        for row in searchCursor(cursor):
+            unique_ids_dict[row['InputPolygon.DatasetSourceUniqueID']] = row['InputPolygon.InputPolygonID']
     if len(unique_ids_dict) > 0:
         del row
     return unique_ids_dict

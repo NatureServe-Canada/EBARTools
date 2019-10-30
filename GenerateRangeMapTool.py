@@ -46,9 +46,6 @@ class GenerateRangeMapTool:
         buffer_proportion_overlap = 0.6
         # number of years beyond which Presence gets set to Historical
         age_for_historical = 40
-        if not messages:
-            # for debugging, set workspace location
-            arcpy.env.workspace = 'C:/GIS/EBAR/EBAR_outputs.gdb'
 
         # make variables for parms
         EBARUtils.displayMessage(messages, 'Processing parameters')
@@ -69,6 +66,9 @@ class GenerateRangeMapTool:
             param_secondary = ['Bombus occidentalis', 'Bombus suckleyi']
             param_version = '1.0'
             param_stage = 'Auto-generated'
+
+        # use passed geodatabase as workspace
+        arcpy.env.workspace = param_geodatabase
 
         # check for species
         species_id = EBARUtils.checkSpecies(param_species, param_geodatabase)
@@ -312,9 +312,10 @@ def GetBuffer(accuracy):
         if arcpy.Exists('TempEcoshapeCountBySource'):
             arcpy.Delete_management('TempEcoshapeCountBySource')
         arcpy.AddJoin_management('pairwise_intersect_layer', 'InputDatasetID',
-                                 param_geodatabase + '/InputDataset', 'InputDatasetID')
+                                 param_geodatabase + '/InputDataset', 'InputDatasetID', 'KEEP_COMMON')
         arcpy.Statistics_analysis('pairwise_intersect_layer', 'TempEcoshapeCountBySource', [['InputPointID', 'COUNT']],
                                   ['EcoshapeID', 'InputDataset.DatasetSource'])
+        arcpy.RemoveJoin_management('pairwise_intersect_layer', 'InputDataset')
         EBARUtils.displayMessage(messages, 'Ecoshape input counts by Dataset Source determined')
 
         # update range map ecoshapes with summary
@@ -335,12 +336,18 @@ def GetBuffer(accuracy):
             del update_row
         EBARUtils.displayMessage(messages, 'Range Map Ecoshape records updated with summary')
 
-        # get overall input counts by source
+        # get overall input counts by source (using original selected points)
+        if arcpy.Exists('TempOverallIntersect'):
+            arcpy.Delete_management('TempOverallIntersect')
+        # intersect in case some fall outside ecoshapes
+        arcpy.Intersect_analysis(['input_point_layer', param_geodatabase + '/Ecoshape'], 'TempOverallIntersect')
+        arcpy.MakeFeatureLayer_management('TempOverallIntersect', 'intersect_layer')
+        arcpy.AddJoin_management('intersect_layer', 'InputDatasetID',
+                                 param_geodatabase + '/InputDataset', 'InputDatasetID', 'KEEP_COMMON')
         if arcpy.Exists('TempOverallCountBySource'):
             arcpy.Delete_management('TempOverallCountBySource')
-        arcpy.Statistics_analysis('pairwise_intersect_layer', 'TempOverallCountBySource', [['InputPointID', 'COUNT']],
-                                  'InputDataset.DatasetSource')
-        arcpy.RemoveJoin_management('pairwise_intersect_layer', 'InputDataset')
+        arcpy.Statistics_analysis('intersect_layer', 'TempOverallCountBySource', [['InputPointID', 'COUNT']],
+                                  ['InputDataset.DatasetSource'])
         EBARUtils.displayMessage(messages, 'Overall input counts by Dataset Source determined')
 
         # update RangeMap date and metadata

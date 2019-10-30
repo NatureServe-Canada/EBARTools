@@ -40,9 +40,6 @@ class ImportPolygonsTool:
 
         # settings
         #arcpy.gp.overwriteOutput = True
-        if not messages:
-            # for debugging, set workspace location
-                arcpy.env.workspace = 'C:/GIS/EBAR/EBAR_outputs.gdb'
 
         # make variables for parms
         EBARUtils.displayMessage(messages, 'Processing parameters')
@@ -70,6 +67,9 @@ class ImportPolygonsTool:
             param_date_received = 'October 18, 2019'
             param_restrictions = None
 
+        # use passed geodatabase as workspace
+        arcpy.env.workspace = param_geodatabase
+
         # check/add InputDataset row
         dataset = param_dataset_name + ', ' + param_dataset_source + ', ' + str(param_date_received)
         EBARUtils.displayMessage(messages, 'Checking for dataset [' + dataset + '] and adding if new')
@@ -90,9 +90,32 @@ class ImportPolygonsTool:
 
         # read existing unique IDs into dict
         EBARUtils.displayMessage(messages, 'Reading existing unique IDs')
-        id_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, param_dataset_source)
+        id_dict = EBARUtils.readDatasetSourceUniquePolygonsIDs(param_geodatabase, param_dataset_source)
 
-        # select 
+        # add column for species id
+        arcpy.MakeFeatureLayer_management(param_import_feature_class, 'import_polygons')
+        EBARUtils.checkAddField('import_polygons', 'SpeciesID', 'LONG')
+
+        # select all rows then loop to remove duplicates and set Species ID
+        count = 0
+        duplicates = 0
+        arcpy.SelectLayerByAttribute_management('import_polygons')
+        with arcpy.da.UpdateCursor('import_polygons', ['identifier', 'SciName']) as cursor:
+            for row in EBARUtils.updateCursor(cursor):
+                count += 1
+                if row['identifier'] in id_dict:
+                    duplicates += 1
+                    arcpy.SelectLayerByAttribute_management('import_polygons', 'REMOVE_FROM_SELECTION', )
+                else:
+                    species_id, exists = EBARUtils.checkAddSpecies(species_dict, param_geodatabase, row['SciName'])
+                    cursor.updateRow([row['identifier'], species_id])
+            if count > 0:
+                del row
+
+        # add and set column for input dataset
+        EBARUtils.checkAddField('import_polygons', 'InputDatasetID', 'LONG')
+        arcpy.CalculateField_management('import_polygons', 'InputDatasetID', input_dataset_id)
+
         return
 
 

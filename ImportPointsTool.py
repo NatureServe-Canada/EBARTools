@@ -44,9 +44,6 @@ class ImportPointsTool:
 
         # settings
         #arcpy.gp.overwriteOutput = True
-        if not messages:
-            # for debugging, set workspace location
-                arcpy.env.workspace = 'C:/GIS/EBAR/EBAR_outputs.gdb'
 
         # make variables for parms
         EBARUtils.displayMessage(messages, 'Processing parameters')
@@ -150,6 +147,9 @@ class ImportPointsTool:
             #param_dataset_type = 'CSV'
             #param_date_received = 'October 15, 2019'
             #param_restrictions = None
+
+        # use passed geodatabase as workspace
+        arcpy.env.workspace = param_geodatabase
 
         # check parameters
         if param_dataset_source == 'GBIF':
