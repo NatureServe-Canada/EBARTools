@@ -263,10 +263,11 @@ def GetBuffer(accuracy):
                 for row in EBARUtils.searchCursor(search_cursor):
                     input_found = True
                     presence = 'H'
-                    if (datetime.datetime.now().year - row['MAX_MaxDate'].year) <= age_for_historical:
-                        presence = 'X'
-                        if row['MAX_BufferPropn'] >= buffer_proportion_overlap:
-                            presence = 'P'
+                    if row['MAX_MaxDate']:
+                        if (datetime.datetime.now().year - row['MAX_MaxDate'].year) <= age_for_historical:
+                            presence = 'X'
+                            if row['MAX_BufferPropn'] >= buffer_proportion_overlap:
+                                presence = 'P'
                     insert_cursor.insertRow([range_map_id, row['EcoshapeID'], presence])
                 if input_found:
                     del row
