@@ -222,7 +222,7 @@ class ImportPolygons(object):
             parameterType ='Required',
             direction ='Input')
         param_dataset_type.filter.list = ['Critical Habitat',
-                                          'Element Occurrence',
+                                          'Element Occurrences',
                                           'Species Observations',
                                           'Range Estimate']
 

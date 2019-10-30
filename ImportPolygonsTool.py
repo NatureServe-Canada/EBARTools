@@ -58,8 +58,9 @@ class ImportPolygonsTool:
             # for debugging, hard code parameters
             param_geodatabase = 'C:/GIS/EBAR/EBAR_outputs.gdb'
 
-            param_import_feature_class = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/gbif_test.csv'
-            param_dataset_name = 'ECCC Critical Habitat'
+            param_import_feature_class = 'C:/GIS/EBAR/CriticalHabitat/Critical Habitat for Species at Risk - National View.gdb/' + \
+                'CriticalHabitatNationalView'
+            param_dataset_name = 'ECCC Critical Habitat National View'
             param_dataset_organization = 'Environment and Climate Change Canada'
             param_dataset_contact = 'http://data.ec.gc.ca/data/species/protectrestore/critical-habitat-species-at-risk-canada/'
             param_dataset_source = 'ECCC Critical Habitat'
@@ -90,31 +91,82 @@ class ImportPolygonsTool:
 
         # read existing unique IDs into dict
         EBARUtils.displayMessage(messages, 'Reading existing unique IDs')
-        id_dict = EBARUtils.readDatasetSourceUniquePolygonsIDs(param_geodatabase, param_dataset_source)
+        id_dict = EBARUtils.readDatasetSourceUniquePolygonIDs(param_geodatabase, param_dataset_source)
 
-        # add column for species id
+        # add columns for species id and dup flag
         arcpy.MakeFeatureLayer_management(param_import_feature_class, 'import_polygons')
         EBARUtils.checkAddField('import_polygons', 'SpeciesID', 'LONG')
+        EBARUtils.checkAddField('import_polygons', 'dup', 'SHORT')
 
-        # select all rows then loop to remove duplicates and set Species ID
+        # loop to flag duplicates and set Species ID
+        EBARUtils.displayMessage(messages, 'Pre-processing polygons')
         count = 0
         duplicates = 0
-        arcpy.SelectLayerByAttribute_management('import_polygons')
-        with arcpy.da.UpdateCursor('import_polygons', ['identifier', 'SciName']) as cursor:
+        with arcpy.da.UpdateCursor('import_polygons', ['Identifier', 'SciName', 'SpeciesID', 'dup']) as cursor:
             for row in EBARUtils.updateCursor(cursor):
                 count += 1
-                if row['identifier'] in id_dict:
+                if count % 1000 == 0:
+                    EBARUtils.displayMessage(messages, 'Pre-processed ' + str(count))
+                dup = 0
+                if row['Identifier'] in id_dict:
                     duplicates += 1
-                    arcpy.SelectLayerByAttribute_management('import_polygons', 'REMOVE_FROM_SELECTION', )
+                    dup = 1
+                    cursor.updateRow([row['Identifier'], row['SciName'], None, dup])
                 else:
                     species_id, exists = EBARUtils.checkAddSpecies(species_dict, param_geodatabase, row['SciName'])
-                    cursor.updateRow([row['identifier'], species_id])
+                    cursor.updateRow([row['Identifier'], row['SciName'], species_id, dup])
             if count > 0:
                 del row
+
+        # select non-dups
+        arcpy.SelectLayerByAttribute_management('import_polygons', where_clause='dup = 0')
 
         # add and set column for input dataset
         EBARUtils.checkAddField('import_polygons', 'InputDatasetID', 'LONG')
         arcpy.CalculateField_management('import_polygons', 'InputDatasetID', input_dataset_id)
+
+        # append to InputPolygons
+        EBARUtils.displayMessage(messages, 'Appending polygons')
+        field_mappings = arcpy.FieldMappings()
+        # InputDatasetID mapping
+        field_map = arcpy.FieldMap()
+        field_map.addInputField('import_polygons', 'InputDatasetID')
+        input_dataset_id_field = field_map.outputField
+        input_dataset_id_field.name = 'InputDatasetID'
+        input_dataset_id_field.aliasName = 'InputDatasetID'
+        input_dataset_id_field.type = 'LONG'
+        field_map.outputField = input_dataset_id_field
+        field_mappings.addFieldMap(field_map)
+        # SpeciesID mapping
+        field_map = arcpy.FieldMap()
+        field_map.addInputField('import_polygons', 'SpeciesID')
+        species_id_field = field_map.outputField
+        species_id_field.name = 'SpeciesID'
+        species_id_field.aliasName = 'SpeciesID'
+        species_id_field.type = 'LONG'
+        field_map.outputField = species_id_field
+        field_mappings.addFieldMap(field_map)
+        # DatasetSourceUniqueID mapping
+        field_map = arcpy.FieldMap()
+        field_map.addInputField('import_polygons', 'Identifier')
+        dsuid_field = field_map.outputField
+        dsuid_field.name = 'DatasetSourceUniqueID'
+        dsuid_field.aliasName = 'DatasetSourceUniqueID'
+        dsuid_field.type = 'TEXT'
+        field_map.outputField = dsuid_field
+        field_mappings.addFieldMap(field_map)
+        arcpy.Append_management('import_polygons', param_geodatabase + '/InputPolygon', 'NO_TEST', field_mappings)
+        # set new id (will reset any previous IDs from same input dataset)
+        EBARUtils.setNewID(param_geodatabase + '/InputPolygon', 'InputPolygonID', 'InputDatasetID = ' + str(input_dataset_id))
+
+        # summary and end time
+        EBARUtils.displayMessage(messages, 'Summary:')
+        EBARUtils.displayMessage(messages, 'Processed ' + str(count))
+        EBARUtils.displayMessage(messages, 'Duplicates ' + str(duplicates))
+        end_time = datetime.datetime.now()
+        EBARUtils.displayMessage(messages, 'End time: ' + str(end_time))
+        elapsed_time = end_time - start_time
+        EBARUtils.displayMessage(messages, 'Elapsed time: ' + str(elapsed_time))
 
         return
 

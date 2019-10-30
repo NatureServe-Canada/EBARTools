@@ -91,6 +91,7 @@ class GenerateRangeMapTool:
                 secondary_names += secondary + ', '
 
         # check for range map record and add if necessary
+        EBARUtils.displayMessage(messages, 'Checking for existing range map')
         range_map_id = None
         arcpy.MakeTableView_management(param_geodatabase + '/RangeMap', 'range_map_view')
         with arcpy.da.SearchCursor('range_map_view', ['RangeMapID'],
@@ -203,10 +204,10 @@ class GenerateRangeMapTool:
             EBARUtils.displayMessage(messages, 'Secondary Species records created')
 
         # select all points for species and buffer
+        EBARUtils.displayMessage(messages, 'Buffering Input Points')
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/InputPoint', 'input_point_layer')
         arcpy.SelectLayerByAttribute_management('input_point_layer', 'NEW_SELECTION',
                                                 'SpeciesID IN (' + species_ids + ')')
-        EBARUtils.displayMessage(messages, 'Input Points selected')
         EBARUtils.checkAddField('input_point_layer', 'buffer', 'LONG')
         code_block = '''
 def GetBuffer(accuracy):
@@ -220,18 +221,18 @@ def GetBuffer(accuracy):
         if arcpy.Exists('TempPointBuffer'):
             arcpy.Delete_management('TempPointBuffer')
         arcpy.Buffer_analysis('input_point_layer', 'TempPointBuffer', 'buffer')
-        EBARUtils.displayMessage(messages, 'Input Points buffered')
 
         # pairwise intersect buffers and ecoshape polygons
+        EBARUtils.displayMessage(messages, 'Pairwise Intersecting Buffered Points with Ecoshapes')
         if arcpy.Exists('TempPairwiseIntersect'):
             arcpy.Delete_management('TempPairwiseIntersect')
         arcpy.PairwiseIntersect_analysis(['TempPointBuffer',  param_geodatabase + '/Ecoshape'],
                                          'TempPairwiseIntersect')
         arcpy.AddIndex_management('TempPairwiseIntersect', 'InputDatasetID', 'idid_idx')
         arcpy.MakeFeatureLayer_management('TempPairwiseIntersect', 'pairwise_intersect_layer')
-        EBARUtils.displayMessage(messages, 'Buffered Points pairwise intersected with Ecoshapes')
 
         # calculate proportion buffer per ecoshape piece based on size of full buffer
+        EBARUtils.displayMessage(messages, 'Calculating Proportion of Buffer per Ecoshape')
         # calculate total size of pieces for each buffer (will not equal original buffer size if outside ecoshapes)
         EBARUtils.checkAddField('pairwise_intersect_layer', 'BufferPropn', 'FLOAT')
         # calculate total size of buffer (will not equal original buffer size if it extends outside ecoshapes)
@@ -245,16 +246,16 @@ def GetBuffer(accuracy):
                                         '!TempPairwiseIntersect.Shape_Area! / !TempTotalArea.SUM_Shape_Area!',
                                         'PYTHON3')
         arcpy.RemoveJoin_management('pairwise_intersect_layer', 'TempTotalArea')
-        EBARUtils.displayMessage(messages, 'Proportion of Buffer per Ecoshape calculated')
 
         # get max buffer proportion per ecoshape
+        EBARUtils.displayMessage(messages, 'Determining Maximum Buffer Proportion and Date per Ecoshape')
         if arcpy.Exists('TempEcoshapeMaxBuffer'):
             arcpy.Delete_management('TempEcoshapeMaxBuffer')
         arcpy.Statistics_analysis('pairwise_intersect_layer', 'TempEcoshapeMaxBuffer',
                                   [['BufferPropn', 'MAX'], ['MaxDate', 'MAX']], 'EcoshapeID')
-        EBARUtils.displayMessage(messages, 'Maximum Buffer Proportion and Date per Ecoshape determined')
 
         # create RangeMapEcoshape records based on proportion overlap and max date
+        EBARUtils.displayMessage(messages, 'Creating Range Map Ecoshape records')
         with arcpy.da.InsertCursor(param_geodatabase + '/RangeMapEcoshape',
                                    ['RangeMapID', 'EcoshapeID', 'Presence']) as insert_cursor:
             input_found = False
@@ -277,16 +278,16 @@ def GetBuffer(accuracy):
             return
         EBARUtils.setNewID(param_geodatabase + '/RangeMapEcoshape', 'RangeMapEcoshapeID',
                            'RangeMapID = ' + str(range_map_id))
-        EBARUtils.displayMessage(messages, 'Range Map Ecoshape records created')
 
         # get ecoshape input counts by dataset
+        EBARUtils.displayMessage(messages, 'Counting Ecoshape inputs by Dataset')
         if arcpy.Exists('TempEcoshapeCountByDataset'):
             arcpy.Delete_management('TempEcoshapeCountByDataset')
         arcpy.Statistics_analysis('pairwise_intersect_layer', 'TempEcoshapeCountByDataset',
                                   [['InputPointID', 'COUNT']], ['EcoshapeID', 'InputDatasetID'])
-        EBARUtils.displayMessage(messages, 'Ecoshape input counts by Dataset determined')
 
         # create RangeMapEcoshapeInputDataset records based on summary
+        EBARUtils.displayMessage(messages, 'Creating Range Map Ecoshape Input Dataset records')
         ecoshape_summary = ''
         with arcpy.da.InsertCursor(param_geodatabase + '/RangeMapEcoshapeInputDataset',
                                    ['RangeMapEcoshapeID', 'InputDatasetID', 'InputDataSummary']) as insert_cursor:
@@ -307,9 +308,9 @@ def GetBuffer(accuracy):
                                    'RangeMapEcoshpInputDatasetID',
                                    'RangeMapEcoshapeID = ' + str(rme_row['RangeMapEcoshapeID']))
             del rme_row
-        EBARUtils.displayMessage(messages, 'Range Map Ecoshape Input Dataset records created')
 
         # get ecoshape input counts by source
+        EBARUtils.displayMessage(messages, 'Counting Ecoshape Inputs by Dataset Source')
         if arcpy.Exists('TempEcoshapeCountBySource'):
             arcpy.Delete_management('TempEcoshapeCountBySource')
         arcpy.AddJoin_management('pairwise_intersect_layer', 'InputDatasetID',
@@ -317,9 +318,9 @@ def GetBuffer(accuracy):
         arcpy.Statistics_analysis('pairwise_intersect_layer', 'TempEcoshapeCountBySource', [['InputPointID', 'COUNT']],
                                   ['EcoshapeID', 'InputDataset.DatasetSource'])
         arcpy.RemoveJoin_management('pairwise_intersect_layer', 'InputDataset')
-        EBARUtils.displayMessage(messages, 'Ecoshape input counts by Dataset Source determined')
 
         # update range map ecoshapes with summary
+        EBARUtils.displayMessage(messages, 'Updating Range Map Ecoshape records with summary')
         with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape', ['EcoshapeID', 'RangeMapEcoshapeNotes'],
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
             for update_row in EBARUtils.updateCursor(update_cursor):
@@ -335,9 +336,9 @@ def GetBuffer(accuracy):
                     del search_row
                 update_cursor.updateRow([update_row['EcoshapeID'], summary])
             del update_row
-        EBARUtils.displayMessage(messages, 'Range Map Ecoshape records updated with summary')
 
         # get overall input counts by source (using original selected points)
+        EBARUtils.displayMessage(messages, 'Counting overall inputs by Dataset Source')
         if arcpy.Exists('TempOverallIntersect'):
             arcpy.Delete_management('TempOverallIntersect')
         # intersect in case some fall outside ecoshapes
@@ -349,9 +350,9 @@ def GetBuffer(accuracy):
             arcpy.Delete_management('TempOverallCountBySource')
         arcpy.Statistics_analysis('intersect_layer', 'TempOverallCountBySource', [['InputPointID', 'COUNT']],
                                   ['InputDataset.DatasetSource'])
-        EBARUtils.displayMessage(messages, 'Overall input counts by Dataset Source determined')
 
         # update RangeMap date and metadata
+        EBARUtils.displayMessage(messages, 'Updating Range Map record with overall summary')
         with arcpy.da.UpdateCursor('range_map_view', ['RangeDate', 'RangeMetadata', 'RangeMapNotes'],
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
             for update_row in update_cursor:
@@ -366,7 +367,6 @@ def GetBuffer(accuracy):
                     del search_row
                 notes = 'Primary Species: ' + param_species + '; Secondary Species: ' + secondary_names
                 update_cursor.updateRow([datetime.datetime.now(), summary, notes])
-        EBARUtils.displayMessage(messages, 'Range Map record updated with overall summary')
 
         # generate actual map!!!
 
