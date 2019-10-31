@@ -228,3 +228,15 @@ def estimateAccuracy(latitude):
     #                             arcpy.SpatialReference(srs_dict['North America Albers Equal Area Conic']))
     ## use pythagorean theoren to calculate diagonal of square with height approximated and width as above
     #return int(math.sqrt((22200 ** 2) + (line_albers.length ** 2)))
+
+
+def createFieldMap(input_table, input_field, output_field, data_type):
+    """create one-to-one field map for use with the Append tool"""
+    field_map = arcpy.FieldMap()
+    field_map.addInputField(input_table, input_field)
+    field = field_map.outputField
+    field.name = output_field
+    field.aliasName = output_field
+    field.type = data_type
+    field_map.outputField = field
+    return field_map

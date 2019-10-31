@@ -184,8 +184,9 @@ class ImportPointsTool:
                                                                           param_dataset_type,
                                                                           param_date_received,
                                                                           param_restrictions)
-        EBARUtils.setNewID(param_geodatabase + '/InputDataset', 'InputDatasetID', 'OBJECTID = ' + \
-                           str(input_dataset_id))
+        if not dataset_exists:
+            EBARUtils.setNewID(param_geodatabase + '/InputDataset', 'InputDatasetID', 'OBJECTID = ' + \
+                               str(input_dataset_id))
 
         # read existing species into dict
         EBARUtils.displayMessage(messages, 'Reading existing species')

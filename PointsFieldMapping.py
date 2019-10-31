@@ -5,10 +5,9 @@
 # © NatureServe Canada 2019 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 # Program: PointsFieldMapping.py
-# Code shared by ArcGIS Python tools in the EBAR Tools Python Toolbox
+# Field mapping dictionaries for point data sources
 
 
-# field mapping dictionaries for data sources
 gbif_fields = {'quality_grade': None,
                'unique_id': 'gbifID',
                'uri': 'occurrenceID',

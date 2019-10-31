@@ -210,8 +210,9 @@ class ImportPolygons(object):
             datatype ='GPString',
             parameterType ='Required',
             direction ='Input')
-        param_dataset_source.filter.list = ['ECCC Critical Habitat',
-                                            'NCC Literature',
+        param_dataset_source.filter.list = ['YT CDC Element Occurrences',
+                                            'ECCC Critical Habitat',
+                                            'NCC Endemics Polygons',
                                             'Other']
 
         # Dataset Type
@@ -221,10 +222,11 @@ class ImportPolygons(object):
             datatype ='GPString',
             parameterType ='Required',
             direction ='Input')
-        param_dataset_type.filter.list = ['Critical Habitat',
-                                          'Element Occurrences',
-                                          'Species Observations',
-                                          'Range Estimate']
+        param_dataset_type.filter.list = ['Element Occurrences',
+                                          'Source Feature Polygons'
+                                          'Critical Habitat',
+                                          'Range Estimate',
+                                          'Species Observation Polygons']
 
         # Date Received
         param_date_received = arcpy.Parameter(
