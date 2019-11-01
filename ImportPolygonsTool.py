@@ -182,29 +182,17 @@ class ImportPolygonsTool:
 
         # append to InputPolygons
         EBARUtils.displayMessage(messages, 'Appending polygons')
+        # map fields
         field_mappings = arcpy.FieldMappings()
-        # InputDatasetID mapping
         field_mappings.addFieldMap(EBARUtils.createFieldMap('import_polygons', 'InDSID',
                                                             'InputDatasetID', 'LONG'))
-        #field_map = arcpy.FieldMap()
-        #field_map.addInputField('import_polygons', 'InputDatasetID')
-        #input_dataset_id_field = field_map.outputField
-        #input_dataset_id_field.name = 'InputDatasetID'
-        #input_dataset_id_field.aliasName = 'InputDatasetID'
-        #input_dataset_id_field.type = 'LONG'
-        #field_map.outputField = input_dataset_id_field
-        #field_mappings.addFieldMap(field_map)
-        # SpeciesID mapping
         field_mappings.addFieldMap(EBARUtils.createFieldMap('import_polygons', 'SpeciesID',
                                                             'SpeciesID', 'LONG'))
-        # DatasetSourceUniqueID mapping
         field_mappings.addFieldMap(EBARUtils.createFieldMap('import_polygons', field_dict['unique_id'],
                                                             'DatasetSourceUniqueID', 'TEXT'))
-        # URI mapping
         if field_dict['uri']:
             field_mappings.addFieldMap(EBARUtils.createFieldMap('import_polygons', field_dict['uri'],
                                                                 'URI', 'TEXT'))
-        # Date
         if field_dict['date']:
             field_mappings.addFieldMap(EBARUtils.createFieldMap('import_polygons', 'MaxDate',
                                                                 'MaxDate', 'DATE'))

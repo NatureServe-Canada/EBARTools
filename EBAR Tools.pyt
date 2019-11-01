@@ -223,7 +223,7 @@ class ImportPolygons(object):
             parameterType ='Required',
             direction ='Input')
         param_dataset_type.filter.list = ['Element Occurrences',
-                                          'Source Feature Polygons'
+                                          'Source Feature Polygons',
                                           'Critical Habitat',
                                           'Range Estimate',
                                           'Species Observation Polygons']

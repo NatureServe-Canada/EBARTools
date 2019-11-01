@@ -41,7 +41,7 @@ class GenerateRangeMapTool:
         #arcpy.gp.overwriteOutput = True
         # buffer size in metres, used if Accuracy not provided
         default_buffer_size = 10
-        max_buffer_size = 100000
+        max_buffer_size = 25000
         # proportion of point buffer that must be within ecoshape to get Present; otherwise gets Presence Expected
         buffer_proportion_overlap = 0.6
         # number of years beyond which Presence gets set to Historical
@@ -62,8 +62,8 @@ class GenerateRangeMapTool:
         else:
             # for debugging, hard code parameters
             param_geodatabase = 'C:/GIS/EBAR/EBAR_outputs.gdb'
-            param_species = 'Bombus bohemicus'
-            param_secondary = ['Bombus occidentalis', 'Bombus suckleyi']
+            param_species = 'Somatochlora septentrionalis'
+            param_secondary = None
             param_version = '1.0'
             param_stage = 'Auto-generated'
 
@@ -222,52 +222,70 @@ def GetBuffer(accuracy):
             arcpy.Delete_management('TempPointBuffer')
         arcpy.Buffer_analysis('input_point_layer', 'TempPointBuffer', 'buffer')
 
+        # select all polygons for species
+        EBARUtils.displayMessage(messages, 'Selecting Input Polygons')
+        arcpy.MakeFeatureLayer_management(param_geodatabase + '/InputPolygon', 'input_polygon_layer')
+        arcpy.SelectLayerByAttribute_management('input_polygon_layer', 'NEW_SELECTION',
+                                                'SpeciesID IN (' + species_ids + ')')
+
+        # merge buffer polygons and input polygons
+        EBARUtils.displayMessage(messages, 'Merging Buffered Points and Input Polygons')
+        ## map fields
+        #field_mappings = arcpy.FieldMappings()
+        ## InputDatasetID mapping
+        #field_mappings.addFieldMap(EBARUtils.createFieldMap('import_polygons', 'InDSID',
+        #                                                    'InputDatasetID', 'LONG'))
+        # merge
+        if arcpy.Exists('TempAllInputs'):
+            arcpy.Delete_management('TempAllInputs')
+        arcpy.Merge_management(['TempPointBuffer', 'input_polygon_layer'], 'TempAllInputs', None, 'ADD_SOURCE_INFO')
+
         # pairwise intersect buffers and ecoshape polygons
-        EBARUtils.displayMessage(messages, 'Pairwise Intersecting Buffered Points with Ecoshapes')
+        EBARUtils.displayMessage(messages, 'Pairwise Intersecting All Inputs with Ecoshapes')
         if arcpy.Exists('TempPairwiseIntersect'):
             arcpy.Delete_management('TempPairwiseIntersect')
-        arcpy.PairwiseIntersect_analysis(['TempPointBuffer',  param_geodatabase + '/Ecoshape'],
+        arcpy.PairwiseIntersect_analysis(['TempAllInputs',  param_geodatabase + '/Ecoshape'],
                                          'TempPairwiseIntersect')
         arcpy.AddIndex_management('TempPairwiseIntersect', 'InputDatasetID', 'idid_idx')
         arcpy.MakeFeatureLayer_management('TempPairwiseIntersect', 'pairwise_intersect_layer')
 
         # calculate proportion buffer per ecoshape piece based on size of full buffer
-        EBARUtils.displayMessage(messages, 'Calculating Proportion of Buffer per Ecoshape')
+        EBARUtils.displayMessage(messages, 'Calculating Proportion of Polygon per Ecoshape')
         # calculate total size of pieces for each buffer (will not equal original buffer size if outside ecoshapes)
-        EBARUtils.checkAddField('pairwise_intersect_layer', 'BufferPropn', 'FLOAT')
+        EBARUtils.checkAddField('pairwise_intersect_layer', 'PolygonPropn', 'FLOAT')
         # calculate total size of buffer (will not equal original buffer size if it extends outside ecoshapes)
         if arcpy.Exists('TempTotalArea'):
             arcpy.Delete_management('TempTotalArea')
         arcpy.Statistics_analysis('pairwise_intersect_layer', 'TempTotalArea', [['Shape_Area', 'SUM']],
-                                  'FID_TempPointBuffer')
-        arcpy.AddJoin_management('pairwise_intersect_layer', 'FID_TempPointBuffer', 'TempTotalArea',
-                                 'FID_TempPointBuffer')
-        arcpy.CalculateField_management('pairwise_intersect_layer', 'TempPairwiseIntersect.BufferPropn',
+                                  'FID_TempAllInputs')
+        arcpy.AddJoin_management('pairwise_intersect_layer', 'FID_TempAllInputs', 'TempTotalArea',
+                                 'FID_TempAllInputs')
+        arcpy.CalculateField_management('pairwise_intersect_layer', 'TempPairwiseIntersect.PolygonPropn',
                                         '!TempPairwiseIntersect.Shape_Area! / !TempTotalArea.SUM_Shape_Area!',
                                         'PYTHON3')
         arcpy.RemoveJoin_management('pairwise_intersect_layer', 'TempTotalArea')
 
         # get max buffer proportion per ecoshape
-        EBARUtils.displayMessage(messages, 'Determining Maximum Buffer Proportion and Date per Ecoshape')
-        if arcpy.Exists('TempEcoshapeMaxBuffer'):
-            arcpy.Delete_management('TempEcoshapeMaxBuffer')
-        arcpy.Statistics_analysis('pairwise_intersect_layer', 'TempEcoshapeMaxBuffer',
-                                  [['BufferPropn', 'MAX'], ['MaxDate', 'MAX']], 'EcoshapeID')
+        EBARUtils.displayMessage(messages, 'Determining Maximum Polygon Proportion and Date per Ecoshape')
+        if arcpy.Exists('TempEcoshapeMaxPolygon'):
+            arcpy.Delete_management('TempEcoshapeMaxPolygon')
+        arcpy.Statistics_analysis('pairwise_intersect_layer', 'TempEcoshapeMaxPolygon',
+                                  [['PolygonPropn', 'MAX'], ['MaxDate', 'MAX']], 'EcoshapeID')
 
         # create RangeMapEcoshape records based on proportion overlap and max date
         EBARUtils.displayMessage(messages, 'Creating Range Map Ecoshape records')
         with arcpy.da.InsertCursor(param_geodatabase + '/RangeMapEcoshape',
                                    ['RangeMapID', 'EcoshapeID', 'Presence']) as insert_cursor:
             input_found = False
-            with arcpy.da.SearchCursor('TempEcoshapeMaxBuffer',
-                                       ['EcoshapeID', 'MAX_BufferPropn', 'MAX_MaxDate']) as search_cursor:
+            with arcpy.da.SearchCursor('TempEcoshapeMaxPolygon',
+                                       ['EcoshapeID', 'MAX_PolygonPropn', 'MAX_MaxDate']) as search_cursor:
                 for row in EBARUtils.searchCursor(search_cursor):
                     input_found = True
                     presence = 'H'
                     if row['MAX_MaxDate']:
                         if (datetime.datetime.now().year - row['MAX_MaxDate'].year) <= age_for_historical:
                             presence = 'X'
-                            if row['MAX_BufferPropn'] >= buffer_proportion_overlap:
+                            if row['MAX_PolygonPropn'] >= buffer_proportion_overlap:
                                 presence = 'P'
                     insert_cursor.insertRow([range_map_id, row['EcoshapeID'], presence])
                 if input_found:
@@ -319,30 +337,36 @@ def GetBuffer(accuracy):
                                   ['EcoshapeID', 'InputDataset.DatasetSource'])
         arcpy.RemoveJoin_management('pairwise_intersect_layer', 'InputDataset')
 
-        # update range map ecoshapes with summary
+        # update range map ecoshapes with summary (and high-grade presence for some polygon dataset sources)
         EBARUtils.displayMessage(messages, 'Updating Range Map Ecoshape records with summary')
-        with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape', ['EcoshapeID', 'RangeMapEcoshapeNotes'],
+        with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape',
+                                   ['EcoshapeID', 'Presence', 'RangeMapEcoshapeNotes'],
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
             for update_row in EBARUtils.updateCursor(update_cursor):
                 with arcpy.da.SearchCursor('TempEcoshapeCountBySource', ['InputDataset_DatasetSource', 'FREQUENCY'],
                                            'TempPairwiseIntersect_EcoshapeID = ' + \
-                                               str(update_row['EcoshapeID'])) as search_cursor:
+                                           str(update_row['EcoshapeID'])) as search_cursor:
                     summary = ''
+                    presence = update_row['Presence']
                     for search_row in EBARUtils.searchCursor(search_cursor):
                         if len(summary) > 0:
                             summary += ', '
                         summary += search_row['InputDataset_DatasetSource'] + ': ' + str(search_row['FREQUENCY']) + \
                             ' input record(s)'
+                        # high-grade Presence Expected to Present for some polygon dataset sources
+                        if presence == 'X' and (search_row['InputDataset_DatasetSource'] in
+                                                ('Element Occurrences', 'Source Feature Polygons')):
+                            presence = 'P'
                     del search_row
-                update_cursor.updateRow([update_row['EcoshapeID'], summary])
+                update_cursor.updateRow([update_row['EcoshapeID'], presence, summary])
             del update_row
 
-        # get overall input counts by source (using original selected points)
+        # get overall input counts by source (using original inputs)
         EBARUtils.displayMessage(messages, 'Counting overall inputs by Dataset Source')
         if arcpy.Exists('TempOverallIntersect'):
             arcpy.Delete_management('TempOverallIntersect')
         # intersect in case some fall outside ecoshapes
-        arcpy.PairwiseIntersect_analysis(['input_point_layer', param_geodatabase + '/Ecoshape'], 'TempOverallIntersect')
+        arcpy.PairwiseIntersect_analysis(['TempAllInputs', param_geodatabase + '/Ecoshape'], 'TempOverallIntersect')
         arcpy.MakeFeatureLayer_management('TempOverallIntersect', 'intersect_layer')
         arcpy.AddJoin_management('intersect_layer', 'InputDatasetID',
                                  param_geodatabase + '/InputDataset', 'InputDatasetID', 'KEEP_COMMON')
@@ -368,7 +392,7 @@ def GetBuffer(accuracy):
                 notes = 'Primary Species: ' + param_species + '; Secondary Species: ' + secondary_names
                 update_cursor.updateRow([datetime.datetime.now(), summary, notes])
 
-        # generate actual map!!!
+        # generate TOC entry and actual map!!!
 
         # end time
         end_time = datetime.datetime.now()
