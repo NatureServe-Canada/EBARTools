@@ -230,12 +230,6 @@ def GetBuffer(accuracy):
 
         # merge buffer polygons and input polygons
         EBARUtils.displayMessage(messages, 'Merging Buffered Points and Input Polygons')
-        ## map fields
-        #field_mappings = arcpy.FieldMappings()
-        ## InputDatasetID mapping
-        #field_mappings.addFieldMap(EBARUtils.createFieldMap('import_polygons', 'InDSID',
-        #                                                    'InputDatasetID', 'LONG'))
-        # merge
         if arcpy.Exists('TempAllInputs'):
             arcpy.Delete_management('TempAllInputs')
         arcpy.Merge_management(['TempPointBuffer', 'input_polygon_layer'], 'TempAllInputs', None, 'ADD_SOURCE_INFO')
