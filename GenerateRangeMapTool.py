@@ -357,16 +357,14 @@ def GetBuffer(accuracy):
 
         # get overall input counts by source (using original inputs)
         EBARUtils.displayMessage(messages, 'Counting overall inputs by Dataset Source')
-        if arcpy.Exists('TempOverallIntersect'):
-            arcpy.Delete_management('TempOverallIntersect')
-        # intersect in case some fall outside ecoshapes
-        arcpy.PairwiseIntersect_analysis(['TempAllInputs', param_geodatabase + '/Ecoshape'], 'TempOverallIntersect')
-        arcpy.MakeFeatureLayer_management('TempOverallIntersect', 'intersect_layer')
-        arcpy.AddJoin_management('intersect_layer', 'InputDatasetID',
+        # select only those within ecoshapes
+        arcpy.MakeFeatureLayer_management('TempAllInputs', 'all_inputs_layer')
+        arcpy.AddJoin_management('all_inputs_layer', 'InputDatasetID',
                                  param_geodatabase + '/InputDataset', 'InputDatasetID', 'KEEP_COMMON')
+        arcpy.SelectLayerByLocation_management('all_inputs_layer', 'INTERSECT', param_geodatabase + '/Ecoshape')
         if arcpy.Exists('TempOverallCountBySource'):
             arcpy.Delete_management('TempOverallCountBySource')
-        arcpy.Statistics_analysis('intersect_layer', 'TempOverallCountBySource', [['InputPointID', 'COUNT']],
+        arcpy.Statistics_analysis('all_inputs_layer', 'TempOverallCountBySource', [['InputPointID', 'COUNT']],
                                   ['InputDataset.DatasetSource'])
 
         # update RangeMap date and metadata
