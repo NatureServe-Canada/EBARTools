@@ -39,11 +39,12 @@ class GenerateRangeMapTool:
 
         # settings
         #arcpy.gp.overwriteOutput = True
-        # buffer size in metres, used if Accuracy not provided
+        # buffer size in metres #, used if Accuracy not provided
         default_buffer_size = 10
-        max_buffer_size = 25000
-        # proportion of point buffer that must be within ecoshape to get Present; otherwise gets Presence Expected
-        buffer_proportion_overlap = 0.6
+        max_accepted_accuracy = 25000
+        #max_buffer_size = 25000
+        ## proportion of point buffer that must be within ecoshape to get Present; otherwise gets Presence Expected
+        #buffer_proportion_overlap = 0.6
         # number of years beyond which Presence gets set to Historical
         age_for_historical = 40
 
@@ -207,26 +208,29 @@ class GenerateRangeMapTool:
         EBARUtils.displayMessage(messages, 'Buffering Input Points')
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/InputPoint', 'input_point_layer')
         arcpy.SelectLayerByAttribute_management('input_point_layer', 'NEW_SELECTION',
-                                                'SpeciesID IN (' + species_ids + ')')
-        EBARUtils.checkAddField('input_point_layer', 'buffer', 'LONG')
-        code_block = '''
-def GetBuffer(accuracy):
-    ret = accuracy
-    if not ret:
-        ret = ''' + str(default_buffer_size) + '''
-    if ret > ''' + str(max_buffer_size) + ''':
-        ret = ''' + str(max_buffer_size) + '''
-    return ret'''
-        arcpy.CalculateField_management('input_point_layer', 'buffer', 'GetBuffer(!Accuracy!)', 'PYTHON3', code_block)
+                                                'SpeciesID IN (' + species_ids + ') AND '
+                                                'Accuracy <= ' + str(max_accepted_accuracy))
+#        EBARUtils.checkAddField('input_point_layer', 'buffer', 'LONG')
+#        code_block = '''
+#def GetBuffer(accuracy):
+#    ret = accuracy
+#    if not ret:
+#        ret = ''' + str(default_buffer_size) + '''
+#    if ret > ''' + str(max_buffer_size) + ''':
+#        ret = ''' + str(max_buffer_size) + '''
+#    return ret'''
+#        arcpy.CalculateField_management('input_point_layer', 'buffer', 'GetBuffer(!Accuracy!)', 'PYTHON3', code_block)
         if arcpy.Exists('TempPointBuffer'):
             arcpy.Delete_management('TempPointBuffer')
-        arcpy.Buffer_analysis('input_point_layer', 'TempPointBuffer', 'buffer')
+        #arcpy.Buffer_analysis('input_point_layer', 'TempPointBuffer', 'buffer')
+        arcpy.Buffer_analysis('input_point_layer', 'TempPointBuffer', default_buffer_size)
 
         # select all polygons for species
         EBARUtils.displayMessage(messages, 'Selecting Input Polygons')
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/InputPolygon', 'input_polygon_layer')
         arcpy.SelectLayerByAttribute_management('input_polygon_layer', 'NEW_SELECTION',
-                                                'SpeciesID IN (' + species_ids + ')')
+                                                'SpeciesID IN (' + species_ids + ') AND '
+                                                'Accuracy <= ' + str(max_accepted_accuracy))
 
         # merge buffer polygons and input polygons
         EBARUtils.displayMessage(messages, 'Merging Buffered Points and Input Polygons')
@@ -243,44 +247,53 @@ def GetBuffer(accuracy):
         arcpy.AddIndex_management('TempPairwiseIntersect', 'InputDatasetID', 'idid_idx')
         arcpy.MakeFeatureLayer_management('TempPairwiseIntersect', 'pairwise_intersect_layer')
 
-        # calculate proportion buffer per ecoshape piece based on size of full buffer
-        EBARUtils.displayMessage(messages, 'Calculating Proportion of Polygon per Ecoshape')
-        # calculate total size of pieces for each buffer (will not equal original buffer size if outside ecoshapes)
-        EBARUtils.checkAddField('pairwise_intersect_layer', 'PolygonPropn', 'FLOAT')
-        # calculate total size of buffer (will not equal original buffer size if it extends outside ecoshapes)
-        if arcpy.Exists('TempTotalArea'):
-            arcpy.Delete_management('TempTotalArea')
-        arcpy.Statistics_analysis('pairwise_intersect_layer', 'TempTotalArea', [['Shape_Area', 'SUM']],
-                                  'FID_TempAllInputs')
-        arcpy.AddJoin_management('pairwise_intersect_layer', 'FID_TempAllInputs', 'TempTotalArea',
-                                 'FID_TempAllInputs')
-        arcpy.CalculateField_management('pairwise_intersect_layer', 'TempPairwiseIntersect.PolygonPropn',
-                                        '!TempPairwiseIntersect.Shape_Area! / !TempTotalArea.SUM_Shape_Area!',
-                                        'PYTHON3')
-        arcpy.RemoveJoin_management('pairwise_intersect_layer', 'TempTotalArea')
+        ## calculate proportion buffer per ecoshape piece based on size of full buffer
+        #EBARUtils.displayMessage(messages, 'Calculating Proportion of Polygon per Ecoshape')
+        ## calculate total size of pieces for each buffer (will not equal original buffer size if outside ecoshapes)
+        #EBARUtils.checkAddField('pairwise_intersect_layer', 'PolygonPropn', 'FLOAT')
+        ## calculate total size of buffer (will not equal original buffer size if it extends outside ecoshapes)
+        #if arcpy.Exists('TempTotalArea'):
+        #    arcpy.Delete_management('TempTotalArea')
+        #arcpy.Statistics_analysis('pairwise_intersect_layer', 'TempTotalArea', [['Shape_Area', 'SUM']],
+        #                          'FID_TempAllInputs')
+        #arcpy.AddJoin_management('pairwise_intersect_layer', 'FID_TempAllInputs', 'TempTotalArea',
+        #                         'FID_TempAllInputs')
+        #arcpy.CalculateField_management('pairwise_intersect_layer', 'TempPairwiseIntersect.PolygonPropn',
+        #                                '!TempPairwiseIntersect.Shape_Area! / !TempTotalArea.SUM_Shape_Area!',
+        #                                'PYTHON3')
+        #arcpy.RemoveJoin_management('pairwise_intersect_layer', 'TempTotalArea')
 
-        # get max buffer proportion per ecoshape
-        EBARUtils.displayMessage(messages, 'Determining Maximum Polygon Proportion and Date per Ecoshape')
+        ## get max date and buffer proportion per ecoshape
+        #EBARUtils.displayMessage(messages, 'Determining Maximum Polygon Proportion and Date per Ecoshape')
+        #if arcpy.Exists('TempEcoshapeMaxPolygon'):
+        #    arcpy.Delete_management('TempEcoshapeMaxPolygon')
+        #arcpy.Statistics_analysis('pairwise_intersect_layer', 'TempEcoshapeMaxPolygon',
+        #                          [['PolygonPropn', 'MAX'], ['MaxDate', 'MAX']], 'EcoshapeID')
+
+        # get max date per ecoshape
+        EBARUtils.displayMessage(messages, 'Determining Maximum Date per Ecoshape')
         if arcpy.Exists('TempEcoshapeMaxPolygon'):
             arcpy.Delete_management('TempEcoshapeMaxPolygon')
         arcpy.Statistics_analysis('pairwise_intersect_layer', 'TempEcoshapeMaxPolygon',
-                                  [['PolygonPropn', 'MAX'], ['MaxDate', 'MAX']], 'EcoshapeID')
+                                  [['MaxDate', 'MAX']], 'EcoshapeID')
 
-        # create RangeMapEcoshape records based on proportion overlap and max date
+        # create RangeMapEcoshape records based on max date #and proportion overlap 
         EBARUtils.displayMessage(messages, 'Creating Range Map Ecoshape records')
         with arcpy.da.InsertCursor(param_geodatabase + '/RangeMapEcoshape',
                                    ['RangeMapID', 'EcoshapeID', 'Presence']) as insert_cursor:
             input_found = False
+            #with arcpy.da.SearchCursor('TempEcoshapeMaxPolygon',
+            #                           ['EcoshapeID', 'MAX_PolygonPropn', 'MAX_MaxDate']) as search_cursor:
             with arcpy.da.SearchCursor('TempEcoshapeMaxPolygon',
-                                       ['EcoshapeID', 'MAX_PolygonPropn', 'MAX_MaxDate']) as search_cursor:
+                                       ['EcoshapeID', 'MAX_MaxDate']) as search_cursor:
                 for row in EBARUtils.searchCursor(search_cursor):
                     input_found = True
                     presence = 'H'
                     if row['MAX_MaxDate']:
                         if (datetime.datetime.now().year - row['MAX_MaxDate'].year) <= age_for_historical:
-                            presence = 'X'
-                            if row['MAX_PolygonPropn'] >= buffer_proportion_overlap:
-                                presence = 'P'
+                            #presence = 'X'
+                            #if row['MAX_PolygonPropn'] >= buffer_proportion_overlap:
+                            presence = 'P'
                     insert_cursor.insertRow([range_map_id, row['EcoshapeID'], presence])
                 if input_found:
                     del row
