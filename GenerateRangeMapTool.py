@@ -62,8 +62,8 @@ class GenerateRangeMapTool:
             param_stage = parameters[4].valueAsText
         else:
             # for debugging, hard code parameters
-            param_geodatabase = 'C:/GIS/EBAR/EBAR_outputs.gdb'
-            param_species = 'Somatochlora septentrionalis'
+            param_geodatabase = 'C:/Users/rgree/Documents/ArcGIS/Packages/Yukon_Final_Maps_6971a9/p20/ebardev_gdb.gdb'
+            param_species = 'Bruneria yukonensis'
             param_secondary = None
             param_version = '1.0'
             param_stage = 'Auto-generated'
@@ -209,7 +209,7 @@ class GenerateRangeMapTool:
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/InputPoint', 'input_point_layer')
         arcpy.SelectLayerByAttribute_management('input_point_layer', 'NEW_SELECTION',
                                                 'SpeciesID IN (' + species_ids + ') AND '
-                                                'Accuracy <= ' + str(max_accepted_accuracy))
+                                                '(Accuracy IS NULL OR Accuracy <= ' + str(max_accepted_accuracy) + ')')
 #        EBARUtils.checkAddField('input_point_layer', 'buffer', 'LONG')
 #        code_block = '''
 #def GetBuffer(accuracy):
@@ -230,7 +230,7 @@ class GenerateRangeMapTool:
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/InputPolygon', 'input_polygon_layer')
         arcpy.SelectLayerByAttribute_management('input_polygon_layer', 'NEW_SELECTION',
                                                 'SpeciesID IN (' + species_ids + ') AND '
-                                                'Accuracy <= ' + str(max_accepted_accuracy))
+                                                '(Accuracy IS NULL OR Accuracy <= ' + str(max_accepted_accuracy) + ')')
 
         # merge buffer polygons and input polygons
         EBARUtils.displayMessage(messages, 'Merging Buffered Points and Input Polygons')
