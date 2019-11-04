@@ -210,7 +210,8 @@ class ImportPolygons(object):
             datatype ='GPString',
             parameterType ='Required',
             direction ='Input')
-        param_dataset_source.filter.list = ['YT CDC Element Occurrences',
+        param_dataset_source.filter.list = ['NU CDC Element Occurrences',
+                                            'YT CDC Element Occurrences',
                                             'ECCC Critical Habitat',
                                             'NCC Endemics Polygons',
                                             'Other']

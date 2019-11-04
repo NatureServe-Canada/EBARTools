@@ -89,7 +89,8 @@ class ImportPolygonsTool:
         arcpy.env.workspace = param_geodatabase
 
         # check parameters
-        if param_dataset_source == 'YT CDC Element Occurrences':
+        if param_dataset_source in ['NU CDC Element Occurrences',
+                                    'YT CDC Element Occurrences']:
             field_dict = PolygonsFieldMapping.cdc_eos_fields
         elif param_dataset_source == 'ECCC Critical Habitat':
             field_dict = PolygonsFieldMapping.eccc_critical_habitat_fields
