@@ -13,6 +13,10 @@ import arcpy
 import math
 
 
+# lowest accuracy data added to database (metres, based on diagonal of 0.2 degrees square at equator)
+worst_accuracy = 32000
+
+
 # WKIDs for datums/SRSs
 srs_dict = {'North America Albers Equal Area Conic': 102008,
             'WGS84': 4326,

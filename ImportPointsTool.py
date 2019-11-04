@@ -33,6 +33,7 @@ class ImportPointsTool:
     def RunImportPointsTool(self, parameters, messages):
         # debugging/testing
         #print(locale.getpreferredencoding())
+        #print(str(EBARUtils.estimateAccuracy(0.0)))
         #return
 
         # check out any needed extension licenses
@@ -204,6 +205,7 @@ class ImportPointsTool:
         EBARUtils.displayMessage(messages, 'Processing file lines')
         count = 0
         no_coords = 0
+        inaccurate = 0
         fossils = 0
         duplicates = 0
         updates = 0
@@ -223,6 +225,8 @@ class ImportPointsTool:
                     EBARUtils.displayMessage(messages, 'Processed ' + str(count))
                 if status == 'no_coords':
                     no_coords += 1
+                elif status == 'inaccurate':
+                    inaccurate += 1
                 elif status == 'fossil':
                     fossil += 1
                 elif status == 'duplicate':
@@ -252,13 +256,15 @@ class ImportPointsTool:
         finally:
             # summary and end time
             EBARUtils.displayMessage(messages, 'Summary:')
-            EBARUtils.displayMessage(messages, 'Processed ' + str(count))
-            EBARUtils.displayMessage(messages, 'No coordinates ' + str(no_coords))
-            EBARUtils.displayMessage(messages, 'Fossils ' + str(fossils))
-            EBARUtils.displayMessage(messages, 'Duplicates ' + str(duplicates))
-            EBARUtils.displayMessage(messages, 'Duplicates updated ' + str(updates))
-            EBARUtils.displayMessage(messages, 'Non-research ' + str(non_research))
-            EBARUtils.displayMessage(messages, 'Non-research deleted ' + str(deleted))
+            EBARUtils.displayMessage(messages, 'Processed - ' + str(count))
+            EBARUtils.displayMessage(messages, 'No coordinates - ' + str(no_coords))
+            EBARUtils.displayMessage(messages,
+                                     'Accuracy worse than ' + str(EBARUtils.worst_accuracy) + 'm - ' + str(inaccurate))
+            EBARUtils.displayMessage(messages, 'Fossils - ' + str(fossils))
+            EBARUtils.displayMessage(messages, 'Duplicates - ' + str(duplicates))
+            EBARUtils.displayMessage(messages, 'Duplicates updated - ' + str(updates))
+            EBARUtils.displayMessage(messages, 'Non-research - ' + str(non_research))
+            EBARUtils.displayMessage(messages, 'Non-research deleted - ' + str(deleted))
             end_time = datetime.datetime.now()
             EBARUtils.displayMessage(messages, 'End time: ' + str(end_time))
             elapsed_time = end_time - start_time
@@ -313,6 +319,8 @@ class ImportPointsTool:
             if field_dict['accuracy']:
                 if file_line[field_dict['accuracy']] not in ('NA', ''):
                     accuracy = round(float(file_line[field_dict['accuracy']]))
+                    if accuracy > EBARUtils.worst_accuracy:
+                        return None, 'inaccurate'
         else:
             accuracy = EBARUtils.estimateAccuracy(input_point.Y)
 

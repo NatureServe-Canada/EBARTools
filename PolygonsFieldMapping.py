@@ -13,6 +13,11 @@ cdc_eos_fields = {'unique_id': 'EO_ID',
                   'scientific_name': 'SName',
                   'date': 'LAST_OBS_D'}
 
+cdc_sf_fields = {'unique_id': 'SOURCE_FEA',
+                 'uri': None,
+                 'scientific_name': 'SNAME',
+                 'date': None}
+
 eccc_critical_habitat_fields = {'unique_id': 'Identifier',
                                 'uri': None,
                                 'scientific_name': 'SciName',

@@ -41,7 +41,6 @@ class GenerateRangeMapTool:
         #arcpy.gp.overwriteOutput = True
         # buffer size in metres #, used if Accuracy not provided
         default_buffer_size = 10
-        max_accepted_accuracy = 25000
         #max_buffer_size = 25000
         ## proportion of point buffer that must be within ecoshape to get Present; otherwise gets Presence Expected
         #buffer_proportion_overlap = 0.6
@@ -208,8 +207,8 @@ class GenerateRangeMapTool:
         EBARUtils.displayMessage(messages, 'Buffering Input Points')
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/InputPoint', 'input_point_layer')
         arcpy.SelectLayerByAttribute_management('input_point_layer', 'NEW_SELECTION',
-                                                'SpeciesID IN (' + species_ids + ') AND '
-                                                '(Accuracy IS NULL OR Accuracy <= ' + str(max_accepted_accuracy) + ')')
+                                                'SpeciesID IN (' + species_ids + ') AND (Accuracy IS NULL'
+                                                ' OR Accuracy <= ' + str(EBARUtils.worst_accuracy) + ')')
 #        EBARUtils.checkAddField('input_point_layer', 'buffer', 'LONG')
 #        code_block = '''
 #def GetBuffer(accuracy):
@@ -229,8 +228,8 @@ class GenerateRangeMapTool:
         EBARUtils.displayMessage(messages, 'Selecting Input Polygons')
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/InputPolygon', 'input_polygon_layer')
         arcpy.SelectLayerByAttribute_management('input_polygon_layer', 'NEW_SELECTION',
-                                                'SpeciesID IN (' + species_ids + ') AND '
-                                                '(Accuracy IS NULL OR Accuracy <= ' + str(max_accepted_accuracy) + ')')
+                                                'SpeciesID IN (' + species_ids + ') AND (Accuracy IS NULL'
+                                                ' OR Accuracy <= ' + str(EBARUtils.worst_accuracy) + ')')
 
         # merge buffer polygons and input polygons
         EBARUtils.displayMessage(messages, 'Merging Buffered Points and Input Polygons')
