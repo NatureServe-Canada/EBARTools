@@ -27,6 +27,45 @@ srs_dict = {'North America Albers Equal Area Conic': 102008,
             'North American Datum 1927': 4267}
 
 
+# element observation rank values
+eo_rank_dict = {'Excellent estimated viability/ecological integrity': 'A',
+                'Excellent estimated viability': 'A',
+                'Possibly excellent estimated viability/ecological integrity': 'A?',
+                'Possibly excellent estimated viability': 'A?',
+                'Excellent or good estimated viability/ecological integrity': 'AB',
+                'Excellent or good estimated viability': 'AB',
+                'Excellent, good, or fair estimated viability/ecological integrity': 'AC',
+                'Excellent, good, or fair estimated viability': 'AC',
+                'Good estimated viability/ecological integrity': 'B',
+                'Good estimated viability': 'B',
+                'Possibly good estimated viability/ecological integrity': 'B?',
+                'Possibly good estimated viability': 'B?',
+                'Good or fair estimated viability/ecological integrity': 'BC',
+                'Good or fair estimated viability': 'BC',
+                'Good, fair, or poor estimated viability/ecological integrity': 'BD',
+                'Good, fair, or poor estimated viability': 'BD',
+                'Fair estimated viability/ecological integrity': 'C',
+                'Fair estimated viability': 'C',
+                'Possibly fair estimated viability/ecological integrity': 'C?',
+                'Possibly fair estimated viability': 'C?',
+                'Fair or poor estimated viability/ecological integrity': 'CD',
+                'Fair or poor estimated viability': 'CD',
+                'Poor estimated viability/ecological integrity': 'D',
+                'Poor estimated viability': 'D',
+                'Possibly poor estimated viability/ecological integrity': 'D?',
+                'Possibly poor estimated viability': 'D?',
+                'Verified extant (viability/ecological integrity not assessed)': 'E',
+                'Verified extant (viability not assessed)': 'E',
+                'Failed to find': 'F',
+                'Possibly failed to find': 'F?',
+                'Historical': 'H',
+                'Possibly historical': 'H?',
+                'Extirpated': 'X',
+                'Possibly extirpated': 'X?',
+                'Unrankable': 'U',
+                'Not ranked': 'NR'}
+
+
 def displayMessage(messages, msg):
     """Output message to arcpy message object or to Python standard output."""
     if messages:

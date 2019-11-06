@@ -125,12 +125,14 @@ class ImportPolygonsTool:
         arcpy.MakeFeatureLayer_management(param_import_feature_class, 'import_polygons')
         EBARUtils.checkAddField('import_polygons', 'SpeciesID', 'LONG')
         EBARUtils.checkAddField('import_polygons', 'dup', 'SHORT')
+        EBARUtils.checkAddField('import_polygons', 'eo_rank', 'TEXT')
 
-        # loop to check/add species and flag duplicates
+        # loop to check/add species, flag duplicates and set eo rank
         count = 0
         duplicates = 0
-        with arcpy.da.UpdateCursor('import_polygons', [field_dict['unique_id'], field_dict['scientific_name'],
-                                                       'SpeciesID', 'dup']) as cursor:
+        with arcpy.da.UpdateCursor('import_polygons',
+                                   [field_dict['unique_id'], field_dict['scientific_name'],
+                                    'SpeciesID', 'dup', field_dict['eo_rank'], 'eo_rank']) as cursor:
             for row in EBARUtils.updateCursor(cursor):
                 count += 1
                 if count % 1000 == 0:
@@ -147,8 +149,15 @@ class ImportPolygonsTool:
                 if str(uid_raw) in id_dict:
                     duplicates += 1
                     dup = 1
+                # encode eo rank if full description provided
+                eo_rank = None
+                if field_dict['eo_rank']:
+                    eo_rank = row[field_dict['eo_rank']]
+                    if len(eo_rank) > 2:
+                        eo_rank = EBARUtils.eo_rank_dict[eo_rank]
                 # save
-                cursor.updateRow([row[field_dict['unique_id']], row[field_dict['scientific_name']], species_id, dup])
+                cursor.updateRow([row[field_dict['unique_id']], row[field_dict['scientific_name']], species_id, dup,
+                                  row[field_dict['eo_rank']], eo_rank])
             if count > 0:
                 del row
 
@@ -197,6 +206,9 @@ class ImportPolygonsTool:
         if field_dict['date']:
             field_mappings.addFieldMap(EBARUtils.createFieldMap('import_polygons', 'MaxDate',
                                                                 'MaxDate', 'DATE'))
+        if field_dict['eo_rank']:
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('import_polygons', 'eo_rank',
+                                                                'EORank', 'DATE'))
         # append
         if count - duplicates > 0:
             arcpy.Append_management('import_polygons', param_geodatabase + '/InputPolygon', 'NO_TEST', field_mappings)

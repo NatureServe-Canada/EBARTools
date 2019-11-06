@@ -259,7 +259,7 @@ class ImportPointsTool:
             EBARUtils.displayMessage(messages, 'Processed - ' + str(count))
             EBARUtils.displayMessage(messages, 'No coordinates - ' + str(no_coords))
             EBARUtils.displayMessage(messages,
-                                     'Accuracy worse than ' + str(EBARUtils.worst_accuracy) + 'm - ' + str(inaccurate))
+                                     'Accuracy worse than ' + str(EBARUtils.worst_accuracy) + ' m - ' + str(inaccurate))
             EBARUtils.displayMessage(messages, 'Fossils - ' + str(fossils))
             EBARUtils.displayMessage(messages, 'Duplicates - ' + str(duplicates))
             EBARUtils.displayMessage(messages, 'Duplicates updated - ' + str(updates))

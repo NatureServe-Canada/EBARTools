@@ -11,20 +11,23 @@
 cdc_eos_fields = {'unique_id': 'EO_ID',
                   'uri': None,
                   'scientific_name': 'SName',
-                  'date': 'LAST_OBS_D'}
+                  'date': 'LAST_OBS_D',
+                  'eo_rank': 'BASIC_EO_R'}
 
 cdc_sf_fields = {'unique_id': 'SOURCE_FEA',
                  'uri': None,
                  'scientific_name': 'SNAME',
-                 'date': None}
+                 'date': None,
+                 'eo_rank': None}
 
 eccc_critical_habitat_fields = {'unique_id': 'Identifier',
                                 'uri': None,
                                 'scientific_name': 'SciName',
-                                'date': None}
+                                'date': None,
+                                'eo_rank': None}
 
 ncc_endemics_polygons_fields = {'unique_id': 'OBJECTID',
                                 'uri': 'Link',
                                 'scientific_name': 'MATCH_NSC',
-                                'date': None}
-
+                                'date': None,
+                                'eo_rank': None}
