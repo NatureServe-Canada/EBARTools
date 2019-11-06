@@ -237,12 +237,17 @@ class GenerateRangeMapTool:
             arcpy.Delete_management('TempAllInputs')
         arcpy.Merge_management(['TempPointBuffer', 'input_polygon_layer'], 'TempAllInputs', None, 'ADD_SOURCE_INFO')
 
-        # select eo ranks force record to historical regardless of date (fake the date to accomplish this)
-        arcpy.SelectLayerByAttribute_management('TempAllInputs', 'NEW_SELECTION', "EORank IN ('H', 'H?', 'X', 'X?')")
-        #locale.setlocale(locale.LC_ALL, '')
-        #fake_date_str = datetime.datetime(datetime.datetime.now().year - age_for_historical - 1, 1, 1).strftime('%x')
-        fake_date = 'datetime.datetime(datetime.datetime.now().year - ' + str(age_for_historical) + ' - 1, 1, 1)'
-        arcpy.CalculateField_management('TempAllInputs', 'MaxDate', fake_date)
+        # eo ranks, when available, override historical (fake the date to accomplish this)
+        result = arcpy.SelectLayerByAttribute_management('TempAllInputs', 'NEW_SELECTION',
+                                                         "EORank IN ('H', 'H?', 'X', 'X?')")
+        if int(result[1]) > 0:
+            fake_date_expr = 'datetime.datetime(datetime.datetime.now().year - 1000, 1, 1)'
+            arcpy.CalculateField_management('TempAllInputs', 'MaxDate', fake_date_expr)
+        result = arcpy.SelectLayerByAttribute_management('TempAllInputs', 'NEW_SELECTION',
+                                                         "EORank IS NOT NULL AND EORank NOT IN ('H', 'H?', 'X', 'X?')")
+        if int(result[1]) > 0:
+            fake_date_expr = 'datetime.datetime(datetime.datetime.now().year + 1000, 1, 1)'
+            arcpy.CalculateField_management('TempAllInputs', 'MaxDate', fake_date_expr)
         arcpy.SelectLayerByAttribute_management('TempAllInputs', 'CLEAR_SELECTION')
 
         # pairwise intersect buffers and ecoshape polygons
