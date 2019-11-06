@@ -4,7 +4,7 @@
 # Credits: Randal Greene, Christine Terwissen
 # © NatureServe Canada 2019 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
-# Program: ImportPolygonsTool.py
+# Program: ImportSpatialDataTool.py
 # ArcGIS Python tool for importing polygon data into the
 # InputDataset and InputPolygon tables of the EBAR geodatabase
 
@@ -23,12 +23,12 @@ import EBARUtils
 import PolygonsFieldMapping
 
 
-class ImportPolygonsTool:
+class ImportSpatialDataTool:
     """Import point data into the InputDataset and InputPoint tables of the EBAR geodatabase"""
     def __init__(self):
         pass
 
-    def RunImportPolygonsTool(self, parameters, messages):
+    def RunImportSpatialDataTool(self, parameters, messages):
         # check out any needed extension licenses
         #arcpy.CheckOutExtension('Spatial')
 
@@ -127,16 +127,16 @@ class ImportPolygonsTool:
         EBARUtils.checkAddField('import_polygons', 'dup', 'SHORT')
         EBARUtils.checkAddField('import_polygons', 'eo_rank', 'TEXT')
 
-        # loop to check/add species, flag duplicates and set eo rank
+        # loop to check/add species and flag duplicates
         count = 0
         duplicates = 0
         with arcpy.da.UpdateCursor('import_polygons',
                                    [field_dict['unique_id'], field_dict['scientific_name'],
-                                    'SpeciesID', 'dup', field_dict['eo_rank'], 'eo_rank']) as cursor:
+                                    'SpeciesID', 'dup']) as cursor:
             for row in EBARUtils.updateCursor(cursor):
                 count += 1
                 if count % 1000 == 0:
-                    EBARUtils.displayMessage(messages, 'Pre-processed ' + str(count))
+                    EBARUtils.displayMessage(messages, 'Step 1 pre-processed ' + str(count))
                 # check/add species
                 species_id, exists = EBARUtils.checkAddSpecies(species_dict, param_geodatabase,
                                                                row[field_dict['scientific_name']])
@@ -149,17 +149,27 @@ class ImportPolygonsTool:
                 if str(uid_raw) in id_dict:
                     duplicates += 1
                     dup = 1
-                # encode eo rank if full description provided
-                eo_rank = None
-                if field_dict['eo_rank']:
+                # save
+                cursor.updateRow([row[field_dict['unique_id']], row[field_dict['scientific_name']], species_id, dup])
+            if count > 0:
+                del row
+
+        # loop to set eo rank
+        if field_dict['eo_rank']:
+            count = 0
+            with arcpy.da.UpdateCursor('import_polygons', [field_dict['eo_rank'], 'eo_rank']) as cursor:
+                for row in EBARUtils.updateCursor(cursor):
+                    count += 1
+                    if count % 1000 == 0:
+                        EBARUtils.displayMessage(messages, 'Step 2 pre-processed ' + str(count))
+                    # encode eo rank if full description provided
                     eo_rank = row[field_dict['eo_rank']]
                     if len(eo_rank) > 2:
                         eo_rank = EBARUtils.eo_rank_dict[eo_rank]
-                # save
-                cursor.updateRow([row[field_dict['unique_id']], row[field_dict['scientific_name']], species_id, dup,
-                                  row[field_dict['eo_rank']], eo_rank])
-            if count > 0:
-                del row
+                    # save
+                    cursor.updateRow([row[field_dict['eo_rank']], eo_rank])
+                if count > 0:
+                    del row
 
         # select non-dups
         arcpy.SelectLayerByAttribute_management('import_polygons', where_clause='dup = 0')
@@ -230,6 +240,6 @@ class ImportPolygonsTool:
 
 # controlling process
 if __name__ == '__main__':
-    ipt = ImportPolygonsTool()
+    isd = ImportSpatialDataTool()
     # hard code parameters for debugging
-    ipt.RunImportPolygonsTool(None, None)
+    isd.RunImportSpatialDataTool(None, None)
