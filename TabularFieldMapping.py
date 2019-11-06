@@ -4,7 +4,7 @@
 # Credits: Randal Greene, Christine Terwissen
 # © NatureServe Canada 2019 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
-# Program: PointsFieldMapping.py
+# Program: TabularFieldMapping.py
 # Field mapping dictionaries for point data sources
 
 

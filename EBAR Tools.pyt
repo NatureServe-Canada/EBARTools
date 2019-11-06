@@ -12,7 +12,7 @@
 
 # import python packages
 import arcpy
-import ImportPointsTool
+import ImportTabularDataTool
 import ImportPolygonsTool
 import GenerateRangeMapTool
 import EBARUtils
@@ -27,14 +27,14 @@ class Toolbox(object):
         self.alias = ''
 
         # List of tool classes associated with this toolbox
-        self.tools = [ImportPoints, ImportPolygons, GenerateRangeMap]
+        self.tools = [ImportTabularData, ImportPolygons, GenerateRangeMap]
 
 
-class ImportPoints(object):
+class ImportTabularData(object):
     def __init__(self):
         """Define the tool (tool name is the name of the class)."""
-        self.label = 'Import Points'
-        self.description = 'Imports point data into the InputDataset and InputPoint tables of the EBAR geodatabase'
+        self.label = 'Import Tabular Data'
+        self.description = 'Imports tabular data into the InputDataset and InputPoint tables of the EBAR geodatabase'
         self.canRunInBackground = True
 
     def getParameterInfo(self):
@@ -147,8 +147,8 @@ class ImportPoints(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        ipt = ImportPointsTool.ImportPointsTool()
-        ipt.RunImportPointsTool(parameters, messages)
+        itd = ImportTabularDataTool.ImportTabularDataTool()
+        itd.RunImportTabularDataTool(parameters, messages)
         return
 
 

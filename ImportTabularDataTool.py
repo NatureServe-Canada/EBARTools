@@ -4,8 +4,8 @@
 # Credits: Randal Greene, Christine Terwissen
 # © NatureServe Canada 2019 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
-# Program: ImportPointsTool.py
-# ArcGIS Python tool for importing point data into the
+# Program: ImportTabularDataTool.py
+# ArcGIS Python tool for importing tabular data into the
 # InputDataset and InputPoint tables of the EBAR geodatabase
 
 # Notes:
@@ -22,15 +22,15 @@ import csv
 import datetime
 #import locale
 import EBARUtils
-import PointsFieldMapping
+import TabularFieldMapping
 
 
-class ImportPointsTool:
+class ImportTabularDataTool:
     """Import point data into the InputDataset and InputPoint tables of the EBAR geodatabase"""
     def __init__(self):
         pass
 
-    def RunImportPointsTool(self, parameters, messages):
+    def RunImportTabularDataTool(self, parameters, messages):
         # debugging/testing
         #print(locale.getpreferredencoding())
         #print(str(EBARUtils.estimateAccuracy(0.0)))
@@ -90,26 +90,26 @@ class ImportPointsTool:
             #param_date_received = 'October 15, 2019'
             #param_restrictions = None
 
-            #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/ecoengine.csv'
-            #param_dataset_name = 'Ecoengine Microseris'
-            #param_dataset_organization = 'Berkeley Ecoinformatics Engine'
-            #param_dataset_contact = 'https://ecoengine.berkeley.edu/'
-            #param_dataset_source = 'Ecoengine'
-            #param_dataset_type = 'CSV'
-            #param_date_received = 'September 30, 2019'
-            #param_restrictions = None
+            param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/ecoengine.csv'
+            param_dataset_name = 'Ecoengine Microseris'
+            param_dataset_organization = 'Berkeley Ecoinformatics Engine'
+            param_dataset_contact = 'https://ecoengine.berkeley.edu/'
+            param_dataset_source = 'Ecoengine'
+            param_dataset_type = 'CSV'
+            param_date_received = 'September 30, 2019'
+            param_restrictions = None
 
             #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/' + \
             #    'All_CDN_iNat_Data.csv'
-            param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/iNaturalist_Sensitive/' + \
-                'All_CDN_Research_Unobsc_Data_test.csv'
-            param_dataset_name = 'iNaturalist All Canadian Unobscured Research Grade'
-            param_dataset_organization = 'California Academy of Sciences and the National Geographic Society'
-            param_dataset_contact = 'https://www.inaturalist.org/'
-            param_dataset_source = 'iNaturalist'
-            param_dataset_type = 'CSV'
-            param_date_received = 'October 2, 2019'
-            param_restrictions = None
+            #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/iNaturalist_Sensitive/' + \
+            #    'All_CDN_Research_Unobsc_Data_test.csv'
+            #param_dataset_name = 'iNaturalist All Canadian Unobscured Research Grade'
+            #param_dataset_organization = 'California Academy of Sciences and the National Geographic Society'
+            #param_dataset_contact = 'https://www.inaturalist.org/'
+            #param_dataset_source = 'iNaturalist'
+            #param_dataset_type = 'CSV'
+            #param_date_received = 'October 2, 2019'
+            #param_restrictions = None
 
             #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/bison.csv'
             #param_dataset_name = 'BISON Microseris and Marmota'
@@ -154,25 +154,25 @@ class ImportPointsTool:
 
         # check parameters
         if param_dataset_source == 'GBIF':
-            field_dict = PointsFieldMapping.gbif_fields
+            field_dict = TabularFieldMapping.gbif_fields
         elif param_dataset_source == 'NCC_GBIF':
-            field_dict = PointsFieldMapping.ncc_gbif_fields
+            field_dict = TabularFieldMapping.ncc_gbif_fields
         elif param_dataset_source == 'VertNet':
-            field_dict = PointsFieldMapping.vertnet_fields
+            field_dict = TabularFieldMapping.vertnet_fields
         elif param_dataset_source == 'Ecoengine':
-            field_dict = PointsFieldMapping.ecoengine_fields
+            field_dict = TabularFieldMapping.ecoengine_fields
         elif param_dataset_source == 'iNaturalist':
-            field_dict = PointsFieldMapping.inaturalist_fields
+            field_dict = TabularFieldMapping.inaturalist_fields
         elif param_dataset_source == 'BISON':
-            field_dict = PointsFieldMapping.bison_fields
+            field_dict = TabularFieldMapping.bison_fields
         elif param_dataset_source == 'Canadensys':
-            field_dict = PointsFieldMapping.canadensys_fields
+            field_dict = TabularFieldMapping.canadensys_fields
         elif param_dataset_source == 'NCCEndemics':
-            field_dict = PointsFieldMapping.ncc_endemics_fields
+            field_dict = TabularFieldMapping.ncc_endemics_fields
         elif param_dataset_source == 'iDigBio':
-            field_dict = PointsFieldMapping.idigbio_fields
+            field_dict = TabularFieldMapping.idigbio_fields
         elif param_dataset_source == 'Other':
-            field_dict = PointsFieldMapping.other_fields
+            field_dict = TabularFieldMapping.other_fields
 
         # check/add InputDataset row
         dataset = param_dataset_name + ', ' + param_dataset_source + ', ' + str(param_date_received)
@@ -438,6 +438,6 @@ class ImportPointsTool:
 
 # controlling process
 if __name__ == '__main__':
-    ipt = ImportPointsTool()
+    itd = ImportTabularDataTool()
     # hard code parameters for debugging
-    ipt.RunImportPointsTool(None, None)
+    itd.RunImportTabularDataTool(None, None)
