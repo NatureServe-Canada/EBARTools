@@ -223,11 +223,12 @@ class ImportPolygons(object):
             datatype ='GPString',
             parameterType ='Required',
             direction ='Input')
-        param_dataset_type.filter.list = ['Element Occurrences',
-                                          'Source Feature Polygons',
-                                          'Critical Habitat',
-                                          'Range Estimate',
-                                          'Species Observation Polygons']
+        param_dataset_type.filter.list = ['Element Occurrences', # P
+                                          'Source Feature Polygons', # P
+                                          'Species Observation Polygons', # P
+                                          'Critical Habitat', # X
+                                          'Habitat Suitability', # X
+                                          'Range Estimate'] # X
 
         # Date Received
         param_date_received = arcpy.Parameter(

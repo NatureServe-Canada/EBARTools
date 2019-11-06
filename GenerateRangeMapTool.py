@@ -237,15 +237,18 @@ class GenerateRangeMapTool:
             arcpy.Delete_management('TempAllInputs')
         arcpy.Merge_management(['TempPointBuffer', 'input_polygon_layer'], 'TempAllInputs', None, 'ADD_SOURCE_INFO')
 
-        # eo ranks, when available, override historical (fake the date to accomplish this)
+        # eo ranks, when available, override dates in determining historical (fake the date to accomplish this)
+        EBARUtils.displayMessage(messages, 'Applying EO Ranks, where available, to determine historical records')
         result = arcpy.SelectLayerByAttribute_management('TempAllInputs', 'NEW_SELECTION',
                                                          "EORank IN ('H', 'H?', 'X', 'X?')")
         if int(result[1]) > 0:
+            # 1000 years in the past
             fake_date_expr = 'datetime.datetime(datetime.datetime.now().year - 1000, 1, 1)'
             arcpy.CalculateField_management('TempAllInputs', 'MaxDate', fake_date_expr)
         result = arcpy.SelectLayerByAttribute_management('TempAllInputs', 'NEW_SELECTION',
                                                          "EORank IS NOT NULL AND EORank NOT IN ('H', 'H?', 'X', 'X?')")
         if int(result[1]) > 0:
+            # 1000 years in the future
             fake_date_expr = 'datetime.datetime(datetime.datetime.now().year + 1000, 1, 1)'
             arcpy.CalculateField_management('TempAllInputs', 'MaxDate', fake_date_expr)
         arcpy.SelectLayerByAttribute_management('TempAllInputs', 'CLEAR_SELECTION')
@@ -300,12 +303,21 @@ class GenerateRangeMapTool:
                                        ['EcoshapeID', 'MAX_MaxDate']) as search_cursor:
                 for row in EBARUtils.searchCursor(search_cursor):
                     input_found = True
-                    presence = 'H'
+                    # undated / no eo rank gets Presence Expected
+                    presence = 'X'
                     if row['MAX_MaxDate']:
                         if (datetime.datetime.now().year - row['MAX_MaxDate'].year) <= age_for_historical:
-                            #presence = 'X'
-                            #if row['MAX_PolygonPropn'] >= buffer_proportion_overlap:
+                            # eo rank not in ('H', 'H?', 'X', 'X?') or "new" date gets Present
                             presence = 'P'
+                        else:
+                            # otherwise Historical
+                            presence = 'H'
+                    #presence = 'H'
+                    #if row['MAX_MaxDate']:
+                    #    if (datetime.datetime.now().year - row['MAX_MaxDate'].year) <= age_for_historical:
+                    #        presence = 'X'
+                    #        if row['MAX_PolygonPropn'] >= buffer_proportion_overlap:
+                    #            presence = 'P'
                     insert_cursor.insertRow([range_map_id, row['EcoshapeID'], presence])
                 if input_found:
                     del row
