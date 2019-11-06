@@ -237,6 +237,14 @@ class GenerateRangeMapTool:
             arcpy.Delete_management('TempAllInputs')
         arcpy.Merge_management(['TempPointBuffer', 'input_polygon_layer'], 'TempAllInputs', None, 'ADD_SOURCE_INFO')
 
+        # select eo ranks force record to historical regardless of date (fake the date to accomplish this)
+        arcpy.SelectLayerByAttribute_management('TempAllInputs', 'NEW_SELECTION', "EORank IN ('H', 'H?', 'X', 'X?')")
+        #locale.setlocale(locale.LC_ALL, '')
+        #fake_date_str = datetime.datetime(datetime.datetime.now().year - age_for_historical - 1, 1, 1).strftime('%x')
+        fake_date = 'datetime.datetime(datetime.datetime.now().year - ' + str(age_for_historical) + ' - 1, 1, 1)'
+        arcpy.CalculateField_management('TempAllInputs', 'MaxDate', fake_date)
+        arcpy.SelectLayerByAttribute_management('TempAllInputs', 'CLEAR_SELECTION')
+
         # pairwise intersect buffers and ecoshape polygons
         EBARUtils.displayMessage(messages, 'Pairwise Intersecting All Inputs with Ecoshapes')
         if arcpy.Exists('TempPairwiseIntersect'):
