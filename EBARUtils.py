@@ -11,6 +11,7 @@
 import collections
 import arcpy
 import math
+import datetime
 
 
 # lowest accuracy data added to database (metres, based on diagonal of 0.2 degrees square at equator)
@@ -238,6 +239,31 @@ def readDatasetSourceUniqueIDs(geodatabase, dataset_source, feature_class_type):
     if len(unique_ids_dict) > 0:
         del row
     return unique_ids_dict
+
+
+def extractDate(date_str):
+    """attempt to extract a date from the passed string"""
+    ret_date = None
+    # accept yyyy?mm?dd, yyyy?mm or yyyy
+    if date_str not in ('NA', '', 'Unknown', 'unknown', 'No Date', 'ND', 'N.D.', None):
+        if len(date_str) >= 4:
+            at_least_year = False
+            try:
+                year = int(date_str[0:4])
+                at_least_year = True
+                month = 1
+                day = 1
+                if len(date_str) >= 7:
+                    month = int(date_str[5:7])
+                if len(date_str) >= 10:
+                    day = int(date_str[8:10])
+            except:
+                # bury any errors
+                pass
+            finally:
+                if at_least_year:
+                    ret_date = datetime.datetime(year, month, day)
+    return ret_date
 
 
 def estimateAccuracy(latitude):

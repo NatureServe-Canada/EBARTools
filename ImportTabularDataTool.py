@@ -328,15 +328,16 @@ class ImportTabularDataTool:
         max_date = None
         if field_dict['date']:
             # date field
-            if file_line[field_dict['date']] not in ('NA', ''):
-                if len(file_line[field_dict['date']]) == 20:
-                    max_date_time = datetime.datetime.strptime(file_line[field_dict['date']], '%Y-%m-%dT%H:%M:%SZ')
-                    max_date = max_date_time.date()
-                elif str(len(file_line[field_dict['date']])) in ('18', '19'):
-                    max_date_time = datetime.datetime.strptime(file_line[field_dict['date']], '%Y-%m-%d %H:%M:%S')
-                    max_date = max_date_time.date()
-                else:
-                    max_date = datetime.datetime.strptime(file_line[field_dict['date']], '%Y-%m-%d')
+            max_date = EBARUtils.extractDate(file_line[field_dict['date']])
+            #if file_line[field_dict['date']] not in ('NA', ''):
+            #    if len(file_line[field_dict['date']]) == 20:
+            #        max_date_time = datetime.datetime.strptime(file_line[field_dict['date']], '%Y-%m-%dT%H:%M:%SZ')
+            #        max_date = max_date_time.date()
+            #    elif str(len(file_line[field_dict['date']])) in ('18', '19'):
+            #        max_date_time = datetime.datetime.strptime(file_line[field_dict['date']], '%Y-%m-%d %H:%M:%S')
+            #        max_date = max_date_time.date()
+            #    else:
+            #        max_date = datetime.datetime.strptime(file_line[field_dict['date']], '%Y-%m-%d')
         if not max_date:
             # separate ymd fields
             if field_dict['year']:

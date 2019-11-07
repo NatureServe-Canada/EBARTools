@@ -75,23 +75,23 @@ class ImportSpatialDataTool:
             #param_date_received = 'October 15, 2019'
             #param_restrictions = None
 
-            #param_import_feature_class = 'C:/GIS/EBAR/CDN_CDC_Data/Yukon/EO_data_Yukon.shp'
-            #param_dataset_name = 'Yukon EOs'
-            #param_dataset_organization = 'Yukon CDC'
-            #param_dataset_contact = 'Maria Leung'
-            #param_dataset_source = 'YT CDC Element Occurrences'
-            #param_dataset_type = 'Element Occurrences'
-            #param_date_received = 'October 31, 2019'
-            #param_restrictions = None
-
-            param_import_feature_class = 'C:/GIS/EBAR/CDN_CDC_Data/Yukon/SF_polygon_Yukon.shp'
-            param_dataset_name = 'Yukon SFs'
+            param_import_feature_class = 'C:/GIS/EBAR/CDN_CDC_Data/Yukon/EO_data_Yukon.shp'
+            param_dataset_name = 'Yukon EOs'
             param_dataset_organization = 'Yukon CDC'
             param_dataset_contact = 'Maria Leung'
-            param_dataset_source = 'CDC Source Feature Polygons'
-            param_dataset_type = 'Source Feature Polygons'
-            param_date_received = 'October 30, 2019'
+            param_dataset_source = 'YT CDC Element Occurrences'
+            param_dataset_type = 'Element Occurrences'
+            param_date_received = 'October 31, 2019'
             param_restrictions = None
+
+            #param_import_feature_class = 'C:/GIS/EBAR/CDN_CDC_Data/Yukon/SF_polygon_Yukon.shp'
+            #param_dataset_name = 'Yukon SFs'
+            #param_dataset_organization = 'Yukon CDC'
+            #param_dataset_contact = 'Maria Leung'
+            #param_dataset_source = 'CDC Source Feature Polygons'
+            #param_dataset_type = 'Source Feature Polygons'
+            #param_date_received = 'October 30, 2019'
+            #param_restrictions = None
 
         # use passed geodatabase as workspace (still seems to go to default geodatabase)
         arcpy.env.workspace = param_geodatabase
@@ -201,17 +201,7 @@ class ImportSpatialDataTool:
                 for row in EBARUtils.updateCursor(cursor):
                     max_date = None
                     if field_dict['date']:
-                        # could be yyyy-mm-dd, yyyy-mm or yyyy
-                        date_str = row[field_dict['date']].strip()
-                        if date_str not in ('NA', '', None):
-                            year = int(date_str[0:4])
-                            month = 1
-                            if len(date_str) >= 7:
-                                month = int(date_str[5:7])
-                            day = 1
-                            if len(date_str) == 10:
-                                day = int(date_str[8:10])
-                            max_date = datetime.datetime(year, month, day)
+                        max_date = EBARUtils.extractDate(row[field_dict['date']].strip())
                     cursor.updateRow([row[field_dict['date']], max_date])
                 if count - duplicates > 0:
                     del row
