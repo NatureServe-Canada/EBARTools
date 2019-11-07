@@ -213,6 +213,7 @@ class ImportSpatialData(object):
             direction ='Input')
         param_dataset_source.filter.list = ['NU CDC Element Occurrences',
                                             'YT CDC Element Occurrences',
+                                            'BC CDC Element Occurrences',
                                             'CDC Source Feature Polygons',
                                             'CDC Source Feature Points',
                                             'CDC Source Feature Lines',

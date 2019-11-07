@@ -255,8 +255,14 @@ def extractDate(date_str):
                 day = 1
                 if len(date_str) >= 7:
                     month = int(date_str[5:7])
-                if len(date_str) >= 10:
-                    day = int(date_str[8:10])
+                    if month > 12 or month == 0:
+                        month = 1
+                    else:
+                        # only process day if month is sensible
+                        if len(date_str) >= 10:
+                            day = int(date_str[8:10])
+                            if day > 31 or day == 0:
+                                day = 1
             except:
                 # bury any errors
                 pass

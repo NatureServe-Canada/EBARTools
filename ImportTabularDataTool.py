@@ -90,14 +90,14 @@ class ImportTabularDataTool:
             #param_date_received = 'October 15, 2019'
             #param_restrictions = None
 
-            param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/ecoengine.csv'
-            param_dataset_name = 'Ecoengine Microseris'
-            param_dataset_organization = 'Berkeley Ecoinformatics Engine'
-            param_dataset_contact = 'https://ecoengine.berkeley.edu/'
-            param_dataset_source = 'Ecoengine'
-            param_dataset_type = 'CSV'
-            param_date_received = 'September 30, 2019'
-            param_restrictions = None
+            #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/ecoengine.csv'
+            #param_dataset_name = 'Ecoengine Microseris'
+            #param_dataset_organization = 'Berkeley Ecoinformatics Engine'
+            #param_dataset_contact = 'https://ecoengine.berkeley.edu/'
+            #param_dataset_source = 'Ecoengine'
+            #param_dataset_type = 'CSV'
+            #param_date_received = 'September 30, 2019'
+            #param_restrictions = None
 
             #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/' + \
             #    'All_CDN_iNat_Data.csv'
@@ -130,14 +130,14 @@ class ImportTabularDataTool:
             #param_date_received = 'October 9, 2019'
             #param_restrictions = None
 
-            #param_raw_data_file = 'C:/GIS/EBAR/NCC/NCC_Species_Obs_20190521.csv'
-            #param_dataset_name = 'NCC Endemics'
-            #param_dataset_organization = 'Nature Conservancy of Canada'
-            #param_dataset_contact = 'Andrea Hebb'
-            #param_dataset_source = 'NCCEndemics'
-            #param_dataset_type = 'CSV'
-            #param_date_received = 'October 15, 2019'
-            #param_restrictions = None
+            param_raw_data_file = 'C:/GIS/EBAR/NCC/NCC_Species_Obs_20190521.csv'
+            param_dataset_name = 'NCC Endemics'
+            param_dataset_organization = 'Nature Conservancy of Canada'
+            param_dataset_contact = 'Andrea Hebb'
+            param_dataset_source = 'NCCEndemics'
+            param_dataset_type = 'CSV'
+            param_date_received = 'October 15, 2019'
+            param_restrictions = None
 
             #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/Real_Data/' + \
             #    'Endemics_idigbio_capname.csv'
@@ -329,15 +329,6 @@ class ImportTabularDataTool:
         if field_dict['date']:
             # date field
             max_date = EBARUtils.extractDate(file_line[field_dict['date']])
-            #if file_line[field_dict['date']] not in ('NA', ''):
-            #    if len(file_line[field_dict['date']]) == 20:
-            #        max_date_time = datetime.datetime.strptime(file_line[field_dict['date']], '%Y-%m-%dT%H:%M:%SZ')
-            #        max_date = max_date_time.date()
-            #    elif str(len(file_line[field_dict['date']])) in ('18', '19'):
-            #        max_date_time = datetime.datetime.strptime(file_line[field_dict['date']], '%Y-%m-%d %H:%M:%S')
-            #        max_date = max_date_time.date()
-            #    else:
-            #        max_date = datetime.datetime.strptime(file_line[field_dict['date']], '%Y-%m-%d')
         if not max_date:
             # separate ymd fields
             if field_dict['year']:

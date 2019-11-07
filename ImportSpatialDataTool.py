@@ -75,14 +75,14 @@ class ImportSpatialDataTool:
             #param_date_received = 'October 15, 2019'
             #param_restrictions = None
 
-            param_import_feature_class = 'C:/GIS/EBAR/CDN_CDC_Data/Yukon/EO_data_Yukon.shp'
-            param_dataset_name = 'Yukon EOs'
-            param_dataset_organization = 'Yukon CDC'
-            param_dataset_contact = 'Maria Leung'
-            param_dataset_source = 'YT CDC Element Occurrences'
-            param_dataset_type = 'Element Occurrences'
-            param_date_received = 'October 31, 2019'
-            param_restrictions = None
+            #param_import_feature_class = 'C:/GIS/EBAR/CDN_CDC_Data/Yukon/EO_data_Yukon.shp'
+            #param_dataset_name = 'Yukon EOs'
+            #param_dataset_organization = 'Yukon CDC'
+            #param_dataset_contact = 'Maria Leung'
+            #param_dataset_source = 'YT CDC Element Occurrences'
+            #param_dataset_type = 'Element Occurrences'
+            #param_date_received = 'October 31, 2019'
+            #param_restrictions = None
 
             #param_import_feature_class = 'C:/GIS/EBAR/CDN_CDC_Data/Yukon/SF_polygon_Yukon.shp'
             #param_dataset_name = 'Yukon SFs'
@@ -93,6 +93,15 @@ class ImportSpatialDataTool:
             #param_date_received = 'October 30, 2019'
             #param_restrictions = None
 
+            param_import_feature_class = 'C:/GIS/EBAR/CDN_CDC_Data/British_Columbia/EO_Data_fromOnlineDownload/BCGW_7113060B_1571339682776_13464/BIOT_OCCR_NON_SENS_AREA_SVW.gdb/WHSE_TERRESTRIAL_ECOLOGY_BIOT_OCCR_NON_SENS_AREA_SVW'
+            param_dataset_name = 'BC WHSE1'
+            param_dataset_organization = 'British Columbia CDC'
+            param_dataset_contact = 'Jacqueline Clare'
+            param_dataset_source = 'BC CDC Element Occurrences'
+            param_dataset_type = 'Element Occurrences'
+            param_date_received = 'November 4, 2019'
+            param_restrictions = None
+
         # use passed geodatabase as workspace (still seems to go to default geodatabase)
         arcpy.env.workspace = param_geodatabase
 
@@ -101,6 +110,8 @@ class ImportSpatialDataTool:
         if param_dataset_source in ['NU CDC Element Occurrences',
                                     'YT CDC Element Occurrences']:
             field_dict = SpatialFieldMapping.cdc_eo_fields
+        elif param_dataset_source == 'BC CDC Element Occurrences':
+            field_dict = SpatialFieldMapping.bc_eo_fields
         elif param_dataset_source == 'CDC Source Feature Polygons':
             field_dict = SpatialFieldMapping.cdc_sf_fields
         elif param_dataset_source == 'CDC Source Feature Points':
@@ -156,7 +167,7 @@ class ImportSpatialDataTool:
             for row in EBARUtils.updateCursor(cursor):
                 count += 1
                 if count % 1000 == 0:
-                    EBARUtils.displayMessage(messages, 'Step 1 pre-processed ' + str(count))
+                    EBARUtils.displayMessage(messages, 'Species and duplicates pre-processed ' + str(count))
                 # check/add species
                 species_id, exists = EBARUtils.checkAddSpecies(species_dict, param_geodatabase,
                                                                row[field_dict['scientific_name']])
@@ -173,6 +184,10 @@ class ImportSpatialDataTool:
                 cursor.updateRow([row[field_dict['unique_id']], row[field_dict['scientific_name']], species_id, dup])
             if count > 0:
                 del row
+        EBARUtils.displayMessage(messages, 'Species and duplicates pre-processed ' + str(count))
+
+        # select non-dups
+        arcpy.SelectLayerByAttribute_management('import_features', where_clause='dup = 0')
 
         # loop to set eo rank
         if field_dict['eo_rank'] and feature_class_type in ('Polygon', 'MultiPatch'):
@@ -181,30 +196,51 @@ class ImportSpatialDataTool:
                 for row in EBARUtils.updateCursor(cursor):
                     count += 1
                     if count % 1000 == 0:
-                        EBARUtils.displayMessage(messages, 'Step 2 pre-processed ' + str(count))
+                        EBARUtils.displayMessage(messages, 'EO Rank pre-processed ' + str(count))
                     # encode eo rank if full description provided
                     eo_rank = row[field_dict['eo_rank']]
-                    if len(eo_rank) > 2:
-                        eo_rank = EBARUtils.eo_rank_dict[eo_rank]
-                    # save
-                    cursor.updateRow([row[field_dict['eo_rank']], eo_rank])
+                    if eo_rank:
+                        if len(eo_rank) > 2:
+                            eo_rank = EBARUtils.eo_rank_dict[eo_rank]
+                        # save
+                        cursor.updateRow([row[field_dict['eo_rank']], eo_rank])
                 if count > 0:
                     del row
+            EBARUtils.displayMessage(messages, 'EO Rank pre-processed ' + str(count))
 
-        # select non-dups
-        arcpy.SelectLayerByAttribute_management('import_features', where_clause='dup = 0')
-
-        # pre-process date
-        if field_dict['date']:
-            EBARUtils.checkAddField('import_features', 'MaxDate', 'DATE')
-            with arcpy.da.UpdateCursor('import_features', [field_dict['date'], 'MaxDate']) as cursor:
+        # pre-process dates
+        if field_dict['min_date']:
+            EBARUtils.checkAddField('import_features', 'MinDate', 'DATE')
+            count = 0
+            with arcpy.da.UpdateCursor('import_features', [field_dict['min_date'], 'MinDate']) as cursor:
                 for row in EBARUtils.updateCursor(cursor):
-                    max_date = None
-                    if field_dict['date']:
-                        max_date = EBARUtils.extractDate(row[field_dict['date']].strip())
-                    cursor.updateRow([row[field_dict['date']], max_date])
+                    count += 1
+                    if count % 1000 == 0:
+                        EBARUtils.displayMessage(messages, 'Min Date pre-processed ' + str(count))
+                    min_date = None
+                    if field_dict['min_date']:
+                        if row[field_dict['min_date']]:
+                            min_date = EBARUtils.extractDate(row[field_dict['min_date']].strip())
+                    cursor.updateRow([row[field_dict['min_date']], min_date])
                 if count - duplicates > 0:
                     del row
+            EBARUtils.displayMessage(messages, 'Min Date pre-processed ' + str(count))
+        if field_dict['max_date']:
+            EBARUtils.checkAddField('import_features', 'MaxDate', 'DATE')
+            count = 0
+            with arcpy.da.UpdateCursor('import_features', [field_dict['max_date'], 'MaxDate']) as cursor:
+                for row in EBARUtils.updateCursor(cursor):
+                    count += 1
+                    if count % 1000 == 0:
+                        EBARUtils.displayMessage(messages, 'Max Date pre-processed ' + str(count))
+                    max_date = None
+                    if field_dict['max_date']:
+                        if row[field_dict['max_date']]:
+                            max_date = EBARUtils.extractDate(row[field_dict['max_date']].strip())
+                    cursor.updateRow([row[field_dict['max_date']], max_date])
+                if count - duplicates > 0:
+                    del row
+            EBARUtils.displayMessage(messages, 'Max Date pre-processed ' + str(count))
 
         # add and set column for input dataset
         EBARUtils.checkAddField('import_features', 'InDSID', 'LONG')
@@ -223,7 +259,10 @@ class ImportSpatialDataTool:
         if field_dict['uri']:
             field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict['uri'],
                                                                 'URI', 'TEXT'))
-        if field_dict['date']:
+        if field_dict['min_date']:
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', 'MinDate',
+                                                                'MinDate', 'DATE'))
+        if field_dict['max_date']:
             field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', 'MaxDate',
                                                                 'MaxDate', 'DATE'))
         if field_dict['eo_rank'] and feature_class_type in ('Polygon', 'MultiPatch'):
