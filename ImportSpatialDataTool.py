@@ -103,6 +103,10 @@ class ImportSpatialDataTool:
             field_dict = SpatialFieldMapping.cdc_eo_fields
         elif param_dataset_source == 'CDC Source Feature Polygons':
             field_dict = SpatialFieldMapping.cdc_sf_fields
+        elif param_dataset_source == 'CDC Source Feature Points':
+            field_dict = SpatialFieldMapping.cdc_sf_fields
+        elif param_dataset_source == 'CDC Source Feature Lines':
+            field_dict = SpatialFieldMapping.cdc_sf_fields
         elif param_dataset_source == 'ECCC Critical Habitat':
             field_dict = SpatialFieldMapping.eccc_critical_habitat_fields
         elif param_dataset_source == 'NCC Endemics Polygons':

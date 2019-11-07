@@ -214,6 +214,8 @@ class ImportSpatialData(object):
         param_dataset_source.filter.list = ['NU CDC Element Occurrences',
                                             'YT CDC Element Occurrences',
                                             'CDC Source Feature Polygons',
+                                            'CDC Source Feature Points',
+                                            'CDC Source Feature Lines',
                                             'ECCC Critical Habitat',
                                             'NCC Endemics Polygons',
                                             'Other']
@@ -227,6 +229,7 @@ class ImportSpatialData(object):
             direction ='Input')
         param_dataset_type.filter.list = ['Element Occurrences', # P
                                           'Source Feature Polygons', # P
+                                          'Source Feature Points', # P
                                           'Species Observation Polygons', # P
                                           'Critical Habitat', # X
                                           'Habitat Suitability', # X
