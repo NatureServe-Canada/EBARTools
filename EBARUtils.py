@@ -215,21 +215,6 @@ def checkSpecies(scientific_name, geodatabase):
     return species_id
 
 
-def readDatasetSourceUniquePointIDs(geodatabase, dataset_source):
-    """read existing unique ids for dataset source into dict and return"""
-    unique_ids_dict = {}
-    arcpy.MakeFeatureLayer_management(geodatabase + '/InputPoint', 'point_layer')
-    arcpy.AddJoin_management('point_layer', 'InputDatasetID', geodatabase + '/InputDataset', 'InputDatasetID')
-    with arcpy.da.SearchCursor('point_layer',
-                               ['InputPoint.InputPointID', 'InputPoint.DatasetSourceUniqueID'], 
-                               "InputDataset.DatasetSource = '" + dataset_source + "'") as cursor:
-        for row in searchCursor(cursor):
-            unique_ids_dict[row['InputPoint.DatasetSourceUniqueID']] = row['InputPoint.InputPointID']
-    if len(unique_ids_dict) > 0:
-        del row
-    return unique_ids_dict
-
-
 def readDatasetSourceUniqueIDs(geodatabase, dataset_source, feature_class_type):
     """read existing unique ids for dataset source into dict and return"""
     # different feature class for each type

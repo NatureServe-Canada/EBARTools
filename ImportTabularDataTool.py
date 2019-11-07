@@ -195,7 +195,7 @@ class ImportTabularDataTool:
 
         # read existing unique IDs into dict
         EBARUtils.displayMessage(messages, 'Reading existing unique IDs')
-        id_dict = EBARUtils.readDatasetSourceUniquePointIDs(param_geodatabase, param_dataset_source)
+        id_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, param_dataset_source, 'Point')
 
         # try to open data file as a csv
         infile = io.open(param_raw_data_file, 'r', encoding='mbcs') # mbcs encoding is Windows ANSI

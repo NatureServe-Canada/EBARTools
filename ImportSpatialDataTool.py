@@ -5,8 +5,7 @@
 # © NatureServe Canada 2019 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 # Program: ImportSpatialDataTool.py
-# ArcGIS Python tool for importing polygon data into the
-# InputDataset and InputPolygon tables of the EBAR geodatabase
+# ArcGIS Python tool for importing spatial data into the EBAR geodatabase
 
 # Notes:
 # - Normally called from EBAR Tools.pyt, unless doing interactive debugging
@@ -136,16 +135,18 @@ class ImportSpatialDataTool:
         id_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, param_dataset_source, feature_class_type)
 
         # pre-processing
-        EBARUtils.displayMessage(messages, 'Pre-processing polygons')
-        arcpy.MakeFeatureLayer_management(param_import_feature_class, 'import_polygons')
-        EBARUtils.checkAddField('import_polygons', 'SpeciesID', 'LONG')
-        EBARUtils.checkAddField('import_polygons', 'dup', 'SHORT')
-        EBARUtils.checkAddField('import_polygons', 'eo_rank', 'TEXT')
+        EBARUtils.displayMessage(messages, 'Pre-processing features')
+        arcpy.MakeFeatureLayer_management(param_import_feature_class, 'import_features')
+        EBARUtils.checkAddField('import_features', 'SpeciesID', 'LONG')
+        EBARUtils.checkAddField('import_features', 'dup', 'SHORT')
+        if feature_class_type in ('Polygon', 'MultiPatch'):
+            # EOs can only be polygons
+            EBARUtils.checkAddField('import_features', 'eo_rank', 'TEXT')
 
         # loop to check/add species and flag duplicates
         count = 0
         duplicates = 0
-        with arcpy.da.UpdateCursor('import_polygons',
+        with arcpy.da.UpdateCursor('import_features',
                                    [field_dict['unique_id'], field_dict['scientific_name'],
                                     'SpeciesID', 'dup']) as cursor:
             for row in EBARUtils.updateCursor(cursor):
@@ -170,9 +171,9 @@ class ImportSpatialDataTool:
                 del row
 
         # loop to set eo rank
-        if field_dict['eo_rank']:
+        if field_dict['eo_rank'] and feature_class_type in ('Polygon', 'MultiPatch'):
             count = 0
-            with arcpy.da.UpdateCursor('import_polygons', [field_dict['eo_rank'], 'eo_rank']) as cursor:
+            with arcpy.da.UpdateCursor('import_features', [field_dict['eo_rank'], 'eo_rank']) as cursor:
                 for row in EBARUtils.updateCursor(cursor):
                     count += 1
                     if count % 1000 == 0:
@@ -187,12 +188,12 @@ class ImportSpatialDataTool:
                     del row
 
         # select non-dups
-        arcpy.SelectLayerByAttribute_management('import_polygons', where_clause='dup = 0')
+        arcpy.SelectLayerByAttribute_management('import_features', where_clause='dup = 0')
 
         # pre-process date
         if field_dict['date']:
-            EBARUtils.checkAddField('import_polygons', 'MaxDate', 'DATE')
-            with arcpy.da.UpdateCursor('import_polygons', [field_dict['date'], 'MaxDate']) as cursor:
+            EBARUtils.checkAddField('import_features', 'MaxDate', 'DATE')
+            with arcpy.da.UpdateCursor('import_features', [field_dict['date'], 'MaxDate']) as cursor:
                 for row in EBARUtils.updateCursor(cursor):
                     max_date = None
                     if field_dict['date']:
@@ -212,34 +213,42 @@ class ImportSpatialDataTool:
                     del row
 
         # add and set column for input dataset
-        EBARUtils.checkAddField('import_polygons', 'InDSID', 'LONG')
-        arcpy.CalculateField_management('import_polygons', 'InDSID', input_dataset_id)
+        EBARUtils.checkAddField('import_features', 'InDSID', 'LONG')
+        arcpy.CalculateField_management('import_features', 'InDSID', input_dataset_id)
 
-        # append to InputPolygons
-        EBARUtils.displayMessage(messages, 'Appending polygons')
+        # append to InputPolygon/Point/Line
+        EBARUtils.displayMessage(messages, 'Appending features')
         # map fields
         field_mappings = arcpy.FieldMappings()
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('import_polygons', 'InDSID',
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', 'InDSID',
                                                             'InputDatasetID', 'LONG'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('import_polygons', 'SpeciesID',
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', 'SpeciesID',
                                                             'SpeciesID', 'LONG'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('import_polygons', field_dict['unique_id'],
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict['unique_id'],
                                                             'DatasetSourceUniqueID', 'TEXT'))
         if field_dict['uri']:
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('import_polygons', field_dict['uri'],
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict['uri'],
                                                                 'URI', 'TEXT'))
         if field_dict['date']:
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('import_polygons', 'MaxDate',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', 'MaxDate',
                                                                 'MaxDate', 'DATE'))
-        if field_dict['eo_rank']:
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('import_polygons', 'eo_rank',
+        if field_dict['eo_rank'] and feature_class_type in ('Polygon', 'MultiPatch'):
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', 'eo_rank',
                                                                 'EORank', 'DATE'))
         # append
         if count - duplicates > 0:
-            arcpy.Append_management('import_polygons', param_geodatabase + '/InputPolygon', 'NO_TEST', field_mappings)
+            if feature_class_type in ('Polygon', 'MultiPatch'):
+                destination = param_geodatabase + '/InputPolygon'
+                id_field = 'InputPolygonID'
+            elif feature_class_type in ('Point', 'Multipoint'):
+                destination = param_geodatabase + '/InputPoint'
+                id_field = 'InputPointID'
+            else: # Polyline
+                destination = param_geodatabase + '/InputLine'
+                id_field = 'InputLineID'
+            arcpy.Append_management('import_features', destination, 'NO_TEST', field_mappings)
             # set new id (will reset any previous IDs from same input dataset)
-            EBARUtils.setNewID(param_geodatabase + '/InputPolygon', 'InputPolygonID',
-                               'InputDatasetID = ' + str(input_dataset_id))
+            EBARUtils.setNewID(destination, id_field, 'InputDatasetID = ' + str(input_dataset_id))
 
         # summary and end time
         EBARUtils.displayMessage(messages, 'Summary:')
