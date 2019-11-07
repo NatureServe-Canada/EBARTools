@@ -4,15 +4,15 @@
 # Credits: Randal Greene, Christine Terwissen
 # © NatureServe Canada 2019 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
-# Program: PolygonsFieldMapping.py
-# Field mapping dictionaries for polygon data sources
+# Program: SpatialFieldMapping.py
+# Field mapping dictionaries for spatial data sources
 
 
-cdc_eos_fields = {'unique_id': 'EO_ID',
-                  'uri': None,
-                  'scientific_name': 'SName',
-                  'date': 'LAST_OBS_D',
-                  'eo_rank': 'BASIC_EO_R'}
+cdc_eo_fields = {'unique_id': 'EO_ID',
+                 'uri': None,
+                 'scientific_name': 'SName',
+                 'date': 'LAST_OBS_D',
+                 'eo_rank': 'BASIC_EO_R'}
 
 cdc_sf_fields = {'unique_id': 'SOURCE_FEA',
                  'uri': None,

@@ -20,7 +20,7 @@ import arcpy
 import datetime
 #import locale
 import EBARUtils
-import PolygonsFieldMapping
+import SpatialFieldMapping
 
 
 class ImportSpatialDataTool:
@@ -76,26 +76,41 @@ class ImportSpatialDataTool:
             #param_date_received = 'October 15, 2019'
             #param_restrictions = None
 
-            param_import_feature_class = 'C:/GIS/EBAR/CDN_CDC_Data/Yukon/EO_data_Yukon.shp'
-            param_dataset_name = 'Yukon EOs'
+            #param_import_feature_class = 'C:/GIS/EBAR/CDN_CDC_Data/Yukon/EO_data_Yukon.shp'
+            #param_dataset_name = 'Yukon EOs'
+            #param_dataset_organization = 'Yukon CDC'
+            #param_dataset_contact = 'Maria Leung'
+            #param_dataset_source = 'YT CDC Element Occurrences'
+            #param_dataset_type = 'Element Occurrences'
+            #param_date_received = 'October 31, 2019'
+            #param_restrictions = None
+
+            param_import_feature_class = 'C:/GIS/EBAR/CDN_CDC_Data/Yukon/SF_polygon_Yukon.shp'
+            param_dataset_name = 'Yukon SFs'
             param_dataset_organization = 'Yukon CDC'
             param_dataset_contact = 'Maria Leung'
-            param_dataset_source = 'YT CDC Element Occurrences'
-            param_dataset_type = 'Element Occurrences'
-            param_date_received = 'October 31, 2019'
+            param_dataset_source = 'CDC Source Feature Polygons'
+            param_dataset_type = 'Source Feature Polygons'
+            param_date_received = 'October 30, 2019'
             param_restrictions = None
 
-        # use passed geodatabase as workspace
+        # use passed geodatabase as workspace (still seems to go to default geodatabase)
         arcpy.env.workspace = param_geodatabase
 
         # check parameters
+        # match field_dict with source
         if param_dataset_source in ['NU CDC Element Occurrences',
                                     'YT CDC Element Occurrences']:
-            field_dict = PolygonsFieldMapping.cdc_eos_fields
+            field_dict = SpatialFieldMapping.cdc_eo_fields
+        elif param_dataset_source == 'CDC Source Feature Polygons':
+            field_dict = SpatialFieldMapping.cdc_sf_fields
         elif param_dataset_source == 'ECCC Critical Habitat':
-            field_dict = PolygonsFieldMapping.eccc_critical_habitat_fields
+            field_dict = SpatialFieldMapping.eccc_critical_habitat_fields
         elif param_dataset_source == 'NCC Endemics Polygons':
-            field_dict = PolygonsFieldMapping.ncc_endemics_polygons_fields
+            field_dict = SpatialFieldMapping.ncc_endemics_polygons_fields
+        # determine type of feature class
+        desc = arcpy.Describe(param_import_feature_class)
+        feature_class_type = desc.shapeType
 
         # check/add InputDataset row
         dataset = param_dataset_name + ', ' + param_dataset_source + ', ' + str(param_date_received)
@@ -118,7 +133,7 @@ class ImportSpatialDataTool:
 
         # read existing unique IDs into dict
         EBARUtils.displayMessage(messages, 'Reading existing unique IDs')
-        id_dict = EBARUtils.readDatasetSourceUniquePolygonIDs(param_geodatabase, param_dataset_source)
+        id_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, param_dataset_source, feature_class_type)
 
         # pre-processing
         EBARUtils.displayMessage(messages, 'Pre-processing polygons')
@@ -228,8 +243,8 @@ class ImportSpatialDataTool:
 
         # summary and end time
         EBARUtils.displayMessage(messages, 'Summary:')
-        EBARUtils.displayMessage(messages, 'Processed ' + str(count))
-        EBARUtils.displayMessage(messages, 'Duplicates ' + str(duplicates))
+        EBARUtils.displayMessage(messages, 'Processed - ' + str(count))
+        EBARUtils.displayMessage(messages, 'Duplicates - ' + str(duplicates))
         end_time = datetime.datetime.now()
         EBARUtils.displayMessage(messages, 'End time: ' + str(end_time))
         elapsed_time = end_time - start_time

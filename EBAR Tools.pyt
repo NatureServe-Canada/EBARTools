@@ -178,7 +178,7 @@ class ImportSpatialData(object):
             datatype ='GPFeatureLayer',
             parameterType ='Required',
             direction ='Input')
-        param_import_feature_class.filter.list = ['Polygon']
+        param_import_feature_class.filter.list = ['Point', 'Multipoint', 'Polyline', 'Polygon', 'MultiPatch']
 
         # Dataset Name
         param_dataset_name = arcpy.Parameter(
@@ -213,6 +213,7 @@ class ImportSpatialData(object):
             direction ='Input')
         param_dataset_source.filter.list = ['NU CDC Element Occurrences',
                                             'YT CDC Element Occurrences',
+                                            'CDC Source Feature Polygons',
                                             'ECCC Critical Habitat',
                                             'NCC Endemics Polygons',
                                             'Other']

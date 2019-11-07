@@ -149,7 +149,7 @@ class ImportTabularDataTool:
             #param_date_received = 'October 15, 2019'
             #param_restrictions = None
 
-        # use passed geodatabase as workspace
+        # use passed geodatabase as workspace (still seems to go to default geodatabase)
         arcpy.env.workspace = param_geodatabase
 
         # check parameters

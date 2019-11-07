@@ -67,7 +67,7 @@ class GenerateRangeMapTool:
             param_version = '1.0'
             param_stage = 'Auto-generated'
 
-        # use passed geodatabase as workspace
+        # use passed geodatabase as workspace (still seems to go to default geodatabase)
         arcpy.env.workspace = param_geodatabase
 
         # check for species

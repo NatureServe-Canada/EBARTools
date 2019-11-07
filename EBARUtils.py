@@ -230,16 +230,26 @@ def readDatasetSourceUniquePointIDs(geodatabase, dataset_source):
     return unique_ids_dict
 
 
-def readDatasetSourceUniquePolygonIDs(geodatabase, dataset_source):
+def readDatasetSourceUniqueIDs(geodatabase, dataset_source, feature_class_type):
     """read existing unique ids for dataset source into dict and return"""
+    # different feature class for each type
+    if feature_class_type in ('Polygon', 'MultiPatch'):
+        feature_class = 'InputPolygon'
+    elif feature_class_type in ('Point', 'Multipoint'):
+        feature_class = 'InputPoint'
+    else: # Polyline
+        feature_class = 'InputLine'
+    arcpy.MakeFeatureLayer_management(geodatabase + '/' + feature_class, 'feature_layer')
+    spatial_id_field = feature_class + '.' + feature_class + 'ID'
+    source_id_field = feature_class + '.DatasetSourceUniqueID'
+    # join to Dataset and read IDs
+    arcpy.AddJoin_management('feature_layer', 'InputDatasetID', geodatabase + '/InputDataset', 'InputDatasetID')
     unique_ids_dict = {}
-    arcpy.MakeFeatureLayer_management(geodatabase + '/InputPolygon', 'polygon_layer')
-    arcpy.AddJoin_management('polygon_layer', 'InputDatasetID', geodatabase + '/InputDataset', 'InputDatasetID')
-    with arcpy.da.SearchCursor('polygon_layer',
-                               ['InputPolygon.InputPolygonID', 'InputPolygon.DatasetSourceUniqueID'], 
+    with arcpy.da.SearchCursor('feature_layer',
+                               [spatial_id_field, source_id_field],
                                "InputDataset.DatasetSource = '" + dataset_source + "'") as cursor:
         for row in searchCursor(cursor):
-            unique_ids_dict[row['InputPolygon.DatasetSourceUniqueID']] = row['InputPolygon.InputPolygonID']
+            unique_ids_dict[row[source_id_field]] = row[spatial_id_field]
     if len(unique_ids_dict) > 0:
         del row
     return unique_ids_dict
