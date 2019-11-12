@@ -48,9 +48,9 @@ class ImportSpatialDataTool:
             param_dataset_organization = parameters[3].valueAsText
             param_dataset_contact = parameters[4].valueAsText
             param_dataset_source = parameters[5].valueAsText
-            param_dataset_type = parameters[6].valueAsText
-            param_date_received = parameters[7].valueAsText
-            param_restrictions = parameters[8].valueAsText
+            #param_dataset_type = parameters[6].valueAsText
+            param_date_received = parameters[6].valueAsText
+            param_restrictions = parameters[7].valueAsText
         else:
             # for debugging, hard code parameters
             param_geodatabase = 'C:/GIS/EBAR/EBAR_outputs.gdb'
@@ -62,7 +62,6 @@ class ImportSpatialDataTool:
             #param_dataset_contact = \
             #    'http://data.ec.gc.ca/data/species/protectrestore/critical-habitat-species-at-risk-canada/'
             #param_dataset_source = 'ECCC Critical Habitat'
-            #param_dataset_type = 'Critical Habitat'
             #param_date_received = 'October 18, 2019'
             #param_restrictions = None
 
@@ -71,7 +70,6 @@ class ImportSpatialDataTool:
             #param_dataset_organization = 'Nature Conservancy of Canada'
             #param_dataset_contact = 'Andrea Hebb'
             #param_dataset_source = 'NCC Endemics Polygons'
-            #param_dataset_type = 'Species Observation Polygons'
             #param_date_received = 'October 15, 2019'
             #param_restrictions = None
 
@@ -80,7 +78,6 @@ class ImportSpatialDataTool:
             #param_dataset_organization = 'Yukon CDC'
             #param_dataset_contact = 'Maria Leung'
             #param_dataset_source = 'YT CDC Element Occurrences'
-            #param_dataset_type = 'Element Occurrences'
             #param_date_received = 'October 31, 2019'
             #param_restrictions = None
 
@@ -89,7 +86,6 @@ class ImportSpatialDataTool:
             #param_dataset_organization = 'Yukon CDC'
             #param_dataset_contact = 'Maria Leung'
             #param_dataset_source = 'CDC Source Feature Polygons'
-            #param_dataset_type = 'Source Feature Polygons'
             #param_date_received = 'October 30, 2019'
             #param_restrictions = None
 
@@ -98,7 +94,6 @@ class ImportSpatialDataTool:
             param_dataset_organization = 'British Columbia CDC'
             param_dataset_contact = 'Jacqueline Clare'
             param_dataset_source = 'BC CDC Element Occurrences'
-            param_dataset_type = 'Element Occurrences'
             param_date_received = 'November 4, 2019'
             param_restrictions = None
 
@@ -106,22 +101,29 @@ class ImportSpatialDataTool:
         arcpy.env.workspace = param_geodatabase
 
         # check parameters
+        # get dataset source id
+        with arcpy.da.SearchCursor(param_geodatabase + '/DatasetSource', ['DatasetSourceID'],
+                                   "DatasetSourceName = '" + param_dataset_source + "'") as cursor:
+            for row in EBARUtils.searchCursor(cursor):
+                dataset_source_id = row['DatasetSourceID']
+            del row
         # match field_dict with source
-        if param_dataset_source in ['NU CDC Element Occurrences',
-                                    'YT CDC Element Occurrences']:
-            field_dict = SpatialFieldMapping.cdc_eo_fields
-        elif param_dataset_source == 'BC CDC Element Occurrences':
-            field_dict = SpatialFieldMapping.bc_eo_fields
-        elif param_dataset_source == 'CDC Source Feature Polygons':
-            field_dict = SpatialFieldMapping.cdc_sf_fields
-        elif param_dataset_source == 'CDC Source Feature Points':
-            field_dict = SpatialFieldMapping.cdc_sf_fields
-        elif param_dataset_source == 'CDC Source Feature Lines':
-            field_dict = SpatialFieldMapping.cdc_sf_fields
-        elif param_dataset_source == 'ECCC Critical Habitat':
-            field_dict = SpatialFieldMapping.eccc_critical_habitat_fields
-        elif param_dataset_source == 'NCC Endemics Polygons':
-            field_dict = SpatialFieldMapping.ncc_endemics_polygons_fields
+        field_dict = SpatialFieldMapping.spatial_field_mapping_dict[param_dataset_source]
+        #if param_dataset_source in ['NU CDC Element Occurrences',
+        #                            'YT CDC Element Occurrences']:
+        #    field_dict = SpatialFieldMapping.cdc_eo_fields
+        #elif param_dataset_source == 'BC CDC Element Occurrences':
+        #    field_dict = SpatialFieldMapping.bc_eo_fields
+        #elif param_dataset_source == 'CDC Source Feature Polygons':
+        #    field_dict = SpatialFieldMapping.cdc_sf_fields
+        #elif param_dataset_source == 'CDC Source Feature Points':
+        #    field_dict = SpatialFieldMapping.cdc_sf_fields
+        #elif param_dataset_source == 'CDC Source Feature Lines':
+        #    field_dict = SpatialFieldMapping.cdc_sf_fields
+        #elif param_dataset_source == 'ECCC Critical Habitat':
+        #    field_dict = SpatialFieldMapping.eccc_critical_habitat_fields
+        #elif param_dataset_source == 'NCC Endemics Polygons':
+        #    field_dict = SpatialFieldMapping.ncc_endemics_polygons_fields
         # determine type of feature class
         desc = arcpy.Describe(param_import_feature_class)
         feature_class_type = desc.shapeType
@@ -133,8 +135,7 @@ class ImportSpatialDataTool:
                                                                           param_dataset_name,
                                                                           param_dataset_organization,
                                                                           param_dataset_contact,
-                                                                          param_dataset_source,
-                                                                          param_dataset_type,
+                                                                          dataset_source_id,
                                                                           param_date_received,
                                                                           param_restrictions)
         if not dataset_exists:
@@ -147,7 +148,7 @@ class ImportSpatialDataTool:
 
         # read existing unique IDs into dict
         EBARUtils.displayMessage(messages, 'Reading existing unique IDs')
-        id_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, param_dataset_source, feature_class_type)
+        id_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, dataset_source_id, feature_class_type)
 
         # pre-processing
         EBARUtils.displayMessage(messages, 'Pre-processing features')

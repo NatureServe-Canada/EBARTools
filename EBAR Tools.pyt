@@ -88,25 +88,25 @@ class ImportTabularData(object):
             datatype ='GPString',
             parameterType ='Required',
             direction ='Input')
-        param_dataset_source.filter.list = ['GBIF',
-                                            'NCC_GBIF',
-                                            'VertNet',
-                                            'Ecoengine',
-                                            'iNaturalist',
-                                            'BISON',
-                                            'Canadensys',
-                                            'NCCEndemics',
-                                            'iDigBio',
-                                            'Other']
+        #param_dataset_source.filter.list = ['GBIF',
+        #                                    'NCC_GBIF',
+        #                                    'VertNet',
+        #                                    'Ecoengine',
+        #                                    'iNaturalist',
+        #                                    'BISON',
+        #                                    'Canadensys',
+        #                                    'NCCEndemics',
+        #                                    'iDigBio',
+        #                                    'Other']
 
-        # Dataset Type
-        param_dataset_type = arcpy.Parameter(
-            displayName ='Dataset Type',
-            name ='dataset_type',
-            datatype ='GPString',
-            parameterType ='Required',
-            direction ='Input')
-        param_dataset_type.filter.list = ['CSV']
+        ## Dataset Type
+        #param_dataset_type = arcpy.Parameter(
+        #    displayName ='Dataset Type',
+        #    name ='dataset_type',
+        #    datatype ='GPString',
+        #    parameterType ='Required',
+        #    direction ='Input')
+        #param_dataset_type.filter.list = ['CSV']
 
         # Date Received
         param_date_received = arcpy.Parameter(
@@ -127,8 +127,7 @@ class ImportTabularData(object):
             direction ='Input')
         
         params = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_organization,
-                  param_dataset_contact, param_dataset_source, param_dataset_type, param_date_received,
-                  param_dataset_restrictions]
+                  param_dataset_contact, param_dataset_source, param_date_received, param_dataset_restrictions]
         return params
 
     def isLicensed(self):
@@ -138,6 +137,8 @@ class ImportTabularData(object):
     def updateParameters(self, parameters):
         """Modify the values and properties of parameters before internal validation is performed.  This method is " + \
         "called whenever a parameter has been changed."""
+        if parameters[0].altered and parameters[0].value:
+            parameters[5].filter.list = EBARUtils.readDatasetSources(parameters[0].valueAsText, 'T')
         return
 
     def updateMessages(self, parameters):
@@ -205,36 +206,39 @@ class ImportSpatialData(object):
             direction ='Input')
         
         # Dataset Source
+        # - used to check for uniqueness of records using provided IDs
+        # - one field map can be shared among multiple sources
         param_dataset_source = arcpy.Parameter(
             displayName ='Dataset Source',
             name ='dataset_source',
             datatype ='GPString',
             parameterType ='Required',
             direction ='Input')
-        param_dataset_source.filter.list = ['NU CDC Element Occurrences',
-                                            'YT CDC Element Occurrences',
-                                            'BC CDC Element Occurrences',
-                                            'CDC Source Feature Polygons',
-                                            'CDC Source Feature Points',
-                                            'CDC Source Feature Lines',
-                                            'ECCC Critical Habitat',
-                                            'NCC Endemics Polygons',
-                                            'Other']
+        #param_dataset_source.filter.list = ['NU CDC Element Occurrences',
+        #                                    'YT CDC Element Occurrences',
+        #                                    'BC CDC Element Occurrences',
+        #                                    'CDC Source Feature Polygons',
+        #                                    'CDC Source Feature Points',
+        #                                    'CDC Source Feature Lines',
+        #                                    'ECCC Critical Habitat',
+        #                                    'NCC Endemics Polygons',
+        #                                    'Other']
 
-        # Dataset Type
-        param_dataset_type = arcpy.Parameter(
-            displayName ='Dataset Type',
-            name ='dataset_type',
-            datatype ='GPString',
-            parameterType ='Required',
-            direction ='Input')
-        param_dataset_type.filter.list = ['Element Occurrences', # P
-                                          'Source Feature Polygons', # P
-                                          'Source Feature Points', # P
-                                          'Species Observation Polygons', # P
-                                          'Critical Habitat', # X
-                                          'Habitat Suitability', # X
-                                          'Range Estimate'] # X
+        ## Dataset Type
+        ## - used during Generate Range Map to determine Presence
+        #param_dataset_type = arcpy.Parameter(
+        #    displayName ='Dataset Type',
+        #    name ='dataset_type',
+        #    datatype ='GPString',
+        #    parameterType ='Required',
+        #    direction ='Input')
+        #param_dataset_type.filter.list = ['Element Occurrences', # P
+        #                                  'Source Feature Polygons', # P
+        #                                  'Source Feature Points', # P
+        #                                  'Species Observation Polygons', # P
+        #                                  'Critical Habitat', # X
+        #                                  'Habitat Suitability', # X
+        #                                  'Range Estimate'] # X
 
         # Date Received
         param_date_received = arcpy.Parameter(
@@ -255,8 +259,7 @@ class ImportSpatialData(object):
             direction ='Input')
         
         params = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_organization,
-                  param_dataset_contact, param_dataset_source, param_dataset_type, param_date_received,
-                  param_dataset_restrictions]
+                  param_dataset_contact, param_dataset_source, param_date_received, param_dataset_restrictions]
         return params
 
     def isLicensed(self):
@@ -266,6 +269,8 @@ class ImportSpatialData(object):
     def updateParameters(self, parameters):
         """Modify the values and properties of parameters before internal validation is performed.  This method is " + \
         "called whenever a parameter has been changed."""
+        if parameters[0].altered and parameters[0].value:
+            parameters[5].filter.list = EBARUtils.readDatasetSources(parameters[0].valueAsText, 'S')
         return
 
     def updateMessages(self, parameters):

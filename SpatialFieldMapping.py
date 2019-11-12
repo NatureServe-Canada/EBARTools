@@ -26,7 +26,7 @@ cdc_sf_fields = {'unique_id': 'SOURCE_FEA',
                  'uri': None,
                  'scientific_name': 'SNAME',
                  'min_date': None,
-                 'max_date': None,
+                 'max_date': 'MAX_DATE',
                  'eo_rank': None}
 
 eccc_critical_habitat_fields = {'unique_id': 'Identifier',
@@ -42,3 +42,14 @@ ncc_endemics_polygons_fields = {'unique_id': 'OBJECTID',
                                 'min_date': None,
                                 'max_date': None,
                                 'eo_rank': None}
+
+spatial_field_mapping_dict = {'NU CDC Element Occurrences': cdc_eo_fields,
+                              'YT CDC Element Occurrences': cdc_eo_fields,
+                              'BC CDC Element Occurrences': bc_eo_fields,
+                              'NU CDC Source Feature Polygons': cdc_sf_fields,
+                              'YT CDC Source Feature Polygons': cdc_sf_fields,
+                              'NU CDC Source Feature Points': cdc_sf_fields,
+                              'YT CDC Source Feature Points': cdc_sf_fields,
+                              'YT CDC Source Feature Lines': cdc_sf_fields,
+                              'ECCC Critical Habitat': eccc_critical_habitat_fields,
+                              'NCC Endemics Literature': ncc_endemics_polygons_fields}

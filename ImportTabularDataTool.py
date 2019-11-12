@@ -33,8 +33,8 @@ class ImportTabularDataTool:
     def RunImportTabularDataTool(self, parameters, messages):
         # debugging/testing
         #print(locale.getpreferredencoding())
-        #print(str(EBARUtils.estimateAccuracy(0.0)))
-        #return
+        print(str(EBARUtils.estimateAccuracy(80.0)))
+        return
 
         # check out any needed extension licenses
         #arcpy.CheckOutExtension('Spatial')

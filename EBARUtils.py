@@ -138,15 +138,15 @@ def setNewID(table, id_field, where_clause):
         del row
 
 
-def checkAddInputDataset(geodatabase, dataset_name, dataset_organization, dataset_contact, dataset_source,
-                         dataset_type, date_received, restrictions):
+def checkAddInputDataset(geodatabase, dataset_name, dataset_organization, dataset_contact, dataset_source_id,
+                         date_received, restrictions):
     """If Dataset already exists (name, source, date), return id and true; otherwise, add and return id and false"""
     input_dataset_id = None
 
     # existing
     with arcpy.da.SearchCursor(geodatabase + '/InputDataset', ['InputDatasetID'],
-                               "DatasetName = '" + dataset_name + "' AND DatasetSource = '" + dataset_source + "' AND " +
-                               "DateReceived = date '" + date_received + "'") as cursor:
+                               "DatasetName = '" + dataset_name + "' AND DatasetSourceID = " + \
+                               str(dataset_source_id) + " AND DateReceived = date '" + date_received + "'") as cursor:
         for row in searchCursor(cursor):
             input_dataset_id = row['InputDatasetID']
         if input_dataset_id:
@@ -154,11 +154,11 @@ def checkAddInputDataset(geodatabase, dataset_name, dataset_organization, datase
             return input_dataset_id, True
 
     # new
-    dataset_fields = ['DatasetName', 'DatasetOrganization', 'DatasetContact', 'DatasetSource', 'DatasetType',
-                      'DateReceived', 'Restrictions']
+    dataset_fields = ['DatasetName', 'DatasetOrganization', 'DatasetContact', 'DatasetSourceID', 'DateReceived',
+                      'Restrictions']
     with arcpy.da.InsertCursor(geodatabase + '/InputDataset', dataset_fields) as cursor:
-        input_dataset_id = cursor.insertRow([dataset_name, dataset_organization, dataset_contact, dataset_source,
-                                             dataset_type, date_received, restrictions])
+        input_dataset_id = cursor.insertRow([dataset_name, dataset_organization, dataset_contact, dataset_source_id,
+                                             date_received, restrictions])
     return input_dataset_id, False
 
 
@@ -216,7 +216,7 @@ def checkSpecies(scientific_name, geodatabase):
     return species_id
 
 
-def readDatasetSourceUniqueIDs(geodatabase, dataset_source, feature_class_type):
+def readDatasetSourceUniqueIDs(geodatabase, dataset_source_id, feature_class_type):
     """read existing unique ids for dataset source into dict and return"""
     # different feature class for each type
     if feature_class_type in ('Polygon', 'MultiPatch'):
@@ -233,7 +233,7 @@ def readDatasetSourceUniqueIDs(geodatabase, dataset_source, feature_class_type):
     unique_ids_dict = {}
     with arcpy.da.SearchCursor('feature_layer',
                                [spatial_id_field, source_id_field],
-                               "InputDataset.DatasetSource = '" + dataset_source + "'") as cursor:
+                               'InputDataset.DatasetSourceID = ' + str(dataset_source_id)) as cursor:
         for row in searchCursor(cursor):
             unique_ids_dict[row[source_id_field]] = row[spatial_id_field]
     if len(unique_ids_dict) > 0:
@@ -310,3 +310,16 @@ def createFieldMap(input_table, input_field, output_field, data_type):
     field.type = data_type
     field_map.outputField = field
     return field_map
+
+
+def readDatasetSources(param_geodatabase, dataset_source_type):
+    """return a list of dataset source names for the given type"""
+    source_list = []
+    with arcpy.da.SearchCursor(param_geodatabase + '/DatasetSource', ['DatasetSourceName'],
+                                "DatasetSourceType = '" + dataset_source_type + "'",
+                                sql_clause=(None,'ORDER BY DatasetSourceName')) as cursor:
+        for row in searchCursor(cursor):
+            source_list.append(row['DatasetSourceName'])
+        if len(source_list) > 0:
+            del row
+    return source_list
