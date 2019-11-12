@@ -33,8 +33,8 @@ class ImportTabularDataTool:
     def RunImportTabularDataTool(self, parameters, messages):
         # debugging/testing
         #print(locale.getpreferredencoding())
-        print(str(EBARUtils.estimateAccuracy(80.0)))
-        return
+        #print(str(EBARUtils.estimateAccuracy(80.0)))
+        #return
 
         # check out any needed extension licenses
         #arcpy.CheckOutExtension('Spatial')
@@ -56,9 +56,9 @@ class ImportTabularDataTool:
             param_dataset_organization = parameters[3].valueAsText
             param_dataset_contact = parameters[4].valueAsText
             param_dataset_source = parameters[5].valueAsText
-            param_dataset_type = parameters[6].valueAsText
-            param_date_received = parameters[7].valueAsText
-            param_restrictions = parameters[8].valueAsText
+            #param_dataset_type = parameters[6].valueAsText
+            param_date_received = parameters[6].valueAsText
+            param_restrictions = parameters[7].valueAsText
         else:
             # for debugging, hard code parameters
             param_geodatabase = 'C:/GIS/EBAR/EBAR_outputs.gdb'
@@ -68,7 +68,6 @@ class ImportTabularDataTool:
             #param_dataset_organization = 'Global Biodiversity Information Facility'
             #param_dataset_contact = 'https://www.gbif.org'
             #param_dataset_source = 'GBIF'
-            #param_dataset_type = 'CSV'
             #param_date_received = 'September 28, 2019'
             #param_restrictions = None
 
@@ -77,25 +76,22 @@ class ImportTabularDataTool:
             #param_dataset_organization = 'Global Biodiversity Information Facility'
             #param_dataset_contact = 'Andrea Hebb'
             #param_dataset_source = 'NCC_GBIF'
-            #param_dataset_type = 'CSV'
             #param_date_received = 'October 15, 2019'
             #param_restrictions = None
 
-            #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/Real_Data/Endemics_vertnet.csv'
-            #param_dataset_name = 'VerNet Endemics'
-            #param_dataset_organization = 'National Science Foundation'
-            #param_dataset_contact = 'http://vertnet.org/'
-            #param_dataset_source = 'VertNet'
-            #param_dataset_type = 'CSV'
-            #param_date_received = 'October 15, 2019'
-            #param_restrictions = None
+            param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/Real_Data/Endemics_vertnet.csv'
+            param_dataset_name = 'VerNet Endemics'
+            param_dataset_organization = 'National Science Foundation'
+            param_dataset_contact = 'http://vertnet.org/'
+            param_dataset_source = 'VertNet'
+            param_date_received = 'October 15, 2019'
+            param_restrictions = None
 
             #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/ecoengine.csv'
             #param_dataset_name = 'Ecoengine Microseris'
             #param_dataset_organization = 'Berkeley Ecoinformatics Engine'
             #param_dataset_contact = 'https://ecoengine.berkeley.edu/'
             #param_dataset_source = 'Ecoengine'
-            #param_dataset_type = 'CSV'
             #param_date_received = 'September 30, 2019'
             #param_restrictions = None
 
@@ -107,7 +103,6 @@ class ImportTabularDataTool:
             #param_dataset_organization = 'California Academy of Sciences and the National Geographic Society'
             #param_dataset_contact = 'https://www.inaturalist.org/'
             #param_dataset_source = 'iNaturalist'
-            #param_dataset_type = 'CSV'
             #param_date_received = 'October 2, 2019'
             #param_restrictions = None
 
@@ -116,7 +111,6 @@ class ImportTabularDataTool:
             #param_dataset_organization = 'United States Geological Survey'
             #param_dataset_contact = 'https://bison.usgs.gov/'
             #param_dataset_source = 'BISON'
-            #param_dataset_type = 'CSV'
             #param_date_received = 'September 30, 2019'
             #param_restrictions = None
 
@@ -126,18 +120,16 @@ class ImportTabularDataTool:
             #param_dataset_organization = 'Université de Montréal Biodiversity Centre'
             #param_dataset_contact = 'http://www.canadensys.net/'
             #param_dataset_source = 'Canadensys'
-            #param_dataset_type = 'CSV'
             #param_date_received = 'October 9, 2019'
             #param_restrictions = None
 
-            param_raw_data_file = 'C:/GIS/EBAR/NCC/NCC_Species_Obs_20190521.csv'
-            param_dataset_name = 'NCC Endemics'
-            param_dataset_organization = 'Nature Conservancy of Canada'
-            param_dataset_contact = 'Andrea Hebb'
-            param_dataset_source = 'NCCEndemics'
-            param_dataset_type = 'CSV'
-            param_date_received = 'October 15, 2019'
-            param_restrictions = None
+            #param_raw_data_file = 'C:/GIS/EBAR/NCC/NCC_Species_Obs_20190521.csv'
+            #param_dataset_name = 'NCC Endemics'
+            #param_dataset_organization = 'Nature Conservancy of Canada'
+            #param_dataset_contact = 'Andrea Hebb'
+            #param_dataset_source = 'NCCEndemics'
+            #param_date_received = 'October 15, 2019'
+            #param_restrictions = None
 
             #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/Real_Data/' + \
             #    'Endemics_idigbio_capname.csv'
@@ -145,7 +137,6 @@ class ImportTabularDataTool:
             #param_dataset_organization = 'Integrated Digital Biocollection'
             #param_dataset_contact = 'https://www.idigbio.org/'
             #param_dataset_source = 'iDigBio'
-            #param_dataset_type = 'CSV'
             #param_date_received = 'October 15, 2019'
             #param_restrictions = None
 
@@ -153,26 +144,14 @@ class ImportTabularDataTool:
         arcpy.env.workspace = param_geodatabase
 
         # check parameters
-        if param_dataset_source == 'GBIF':
-            field_dict = TabularFieldMapping.gbif_fields
-        elif param_dataset_source == 'NCC_GBIF':
-            field_dict = TabularFieldMapping.ncc_gbif_fields
-        elif param_dataset_source == 'VertNet':
-            field_dict = TabularFieldMapping.vertnet_fields
-        elif param_dataset_source == 'Ecoengine':
-            field_dict = TabularFieldMapping.ecoengine_fields
-        elif param_dataset_source == 'iNaturalist':
-            field_dict = TabularFieldMapping.inaturalist_fields
-        elif param_dataset_source == 'BISON':
-            field_dict = TabularFieldMapping.bison_fields
-        elif param_dataset_source == 'Canadensys':
-            field_dict = TabularFieldMapping.canadensys_fields
-        elif param_dataset_source == 'NCCEndemics':
-            field_dict = TabularFieldMapping.ncc_endemics_fields
-        elif param_dataset_source == 'iDigBio':
-            field_dict = TabularFieldMapping.idigbio_fields
-        elif param_dataset_source == 'Other':
-            field_dict = TabularFieldMapping.other_fields
+        # get dataset source id
+        with arcpy.da.SearchCursor(param_geodatabase + '/DatasetSource', ['DatasetSourceID'],
+                                   "DatasetSourceName = '" + param_dataset_source + "'") as cursor:
+            for row in EBARUtils.searchCursor(cursor):
+                dataset_source_id = row['DatasetSourceID']
+            del row
+        # match field_dict with source
+        field_dict = TabularFieldMapping.tabular_field_mapping_dict[param_dataset_source]
 
         # check/add InputDataset row
         dataset = param_dataset_name + ', ' + param_dataset_source + ', ' + str(param_date_received)
@@ -181,8 +160,7 @@ class ImportTabularDataTool:
                                                                           param_dataset_name,
                                                                           param_dataset_organization,
                                                                           param_dataset_contact,
-                                                                          param_dataset_source,
-                                                                          param_dataset_type,
+                                                                          dataset_source_id,
                                                                           param_date_received,
                                                                           param_restrictions)
         if not dataset_exists:
@@ -195,7 +173,7 @@ class ImportTabularDataTool:
 
         # read existing unique IDs into dict
         EBARUtils.displayMessage(messages, 'Reading existing unique IDs')
-        id_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, param_dataset_source, 'Point')
+        id_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, dataset_source_id, 'Point')
 
         # try to open data file as a csv
         infile = io.open(param_raw_data_file, 'r', encoding='mbcs') # mbcs encoding is Windows ANSI
@@ -217,8 +195,8 @@ class ImportTabularDataTool:
                 species_id, species_exists = EBARUtils.checkAddSpecies(species_dict, param_geodatabase,
                                                                        file_line[field_dict['scientific_name']])
                 # check/add point for current line
-                input_point_id, status = self.CheckAddPoint(id_dict, param_geodatabase, param_dataset_source,
-                                                            input_dataset_id, species_id, file_line, field_dict)
+                input_point_id, status = self.CheckAddPoint(id_dict, param_geodatabase, input_dataset_id, species_id,
+                                                            file_line, field_dict)
                 # increment/report counts
                 count += 1
                 if count % 1000 == 0:
@@ -272,7 +250,7 @@ class ImportTabularDataTool:
 
         return
 
-    def CheckAddPoint(self, id_dict, geodatabase, dataset_source, input_dataset_id, species_id, file_line, field_dict):
+    def CheckAddPoint(self, id_dict, geodatabase, input_dataset_id, species_id, file_line, field_dict):
         """If point already exists, check if needs update; otherwise, add"""
         # CoordinatesObscured
         coordinates_obscured = False

@@ -207,3 +207,14 @@ other_fields = {'quality_grade': None,
                 'date': 'observationDate',
                 'basis_of_record': None,
                 'individual_count': 'individualsCount'}
+
+tabular_field_mapping_dict = {'GBIF': gbif_fields,
+                              'NCC_GBIF': ncc_gbif_fields,
+                              'VertNet': vertnet_fields,
+                              'Ecoengine': ecoengine_fields,
+                              'iNaturalist': inaturalist_fields,
+                              'BISON': bison_fields,
+                              'Canadensys': canadensys_fields,
+                              'NCCEndemics': ncc_endemics_fields,
+                              'iDigBio': idigbio_fields,
+                              'Other': other_fields}
