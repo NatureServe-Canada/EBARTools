@@ -61,8 +61,8 @@ class GenerateRangeMapTool:
             param_stage = parameters[4].valueAsText
         else:
             # for debugging, hard code parameters
-            param_geodatabase = 'C:/Users/rgree/Documents/ArcGIS/Packages/Yukon_Final_Maps_6971a9/p20/ebardev_gdb.gdb'
-            param_species = 'Bruneria yukonensis'
+            param_geodatabase = 'C:/GIS/EBAR/EBAR_outputs.gdb'
+            param_species = 'Micranthes spicata'
             param_secondary = None
             param_version = '1.0'
             param_stage = 'Auto-generated'
@@ -364,8 +364,11 @@ class GenerateRangeMapTool:
             arcpy.Delete_management('TempEcoshapeCountBySource')
         arcpy.AddJoin_management('pairwise_intersect_layer', 'InputDatasetID',
                                  param_geodatabase + '/InputDataset', 'InputDatasetID', 'KEEP_COMMON')
+        arcpy.AddJoin_management('pairwise_intersect_layer', 'DatasetSourceID',
+                                 param_geodatabase + '/DatasetSource', 'DatasetSourceID', 'KEEP_COMMON')
         arcpy.Statistics_analysis('pairwise_intersect_layer', 'TempEcoshapeCountBySource', [['InputPointID', 'COUNT']],
-                                  ['EcoshapeID', 'InputDataset.DatasetSource'])
+                                  ['EcoshapeID', 'DatasetSource.DatasetSourceName'])
+        arcpy.RemoveJoin_management('pairwise_intersect_layer', 'DatasetSource')
         arcpy.RemoveJoin_management('pairwise_intersect_layer', 'InputDataset')
 
         # update range map ecoshapes with summary (and high-grade presence for some polygon dataset sources)
@@ -374,7 +377,8 @@ class GenerateRangeMapTool:
                                    ['EcoshapeID', 'Presence', 'RangeMapEcoshapeNotes'],
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
             for update_row in EBARUtils.updateCursor(update_cursor):
-                with arcpy.da.SearchCursor('TempEcoshapeCountBySource', ['InputDataset_DatasetSource', 'FREQUENCY'],
+                with arcpy.da.SearchCursor('TempEcoshapeCountBySource',
+                                           ['DatasetSource_DatasetSourceName', 'FREQUENCY'],
                                            'TempPairwiseIntersect_EcoshapeID = ' + \
                                            str(update_row['EcoshapeID'])) as search_cursor:
                     summary = ''
@@ -382,11 +386,13 @@ class GenerateRangeMapTool:
                     for search_row in EBARUtils.searchCursor(search_cursor):
                         if len(summary) > 0:
                             summary += ', '
-                        summary += search_row['InputDataset_DatasetSource'] + ': ' + str(search_row['FREQUENCY']) + \
-                            ' input record(s)'
-                        # high-grade Presence Expected to Present for some polygon dataset sources
-                        if presence == 'X' and (search_row['InputDataset_DatasetSource'] in
-                                                ('Element Occurrences', 'Source Feature Polygons')):
+                        summary += search_row['DatasetSource_DatasetSourceName'] + ': ' + \
+                            str(search_row['FREQUENCY']) + ' input record(s)'
+                        # high-grade Presence Expected to Present for some dataset sources
+                        if presence == 'X' and (search_row['DatasetSource_DatasetSourceName'] in
+                                                ('Element Occurrences', 'Source Feature Polygons',
+                                                 'Source Feature Lines', 'Source Feature Points',
+                                                 'Species Observation Polygons')):
                             presence = 'P'
                     del search_row
                 update_cursor.updateRow([update_row['EcoshapeID'], presence, summary])
@@ -398,11 +404,13 @@ class GenerateRangeMapTool:
         arcpy.MakeFeatureLayer_management('TempAllInputs', 'all_inputs_layer')
         arcpy.AddJoin_management('all_inputs_layer', 'InputDatasetID',
                                  param_geodatabase + '/InputDataset', 'InputDatasetID', 'KEEP_COMMON')
+        arcpy.AddJoin_management('all_inputs_layer', 'DatasetSourceID',
+                                 param_geodatabase + '/DatasetSource', 'DatasetSourceID', 'KEEP_COMMON')
         arcpy.SelectLayerByLocation_management('all_inputs_layer', 'INTERSECT', param_geodatabase + '/Ecoshape')
         if arcpy.Exists('TempOverallCountBySource'):
             arcpy.Delete_management('TempOverallCountBySource')
         arcpy.Statistics_analysis('all_inputs_layer', 'TempOverallCountBySource', [['InputPointID', 'COUNT']],
-                                  ['InputDataset.DatasetSource'])
+                                  ['DatasetSource.DatasetSourceName'])
 
         # update RangeMap date and metadata
         EBARUtils.displayMessage(messages, 'Updating Range Map record with overall summary')
@@ -410,13 +418,13 @@ class GenerateRangeMapTool:
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
             for update_row in update_cursor:
                 with arcpy.da.SearchCursor('TempOverallCountBySource',
-                                           ['InputDataset_DatasetSource', 'FREQUENCY']) as search_cursor:
+                                           ['DatasetSource_DatasetSourceName', 'FREQUENCY']) as search_cursor:
                     summary = ''
                     for search_row in EBARUtils.searchCursor(search_cursor):
                         if len(summary) > 0:
                             summary += ', '
-                        summary += search_row['InputDataset_DatasetSource'] + ': ' + str(search_row['FREQUENCY']) + \
-                            ' input record(s)'
+                        summary += search_row['DatasetSource_DatasetSourceName'] + ': ' + \
+                            str(search_row['FREQUENCY']) + ' input record(s)'
                     del search_row
                 notes = 'Primary Species: ' + param_species + '; Secondary Species: ' + secondary_names
                 update_cursor.updateRow([datetime.datetime.now(), summary, notes])
