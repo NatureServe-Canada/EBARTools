@@ -13,6 +13,7 @@ cdc_eo_fields = {'unique_id': 'EO_ID',
                  'scientific_name': 'SName',
                  'min_date': None,
                  'max_date': 'LAST_OBS_D',
+                 'rep_accuracy': 'EST_REP_AC',
                  'eo_rank': 'BASIC_EO_R'}
 
 bc_eo_fields = {'unique_id': 'OCCR_ID',
@@ -20,6 +21,7 @@ bc_eo_fields = {'unique_id': 'OCCR_ID',
                 'scientific_name': 'SCI_NAME',
                 'min_date': 'FIRST_OBS',
                 'max_date': 'LAST_OBS',
+                'rep_accuracy': None,
                 'eo_rank': 'RANK'}
 
 cdc_sf_fields = {'unique_id': 'SOURCE_FEA',
@@ -27,6 +29,7 @@ cdc_sf_fields = {'unique_id': 'SOURCE_FEA',
                  'scientific_name': 'SNAME',
                  'min_date': None,
                  'max_date': 'MAX_DATE',
+                 'rep_accuracy': 'EST_REP_AC',
                  'eo_rank': None}
 
 eccc_critical_habitat_fields = {'unique_id': 'Identifier',
@@ -34,6 +37,7 @@ eccc_critical_habitat_fields = {'unique_id': 'Identifier',
                                 'scientific_name': 'SciName',
                                 'min_date': None,
                                 'max_date': None,
+                                'rep_accuracy': None,
                                 'eo_rank': None}
 
 ncc_endemics_polygons_fields = {'unique_id': 'OBJECTID',
@@ -41,6 +45,7 @@ ncc_endemics_polygons_fields = {'unique_id': 'OBJECTID',
                                 'scientific_name': 'MATCH_NSC',
                                 'min_date': None,
                                 'max_date': None,
+                                'rep_accuracy': None,
                                 'eo_rank': None}
 
 spatial_field_mapping_dict = {'NU CDC Element Occurrences': cdc_eo_fields,

@@ -55,46 +55,12 @@ class ImportSpatialDataTool:
             # for debugging, hard code parameters
             param_geodatabase = 'C:/GIS/EBAR/EBAR_outputs.gdb'
 
-            #param_import_feature_class = 'C:/GIS/EBAR/CriticalHabitat/' + \
-            #    'Critical Habitat for Species at Risk - National View.gdb/CriticalHabitatNationalView'
-            #param_dataset_name = 'ECCC Critical Habitat National View'
-            #param_dataset_organization = 'Environment and Climate Change Canada'
-            #param_dataset_contact = \
-            #    'http://data.ec.gc.ca/data/species/protectrestore/critical-habitat-species-at-risk-canada/'
-            #param_dataset_source = 'ECCC Critical Habitat'
-            #param_date_received = 'October 18, 2019'
-            #param_restrictions = None
-
-            #param_import_feature_class = 'C:/GIS/EBAR/NCC/Endemics_Data_EBAR.gdb/Literature_20190813'
-            #param_dataset_name = 'NCC Endemics Literature'
-            #param_dataset_organization = 'Nature Conservancy of Canada'
-            #param_dataset_contact = 'Andrea Hebb'
-            #param_dataset_source = 'NCC Endemics Polygons'
-            #param_date_received = 'October 15, 2019'
-            #param_restrictions = None
-
-            #param_import_feature_class = 'C:/GIS/EBAR/CDN_CDC_Data/Yukon/EO_data_Yukon.shp'
-            #param_dataset_name = 'Yukon EOs'
-            #param_dataset_organization = 'Yukon CDC'
-            #param_dataset_contact = 'Maria Leung'
-            #param_dataset_source = 'YT CDC Element Occurrences'
-            #param_date_received = 'October 31, 2019'
-            #param_restrictions = None
-
-            #param_import_feature_class = 'C:/GIS/EBAR/CDN_CDC_Data/Yukon/SF_polygon_Yukon.shp'
-            #param_dataset_name = 'Yukon SFs'
-            #param_dataset_organization = 'Yukon CDC'
-            #param_dataset_contact = 'Maria Leung'
-            #param_dataset_source = 'CDC Source Feature Polygons'
-            #param_date_received = 'October 30, 2019'
-            #param_restrictions = None
-
-            param_import_feature_class = 'C:/GIS/EBAR/CDN_CDC_Data/British_Columbia/EO_Data_fromOnlineDownload/BCGW_7113060B_1571339682776_13464/BIOT_OCCR_NON_SENS_AREA_SVW.gdb/WHSE_TERRESTRIAL_ECOLOGY_BIOT_OCCR_NON_SENS_AREA_SVW'
-            param_dataset_name = 'BC WHSE1'
-            param_dataset_organization = 'British Columbia CDC'
-            param_dataset_contact = 'Jacqueline Clare'
-            param_dataset_source = 'BC CDC Element Occurrences'
-            param_date_received = 'November 4, 2019'
+            param_import_feature_class = 'C:/GIS/EBAR/CDN_CDC_Data/Yukon/SF_polygon_Yukon.shp'
+            param_dataset_name = 'Yukon Polygon SFs'
+            param_dataset_organization = 'Yukon CDC'
+            param_dataset_contact = 'Maria Leung'
+            param_dataset_source = 'YT CDC Source Feature Polygons'
+            param_date_received = 'October 30, 2019'
             param_restrictions = None
 
         # use passed geodatabase as workspace (still seems to go to default geodatabase)
@@ -266,6 +232,9 @@ class ImportSpatialDataTool:
         if field_dict['max_date']:
             field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', 'MaxDate',
                                                                 'MaxDate', 'DATE'))
+        if field_dict['rep_accuracy']:
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict['rep_accuracy'],
+                                                                'RepresentationAccuracy', 'TEXT'))
         if field_dict['eo_rank'] and feature_class_type in ('Polygon', 'MultiPatch'):
             field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', 'eo_rank',
                                                                 'EORank', 'DATE'))
