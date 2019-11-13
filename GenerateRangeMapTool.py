@@ -224,6 +224,16 @@ class GenerateRangeMapTool:
         #arcpy.Buffer_analysis('input_point_layer', 'TempPointBuffer', 'buffer')
         arcpy.Buffer_analysis('input_point_layer', 'TempPointBuffer', default_buffer_size)
 
+        # select all lines for species and buffer
+        EBARUtils.displayMessage(messages, 'Buffering Input Lines')
+        arcpy.MakeFeatureLayer_management(param_geodatabase + '/InputLine', 'input_line_layer')
+        arcpy.SelectLayerByAttribute_management('input_line_layer', 'NEW_SELECTION',
+                                                'SpeciesID IN (' + species_ids + ') AND (Accuracy IS NULL'
+                                                ' OR Accuracy <= ' + str(EBARUtils.worst_accuracy) + ')')
+        if arcpy.Exists('TempLineBuffer'):
+            arcpy.Delete_management('TempLineBuffer')
+        arcpy.Buffer_analysis('input_line_layer', 'TempLineBuffer', default_buffer_size)
+
         # select all polygons for species
         EBARUtils.displayMessage(messages, 'Selecting Input Polygons')
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/InputPolygon', 'input_polygon_layer')
@@ -232,10 +242,11 @@ class GenerateRangeMapTool:
                                                 ' OR Accuracy <= ' + str(EBARUtils.worst_accuracy) + ')')
 
         # merge buffer polygons and input polygons
-        EBARUtils.displayMessage(messages, 'Merging Buffered Points and Input Polygons')
+        EBARUtils.displayMessage(messages, 'Merging Buffered Points and Lines and Input Polygons')
         if arcpy.Exists('TempAllInputs'):
             arcpy.Delete_management('TempAllInputs')
-        arcpy.Merge_management(['TempPointBuffer', 'input_polygon_layer'], 'TempAllInputs', None, 'ADD_SOURCE_INFO')
+        arcpy.Merge_management(['TempPointBuffer', 'TempLineBuffer', 'input_polygon_layer'], 'TempAllInputs', None,
+                               'ADD_SOURCE_INFO')
 
         # eo ranks, when available, override dates in determining historical (fake the date to accomplish this)
         EBARUtils.displayMessage(messages, 'Applying EO Ranks, where available, to determine historical records')
