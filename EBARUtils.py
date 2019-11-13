@@ -174,46 +174,61 @@ def checkAddField(table, field_name, field_type):
 def readSpecies(geodatabase):
     """read existing species into dict and return"""
     species_dict = {}
-    with arcpy.da.SearchCursor(geodatabase + '/Species', ['ScientificName', 'SpeciesID']) as cursor:
+    arcpy.MakeFeatureLayer_management(geodatabase + '/Species', 'species_layer')
+    arcpy.AddJoin_management('species_layer', 'ELEMENT_NATIONAL_ID', geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
+                             'ELEMENT_NATIONAL_ID')
+    with arcpy.da.SearchCursor('species_layer', ['NATIONAL_SCIENTIFIC_NAME', 'SpeciesID']) as cursor:
         for row in searchCursor(cursor):
-            species_dict[row['ScientificName']] = row['SpeciesID']
+            species_dict[row['NATIONAL_SCIENTIFIC_NAME']] = row['SpeciesID']
     if len(species_dict) > 0:
         del row
+    arcpy.RemoveJoin_management('species_layer', 'BIOTICS_ELEMENT_NATIONAL')
     return species_dict
 
 
-def checkAddSpecies(species_dict, geodatabase, scientific_name):
-    """If Scientific Name already in Species table, return id and true; otherwise, add and return id and false"""
-    ret_val = None
-
-    # capitalize first letter only
-    cap_name = scientific_name.capitalize()
-
-    # existing
-    if cap_name in species_dict:
-        return species_dict[cap_name], True
-
-    # new
-    with arcpy.da.InsertCursor(geodatabase + '/Species', ['ScientificName']) as cursor:
-        species_id = cursor.insertRow([cap_name])
-
-    # id of new
-    setNewID(geodatabase + '/Species', 'SpeciesID', 'OBJECTID = ' + str(species_id))
-    species_dict[cap_name] = species_id
-    return species_id, False
-
-
-def checkSpecies(scientific_name, geodatabase):
-    """if exists return SpeciesID"""
-    species_id = None
-    with arcpy.da.SearchCursor(geodatabase + '/Species', ['SpeciesID'], "ScientificName = '" + \
-                               scientific_name + "'", None) as cursor:
+def readSynonyms(geodatabase):
+    """read existing synonyms into dict and return"""
+    synonym_dict = {}
+    with arcpy.da.SearchCursor(geodatabase + '/Synonym', ['SynonymName', 'SynonymID']) as cursor:
         for row in searchCursor(cursor):
-            species_id = row['SpeciesID']
-        if species_id:
-            # found
-            del row
-    return species_id
+            synonym_dict[row['SynonymName']] = row['SynonymID']
+    if len(synonym_dict) > 0:
+        del row
+    return synonym_dict
+
+
+#def checkAddSpecies(species_dict, geodatabase, scientific_name):
+#    """If Scientific Name already in Species table, return id and true; otherwise, add and return id and false"""
+#    ret_val = None
+
+#    # capitalize first letter only
+#    cap_name = scientific_name.capitalize()
+
+#    # existing
+#    if cap_name in species_dict:
+#        return species_dict[cap_name], True
+
+#    # new
+#    with arcpy.da.InsertCursor(geodatabase + '/Species', ['ScientificName']) as cursor:
+#        species_id = cursor.insertRow([cap_name])
+
+#    # id of new
+#    setNewID(geodatabase + '/Species', 'SpeciesID', 'OBJECTID = ' + str(species_id))
+#    species_dict[cap_name] = species_id
+#    return species_id, False
+
+
+#def checkSpecies(scientific_name, geodatabase):
+#    """if exists return SpeciesID"""
+#    species_id = None
+#    with arcpy.da.SearchCursor(geodatabase + '/Species', ['SpeciesID'], "ScientificName = '" + \
+#                               scientific_name + "'", None) as cursor:
+#        for row in searchCursor(cursor):
+#            species_id = row['SpeciesID']
+#        if species_id:
+#            # found
+#            del row
+#    return species_id
 
 
 def readDatasetSourceUniqueIDs(geodatabase, dataset_source_id, feature_class_type):

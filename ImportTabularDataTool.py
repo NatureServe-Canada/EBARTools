@@ -63,22 +63,6 @@ class ImportTabularDataTool:
             # for debugging, hard code parameters
             param_geodatabase = 'C:/GIS/EBAR/EBAR_outputs.gdb'
 
-            #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/gbif_test.csv'
-            #param_dataset_name = 'GBIF test'
-            #param_dataset_organization = 'Global Biodiversity Information Facility'
-            #param_dataset_contact = 'https://www.gbif.org'
-            #param_dataset_source = 'GBIF'
-            #param_date_received = 'September 28, 2019'
-            #param_restrictions = None
-
-            #param_raw_data_file = 'C:/GIS/EBAR/NCC/NCC_Merge_GBIF.csv'
-            #param_dataset_name = 'NCC GBIF Endemics'
-            #param_dataset_organization = 'Global Biodiversity Information Facility'
-            #param_dataset_contact = 'Andrea Hebb'
-            #param_dataset_source = 'NCC_GBIF'
-            #param_date_received = 'October 15, 2019'
-            #param_restrictions = None
-
             param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/Real_Data/Endemics_vertnet.csv'
             param_dataset_name = 'VerNet Endemics'
             param_dataset_organization = 'National Science Foundation'
@@ -93,51 +77,6 @@ class ImportTabularDataTool:
             #param_dataset_contact = 'https://ecoengine.berkeley.edu/'
             #param_dataset_source = 'Ecoengine'
             #param_date_received = 'September 30, 2019'
-            #param_restrictions = None
-
-            #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/' + \
-            #    'All_CDN_iNat_Data.csv'
-            #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/iNaturalist_Sensitive/' + \
-            #    'All_CDN_Research_Unobsc_Data_test.csv'
-            #param_dataset_name = 'iNaturalist All Canadian Unobscured Research Grade'
-            #param_dataset_organization = 'California Academy of Sciences and the National Geographic Society'
-            #param_dataset_contact = 'https://www.inaturalist.org/'
-            #param_dataset_source = 'iNaturalist'
-            #param_date_received = 'October 2, 2019'
-            #param_restrictions = None
-
-            #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/bison.csv'
-            #param_dataset_name = 'BISON Microseris and Marmota'
-            #param_dataset_organization = 'United States Geological Survey'
-            #param_dataset_contact = 'https://bison.usgs.gov/'
-            #param_dataset_source = 'BISON'
-            #param_date_received = 'September 30, 2019'
-            #param_restrictions = None
-
-            #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/' + \
-            #    'Canadensys-records-2019-10-09.csv'
-            #param_dataset_name = 'Canadensys Polygonum'
-            #param_dataset_organization = 'Université de Montréal Biodiversity Centre'
-            #param_dataset_contact = 'http://www.canadensys.net/'
-            #param_dataset_source = 'Canadensys'
-            #param_date_received = 'October 9, 2019'
-            #param_restrictions = None
-
-            #param_raw_data_file = 'C:/GIS/EBAR/NCC/NCC_Species_Obs_20190521.csv'
-            #param_dataset_name = 'NCC Endemics'
-            #param_dataset_organization = 'Nature Conservancy of Canada'
-            #param_dataset_contact = 'Andrea Hebb'
-            #param_dataset_source = 'NCCEndemics'
-            #param_date_received = 'October 15, 2019'
-            #param_restrictions = None
-
-            #param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/Real_Data/' + \
-            #    'Endemics_idigbio_capname.csv'
-            #param_dataset_name = 'iDigBio Endemics'
-            #param_dataset_organization = 'Integrated Digital Biocollection'
-            #param_dataset_contact = 'https://www.idigbio.org/'
-            #param_dataset_source = 'iDigBio'
-            #param_date_received = 'October 15, 2019'
             #param_restrictions = None
 
         # use passed geodatabase as workspace (still seems to go to default geodatabase)

@@ -354,10 +354,14 @@ class GenerateRangeMap(object):
         if parameters[0].altered and parameters[0].value:
             param_geodatabase = parameters[0].valueAsText
             spec_list = []
-            with arcpy.da.SearchCursor(param_geodatabase + '/Species', ['ScientificName'],
-                                       sql_clause=(None,'ORDER BY ScientificName')) as cursor:
+            #with arcpy.da.SearchCursor(param_geodatabase + '/Species', ['ScientificName'],
+            #                           sql_clause=(None,'ORDER BY ScientificName')) as cursor:
+            #    for row in EBARUtils.searchCursor(cursor):
+            #        spec_list.append(row['ScientificName'])
+            with arcpy.da.SearchCursor(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', ['NATIONAL_SCIENTIFIC_NAME'],
+                                       sql_clause=(None,'ORDER BY NATIONAL_SCIENTIFIC_NAME')) as cursor:
                 for row in EBARUtils.searchCursor(cursor):
-                    spec_list.append(row['ScientificName'])
+                    spec_list.append(row['NATIONAL_SCIENTIFIC_NAME'])
                 if len(spec_list) > 0:
                     del row
             parameters[1].filter.list = spec_list
