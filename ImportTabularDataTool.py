@@ -123,6 +123,7 @@ class ImportTabularDataTool:
         EBARUtils.displayMessage(messages, 'Processing file lines')
         count = 0
         no_species_match = 0
+        no_match_list = []
         no_coords = 0
         inaccurate = 0
         fossils = 0
@@ -137,7 +138,7 @@ class ImportTabularDataTool:
                 #                                                       file_line[field_dict['scientific_name']])
                 # check/add point for current line
                 input_point_id, status = self.CheckAddPoint(id_dict, param_geodatabase, input_dataset_id, species_dict,
-                                                            file_line, field_dict, messages)
+                                                            file_line, field_dict, no_match_list, messages)
                 # increment/report counts
                 count += 1
                 if count % 1000 == 0:
@@ -194,12 +195,15 @@ class ImportTabularDataTool:
 
         return
 
-    def CheckAddPoint(self, id_dict, geodatabase, input_dataset_id, species_dict, file_line, field_dict, messages):
+    def CheckAddPoint(self, id_dict, geodatabase, input_dataset_id, species_dict, file_line, field_dict,
+                      no_match_list, messages):
         """If point already exists, check if needs update; otherwise, add"""
         # check for species
-        if not file_line[field_dict['scientific_name']] in species_dict:
-            EBARUtils.displayMessage(messages,
-                                     'WARNING: No match for species ' + file_line[field_dict['scientific_name']])
+        if file_line[field_dict['scientific_name']] not in species_dict:
+            if file_line[field_dict['scientific_name']] not in no_match_list:
+                no_match_list.append(file_line[field_dict['scientific_name']])
+                EBARUtils.displayMessage(messages,
+                                         'WARNING: No match for species ' + file_line[field_dict['scientific_name']])
             return None, 'no_species_match'
         else:
             species_id = species_dict[file_line[field_dict['scientific_name']]]

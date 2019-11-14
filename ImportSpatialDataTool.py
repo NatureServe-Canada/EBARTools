@@ -126,16 +126,17 @@ class ImportSpatialDataTool:
             EBARUtils.checkAddField('import_features', 'eo_rank', 'TEXT')
 
         # loop to check/add species and flag duplicates
-        count = 0
+        overall_count = 0
         duplicates = 0
         no_species_match = 0
+        no_match_list = []
         with arcpy.da.UpdateCursor('import_features',
                                    [field_dict['unique_id'], field_dict['scientific_name'],
                                     'SpeciesID', 'ignore']) as cursor:
             for row in EBARUtils.updateCursor(cursor):
-                count += 1
-                if count % 1000 == 0:
-                    EBARUtils.displayMessage(messages, 'Species and duplicates pre-processed ' + str(count))
+                overall_count += 1
+                if overall_count % 1000 == 0:
+                    EBARUtils.displayMessage(messages, 'Species and duplicates pre-processed ' + str(overall_count))
                 ignore = 0
                 ## check/add species
                 #species_id, exists = EBARUtils.checkAddSpecies(species_dict, param_geodatabase,
@@ -145,8 +146,10 @@ class ImportSpatialDataTool:
                 if not row[field_dict['scientific_name']] in species_dict:
                     no_species_match += 1
                     ignore = 1
-                    EBARUtils.displayMessage(messages,
-                                             'WARNING: No match for species ' + row[field_dict['scientific_name']])
+                    if row[field_dict['scientific_name']] not in no_match_list:
+                        no_match_list.append(row[field_dict['scientific_name']])
+                        EBARUtils.displayMessage(messages,
+                                                 'WARNING: No match for species ' + row[field_dict['scientific_name']])
                 else:
                     species_id = species_dict[row[field_dict['scientific_name']]]
                     # check for duplicates
@@ -159,97 +162,95 @@ class ImportSpatialDataTool:
                         ignore = 1
                 # save
                 cursor.updateRow([row[field_dict['unique_id']], row[field_dict['scientific_name']], species_id, ignore])
-            if count > 0:
+            if overall_count > 0:
                 del row
-        EBARUtils.displayMessage(messages, 'Species and duplicates pre-processed ' + str(count))
+        EBARUtils.displayMessage(messages, 'Species and duplicates pre-processed ' + str(overall_count))
 
-        # select non-ignore
-        arcpy.SelectLayerByAttribute_management('import_features', where_clause='ignore = 0')
+        if overall_count - duplicates - no_species_match > 0:
+            # select non-ignore
+            arcpy.SelectLayerByAttribute_management('import_features', where_clause='ignore = 0')
 
-        # loop to set eo rank
-        if field_dict['eo_rank'] and feature_class_type in ('Polygon', 'MultiPatch'):
-            count = 0
-            with arcpy.da.UpdateCursor('import_features', [field_dict['eo_rank'], 'eo_rank']) as cursor:
-                for row in EBARUtils.updateCursor(cursor):
-                    count += 1
-                    if count % 1000 == 0:
-                        EBARUtils.displayMessage(messages, 'EO Rank pre-processed ' + str(count))
-                    # encode eo rank if full description provided
-                    eo_rank = row[field_dict['eo_rank']]
-                    if eo_rank:
-                        if len(eo_rank) > 2:
-                            eo_rank = EBARUtils.eo_rank_dict[eo_rank]
-                        # save
-                        cursor.updateRow([row[field_dict['eo_rank']], eo_rank])
-                if count > 0:
+            # loop to set eo rank
+            if field_dict['eo_rank'] and feature_class_type in ('Polygon', 'MultiPatch'):
+                count = 0
+                with arcpy.da.UpdateCursor('import_features', [field_dict['eo_rank'], 'eo_rank']) as cursor:
+                    for row in EBARUtils.updateCursor(cursor):
+                        count += 1
+                        if count % 1000 == 0:
+                            EBARUtils.displayMessage(messages, 'EO Rank pre-processed ' + str(count))
+                        # encode eo rank if full description provided
+                        eo_rank = row[field_dict['eo_rank']]
+                        if eo_rank:
+                            if len(eo_rank) > 2:
+                                eo_rank = EBARUtils.eo_rank_dict[eo_rank]
+                            # save
+                            cursor.updateRow([row[field_dict['eo_rank']], eo_rank])
+                    if count > 0:
+                        del row
+                EBARUtils.displayMessage(messages, 'EO Rank pre-processed ' + str(count))
+
+            # pre-process dates
+            if field_dict['min_date']:
+                EBARUtils.checkAddField('import_features', 'MinDate', 'DATE')
+                count = 0
+                with arcpy.da.UpdateCursor('import_features', [field_dict['min_date'], 'MinDate']) as cursor:
+                    for row in EBARUtils.updateCursor(cursor):
+                        count += 1
+                        if count % 1000 == 0:
+                            EBARUtils.displayMessage(messages, 'Min Date pre-processed ' + str(count))
+                        min_date = None
+                        if field_dict['min_date']:
+                            if row[field_dict['min_date']]:
+                                min_date = EBARUtils.extractDate(row[field_dict['min_date']].strip())
+                        cursor.updateRow([row[field_dict['min_date']], min_date])
                     del row
-            EBARUtils.displayMessage(messages, 'EO Rank pre-processed ' + str(count))
-
-        # pre-process dates
-        if field_dict['min_date']:
-            EBARUtils.checkAddField('import_features', 'MinDate', 'DATE')
-            count = 0
-            with arcpy.da.UpdateCursor('import_features', [field_dict['min_date'], 'MinDate']) as cursor:
-                for row in EBARUtils.updateCursor(cursor):
-                    count += 1
-                    if count % 1000 == 0:
-                        EBARUtils.displayMessage(messages, 'Min Date pre-processed ' + str(count))
-                    min_date = None
-                    if field_dict['min_date']:
-                        if row[field_dict['min_date']]:
-                            min_date = EBARUtils.extractDate(row[field_dict['min_date']].strip())
-                    cursor.updateRow([row[field_dict['min_date']], min_date])
-                if count - duplicates - no_species_match > 0:
+                EBARUtils.displayMessage(messages, 'Min Date pre-processed ' + str(count))
+            if field_dict['max_date']:
+                EBARUtils.checkAddField('import_features', 'MaxDate', 'DATE')
+                count = 0
+                with arcpy.da.UpdateCursor('import_features', [field_dict['max_date'], 'MaxDate']) as cursor:
+                    for row in EBARUtils.updateCursor(cursor):
+                        count += 1
+                        if count % 1000 == 0:
+                            EBARUtils.displayMessage(messages, 'Max Date pre-processed ' + str(count))
+                        max_date = None
+                        if field_dict['max_date']:
+                            if row[field_dict['max_date']]:
+                                max_date = EBARUtils.extractDate(row[field_dict['max_date']].strip())
+                        cursor.updateRow([row[field_dict['max_date']], max_date])
                     del row
-            EBARUtils.displayMessage(messages, 'Min Date pre-processed ' + str(count))
-        if field_dict['max_date']:
-            EBARUtils.checkAddField('import_features', 'MaxDate', 'DATE')
-            count = 0
-            with arcpy.da.UpdateCursor('import_features', [field_dict['max_date'], 'MaxDate']) as cursor:
-                for row in EBARUtils.updateCursor(cursor):
-                    count += 1
-                    if count % 1000 == 0:
-                        EBARUtils.displayMessage(messages, 'Max Date pre-processed ' + str(count))
-                    max_date = None
-                    if field_dict['max_date']:
-                        if row[field_dict['max_date']]:
-                            max_date = EBARUtils.extractDate(row[field_dict['max_date']].strip())
-                    cursor.updateRow([row[field_dict['max_date']], max_date])
-                if count - duplicates - no_species_match > 0:
-                    del row
-            EBARUtils.displayMessage(messages, 'Max Date pre-processed ' + str(count))
+                EBARUtils.displayMessage(messages, 'Max Date pre-processed ' + str(count))
 
-        # add and set column for input dataset
-        EBARUtils.checkAddField('import_features', 'InDSID', 'LONG')
-        arcpy.CalculateField_management('import_features', 'InDSID', input_dataset_id)
+            # add and set column for input dataset
+            EBARUtils.checkAddField('import_features', 'InDSID', 'LONG')
+            arcpy.CalculateField_management('import_features', 'InDSID', input_dataset_id)
 
-        # append to InputPolygon/Point/Line
-        EBARUtils.displayMessage(messages, 'Appending features')
-        # map fields
-        field_mappings = arcpy.FieldMappings()
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', 'InDSID',
-                                                            'InputDatasetID', 'LONG'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', 'SpeciesID',
-                                                            'SpeciesID', 'LONG'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict['unique_id'],
-                                                            'DatasetSourceUniqueID', 'TEXT'))
-        if field_dict['uri']:
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict['uri'],
-                                                                'URI', 'TEXT'))
-        if field_dict['min_date']:
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', 'MinDate',
-                                                                'MinDate', 'DATE'))
-        if field_dict['max_date']:
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', 'MaxDate',
-                                                                'MaxDate', 'DATE'))
-        if field_dict['rep_accuracy']:
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict['rep_accuracy'],
-                                                                'RepresentationAccuracy', 'TEXT'))
-        if field_dict['eo_rank'] and feature_class_type in ('Polygon', 'MultiPatch'):
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', 'eo_rank',
-                                                                'EORank', 'DATE'))
-        # append
-        if count - duplicates - no_species_match > 0:
+            # append to InputPolygon/Point/Line
+            EBARUtils.displayMessage(messages, 'Appending features')
+            # map fields
+            field_mappings = arcpy.FieldMappings()
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', 'InDSID',
+                                                                'InputDatasetID', 'LONG'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', 'SpeciesID',
+                                                                'SpeciesID', 'LONG'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict['unique_id'],
+                                                                'DatasetSourceUniqueID', 'TEXT'))
+            if field_dict['uri']:
+                field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict['uri'],
+                                                                    'URI', 'TEXT'))
+            if field_dict['min_date']:
+                field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', 'MinDate',
+                                                                    'MinDate', 'DATE'))
+            if field_dict['max_date']:
+                field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', 'MaxDate',
+                                                                    'MaxDate', 'DATE'))
+            if field_dict['rep_accuracy']:
+                field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict['rep_accuracy'],
+                                                                    'RepresentationAccuracy', 'TEXT'))
+            if field_dict['eo_rank'] and feature_class_type in ('Polygon', 'MultiPatch'):
+                field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', 'eo_rank',
+                                                                    'EORank', 'DATE'))
+            # append
             if feature_class_type in ('Polygon', 'MultiPatch'):
                 destination = param_geodatabase + '/InputPolygon'
                 id_field = 'InputPolygonID'
@@ -265,7 +266,7 @@ class ImportSpatialDataTool:
 
         # summary and end time
         EBARUtils.displayMessage(messages, 'Summary:')
-        EBARUtils.displayMessage(messages, 'Processed - ' + str(count))
+        EBARUtils.displayMessage(messages, 'Processed - ' + str(overall_count))
         EBARUtils.displayMessage(messages, 'Species not matched - ' + str(no_species_match))
         EBARUtils.displayMessage(messages, 'Duplicates - ' + str(duplicates))
         end_time = datetime.datetime.now()
