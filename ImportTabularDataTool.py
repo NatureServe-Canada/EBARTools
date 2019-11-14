@@ -61,9 +61,10 @@ class ImportTabularDataTool:
             param_restrictions = parameters[7].valueAsText
         else:
             # for debugging, hard code parameters
-            param_geodatabase = 'C:/GIS/EBAR/EBAR_outputs.gdb'
+            param_geodatabase = 'C:/GIS/EBAR/EBAR_test.gdb'
 
-            param_raw_data_file = 'C:/Users/rgree/OneDrive/Data_Mining/Import_Routine_Data/Real_Data/Endemics_vertnet.csv'
+            param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR_Sensitive_Material/Import_Routine_Data/Real_Data/' + \
+                                  'Endemics_vertnet.csv'
             param_dataset_name = 'VerNet Endemics'
             param_dataset_organization = 'National Science Foundation'
             param_dataset_contact = 'http://vertnet.org/'
@@ -121,6 +122,7 @@ class ImportTabularDataTool:
         # process all file lines
         EBARUtils.displayMessage(messages, 'Processing file lines')
         count = 0
+        no_species_match = 0
         no_coords = 0
         inaccurate = 0
         fossils = 0
@@ -130,17 +132,19 @@ class ImportTabularDataTool:
         deleted = 0
         try:
             for file_line in reader:
-                # check/add species for current line
-                species_id, species_exists = EBARUtils.checkAddSpecies(species_dict, param_geodatabase,
-                                                                       file_line[field_dict['scientific_name']])
+                ## check/add species for current line
+                #species_id, species_exists = EBARUtils.checkAddSpecies(species_dict, param_geodatabase,
+                #                                                       file_line[field_dict['scientific_name']])
                 # check/add point for current line
-                input_point_id, status = self.CheckAddPoint(id_dict, param_geodatabase, input_dataset_id, species_id,
-                                                            file_line, field_dict)
+                input_point_id, status = self.CheckAddPoint(id_dict, param_geodatabase, input_dataset_id, species_dict,
+                                                            file_line, field_dict, messages)
                 # increment/report counts
                 count += 1
                 if count % 1000 == 0:
                     EBARUtils.displayMessage(messages, 'Processed ' + str(count))
-                if status == 'no_coords':
+                if status == 'no_species_match':
+                    no_species_match += 1
+                elif status == 'no_coords':
                     no_coords += 1
                 elif status == 'inaccurate':
                     inaccurate += 1
@@ -157,7 +161,7 @@ class ImportTabularDataTool:
                     non_research += 1
                     deleted += 1
         except:
-            # output error messages in exception so that summary gets displayed in finally
+            # output error messages in exception so that summary of processing thus far gets displayed in finally
             EBARUtils.displayMessage(messages, '\nERROR processing file row ' + str(count + 1))
             tb = sys.exc_info()[2]
             tbinfo = ''
@@ -174,6 +178,7 @@ class ImportTabularDataTool:
             # summary and end time
             EBARUtils.displayMessage(messages, 'Summary:')
             EBARUtils.displayMessage(messages, 'Processed - ' + str(count))
+            EBARUtils.displayMessage(messages, 'Species not matched - ' + str(no_species_match))
             EBARUtils.displayMessage(messages, 'No coordinates - ' + str(no_coords))
             EBARUtils.displayMessage(messages,
                                      'Accuracy worse than ' + str(EBARUtils.worst_accuracy) + ' m - ' + str(inaccurate))
@@ -189,8 +194,16 @@ class ImportTabularDataTool:
 
         return
 
-    def CheckAddPoint(self, id_dict, geodatabase, input_dataset_id, species_id, file_line, field_dict):
+    def CheckAddPoint(self, id_dict, geodatabase, input_dataset_id, species_dict, file_line, field_dict, messages):
         """If point already exists, check if needs update; otherwise, add"""
+        # check for species
+        if not file_line[field_dict['scientific_name']] in species_dict:
+            EBARUtils.displayMessage(messages,
+                                     'WARNING: No match for species ' + file_line[field_dict['scientific_name']])
+            return None, 'no_species_match'
+        else:
+            species_id = species_dict[file_line[field_dict['scientific_name']]]
+
         # CoordinatesObscured
         coordinates_obscured = False
         #coordinates_obscured = None

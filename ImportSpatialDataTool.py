@@ -53,7 +53,7 @@ class ImportSpatialDataTool:
             param_restrictions = parameters[7].valueAsText
         else:
             # for debugging, hard code parameters
-            param_geodatabase = 'C:/GIS/EBAR/EBAR_outputs.gdb'
+            param_geodatabase = 'C:/GIS/EBAR/EBAR_test.gdb'
 
             param_import_feature_class = 'C:/GIS/EBAR/CDN_CDC_Data/Yukon/SF_polygon_Yukon.shp'
             param_dataset_name = 'Yukon Polygon SFs'
@@ -141,11 +141,14 @@ class ImportSpatialDataTool:
                 #species_id, exists = EBARUtils.checkAddSpecies(species_dict, param_geodatabase,
                 #                                               row[field_dict['scientific_name']])
                 # check for species
-                if not species_dict[row[field_dict['scientific_name']]]:
+                species_id = 999999
+                if not row[field_dict['scientific_name']] in species_dict:
                     no_species_match += 1
                     ignore = 1
-                    EBARUtils.displayMessage(messages, 'No match for species ' + row[field_dict['scientific_name']])
+                    EBARUtils.displayMessage(messages,
+                                             'WARNING: No match for species ' + row[field_dict['scientific_name']])
                 else:
+                    species_id = species_dict[row[field_dict['scientific_name']]]
                     # check for duplicates
                     # handle case where integer gets read as float with decimals
                     uid_raw = row[field_dict['unique_id']]

@@ -174,15 +174,16 @@ def checkAddField(table, field_name, field_type):
 def readSpecies(geodatabase):
     """read existing species into dict and return"""
     species_dict = {}
-    arcpy.MakeFeatureLayer_management(geodatabase + '/Species', 'species_layer')
-    arcpy.AddJoin_management('species_layer', 'ELEMENT_NATIONAL_ID', geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
+    arcpy.MakeTableView_management(geodatabase + '/Species', 'species_view')
+    arcpy.AddJoin_management('species_view', 'ELEMENT_NATIONAL_ID', geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
                              'ELEMENT_NATIONAL_ID')
-    with arcpy.da.SearchCursor('species_layer', ['NATIONAL_SCIENTIFIC_NAME', 'SpeciesID']) as cursor:
+    with arcpy.da.SearchCursor('species_view', ['BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME',
+                                                'Species.SpeciesID']) as cursor:
         for row in searchCursor(cursor):
-            species_dict[row['NATIONAL_SCIENTIFIC_NAME']] = row['SpeciesID']
+            species_dict[row['BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME']] = row['Species.SpeciesID']
     if len(species_dict) > 0:
         del row
-    arcpy.RemoveJoin_management('species_layer', 'BIOTICS_ELEMENT_NATIONAL')
+    arcpy.RemoveJoin_management('species_view', 'BIOTICS_ELEMENT_NATIONAL')
     return species_dict
 
 
