@@ -318,19 +318,6 @@ def estimateAccuracy(latitude):
                                  arcpy.SpatialReference(srs_dict['North America Albers Equal Area Conic']))
     return int(line_albers.length)
 
-    ## create line 0.2 degrees wide
-    ## start with lat/lon points
-    #pta_wgs84 = arcpy.PointGeometry(arcpy.Point(-95.9, latitude), arcpy.SpatialReference(srs_dict['WGS84']))
-    #ptb_wgs84 = arcpy.PointGeometry(arcpy.Point(-96.1, latitude), arcpy.SpatialReference(srs_dict['WGS84']))
-    ## project to metres
-    #pta_albers = pta_wgs84.projectAs(arcpy.SpatialReference(srs_dict['North America Albers Equal Area Conic']))
-    #ptb_albers = ptb_wgs84.projectAs(arcpy.SpatialReference(srs_dict['North America Albers Equal Area Conic']))
-    ## form line
-    #line_albers = arcpy.Polyline(arcpy.Array([pta_albers.lastPoint, ptb_albers.lastPoint]),
-    #                             arcpy.SpatialReference(srs_dict['North America Albers Equal Area Conic']))
-    ## use pythagorean theoren to calculate diagonal of square with height approximated and width as above
-    #return int(math.sqrt((22200 ** 2) + (line_albers.length ** 2)))
-
 
 def createFieldMap(input_table, input_field, output_field, data_type):
     """create one-to-one field map for use with the Append tool"""
