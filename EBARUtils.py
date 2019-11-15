@@ -187,15 +187,26 @@ def readSpecies(geodatabase):
     return species_dict
 
 
-def readSynonyms(geodatabase):
-    """read existing synonyms into dict and return"""
-    synonym_dict = {}
+def readSynonymIDs(geodatabase):
+    """read existing synonyms and IDS into dict and return"""
+    synonym_id_dict = {}
     with arcpy.da.SearchCursor(geodatabase + '/Synonym', ['SynonymName', 'SynonymID']) as cursor:
         for row in searchCursor(cursor):
-            synonym_dict[row['SynonymName']] = row['SynonymID']
-    if len(synonym_dict) > 0:
+            synonym_id_dict[row['SynonymName']] = row['SynonymID']
+    if len(synonym_id_dict) > 0:
         del row
     return synonym_dict
+
+
+def readSynonymSpeciesID(geodatabase):
+    """read existing synonyms and species IDs into dict return"""
+    synonym_species_id_dict = {}
+    with arcpy.da.SearchCursor(geodatabase + '/Synonym', ['SynonymName', 'SpeciesID']) as cursor:
+        for row in searchCursor(cursor):
+            synonym_species_id_dict[row['SynonymName']] = row['SpeciesID']
+    if len(synonym_species_id_dict) > 0:
+        del row
+    return synonym_species_id_dict
 
 
 #def checkAddSpecies(species_dict, geodatabase, scientific_name):

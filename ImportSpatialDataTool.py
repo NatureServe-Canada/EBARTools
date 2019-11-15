@@ -48,13 +48,11 @@ class ImportSpatialDataTool:
             param_dataset_organization = parameters[3].valueAsText
             param_dataset_contact = parameters[4].valueAsText
             param_dataset_source = parameters[5].valueAsText
-            #param_dataset_type = parameters[6].valueAsText
             param_date_received = parameters[6].valueAsText
             param_restrictions = parameters[7].valueAsText
         else:
             # for debugging, hard code parameters
             param_geodatabase = 'C:/GIS/EBAR/EBAR_test.gdb'
-
             param_import_feature_class = 'C:/GIS/EBAR/CDN_CDC_Data/Yukon/SF_polygon_Yukon.shp'
             param_dataset_name = 'Yukon Polygon SFs'
             param_dataset_organization = 'Yukon CDC'
@@ -75,21 +73,6 @@ class ImportSpatialDataTool:
             del row
         # match field_dict with source
         field_dict = SpatialFieldMapping.spatial_field_mapping_dict[param_dataset_source]
-        #if param_dataset_source in ['NU CDC Element Occurrences',
-        #                            'YT CDC Element Occurrences']:
-        #    field_dict = SpatialFieldMapping.cdc_eo_fields
-        #elif param_dataset_source == 'BC CDC Element Occurrences':
-        #    field_dict = SpatialFieldMapping.bc_eo_fields
-        #elif param_dataset_source == 'CDC Source Feature Polygons':
-        #    field_dict = SpatialFieldMapping.cdc_sf_fields
-        #elif param_dataset_source == 'CDC Source Feature Points':
-        #    field_dict = SpatialFieldMapping.cdc_sf_fields
-        #elif param_dataset_source == 'CDC Source Feature Lines':
-        #    field_dict = SpatialFieldMapping.cdc_sf_fields
-        #elif param_dataset_source == 'ECCC Critical Habitat':
-        #    field_dict = SpatialFieldMapping.eccc_critical_habitat_fields
-        #elif param_dataset_source == 'NCC Endemics Polygons':
-        #    field_dict = SpatialFieldMapping.ncc_endemics_polygons_fields
         # determine type of feature class
         desc = arcpy.Describe(param_import_feature_class)
         feature_class_type = desc.shapeType
@@ -109,17 +92,24 @@ class ImportSpatialDataTool:
                                str(input_dataset_id))
 
         # read existing species into dict
-        EBARUtils.displayMessage(messages, 'Reading existing species')
+        EBARUtils.displayMessage(messages, 'Reading full list of Species and Synonyms')
         species_dict = EBARUtils.readSpecies(param_geodatabase)
+        synonym_id_dict = EBARUtils.readSynonymIDs(param_geodatabase)
+        synonym_species_id_dict = EBARUtils.readSynonymSpeciesIDs(param_geodatabase)
 
         # read existing unique IDs into dict
         EBARUtils.displayMessage(messages, 'Reading existing unique IDs')
         id_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, dataset_source_id, feature_class_type)
 
+        # make temp copy of features being imported so that it is geodatabase format
+        EBARUtils.displayMessage(messages, 'Copying features to temporary feature class')
+        arcpy.Copy_management(param_import_feature_class, 'TempImportFeatures')
+
         # pre-processing
         EBARUtils.displayMessage(messages, 'Pre-processing features')
-        arcpy.MakeFeatureLayer_management(param_import_feature_class, 'import_features')
+        arcpy.MakeFeatureLayer_management('TempImportFeatures', 'import_features')
         EBARUtils.checkAddField('import_features', 'SpeciesID', 'LONG')
+        EBARUtils.checkAddField('import_features', 'SynonymID', 'LONG')
         EBARUtils.checkAddField('import_features', 'ignore', 'SHORT')
         if feature_class_type in ('Polygon', 'MultiPatch'):
             # EOs can only be polygons
@@ -132,18 +122,17 @@ class ImportSpatialDataTool:
         no_match_list = []
         with arcpy.da.UpdateCursor('import_features',
                                    [field_dict['unique_id'], field_dict['scientific_name'],
-                                    'SpeciesID', 'ignore']) as cursor:
+                                    'SpeciesID', 'SynonymID', 'ignore']) as cursor:
             for row in EBARUtils.updateCursor(cursor):
                 overall_count += 1
                 if overall_count % 1000 == 0:
                     EBARUtils.displayMessage(messages, 'Species and duplicates pre-processed ' + str(overall_count))
                 ignore = 0
-                ## check/add species
-                #species_id, exists = EBARUtils.checkAddSpecies(species_dict, param_geodatabase,
-                #                                               row[field_dict['scientific_name']])
                 # check for species
-                species_id = 999999
-                if not row[field_dict['scientific_name']] in species_dict:
+                species_id = None
+                synonym_id = None
+                if (row[field_dict['scientific_name']] not in species_dict and
+                    row[field_dict['scientific_name']] not in synonym_id_dict):
                     no_species_match += 1
                     ignore = 1
                     if row[field_dict['scientific_name']] not in no_match_list:
@@ -151,7 +140,11 @@ class ImportSpatialDataTool:
                         EBARUtils.displayMessage(messages,
                                                  'WARNING: No match for species ' + row[field_dict['scientific_name']])
                 else:
-                    species_id = species_dict[row[field_dict['scientific_name']]]
+                    if row[field_dict['scientific_name']] in species_dict:
+                        species_id = species_dict[row[field_dict['scientific_name']]]
+                    else:
+                        species_id = synonym_species_id_dict[row[field_dict['scientific_name']]]
+                        synonym_id = synonym_id_dict[row[field_dict['scientific_name']]]
                     # check for duplicates
                     # handle case where integer gets read as float with decimals
                     uid_raw = row[field_dict['unique_id']]
@@ -161,7 +154,8 @@ class ImportSpatialDataTool:
                         duplicates += 1
                         ignore = 1
                 # save
-                cursor.updateRow([row[field_dict['unique_id']], row[field_dict['scientific_name']], species_id, ignore])
+                cursor.updateRow([row[field_dict['unique_id']], row[field_dict['scientific_name']], species_id,
+                                  synonym_id, ignore])
             if overall_count > 0:
                 del row
         EBARUtils.displayMessage(messages, 'Species and duplicates pre-processed ' + str(overall_count))

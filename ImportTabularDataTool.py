@@ -108,11 +108,13 @@ class ImportTabularDataTool:
                                str(input_dataset_id))
 
         # read existing species into dict
-        EBARUtils.displayMessage(messages, 'Reading existing species')
+        EBARUtils.displayMessage(messages, 'Reading full list of Species and Synonyms')
         species_dict = EBARUtils.readSpecies(param_geodatabase)
+        synonym_id_dict = EBARUtils.readSynonymIDs(param_geodatabase)
+        synonym_species_id_dict = EBARUtils.readSynonymSpeciesIDs(param_geodatabase)
 
         # read existing unique IDs into dict
-        EBARUtils.displayMessage(messages, 'Reading existing unique IDs')
+        EBARUtils.displayMessage(messages, 'Reading existing Unique IDs for the Dataset Source')
         id_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, dataset_source_id, 'Point')
 
         # try to open data file as a csv
@@ -133,12 +135,10 @@ class ImportTabularDataTool:
         deleted = 0
         try:
             for file_line in reader:
-                ## check/add species for current line
-                #species_id, species_exists = EBARUtils.checkAddSpecies(species_dict, param_geodatabase,
-                #                                                       file_line[field_dict['scientific_name']])
                 # check/add point for current line
                 input_point_id, status = self.CheckAddPoint(id_dict, param_geodatabase, input_dataset_id, species_dict,
-                                                            file_line, field_dict, no_match_list, messages)
+                                                            synonym_id_dict, synonym_species_id_dict, file_line,
+                                                            field_dict, no_match_list, messages)
                 # increment/report counts
                 count += 1
                 if count % 1000 == 0:
@@ -168,7 +168,6 @@ class ImportTabularDataTool:
             tbinfo = ''
             for tbitem in traceback.format_tb(tb):
                 tbinfo += tbitem
-            #tbinfo = traceback.format_tb(tb)[0]
             pymsgs = 'Python ERROR:\nTraceback info:\n' + tbinfo + 'Error Info:\n' + str(sys.exc_info()[1])
             EBARUtils.displayMessage(messages, pymsgs)
             arcmsgs = 'ArcPy ERROR:\n' + arcpy.GetMessages(2)
@@ -195,22 +194,27 @@ class ImportTabularDataTool:
 
         return
 
-    def CheckAddPoint(self, id_dict, geodatabase, input_dataset_id, species_dict, file_line, field_dict,
-                      no_match_list, messages):
+    def CheckAddPoint(self, id_dict, geodatabase, input_dataset_id, species_dict, synonym_id_dict,
+                      synonym_species_id_dict, file_line, field_dict, no_match_list, messages):
         """If point already exists, check if needs update; otherwise, add"""
         # check for species
-        if file_line[field_dict['scientific_name']] not in species_dict:
+        if (file_line[field_dict['scientific_name']] not in species_dict and
+            file_line[field_dict['scientific_name']] not in synonym_id_dict):
             if file_line[field_dict['scientific_name']] not in no_match_list:
                 no_match_list.append(file_line[field_dict['scientific_name']])
                 EBARUtils.displayMessage(messages,
                                          'WARNING: No match for species ' + file_line[field_dict['scientific_name']])
             return None, 'no_species_match'
         else:
-            species_id = species_dict[file_line[field_dict['scientific_name']]]
+            synonym_id = None
+            if file_line[field_dict['scientific_name']] in species_dict:
+                species_id = species_dict[file_line[field_dict['scientific_name']]]
+            else:
+                species_id = synonym_species_id_dict[file_line[field_dict['scientific_name']]]
+                synonym_id = synonym_id_dict[file_line[field_dict['scientific_name']]]
 
         # CoordinatesObscured
         coordinates_obscured = False
-        #coordinates_obscured = None
         if field_dict['coordinates_obscured']:
             if file_line[field_dict['coordinates_obscured']] in (True, 'TRUE', 'true', 'T', 't', 1):
                 coordinates_obscured = True
@@ -352,11 +356,12 @@ class ImportTabularDataTool:
         else:
             # insert, set new id and return
             point_fields = ['SHAPE@XY', 'InputDatasetID', 'DatasetSourceUniqueID', 'URI', 'License', 'SpeciesID',
-                            'MinDate', 'MaxDate', 'CoordinatesObscured', 'Accuracy', 'IndividualCount']
+                            'SynonymID', 'MaxDate', 'CoordinatesObscured', 'Accuracy', 'IndividualCount']
             with arcpy.da.InsertCursor(geodatabase + '/InputPoint', point_fields) as cursor:
                 input_point_id = cursor.insertRow([output_point, input_dataset_id,
                                                    str(file_line[field_dict['unique_id']]), uri, license, species_id,
-                                                   None, max_date, coordinates_obscured, accuracy, individual_count])
+                                                   synonym_id, max_date, coordinates_obscured, accuracy,
+                                                   individual_count])
             EBARUtils.setNewID(geodatabase + '/InputPoint', 'InputPointID', 'OBJECTID = ' + str(input_point_id))
             id_dict[str(file_line[field_dict['unique_id']])] = input_point_id
             return input_point_id, 'new'
