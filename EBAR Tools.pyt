@@ -16,6 +16,7 @@ import ImportTabularDataTool
 import ImportSpatialDataTool
 import GenerateRangeMapTool
 import ListElementNationalIDsTool
+import SyncSpeciesListTool
 import EBARUtils
 import datetime
 import locale
@@ -42,90 +43,71 @@ class ImportTabularData(object):
         """Define parameter definitions"""
         # Geodatabase
         param_geodatabase = arcpy.Parameter(
-            displayName ='Geodatabase',
-            name ='geodatabase',
-            datatype ='DEWorkspace',
-            parameterType ='Required',
-            direction ='Input')
+            displayName='Geodatabase',
+            name='geodatabase',
+            datatype='DEWorkspace',
+            parameterType='Required',
+            direction='Input')
         param_geodatabase.filter.list = ['Local Database', 'Remote Database']
 
         # Raw Data File
         param_raw_data_file = arcpy.Parameter(
-            displayName ='Raw Data File',
-            name ='raw_data_file',
-            datatype ='DEFile',
-            parameterType ='Required',
-            direction ='Input')
+            displayName='Raw Data File',
+            name='raw_data_file',
+            datatype='DEFile',
+            parameterType='Required',
+            direction='Input')
         param_raw_data_file.filter.list = ['txt', 'csv']
 
         # Dataset Name
         param_dataset_name = arcpy.Parameter(
-            displayName ='Dataset Name',
-            name ='dataset_name',
-            datatype ='GPString',
-            parameterType ='Required',
-            direction ='Input')
+            displayName='Dataset Name',
+            name='dataset_name',
+            datatype='GPString',
+            parameterType='Required',
+            direction='Input')
         
         # Dataset Organization
         param_dataset_organization = arcpy.Parameter(
-            displayName ='Dataset Organization',
-            name ='dataset_organization',
-            datatype ='GPString',
-            parameterType ='Required',
-            direction ='Input')
+            displayName='Dataset Organization',
+            name='dataset_organization',
+            datatype='GPString',
+            parameterType='Required',
+            direction='Input')
         
         # Dataset Contact
         param_dataset_contact = arcpy.Parameter(
-            displayName ='Dataset Contact',
-            name ='dataset_contact',
-            datatype ='GPString',
-            parameterType ='Required',
-            direction ='Input')
+            displayName='Dataset Contact',
+            name='dataset_contact',
+            datatype='GPString',
+            parameterType='Required',
+            direction='Input')
         
         # Dataset Source
         param_dataset_source = arcpy.Parameter(
-            displayName ='Dataset Source',
-            name ='dataset_source',
-            datatype ='GPString',
-            parameterType ='Required',
-            direction ='Input')
-        #param_dataset_source.filter.list = ['GBIF',
-        #                                    'NCC_GBIF',
-        #                                    'VertNet',
-        #                                    'Ecoengine',
-        #                                    'iNaturalist',
-        #                                    'BISON',
-        #                                    'Canadensys',
-        #                                    'NCCEndemics',
-        #                                    'iDigBio',
-        #                                    'Other']
-
-        ## Dataset Type
-        #param_dataset_type = arcpy.Parameter(
-        #    displayName ='Dataset Type',
-        #    name ='dataset_type',
-        #    datatype ='GPString',
-        #    parameterType ='Required',
-        #    direction ='Input')
-        #param_dataset_type.filter.list = ['CSV']
+            displayName='Dataset Source',
+            name='dataset_source',
+            datatype='GPString',
+            parameterType='Required',
+            direction='Input')
 
         # Date Received
         param_date_received = arcpy.Parameter(
-            displayName ='Date Received',
-            name ='date_received',
-            datatype ='GPDate',
-            parameterType ='Required',
-            direction ='Input')
+            displayName='Date Received',
+            name='date_received',
+            datatype='GPDate',
+            parameterType='Required',
+            direction='Input')
         locale.setlocale(locale.LC_ALL, '')
         param_date_received.value = datetime.datetime.now().strftime('%x')
 
         # Dataset Restrictions
         param_dataset_restrictions = arcpy.Parameter(
-            displayName ='Dataset Restrictions',
-            name ='dataset_restrictions',
-            datatype ='GPString',
-            parameterType ='Optional',
-            direction ='Input')
+            displayName='Dataset Restrictions',
+            name='dataset_restrictions',
+            datatype='GPString',
+            parameterType='Optional',
+            direction='Input')
         
         params = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_organization,
                   param_dataset_contact, param_dataset_source, param_date_received, param_dataset_restrictions]
@@ -166,64 +148,55 @@ class ImportSpatialData(object):
         """Define parameter definitions"""
         # Geodatabase
         param_geodatabase = arcpy.Parameter(
-            displayName ='Geodatabase',
-            name ='geodatabase',
-            datatype ='DEWorkspace',
-            parameterType ='Required',
-            direction ='Input')
+            displayName='Geodatabase',
+            name='geodatabase',
+            datatype='DEWorkspace',
+            parameterType='Required',
+            direction='Input')
         param_geodatabase.filter.list = ['Local Database', 'Remote Database']
 
         # Feature Class to Import
         param_import_feature_class = arcpy.Parameter(
-            displayName ='Import Feature Class',
-            name ='import_feature_class',
-            datatype ='GPFeatureLayer',
-            parameterType ='Required',
-            direction ='Input')
+            displayName='Import Feature Class',
+            name='import_feature_class',
+            datatype='GPFeatureLayer',
+            parameterType='Required',
+            direction='Input')
         param_import_feature_class.filter.list = ['Point', 'Multipoint', 'Polyline', 'Polygon', 'MultiPatch']
 
         # Dataset Name
         param_dataset_name = arcpy.Parameter(
-            displayName ='Dataset Name',
-            name ='dataset_name',
-            datatype ='GPString',
-            parameterType ='Required',
-            direction ='Input')
+            displayName='Dataset Name',
+            name='dataset_name',
+            datatype='GPString',
+            parameterType='Required',
+            direction='Input')
         
         # Dataset Organization
         param_dataset_organization = arcpy.Parameter(
-            displayName ='Dataset Organization',
-            name ='dataset_organization',
-            datatype ='GPString',
-            parameterType ='Required',
-            direction ='Input')
+            displayName='Dataset Organization',
+            name='dataset_organization',
+            datatype='GPString',
+            parameterType='Required',
+            direction='Input')
         
         # Dataset Contact
         param_dataset_contact = arcpy.Parameter(
-            displayName ='Dataset Contact',
-            name ='dataset_contact',
-            datatype ='GPString',
-            parameterType ='Required',
-            direction ='Input')
+            displayName='Dataset Contact',
+            name='dataset_contact',
+            datatype='GPString',
+            parameterType='Required',
+            direction='Input')
         
         # Dataset Source
         # - used to check for uniqueness of records using provided IDs
         # - one field map can be shared among multiple sources
         param_dataset_source = arcpy.Parameter(
-            displayName ='Dataset Source',
-            name ='dataset_source',
-            datatype ='GPString',
-            parameterType ='Required',
-            direction ='Input')
-        #param_dataset_source.filter.list = ['NU CDC Element Occurrences',
-        #                                    'YT CDC Element Occurrences',
-        #                                    'BC CDC Element Occurrences',
-        #                                    'CDC Source Feature Polygons',
-        #                                    'CDC Source Feature Points',
-        #                                    'CDC Source Feature Lines',
-        #                                    'ECCC Critical Habitat',
-        #                                    'NCC Endemics Polygons',
-        #                                    'Other']
+            displayName='Dataset Source',
+            name='dataset_source',
+            datatype='GPString',
+            parameterType='Required',
+            direction='Input')
 
         ## Dataset Type
         ## - used during Generate Range Map to determine Presence
@@ -243,21 +216,21 @@ class ImportSpatialData(object):
 
         # Date Received
         param_date_received = arcpy.Parameter(
-            displayName ='Date Received',
-            name ='date_received',
-            datatype ='GPDate',
-            parameterType ='Required',
-            direction ='Input')
+            displayName='Date Received',
+            name='date_received',
+            datatype='GPDate',
+            parameterType='Required',
+            direction='Input')
         locale.setlocale(locale.LC_ALL, '')
         param_date_received.value = datetime.datetime.now().strftime('%x')
 
         # Dataset Restrictions
         param_dataset_restrictions = arcpy.Parameter(
-            displayName ='Dataset Restrictions',
-            name ='dataset_restrictions',
-            datatype ='GPString',
-            parameterType ='Optional',
-            direction ='Input')
+            displayName='Dataset Restrictions',
+            name='dataset_restrictions',
+            datatype='GPString',
+            parameterType='Optional',
+            direction='Input')
         
         params = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_organization,
                   param_dataset_contact, param_dataset_source, param_date_received, param_dataset_restrictions]
@@ -297,46 +270,46 @@ class GenerateRangeMap(object):
         """Define parameter definitions"""
         # Geodatabase
         param_geodatabase = arcpy.Parameter(
-            displayName ='Geodatabase',
-            name ='geodatabase',
-            datatype ='DEWorkspace',
-            parameterType ='Required',
-            direction ='Input')
+            displayName='Geodatabase',
+            name='geodatabase',
+            datatype='DEWorkspace',
+            parameterType='Required',
+            direction='Input')
         param_geodatabase.filter.list = ['Local Database', 'Remote Database']
 
         # Species
         param_species = arcpy.Parameter(
-            displayName ='Species Scientific Name',
-            name ='species',
-            datatype ='GPString',
-            parameterType ='Required',
-            direction ='Input')
+            displayName='Species Scientific Name',
+            name='species',
+            datatype='GPString',
+            parameterType='Required',
+            direction='Input')
 
         # Secondary Species
         param_secondary = arcpy.Parameter(
-            displayName ='Secondary Species',
-            name ='secondary_species',
-            datatype ='GPString',
-            parameterType ='Optional',
-            direction ='Input',
-            multiValue = True)
+            displayName='Secondary Species',
+            name='secondary_species',
+            datatype='GPString',
+            parameterType='Optional',
+            direction='Input',
+            multiValue=True)
 
         # Range Version
         param_version = arcpy.Parameter(
-            displayName ='Range Version',
-            name ='range_version',
-            datatype ='GPString',
-            parameterType ='Required',
-            direction ='Input')
+            displayName='Range Version',
+            name='range_version',
+            datatype='GPString',
+            parameterType='Required',
+            direction='Input')
         param_version.value = '1.0'
 
         # Range Stage
         param_stage = arcpy.Parameter(
-            displayName ='Range Stage',
-            name ='range_stage',
-            datatype ='GPString',
-            parameterType ='Required',
-            direction ='Input')
+            displayName='Range Stage',
+            name='range_stage',
+            datatype='GPString',
+            parameterType='Required',
+            direction='Input')
         param_stage.filter.list = ['Auto-generated', 'Expert reviewed', 'Published']
         param_stage.value = 'Auto-generated'
 
@@ -393,20 +366,20 @@ class ListElementNationalIDs(object):
         """Define parameter definitions"""
         # Geodatabase
         param_geodatabase = arcpy.Parameter(
-            displayName ='Geodatabase',
-            name ='geodatabase',
-            datatype ='DEWorkspace',
-            parameterType ='Required',
-            direction ='Input')
+            displayName='Geodatabase',
+            name='geodatabase',
+            datatype='DEWorkspace',
+            parameterType='Required',
+            direction='Input')
         param_geodatabase.filter.list = ['Local Database', 'Remote Database']
 
         # Output folder
         param_folder = arcpy.Parameter(
-            displayName ='Output Folder',
-            name ='output_folder',
-            datatype ='DEFolder',
-            parameterType ='Required',
-            direction ='Input')
+            displayName='Output Folder',
+            name='output_folder',
+            datatype='DEFolder',
+            parameterType='Required',
+            direction='Input')
 
         params = [param_geodatabase, param_folder]
         return params
@@ -429,5 +402,56 @@ class ListElementNationalIDs(object):
         """The source code of the tool."""
         leni = ListElementNationalIDsTool.ListElementNationalIDsTool()
         leni.RunListElementNationalIDsTool(parameters, messages)
+        return
+
+
+class SyncSpeciesList(object):
+    def __init__(self):
+        """Define the tool (tool name is the name of the class)."""
+        self.label='Sync Species List'
+        self.description='Synchronize the BIOTIOCS_NATIONAL_ELMENT and Species tables with Biotics'
+        self.canRunInBackground = True
+
+    def getParameterInfo(self):
+        """Define parameter definitions"""
+        # Geodatabase
+        param_geodatabase = arcpy.Parameter(
+            displayName='Geodatabase',
+            name='geodatabase',
+            datatype='DEWorkspace',
+            parameterType='Required',
+            direction='Input')
+        param_geodatabase.filter.list = ['Local Database', 'Remote Database']
+
+        # CSV
+        param_csv = arcpy.Parameter(
+            displayName='Output Folder',
+            name='output_folder',
+            datatype='DEFile',
+            parameterType='Required',
+            direction='Input')
+        param_csv.filter.list = ['txt', 'csv']
+
+        params = [param_geodatabase, param_csv]
+        return params
+
+    def isLicensed(self):
+        """Set whether tool is licensed to execute."""
+        return True
+
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal validation is performed.  This method is " + \
+        "called whenever a parameter has been changed."""
+        return
+
+    def updateMessages(self, parameters):
+        """Modify the messages created by internal validation for each tool parameter.  This method is called " " \
+        "after internal validation."""
+        return
+
+    def execute(self, parameters, messages):
+        """The source code of the tool."""
+        ssl = SyncSpeciesListTool.SyncSpeciesListTool()
+        ssl.RunSyncSpeciesListTool(parameters, messages)
         return
 

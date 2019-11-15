@@ -201,6 +201,7 @@ class ImportTabularDataTool:
             elapsed_time = end_time - start_time
             EBARUtils.displayMessage(messages, 'Elapsed time: ' + str(elapsed_time))
 
+        infile.close()
         return
 
     def CheckAddPoint(self, id_dict, geodatabase, input_dataset_id, species_dict, synonym_id_dict,
