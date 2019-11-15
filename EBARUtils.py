@@ -195,10 +195,10 @@ def readSynonymIDs(geodatabase):
             synonym_id_dict[row['SynonymName']] = row['SynonymID']
     if len(synonym_id_dict) > 0:
         del row
-    return synonym_dict
+    return synonym_id_dict
 
 
-def readSynonymSpeciesID(geodatabase):
+def readSynonymSpeciesIDs(geodatabase):
     """read existing synonyms and species IDs into dict return"""
     synonym_species_id_dict = {}
     with arcpy.da.SearchCursor(geodatabase + '/Synonym', ['SynonymName', 'SpeciesID']) as cursor:

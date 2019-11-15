@@ -63,14 +63,14 @@ class ImportTabularDataTool:
             # for debugging, hard code parameters
             param_geodatabase = 'C:/GIS/EBAR/EBAR_test.gdb'
 
-            param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR_Sensitive_Material/Import_Routine_Data/Real_Data/' + \
-                                  'Endemics_vertnet.csv'
-            param_dataset_name = 'VerNet Endemics'
-            param_dataset_organization = 'National Science Foundation'
-            param_dataset_contact = 'http://vertnet.org/'
-            param_dataset_source = 'VertNet'
-            param_date_received = 'October 15, 2019'
-            param_restrictions = None
+            #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR_Sensitive_Material/Import_Routine_Data/Real_Data/' + \
+            #                      'Endemics_vertnet.csv'
+            #param_dataset_name = 'VerNet Endemics'
+            #param_dataset_organization = 'National Science Foundation'
+            #param_dataset_contact = 'http://vertnet.org/'
+            #param_dataset_source = 'VertNet'
+            #param_date_received = 'October 15, 2019'
+            #param_restrictions = None
 
             #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/ecoengine.csv'
             #param_dataset_name = 'Ecoengine Microseris'
@@ -79,6 +79,15 @@ class ImportTabularDataTool:
             #param_dataset_source = 'Ecoengine'
             #param_date_received = 'September 30, 2019'
             #param_restrictions = None
+
+            param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR_Sensitive_Material/Import_Routine_Data/Real_Data/' + \
+                                  'GBIF_BC.csv'
+            param_dataset_name = 'BC GBIF'
+            param_dataset_organization = 'Global Biodiversity Information Facility'
+            param_dataset_contact = 'http://gbif.org'
+            param_dataset_source = 'GBIF'
+            param_date_received = 'October 9, 2019'
+            param_restrictions = None
 
         # use passed geodatabase as workspace (still seems to go to default geodatabase)
         arcpy.env.workspace = param_geodatabase

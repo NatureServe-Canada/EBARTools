@@ -103,7 +103,7 @@ class ImportSpatialDataTool:
 
         # make temp copy of features being imported so that it is geodatabase format
         EBARUtils.displayMessage(messages, 'Copying features to temporary feature class')
-        arcpy.Copy_management(param_import_feature_class, 'TempImportFeatures')
+        arcpy.CopyFeatures_management(param_import_feature_class, 'TempImportFeatures')
 
         # pre-processing
         EBARUtils.displayMessage(messages, 'Pre-processing features')
@@ -227,6 +227,8 @@ class ImportSpatialDataTool:
                                                                 'InputDatasetID', 'LONG'))
             field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', 'SpeciesID',
                                                                 'SpeciesID', 'LONG'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', 'SynonymID',
+                                                                'SynonymID', 'LONG'))
             field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict['unique_id'],
                                                                 'DatasetSourceUniqueID', 'TEXT'))
             if field_dict['uri']:
