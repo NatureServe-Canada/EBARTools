@@ -61,7 +61,7 @@ class GenerateRangeMapTool:
             param_stage = parameters[4].valueAsText
         else:
             # for debugging, hard code parameters
-            param_geodatabase = 'C:/GIS/EBAR/EBAR_outputs.gdb'
+            param_geodatabase = 'C:/GIS/EBAR/EBAR_test.gdb'
             param_species = 'Micranthes spicata'
             param_secondary = None
             param_version = '1.0'

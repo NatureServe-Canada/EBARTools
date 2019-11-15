@@ -219,17 +219,22 @@ def readSynonyms(geodatabase):
 #    return species_id, False
 
 
-#def checkSpecies(scientific_name, geodatabase):
-#    """if exists return SpeciesID"""
-#    species_id = None
-#    with arcpy.da.SearchCursor(geodatabase + '/Species', ['SpeciesID'], "ScientificName = '" + \
-#                               scientific_name + "'", None) as cursor:
-#        for row in searchCursor(cursor):
-#            species_id = row['SpeciesID']
-#        if species_id:
-#            # found
-#            del row
-#    return species_id
+def checkSpecies(scientific_name, geodatabase):
+    """if exists return SpeciesID"""
+    species_id = None
+    arcpy.MakeTableView_management(geodatabase + '/Species', 'species_view')
+    arcpy.AddJoin_management('species_view', 'ELEMENT_NATIONAL_ID', geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
+                             'ELEMENT_NATIONAL_ID')
+    with arcpy.da.SearchCursor('species_view', ['Species.SpeciesID'],
+                               "BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME = '" + scientific_name + "'",
+                               None) as cursor:
+        for row in searchCursor(cursor):
+            species_id = row['Species.SpeciesID']
+        if species_id:
+            # found
+            del row
+    arcpy.RemoveJoin_management('species_view', 'BIOTICS_ELEMENT_NATIONAL')
+    return species_id
 
 
 def readDatasetSourceUniqueIDs(geodatabase, dataset_source_id, feature_class_type):
