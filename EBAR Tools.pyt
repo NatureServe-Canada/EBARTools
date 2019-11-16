@@ -29,7 +29,7 @@ class Toolbox(object):
         self.alias = ''
 
         # List of tool classes associated with this toolbox
-        self.tools = [ImportTabularData, ImportSpatialData, GenerateRangeMap, ListElementNationalIDs]
+        self.tools = [ImportTabularData, ImportSpatialData, GenerateRangeMap, ListElementNationalIDs, SyncSpeciesList]
 
 
 class ImportTabularData(object):
@@ -425,8 +425,8 @@ class SyncSpeciesList(object):
 
         # CSV
         param_csv = arcpy.Parameter(
-            displayName='Output Folder',
-            name='output_folder',
+            displayName='CSV File',
+            name='csv_file',
             datatype='DEFile',
             parameterType='Required',
             direction='Input')
