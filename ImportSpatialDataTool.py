@@ -245,7 +245,7 @@ class ImportSpatialDataTool:
                                                                     'RepresentationAccuracy', 'TEXT'))
             if field_dict['eo_rank'] and feature_class_type in ('Polygon', 'MultiPatch'):
                 field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', 'eo_rank',
-                                                                    'EORank', 'DATE'))
+                                                                    'EORank', 'TEXT'))
             # append
             if feature_class_type in ('Polygon', 'MultiPatch'):
                 destination = param_geodatabase + '/InputPolygon'
