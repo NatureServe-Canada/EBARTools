@@ -32,6 +32,22 @@ bc_eo_fields = {'unique_id': 'OCCR_ID',
                 'rep_accuracy': None,
                 'eo_rank': 'RANK'}
 
+mt_plant_so_fields = {'unique_id': 'SO_ID',
+                      'uri': None,
+                      'scientific_name': 'S_Sci_Name',
+                      'min_date': 'First_Obs_Date',
+                      'max_date': 'Last_Obs_Date',
+                      'rep_accuracy': 'Rep_Accuracy',
+                      'eo_rank': 'SO_Rank'}
+
+mt_animal_so_fields = {'unique_id': 'SO_ID',
+                       'uri': None,
+                       'scientific_name': 'S_Sci_Name',
+                       'min_date': 'First_Obs_Date',
+                       'max_date': 'Last_Obs_Date',
+                       'rep_accuracy': None,
+                       'eo_rank': None}
+
 cdc_sf_fields = {'unique_id': 'SOURCE_FEA',
                  'uri': None,
                  'scientific_name': 'SNAME',
@@ -68,6 +84,8 @@ spatial_field_mapping_dict = {'NU CDC Element Occurrences': cdc_eo_fields,
                               'YT CDC Element Occurrences': cdc_eo_fields,
                               'BC CDC Element Occurrences': bc_eo_fields,
                               'AB CDC Element Occurrences': ab_eo_fields,
+                              'MT Species Occurrence Plants': mt_plant_so_fields,
+                              'MT Species Occurrence Animals': mt_animal_so_fields,
                               'NU CDC Source Feature Polygons': cdc_sf_fields,
                               'YT CDC Source Feature Polygons': cdc_sf_fields,
                               'NU CDC Source Feature Points': cdc_sf_fields,

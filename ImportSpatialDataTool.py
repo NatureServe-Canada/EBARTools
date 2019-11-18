@@ -19,7 +19,7 @@ import arcpy
 import datetime
 #import locale
 import EBARUtils
-import SpatialFieldMapping
+#import SpatialFieldMapping
 
 
 class ImportSpatialDataTool:
@@ -53,14 +53,25 @@ class ImportSpatialDataTool:
         arcpy.env.workspace = param_geodatabase
 
         # check parameters
-        # get dataset source id
-        with arcpy.da.SearchCursor(param_geodatabase + '/DatasetSource', ['DatasetSourceID'],
+        # get dataset source id and field mappings
+        field_dict = {}
+        with arcpy.da.SearchCursor(param_geodatabase + '/DatasetSource', ['DatasetSourceID', 'UniqueIDField',
+                                                                          'URIField', 'ScientificNameField',
+                                                                          'MinDateField', 'MaxDateField',
+                                                                          'RepAccuracyField', 'EORankField'],
                                    "DatasetSourceName = '" + param_dataset_source + "'") as cursor:
             for row in EBARUtils.searchCursor(cursor):
                 dataset_source_id = row['DatasetSourceID']
+                field_dict['unique_id'] = row['UniqueIDField']
+                field_dict['uri'] = row['URIField']
+                field_dict['scientific_name'] = row['ScientificNameField']
+                field_dict['min_date'] = row['MinDateField']
+                field_dict['max_date'] = row['MaxDateField']
+                field_dict['rep_accuracy'] = row['RepAccuracyField']
+                field_dict['eo_rank'] = row['EORankField']
             del row
-        # match field_dict with source
-        field_dict = SpatialFieldMapping.spatial_field_mapping_dict[param_dataset_source]
+        ## match field_dict with source
+        #field_dict = SpatialFieldMapping.spatial_field_mapping_dict[param_dataset_source]
         # determine type of feature class
         desc = arcpy.Describe(param_import_feature_class)
         feature_class_type = desc.shapeType
@@ -276,15 +287,15 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value='C:/GIS/EBAR/EBAR_test.gdb'
     param_import_feature_class = arcpy.Parameter()
-    param_import_feature_class.value = 'C:/GIS/EBAR/US_CDC_Data/Montana/MTNHP_Data_20191018.gdb/Plant_Observations'
+    param_import_feature_class.value = 'C:/GIS/EBAR/US_CDC_Data/Montana/MTNHP_Data_20191018.gdb/Plant_Occurrences'
     param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'Montana Point SFs'
+    param_dataset_name.value = 'Montana Plant Occurrences'
     param_dataset_organization = arcpy.Parameter()
     param_dataset_organization.value = 'Montana NHP'
     param_dataset_contact = arcpy.Parameter()
     param_dataset_contact.value = None
     param_dataset_source = arcpy.Parameter()
-    param_dataset_source.value = 'MT Source Feature Points'
+    param_dataset_source.value = 'MT Plant Occurrences'
     param_date_received = arcpy.Parameter()
     param_date_received.value = 'October 18, 2019'
     param_restrictions = arcpy.Parameter()
