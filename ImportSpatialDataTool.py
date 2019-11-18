@@ -36,30 +36,18 @@ class ImportSpatialDataTool:
         EBARUtils.displayMessage(messages, 'Start time: ' + str(start_time))
 
         # settings
-        #arcpy.gp.overwriteOutput = True
+        #arcpy.env.overwriteOutput = True
 
         # make variables for parms
         EBARUtils.displayMessage(messages, 'Processing parameters')
-        if parameters:
-            # passed from tool user interface
-            param_geodatabase = parameters[0].valueAsText
-            param_import_feature_class = parameters[1].valueAsText
-            param_dataset_name = parameters[2].valueAsText
-            param_dataset_organization = parameters[3].valueAsText
-            param_dataset_contact = parameters[4].valueAsText
-            param_dataset_source = parameters[5].valueAsText
-            param_date_received = parameters[6].valueAsText
-            param_restrictions = parameters[7].valueAsText
-        else:
-            # for debugging, hard code parameters
-            param_geodatabase = 'C:/GIS/EBAR/EBAR_test.gdb'
-            param_import_feature_class = 'C:/GIS/EBAR/CDN_CDC_Data/Yukon/SF_polygon_Yukon.shp'
-            param_dataset_name = 'Yukon Polygon SFs'
-            param_dataset_organization = 'Yukon CDC'
-            param_dataset_contact = 'Maria Leung'
-            param_dataset_source = 'YT CDC Source Feature Polygons'
-            param_date_received = 'October 30, 2019'
-            param_restrictions = None
+        param_geodatabase = parameters[0].valueAsText
+        param_import_feature_class = parameters[1].valueAsText
+        param_dataset_name = parameters[2].valueAsText
+        param_dataset_organization = parameters[3].valueAsText
+        param_dataset_contact = parameters[4].valueAsText
+        param_dataset_source = parameters[5].valueAsText
+        param_date_received = parameters[6].valueAsText
+        param_restrictions = parameters[7].valueAsText
 
         # use passed geodatabase as workspace (still seems to go to default geodatabase)
         arcpy.env.workspace = param_geodatabase
@@ -103,6 +91,8 @@ class ImportSpatialDataTool:
 
         # make temp copy of features being imported so that it is geodatabase format
         EBARUtils.displayMessage(messages, 'Copying features to temporary feature class')
+        if arcpy.Exists('TempImportFeatures'):
+            arcpy.Delete_management('TempImportFeatures')
         arcpy.CopyFeatures_management(param_import_feature_class, 'TempImportFeatures')
 
         # pre-processing
@@ -193,8 +183,11 @@ class ImportSpatialDataTool:
                         if count % 1000 == 0:
                             EBARUtils.displayMessage(messages, 'Min Date pre-processed ' + str(count))
                         min_date = None
-                        if field_dict['min_date']:
-                            if row[field_dict['min_date']]:
+                        if row[field_dict['min_date']]:
+                            if type(row[field_dict['min_date']]).__name__ == 'datetime':
+                                min_date = row[field_dict['min_date']]
+                            else:
+                                # extract date from text
                                 min_date = EBARUtils.extractDate(row[field_dict['min_date']].strip())
                         cursor.updateRow([row[field_dict['min_date']], min_date])
                     del row
@@ -208,8 +201,11 @@ class ImportSpatialDataTool:
                         if count % 1000 == 0:
                             EBARUtils.displayMessage(messages, 'Max Date pre-processed ' + str(count))
                         max_date = None
-                        if field_dict['max_date']:
-                            if row[field_dict['max_date']]:
+                        if row[field_dict['max_date']]:
+                            if type(row[field_dict['max_date']]).__name__ == 'datetime':
+                                max_date = row[field_dict['max_date']]
+                            else:
+                                # extract date from text
                                 max_date = EBARUtils.extractDate(row[field_dict['max_date']].strip())
                         cursor.updateRow([row[field_dict['max_date']], max_date])
                     del row
@@ -277,4 +273,22 @@ class ImportSpatialDataTool:
 if __name__ == '__main__':
     isd = ImportSpatialDataTool()
     # hard code parameters for debugging
-    isd.RunImportSpatialDataTool(None, None)
+    param_geodatabase = arcpy.Parameter()
+    param_geodatabase.value='C:/GIS/EBAR/EBAR_test.gdb'
+    param_import_feature_class = arcpy.Parameter()
+    param_import_feature_class.value = 'C:/GIS/EBAR/US_CDC_Data/Montana/MTNHP_Data_20191018.gdb/Plant_Observations'
+    param_dataset_name = arcpy.Parameter()
+    param_dataset_name.value = 'Montana Point SFs'
+    param_dataset_organization = arcpy.Parameter()
+    param_dataset_organization.value = 'Montana NHP'
+    param_dataset_contact = arcpy.Parameter()
+    param_dataset_contact.value = None
+    param_dataset_source = arcpy.Parameter()
+    param_dataset_source.value = 'MT Source Feature Points'
+    param_date_received = arcpy.Parameter()
+    param_date_received.value = 'October 18, 2019'
+    param_restrictions = arcpy.Parameter()
+    param_restrictions.value = None
+    parameters = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_organization,
+                  param_dataset_contact, param_dataset_source, param_date_received, param_restrictions]
+    isd.RunImportSpatialDataTool(parameters, None)
