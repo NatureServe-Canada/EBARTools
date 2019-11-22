@@ -41,7 +41,6 @@ class GenerateRangeMapTool:
         #arcpy.gp.overwriteOutput = True
         # buffer size in metres #, used if Accuracy not provided
         default_buffer_size = 10
-        #max_buffer_size = 25000
         ## proportion of point buffer that must be within ecoshape to get Present; otherwise gets Presence Expected
         #buffer_proportion_overlap = 0.6
         # number of years beyond which Presence gets set to Historical
@@ -49,24 +48,14 @@ class GenerateRangeMapTool:
 
         # make variables for parms
         EBARUtils.displayMessage(messages, 'Processing parameters')
-        if parameters:
-            # passed from tool user interface
-            param_geodatabase = parameters[0].valueAsText
-            param_species = parameters[1].valueAsText
-            param_secondary = parameters[2].valueAsText
-            if param_secondary:
-                param_secondary = param_secondary.replace("'", '')
-                param_secondary = param_secondary.split(';')
-            param_version = parameters[3].valueAsText
-            param_stage = parameters[4].valueAsText
-        else:
-            # for debugging, hard code parameters
-            param_geodatabase = 'C:/GIS/EBAR/EBAR_test.gdb'
-            #param_species = 'Micranthes spicata'
-            param_species = 'Carex abdita'
-            param_secondary = None
-            param_version = '1.0'
-            param_stage = 'Auto-generated'
+        param_geodatabase = parameters[0].valueAsText
+        param_species = parameters[1].valueAsText
+        param_secondary = parameters[2].valueAsText
+        if param_secondary:
+            param_secondary = param_secondary.replace("'", '')
+            param_secondary = param_secondary.split(';')
+        param_version = parameters[3].valueAsText
+        param_stage = parameters[4].valueAsText
 
         # use passed geodatabase as workspace (still seems to go to default geodatabase)
         arcpy.env.workspace = param_geodatabase
@@ -212,20 +201,18 @@ class GenerateRangeMapTool:
         arcpy.SelectLayerByAttribute_management('input_point_layer', 'NEW_SELECTION',
                                                 'SpeciesID IN (' + species_ids + ') AND (Accuracy IS NULL'
                                                 ' OR Accuracy <= ' + str(EBARUtils.worst_accuracy) + ')')
-#        EBARUtils.checkAddField('input_point_layer', 'buffer', 'LONG')
-#        code_block = '''
-#def GetBuffer(accuracy):
-#    ret = accuracy
-#    if not ret:
-#        ret = ''' + str(default_buffer_size) + '''
-#    if ret > ''' + str(max_buffer_size) + ''':
-#        ret = ''' + str(max_buffer_size) + '''
-#    return ret'''
-#        arcpy.CalculateField_management('input_point_layer', 'buffer', 'GetBuffer(!Accuracy!)', 'PYTHON3', code_block)
+        EBARUtils.checkAddField('input_point_layer', 'buffer', 'LONG')
+        code_block = '''
+def GetBuffer(accuracy):
+    ret = accuracy
+    if not ret:
+        ret = ''' + str(default_buffer_size) + '''
+    return ret'''
+        arcpy.CalculateField_management('input_point_layer', 'buffer', 'GetBuffer(!Accuracy!)', 'PYTHON3', code_block)
         if arcpy.Exists('TempPointBuffer'):
             arcpy.Delete_management('TempPointBuffer')
-        #arcpy.Buffer_analysis('input_point_layer', 'TempPointBuffer', 'buffer')
-        arcpy.Buffer_analysis('input_point_layer', 'TempPointBuffer', default_buffer_size)
+        arcpy.Buffer_analysis('input_point_layer', 'TempPointBuffer', 'buffer')
+        #arcpy.Buffer_analysis('input_point_layer', 'TempPointBuffer', default_buffer_size)
 
         # select all lines for species and buffer
         EBARUtils.displayMessage(messages, 'Buffering Input Lines')
@@ -381,7 +368,7 @@ class GenerateRangeMapTool:
         arcpy.AddJoin_management('pairwise_intersect_layer', 'DatasetSourceID',
                                  param_geodatabase + '/DatasetSource', 'DatasetSourceID', 'KEEP_COMMON')
         arcpy.Statistics_analysis('pairwise_intersect_layer', 'TempEcoshapeCountBySource', [['InputPointID', 'COUNT']],
-                                  ['EcoshapeID', 'DatasetSource.DatasetSourceName'])
+                                  ['EcoshapeID', 'DatasetSource.DatasetSourceName', 'DatasetSource.DatasetType'])
         arcpy.RemoveJoin_management('pairwise_intersect_layer', 'DatasetSource')
         arcpy.RemoveJoin_management('pairwise_intersect_layer', 'InputDataset')
 
@@ -392,7 +379,8 @@ class GenerateRangeMapTool:
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
             for update_row in EBARUtils.updateCursor(update_cursor):
                 with arcpy.da.SearchCursor('TempEcoshapeCountBySource',
-                                           ['DatasetSource_DatasetSourceName', 'FREQUENCY'],
+                                           ['DatasetSource_DatasetSourceName', 'DatasetSource_DatasetType',
+                                            'FREQUENCY'],
                                            'TempPairwiseIntersect_EcoshapeID = ' + \
                                            str(update_row['EcoshapeID'])) as search_cursor:
                     summary = ''
@@ -403,7 +391,7 @@ class GenerateRangeMapTool:
                         summary += search_row['DatasetSource_DatasetSourceName'] + ': ' + \
                             str(search_row['FREQUENCY']) + ' input record(s)'
                         # high-grade Presence Expected to Present for some dataset sources
-                        if presence == 'X' and (search_row['DatasetSource_DatasetSourceName'] in
+                        if presence == 'X' and (search_row['DatasetSource_DatasetType'] in
                                                 ('Element Occurrences', 'Source Feature Polygons',
                                                  'Source Feature Lines', 'Source Feature Points',
                                                  'Species Observation Polygons')):
@@ -484,4 +472,14 @@ class GenerateRangeMapTool:
 if __name__ == '__main__':
     grm = GenerateRangeMapTool()
     # hard code parameters for debugging
-    grm.RunGenerateRangeMapTool(None, None)
+    param_geodatabase = arcpy.Parameter()
+    param_geodatabase.value = 'C:/GIS/EBAR/EBAR_test.gdb'
+    param_species = arcpy.Parameter()
+    param_species.value = 'Carex abdita'
+    param_secondary = arcpy.Parameter()
+    param_secondary.value = None
+    param_version = arcpy.Parameter()
+    param_version.value = '1.0'
+    param_stage = 'Auto-generated'
+    parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage]
+    grm.RunGenerateRangeMapTool(parameters, None)

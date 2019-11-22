@@ -48,46 +48,15 @@ class ImportTabularDataTool:
 
         # make variables for parms
         EBARUtils.displayMessage(messages, 'Processing parameters')
-        if parameters:
-            # passed from tool user interface
-            param_geodatabase = parameters[0].valueAsText
-            param_raw_data_file = parameters[1].valueAsText
-            param_dataset_name = parameters[2].valueAsText
-            param_dataset_organization = parameters[3].valueAsText
-            param_dataset_contact = parameters[4].valueAsText
-            param_dataset_source = parameters[5].valueAsText
-            #param_dataset_type = parameters[6].valueAsText
-            param_date_received = parameters[6].valueAsText
-            param_restrictions = parameters[7].valueAsText
-        else:
-            # for debugging, hard code parameters
-            param_geodatabase = 'C:/GIS/EBAR/EBAR_test.gdb'
-
-            #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR_Sensitive_Material/Import_Routine_Data/Real_Data/' + \
-            #                      'Endemics_vertnet.csv'
-            #param_dataset_name = 'VerNet Endemics'
-            #param_dataset_organization = 'National Science Foundation'
-            #param_dataset_contact = 'http://vertnet.org/'
-            #param_dataset_source = 'VertNet'
-            #param_date_received = 'October 15, 2019'
-            #param_restrictions = None
-
-            #param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/ecoengine.csv'
-            #param_dataset_name = 'Ecoengine Microseris'
-            #param_dataset_organization = 'Berkeley Ecoinformatics Engine'
-            #param_dataset_contact = 'https://ecoengine.berkeley.edu/'
-            #param_dataset_source = 'Ecoengine'
-            #param_date_received = 'September 30, 2019'
-            #param_restrictions = None
-
-            param_raw_data_file = 'C:/Users/rgree/OneDrive/EBAR_Sensitive_Material/Import_Routine_Data/Real_Data/' + \
-                                  'GBIF_BC.csv'
-            param_dataset_name = 'BC GBIF'
-            param_dataset_organization = 'Global Biodiversity Information Facility'
-            param_dataset_contact = 'http://gbif.org'
-            param_dataset_source = 'GBIF'
-            param_date_received = 'October 9, 2019'
-            param_restrictions = None
+        param_geodatabase = parameters[0].valueAsText
+        param_raw_data_file = parameters[1].valueAsText
+        param_dataset_name = parameters[2].valueAsText
+        #param_dataset_organization = parameters[3].valueAsText
+        #param_dataset_contact = parameters[4].valueAsText
+        param_dataset_source = parameters[3].valueAsText
+        #param_dataset_type = parameters[6].valueAsText
+        param_date_received = parameters[4].valueAsText
+        param_restrictions = parameters[5].valueAsText
 
         # use passed geodatabase as workspace (still seems to go to default geodatabase)
         arcpy.env.workspace = param_geodatabase
@@ -107,8 +76,6 @@ class ImportTabularDataTool:
         EBARUtils.displayMessage(messages, 'Checking for dataset [' + dataset + '] and adding if new')
         input_dataset_id, dataset_exists = EBARUtils.checkAddInputDataset(param_geodatabase,
                                                                           param_dataset_name,
-                                                                          param_dataset_organization,
-                                                                          param_dataset_contact,
                                                                           dataset_source_id,
                                                                           param_date_received,
                                                                           param_restrictions)
@@ -381,4 +348,17 @@ class ImportTabularDataTool:
 if __name__ == '__main__':
     itd = ImportTabularDataTool()
     # hard code parameters for debugging
-    itd.RunImportTabularDataTool(None, None)
+    param_raw_data_file = arcpy.Parameter()
+    param_raw_data_file.value = 'C:/Users/rgree/OneDrive/EBAR_Sensitive_Material/Import_Routine_Data/Real_Data/' + \
+                                'Endemics_vertnet.csv'
+    param_dataset_name = arcpy.Parameter()
+    param_dataset_name.value = 'VerNet Endemics'
+    param_dataset_source = arcpy.Parameter()
+    param_dataset_source.value = 'VertNet'
+    param_date_received = arcpy.Parameter()
+    param_date_received.value = 'October 15, 2019'
+    param_restrictions = arcpy.Parameter()
+    param_restrictions.value = None
+    parameters = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_source,
+                  param_date_received, param_restrictions]
+    itd.RunImportTabularDataTool(parameters, None)

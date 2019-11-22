@@ -138,8 +138,7 @@ def setNewID(table, id_field, where_clause):
         del row
 
 
-def checkAddInputDataset(geodatabase, dataset_name, dataset_organization, dataset_contact, dataset_source_id,
-                         date_received, restrictions):
+def checkAddInputDataset(geodatabase, dataset_name, dataset_source_id, date_received, restrictions):
     """If Dataset already exists (name, source, date), return id and true; otherwise, add and return id and false"""
     input_dataset_id = None
 
@@ -154,11 +153,9 @@ def checkAddInputDataset(geodatabase, dataset_name, dataset_organization, datase
             return input_dataset_id, True
 
     # new
-    dataset_fields = ['DatasetName', 'DatasetOrganization', 'DatasetContact', 'DatasetSourceID', 'DateReceived',
-                      'Restrictions']
+    dataset_fields = ['DatasetName', 'DatasetSourceID', 'DateReceived', 'Restrictions']
     with arcpy.da.InsertCursor(geodatabase + '/InputDataset', dataset_fields) as cursor:
-        input_dataset_id = cursor.insertRow([dataset_name, dataset_organization, dataset_contact, dataset_source_id,
-                                             date_received, restrictions])
+        input_dataset_id = cursor.insertRow([dataset_name, dataset_source_id, date_received, restrictions])
     return input_dataset_id, False
 
 

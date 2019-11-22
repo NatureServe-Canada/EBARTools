@@ -67,21 +67,21 @@ class ImportTabularData(object):
             parameterType='Required',
             direction='Input')
         
-        # Dataset Organization
-        param_dataset_organization = arcpy.Parameter(
-            displayName='Dataset Organization',
-            name='dataset_organization',
-            datatype='GPString',
-            parameterType='Required',
-            direction='Input')
+        ## Dataset Organization
+        #param_dataset_organization = arcpy.Parameter(
+        #    displayName='Dataset Organization',
+        #    name='dataset_organization',
+        #    datatype='GPString',
+        #    parameterType='Required',
+        #    direction='Input')
         
-        # Dataset Contact
-        param_dataset_contact = arcpy.Parameter(
-            displayName='Dataset Contact',
-            name='dataset_contact',
-            datatype='GPString',
-            parameterType='Required',
-            direction='Input')
+        ## Dataset Contact
+        #param_dataset_contact = arcpy.Parameter(
+        #    displayName='Dataset Contact',
+        #    name='dataset_contact',
+        #    datatype='GPString',
+        #    parameterType='Required',
+        #    direction='Input')
         
         # Dataset Source
         param_dataset_source = arcpy.Parameter(
@@ -109,8 +109,8 @@ class ImportTabularData(object):
             parameterType='Optional',
             direction='Input')
         
-        params = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_organization,
-                  param_dataset_contact, param_dataset_source, param_date_received, param_dataset_restrictions]
+        params = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_source,
+                  param_date_received, param_dataset_restrictions]
         return params
 
     def isLicensed(self):
@@ -172,21 +172,21 @@ class ImportSpatialData(object):
             parameterType='Required',
             direction='Input')
         
-        # Dataset Organization
-        param_dataset_organization = arcpy.Parameter(
-            displayName='Dataset Organization',
-            name='dataset_organization',
-            datatype='GPString',
-            parameterType='Required',
-            direction='Input')
+        ## Dataset Organization
+        #param_dataset_organization = arcpy.Parameter(
+        #    displayName='Dataset Organization',
+        #    name='dataset_organization',
+        #    datatype='GPString',
+        #    parameterType='Required',
+        #    direction='Input')
         
-        # Dataset Contact
-        param_dataset_contact = arcpy.Parameter(
-            displayName='Dataset Contact',
-            name='dataset_contact',
-            datatype='GPString',
-            parameterType='Required',
-            direction='Input')
+        ## Dataset Contact
+        #param_dataset_contact = arcpy.Parameter(
+        #    displayName='Dataset Contact',
+        #    name='dataset_contact',
+        #    datatype='GPString',
+        #    parameterType='Required',
+        #    direction='Input')
         
         # Dataset Source
         # - used to check for uniqueness of records using provided IDs
@@ -232,8 +232,8 @@ class ImportSpatialData(object):
             parameterType='Optional',
             direction='Input')
         
-        params = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_organization,
-                  param_dataset_contact, param_dataset_source, param_date_received, param_dataset_restrictions]
+        params = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_source,
+                  param_date_received, param_dataset_restrictions]
         return params
 
     def isLicensed(self):
@@ -310,8 +310,8 @@ class GenerateRangeMap(object):
             datatype='GPString',
             parameterType='Required',
             direction='Input')
-        param_stage.filter.list = ['Auto-generated', 'Expert reviewed', 'Published']
-        param_stage.value = 'Auto-generated'
+        #param_stage.filter.list = ['Auto-generated', 'Expert reviewed', 'Published']
+        #param_stage.value = 'Auto-generated'
 
         params = [param_geodatabase, param_species, param_secondary, param_version, param_stage]
         return params
@@ -328,10 +328,6 @@ class GenerateRangeMap(object):
         if parameters[0].altered and parameters[0].value:
             param_geodatabase = parameters[0].valueAsText
             spec_list = []
-            #with arcpy.da.SearchCursor(param_geodatabase + '/Species', ['ScientificName'],
-            #                           sql_clause=(None,'ORDER BY ScientificName')) as cursor:
-            #    for row in EBARUtils.searchCursor(cursor):
-            #        spec_list.append(row['ScientificName'])
             with arcpy.da.SearchCursor(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', ['NATIONAL_SCIENTIFIC_NAME'],
                                        sql_clause=(None,'ORDER BY NATIONAL_SCIENTIFIC_NAME')) as cursor:
                 for row in EBARUtils.searchCursor(cursor):

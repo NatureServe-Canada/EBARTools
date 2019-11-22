@@ -19,7 +19,6 @@ import arcpy
 import datetime
 #import locale
 import EBARUtils
-#import SpatialFieldMapping
 
 
 class ImportSpatialDataTool:
@@ -43,11 +42,11 @@ class ImportSpatialDataTool:
         param_geodatabase = parameters[0].valueAsText
         param_import_feature_class = parameters[1].valueAsText
         param_dataset_name = parameters[2].valueAsText
-        param_dataset_organization = parameters[3].valueAsText
-        param_dataset_contact = parameters[4].valueAsText
-        param_dataset_source = parameters[5].valueAsText
-        param_date_received = parameters[6].valueAsText
-        param_restrictions = parameters[7].valueAsText
+        #param_dataset_organization = parameters[3].valueAsText
+        #param_dataset_contact = parameters[4].valueAsText
+        param_dataset_source = parameters[3].valueAsText
+        param_date_received = parameters[4].valueAsText
+        param_restrictions = parameters[5].valueAsText
 
         # use passed geodatabase as workspace (still seems to go to default geodatabase)
         arcpy.env.workspace = param_geodatabase
@@ -70,8 +69,6 @@ class ImportSpatialDataTool:
                 field_dict['rep_accuracy'] = row['RepAccuracyField']
                 field_dict['eo_rank'] = row['EORankField']
             del row
-        ## match field_dict with source
-        #field_dict = SpatialFieldMapping.spatial_field_mapping_dict[param_dataset_source]
         # determine type of feature class
         desc = arcpy.Describe(param_import_feature_class)
         feature_class_type = desc.shapeType
@@ -81,8 +78,6 @@ class ImportSpatialDataTool:
         EBARUtils.displayMessage(messages, 'Checking for dataset [' + dataset + '] and adding if new')
         input_dataset_id, dataset_exists = EBARUtils.checkAddInputDataset(param_geodatabase,
                                                                           param_dataset_name,
-                                                                          param_dataset_organization,
-                                                                          param_dataset_contact,
                                                                           dataset_source_id,
                                                                           param_date_received,
                                                                           param_restrictions)
@@ -290,16 +285,12 @@ if __name__ == '__main__':
     param_import_feature_class.value = 'C:/GIS/EBAR/US_CDC_Data/Montana/MTNHP_Data_20191018.gdb/Plant_Occurrences'
     param_dataset_name = arcpy.Parameter()
     param_dataset_name.value = 'Montana Plant Occurrences'
-    param_dataset_organization = arcpy.Parameter()
-    param_dataset_organization.value = 'Montana NHP'
-    param_dataset_contact = arcpy.Parameter()
-    param_dataset_contact.value = None
     param_dataset_source = arcpy.Parameter()
     param_dataset_source.value = 'MT Plant Occurrences'
     param_date_received = arcpy.Parameter()
     param_date_received.value = 'October 18, 2019'
     param_restrictions = arcpy.Parameter()
     param_restrictions.value = None
-    parameters = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_organization,
-                  param_dataset_contact, param_dataset_source, param_date_received, param_restrictions]
+    parameters = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_source,
+                  param_date_received, param_restrictions]
     isd.RunImportSpatialDataTool(parameters, None)
