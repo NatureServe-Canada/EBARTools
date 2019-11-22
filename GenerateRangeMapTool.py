@@ -416,28 +416,34 @@ def GetBuffer(accuracy):
 
         # get synonyms used
         EBARUtils.displayMessage(messages, 'Documenting Synonyms used')
-        synonym_names = ''
         if arcpy.Exists('TempUniqueSynonyms'):
             arcpy.Delete_management('TempUniqueSynonyms')
         arcpy.Statistics_analysis('all_inputs_layer', 'TempUniqueSynonyms', [['InputDatasetID', 'COUNT']],
                                   ['TempAllInputs.SynonymID'])
         # build list of unique IDs
+        synonym_ids = []
         with arcpy.da.SearchCursor('TempUniqueSynonyms', ['TempAllInputs_SynonymID']) as search_cursor:
-            synonym_ids = []
             for search_row in EBARUtils.searchCursor(search_cursor):
                 if search_row['TempAllInputs_SynonymID']:
                     if search_row['TempAllInputs_SynonymID'] not in synonym_ids:
                         synonym_ids.append(search_row['TempAllInputs_SynonymID'])
                 del search_row
-        # get names for IDs
+        # get names for IDs and combine with secondary names
+        #synonym_names = ''
         if len(synonym_ids) > 0:
             with arcpy.da.SearchCursor(param_geodatabase + '/Synonym', ['SynonymName'],
                                        'SynonymID IN (' + ','.join(map(str, synonym_ids)) + ')') as search_cursor:
+                found = False
                 for search_row in EBARUtils.searchCursor(search_cursor):
-                    if len(synonym_names) > 0:
-                        synonym_names += ', '
-                    synonym_names += search_row['SynonymName']
-                if len(synonym_names) > 0:
+                    #if len(synonym_names) > 0:
+                    #    synonym_names += ', '
+                    #synonym_names += search_row['SynonymName']
+                    found = True
+                    if len(secondary_names) > 0:
+                        secondary_names += ', '
+                    secondary_names += search_row['SynonymName']
+                #if len(synonym_names) > 0:
+                if found:
                     del search_row
 
         # update RangeMap date and metadata
@@ -454,8 +460,9 @@ def GetBuffer(accuracy):
                         summary += search_row['DatasetSource_DatasetSourceName'] + ': ' + \
                             str(search_row['FREQUENCY']) + ' input record(s)'
                     del search_row
-                notes = 'Primary Species: ' + param_species + '; Secondary Species: ' + secondary_names + \
-                    '; Synonyms: ' + synonym_names
+                #notes = 'Primary Species: ' + param_species + '; Secondary Species: ' + secondary_names + \
+                #    '; Synonyms: ' + synonym_names
+                notes = 'Primary Species: ' + param_species + '; Synonyms: ' + secondary_names
                 update_cursor.updateRow([datetime.datetime.now(), summary, notes])
 
         # generate TOC entry and actual map!!!
