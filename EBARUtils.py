@@ -131,12 +131,14 @@ def _name_cursor(cursor):
 
 def setNewID(table, id_field, where_clause):
     """Set id_field to object_id"""
+    new_id = None
     with arcpy.da.UpdateCursor(table, ['OID@', id_field], where_clause) as cursor:
         for row in updateCursor(cursor):
             # investigate more fool-proof method of assigning ID!!!
-            cursor.updateRow([row['OID@'], row['OID@']])
+            new_id = row['OID@']
+            cursor.updateRow([new_id, new_id])
         del row
-
+    return new_id
 
 def checkAddInputDataset(geodatabase, dataset_name, dataset_source_id, date_received, restrictions):
     """If Dataset already exists (name, source, date), return id and true; otherwise, add and return id and false"""
@@ -171,16 +173,22 @@ def checkAddField(table, field_name, field_type):
 def readSpecies(geodatabase):
     """read existing species into dict and return"""
     species_dict = {}
-    arcpy.MakeTableView_management(geodatabase + '/Species', 'species_view')
-    arcpy.AddJoin_management('species_view', 'ELEMENT_NATIONAL_ID', geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
-                             'ELEMENT_NATIONAL_ID')
-    with arcpy.da.SearchCursor('species_view', ['BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME',
-                                                'Species.SpeciesID']) as cursor:
+    with arcpy.da.SearchCursor(geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
+                               ['NATIONAL_SCIENTIFIC_NAME', 'SpeciesID']) as cursor:
         for row in searchCursor(cursor):
-            species_dict[row['BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME']] = row['Species.SpeciesID']
+            species_dict[row['NATIONAL_SCIENTIFIC_NAME']] = row['SpeciesID']
     if len(species_dict) > 0:
         del row
-    arcpy.RemoveJoin_management('species_view', 'BIOTICS_ELEMENT_NATIONAL')
+    #arcpy.MakeTableView_management(geodatabase + '/Species', 'species_view')
+    #arcpy.AddJoin_management('species_view', 'ELEMENT_NATIONAL_ID', geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
+    #                         'ELEMENT_NATIONAL_ID')
+    #with arcpy.da.SearchCursor('species_view', ['BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME',
+    #                                            'Species.SpeciesID']) as cursor:
+    #    for row in searchCursor(cursor):
+    #        species_dict[row['BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME']] = row['Species.SpeciesID']
+    #if len(species_dict) > 0:
+    #    del row
+    #arcpy.RemoveJoin_management('species_view', 'BIOTICS_ELEMENT_NATIONAL')
     return species_dict
 
 
@@ -230,18 +238,26 @@ def readSynonymSpeciesIDs(geodatabase):
 def checkSpecies(scientific_name, geodatabase):
     """if exists return SpeciesID"""
     species_id = None
-    arcpy.MakeTableView_management(geodatabase + '/Species', 'species_view')
-    arcpy.AddJoin_management('species_view', 'ELEMENT_NATIONAL_ID', geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
-                             'ELEMENT_NATIONAL_ID')
-    with arcpy.da.SearchCursor('species_view', ['Species.SpeciesID'],
-                               "BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME = '" + scientific_name + "'",
+    with arcpy.da.SearchCursor(geodatabase + '/BIOTICS_ELEMENT_NATIONAL', ['SpeciesID'],
+                               "NATIONAL_SCIENTIFIC_NAME = '" + scientific_name + "'",
                                None) as cursor:
         for row in searchCursor(cursor):
             species_id = row['Species.SpeciesID']
         if species_id:
             # found
             del row
-    arcpy.RemoveJoin_management('species_view', 'BIOTICS_ELEMENT_NATIONAL')
+    #arcpy.MakeTableView_management(geodatabase + '/Species', 'species_view')
+    #arcpy.AddJoin_management('species_view', 'ELEMENT_NATIONAL_ID', geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
+    #                         'ELEMENT_NATIONAL_ID')
+    #with arcpy.da.SearchCursor('species_view', ['Species.SpeciesID'],
+    #                           "BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME = '" + scientific_name + "'",
+    #                           None) as cursor:
+    #    for row in searchCursor(cursor):
+    #        species_id = row['Species.SpeciesID']
+    #    if species_id:
+    #        # found
+    #        del row
+    #arcpy.RemoveJoin_management('species_view', 'BIOTICS_ELEMENT_NATIONAL')
     return species_id
 
 

@@ -85,30 +85,34 @@ class SyncSpeciesListTool:
                 with arcpy.da.UpdateCursor(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', biotics_fields,
                                            'ELEMENT_NATIONAL_ID = ' + str(element_national_id)) as update_cursor:
                     for update_row in EBARUtils.updateCursor(update_cursor):
-                        update_fields = []
+                        update_values = []
                         for field in biotics_fields:
                             if len(file_line[field]) > 0:
-                                update_fields.append(file_line[field])
+                                update_values.append(file_line[field])
                             else:
-                                update_fields.append(None)
-                        update_cursor.updateRow(update_fields)
+                                update_values.append(None)
+                        update_cursor.updateRow(update_values)
                     del update_row
             else:
-                # create new BIOTICS_ELEMENT_NATIONAL and Species records
+                # create new Species and BIOTICS_ELEMENT_NATIONAL records
+                # start with a dummy species id so setNewID can work!
+                with arcpy.da.InsertCursor(param_geodatabase + '/Species',
+                                           ['SpeciesID']) as insert_cursor:
+                    insert_cursor.insertRow([999999])
+                species_id = EBARUtils.setNewID(param_geodatabase + '/Species', 'SpeciesID', 'SpeciesID = 999999')
+                biotics_fields.append('SpeciesID')
                 with arcpy.da.InsertCursor(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
                                            biotics_fields) as insert_cursor:
-                    insert_fields = []
+                    insert_values = []
                     for field in biotics_fields:
-                        if len(file_line[field]) > 0:
-                            insert_fields.append(file_line[field])
+                        if field == 'SpeciesID':
+                            insert_values.append(species_id)
+                        elif len(file_line[field]) > 0:
+                            insert_values.append(file_line[field])
                         else:
-                            insert_fields.append(None)
-                    insert_cursor.insertRow(insert_fields)
-                with arcpy.da.InsertCursor(param_geodatabase + '/Species',
-                                           ['ELEMENT_NATIONAL_ID']) as insert_cursor:
-                    insert_cursor.insertRow([element_national_id])
-                EBARUtils.setNewID(param_geodatabase + '/Species', 'SpeciesID',
-                                   'ELEMENT_NATIONAL_ID = ' + str(element_national_id))
+                            insert_values.append(None)
+                    insert_cursor.insertRow(insert_values)
+                biotics_fields.remove('SpeciesID')
                 added += 1
             count += 1
 
@@ -126,8 +130,9 @@ if __name__ == '__main__':
     ssl = SyncSpeciesListTool()
     # hard code parameters for debugging
     param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value='C:/GIS/EBAR/EBAR_test.gdb'
+    param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_csv = arcpy.Parameter()
-    param_csv.value='C:/Users/rgree/OneDrive/EBAR/Data Mining/Species Prioritization/BioticsSpeciesExample3.csv'
+    param_csv.value='C:/Users/rgree/OneDrive/EBAR/Data Mining/Species Prioritization/Biotics Sync/' + \
+                    'BioticsSpeciesExample3.csv'
     parameters = [param_geodatabase, param_csv]
     ssl.RunSyncSpeciesListTool(parameters, None)

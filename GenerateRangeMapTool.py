@@ -87,7 +87,7 @@ class GenerateRangeMapTool:
         range_map_id = None
         arcpy.MakeTableView_management(param_geodatabase + '/RangeMap', 'range_map_view')
         with arcpy.da.SearchCursor('range_map_view', ['RangeMapID'],
-                                   'PrimarySpeciesID = ' + str(species_id) +
+                                   'SpeciesID = ' + str(species_id) +
                                    " AND RangeVersion = '" + param_version +
                                    "' AND RangeStage = '" + param_stage + "'") as cursor:
             for row in EBARUtils.searchCursor(cursor):
@@ -103,9 +103,11 @@ class GenerateRangeMapTool:
             ecoshape_review = False
             # use multi-table joins
             arcpy.AddJoin_management('range_map_view', 'RangeMapID',
-                                      param_geodatabase + '/ReviewRequest', 'RangeMapID', 'KEEP_COMMON')
-            arcpy.AddJoin_management('range_map_view', 'ReviewRequest.ReviewRequestID',
-                                      param_geodatabase + '/Review', 'ReviewRequestID', 'KEEP_COMMON')
+                                      param_geodatabase + '/Review', 'RangeMapID', 'KEEP_COMMON')
+            #arcpy.AddJoin_management('range_map_view', 'RangeMapID',
+            #                          param_geodatabase + '/ReviewRequest', 'RangeMapID', 'KEEP_COMMON')
+            #arcpy.AddJoin_management('range_map_view', 'ReviewRequest.ReviewRequestID',
+            #                          param_geodatabase + '/Review', 'ReviewRequestID', 'KEEP_COMMON')
 
             # check for completed reviews, and if so terminate
             with arcpy.da.SearchCursor('range_map_view', ['Review.DateCompleted']) as cursor:
@@ -123,9 +125,9 @@ class GenerateRangeMapTool:
 
             # check for reviews in progress, and if so terminate
             arcpy.AddJoin_management('range_map_view', 'Review.ReviewID',
-                                     param_geodatabase + '/RangeMapEcoshapeReview', 'ReviewID', 'KEEP_COMMON')
+                                     param_geodatabase + '/EcoshapeReview', 'ReviewID', 'KEEP_COMMON')
             with arcpy.da.SearchCursor('range_map_view',
-                                       ['RangeMapEcoshapeReview.RangeMapEcoshapeReviewID']) as cursor:
+                                       ['EcoshapeReview.ReviewID']) as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     ecoshape_review = True
                     break
@@ -136,9 +138,8 @@ class GenerateRangeMapTool:
                 # terminate with error
                 raise arcpy.ExecuteError
 
-            arcpy.RemoveJoin_management('range_map_view', 'RangeMapEcoshapeReview')
+            arcpy.RemoveJoin_management('range_map_view', 'EcoshapeReview')
             arcpy.RemoveJoin_management('range_map_view', 'Review')
-            arcpy.RemoveJoin_management('range_map_view', 'ReviewRequest')
 
             # no reviews completed or in progress, so delete any existing related records
             EBARUtils.displayMessage(messages, 'Range Map already exists with but with no review(s) completed or in '
@@ -179,7 +180,7 @@ class GenerateRangeMapTool:
         else:
             # create RangeMap record
             with arcpy.da.InsertCursor('range_map_view',
-                                       ['PrimarySpeciesID', 'RangeVersion', 'RangeStage']) as cursor:
+                                       ['SpeciesID', 'RangeVersion', 'RangeStage']) as cursor:
                 range_map_id = cursor.insertRow([species_id, param_version, param_stage])
             EBARUtils.setNewID(param_geodatabase + '/RangeMap', 'RangeMapID', 'OBJECTID = ' + str(range_map_id))
             EBARUtils.displayMessage(messages, 'Range Map record created')
