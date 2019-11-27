@@ -65,7 +65,8 @@ class GenerateRangeMapTool:
         if not species_id:
             EBARUtils.displayMessage(messages, 'ERROR: Species not found')
             # terminate with error
-            raise arcpy.ExecuteError
+            return
+            #raise arcpy.ExecuteError
 
         # check for secondary species
         species_ids = str(species_id)
@@ -76,7 +77,8 @@ class GenerateRangeMapTool:
                 if not secondary_id:
                     EBARUtils.displayMessage(messages, 'ERROR: Secondary species not found')
                     # terminate with error
-                    raise arcpy.ExecuteError
+                    return
+                    #raise arcpy.ExecuteError
                 species_ids += ',' + str(secondary_id)
                 if len(secondary_names) > 0:
                     secondary_names += ', '
@@ -113,7 +115,7 @@ class GenerateRangeMapTool:
             with arcpy.da.SearchCursor('range_map_view', ['Review.DateCompleted']) as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     review_found = True
-                    if row['DateCompleted']:
+                    if row['Review.DateCompleted']:
                         review_completed = True
                         break
                 if review_found:
@@ -121,7 +123,8 @@ class GenerateRangeMapTool:
             if review_completed:
                 EBARUtils.displayMessage(messages, 'ERROR: Range Map already exists with completed review(s)')
                 # terminate with error
-                raise arcpy.ExecuteError
+                return
+                #raise arcpy.ExecuteError
 
             # check for reviews in progress, and if so terminate
             arcpy.AddJoin_management('range_map_view', 'Review.ReviewID',
@@ -136,7 +139,8 @@ class GenerateRangeMapTool:
             if ecoshape_review:
                 EBARUtils.displayMessage(messages, 'ERROR: Range Map already exists with review(s) in progress')
                 # terminate with error
-                raise arcpy.ExecuteError
+                return
+                #raise arcpy.ExecuteError
 
             arcpy.RemoveJoin_management('range_map_view', 'EcoshapeReview')
             arcpy.RemoveJoin_management('range_map_view', 'Review')

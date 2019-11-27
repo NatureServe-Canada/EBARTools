@@ -121,7 +121,7 @@ class ImportTabularData(object):
         """Modify the values and properties of parameters before internal validation is performed.  This method is " + \
         "called whenever a parameter has been changed."""
         if parameters[0].altered and parameters[0].value:
-            parameters[3].filter.list = EBARUtils.readDatasetSources(parameters[0].valueAsText, 'T')
+            parameters[3].filter.list = EBARUtils.readDatasetSources(parameters[0].valueAsText, "('T')")
         return
 
     def updateMessages(self, parameters):
@@ -244,7 +244,7 @@ class ImportSpatialData(object):
         """Modify the values and properties of parameters before internal validation is performed.  This method is " + \
         "called whenever a parameter has been changed."""
         if parameters[0].altered and parameters[0].value:
-            parameters[3].filter.list = EBARUtils.readDatasetSources(parameters[0].valueAsText, 'S')
+            parameters[3].filter.list = EBARUtils.readDatasetSources(parameters[0].valueAsText, "('S', 'L', 'P')")
         return
 
     def updateMessages(self, parameters):

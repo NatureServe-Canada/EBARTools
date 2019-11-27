@@ -52,15 +52,31 @@ class ImportSpatialDataTool:
         arcpy.env.workspace = param_geodatabase
 
         # check parameters
-        # get dataset source id and field mappings
+        # determine type of feature class
+        desc = arcpy.Describe(param_import_feature_class)
+        feature_class_type = desc.shapeType
+        # get dataset source id, type and field mappings
         field_dict = {}
         with arcpy.da.SearchCursor(param_geodatabase + '/DatasetSource', ['DatasetSourceID', 'UniqueIDField',
-                                                                          'URIField', 'ScientificNameField',
-                                                                          'MinDateField', 'MaxDateField',
-                                                                          'RepAccuracyField', 'EORankField'],
+                                                                          'DatasetSourceType', 'URIField',
+                                                                          'ScientificNameField', 'MinDateField',
+                                                                          'MaxDateField', 'RepAccuracyField',
+                                                                          'EORankField'],
                                    "DatasetSourceName = '" + param_dataset_source + "'") as cursor:
             for row in EBARUtils.searchCursor(cursor):
                 dataset_source_id = row['DatasetSourceID']
+                # check match between feature class type and dataset source type
+                match = True
+                if feature_class_type in ('Polygon', 'MultiPatch'):
+                    if row['DatasetSourceType'] != 'P':
+                        match = False
+                elif feature_class_type in ('Point', 'Multipoint'):
+                    if row['DatasetSourceType'] != 'S':
+                        match = False
+                else: # Polyline
+                    if row['DatasetSourceType'] != 'L':
+                        match = False
+                # populate field mappings
                 field_dict['unique_id'] = row['UniqueIDField']
                 field_dict['uri'] = row['URIField']
                 field_dict['scientific_name'] = row['ScientificNameField']
@@ -69,9 +85,10 @@ class ImportSpatialDataTool:
                 field_dict['rep_accuracy'] = row['RepAccuracyField']
                 field_dict['eo_rank'] = row['EORankField']
             del row
-        # determine type of feature class
-        desc = arcpy.Describe(param_import_feature_class)
-        feature_class_type = desc.shapeType
+        if not match:
+            EBARUtils.displayMessage(messages,
+                                     'ERROR: Feature Class Type and Dataset Source Type do not match')
+            return
 
         # check/add InputDataset row
         dataset = param_dataset_name + ', ' + param_dataset_source + ', ' + str(param_date_received)

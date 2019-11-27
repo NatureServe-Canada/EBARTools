@@ -242,7 +242,7 @@ def checkSpecies(scientific_name, geodatabase):
                                "NATIONAL_SCIENTIFIC_NAME = '" + scientific_name + "'",
                                None) as cursor:
         for row in searchCursor(cursor):
-            species_id = row['Species.SpeciesID']
+            species_id = row['SpeciesID']
         if species_id:
             # found
             del row
@@ -348,7 +348,7 @@ def readDatasetSources(param_geodatabase, dataset_source_type):
     """return a list of dataset source names for the given type"""
     source_list = []
     with arcpy.da.SearchCursor(param_geodatabase + '/DatasetSource', ['DatasetSourceName'],
-                                "DatasetSourceType = '" + dataset_source_type + "'",
+                                "DatasetSourceType IN " + dataset_source_type,
                                 sql_clause=(None,'ORDER BY DatasetSourceName')) as cursor:
         for row in searchCursor(cursor):
             source_list.append(row['DatasetSourceName'])
