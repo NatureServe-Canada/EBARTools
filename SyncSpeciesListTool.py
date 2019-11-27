@@ -77,7 +77,9 @@ class SyncSpeciesListTool:
                           'CA_REGULARITY',
                           'CA_CONFIDENCE',
                           'CA_PRESENCE',
-                          'CA_POPULATION']
+                          'CA_POPULATION',
+                          'SHORT_CITATION_AUTHOR',
+                          'SHORT_CITATION_YEAR']
         for file_line in reader:
             element_national_id = int(float(file_line['ELEMENT_NATIONAL_ID']))
             if element_national_id in IDs:
@@ -133,6 +135,6 @@ if __name__ == '__main__':
     param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_csv = arcpy.Parameter()
     param_csv.value='C:/Users/rgree/OneDrive/EBAR/Data Mining/Species Prioritization/Biotics Sync/' + \
-                    'BioticsSpeciesExample3.csv'
+                    'BioticsSpeciesExample2.csv'
     parameters = [param_geodatabase, param_csv]
     ssl.RunSyncSpeciesListTool(parameters, None)
