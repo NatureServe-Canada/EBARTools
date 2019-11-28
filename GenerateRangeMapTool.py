@@ -107,10 +107,6 @@ class GenerateRangeMapTool:
             # use multi-table joins
             arcpy.AddJoin_management('range_map_view', 'RangeMapID',
                                       param_geodatabase + '/Review', 'RangeMapID', 'KEEP_COMMON')
-            #arcpy.AddJoin_management('range_map_view', 'RangeMapID',
-            #                          param_geodatabase + '/ReviewRequest', 'RangeMapID', 'KEEP_COMMON')
-            #arcpy.AddJoin_management('range_map_view', 'ReviewRequest.ReviewRequestID',
-            #                          param_geodatabase + '/Review', 'ReviewRequestID', 'KEEP_COMMON')
 
             # check for completed reviews, and if so terminate
             with arcpy.da.SearchCursor('range_map_view', ['Review.DateCompleted']) as cursor:
@@ -313,7 +309,7 @@ def GetBuffer(accuracy):
                                        ['EcoshapeID', 'MAX_MaxDate']) as search_cursor:
                 for row in EBARUtils.searchCursor(search_cursor):
                     input_found = True
-                    # undated / no eo rank gets Presence Expected
+                    # no eo rank gets Presence Expected
                     presence = 'X'
                     if row['MAX_MaxDate']:
                         if (datetime.datetime.now().year - row['MAX_MaxDate'].year) <= age_for_historical:
@@ -322,12 +318,6 @@ def GetBuffer(accuracy):
                         else:
                             # otherwise Historical
                             presence = 'H'
-                    #presence = 'H'
-                    #if row['MAX_MaxDate']:
-                    #    if (datetime.datetime.now().year - row['MAX_MaxDate'].year) <= age_for_historical:
-                    #        presence = 'X'
-                    #        if row['MAX_PolygonPropn'] >= buffer_proportion_overlap:
-                    #            presence = 'P'
                     insert_cursor.insertRow([range_map_id, row['EcoshapeID'], presence])
                 if input_found:
                     del row

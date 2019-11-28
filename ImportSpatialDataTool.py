@@ -42,8 +42,6 @@ class ImportSpatialDataTool:
         param_geodatabase = parameters[0].valueAsText
         param_import_feature_class = parameters[1].valueAsText
         param_dataset_name = parameters[2].valueAsText
-        #param_dataset_organization = parameters[3].valueAsText
-        #param_dataset_contact = parameters[4].valueAsText
         param_dataset_source = parameters[3].valueAsText
         param_date_received = parameters[4].valueAsText
         param_restrictions = parameters[5].valueAsText

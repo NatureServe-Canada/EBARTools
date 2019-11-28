@@ -51,10 +51,7 @@ class ImportTabularDataTool:
         param_geodatabase = parameters[0].valueAsText
         param_raw_data_file = parameters[1].valueAsText
         param_dataset_name = parameters[2].valueAsText
-        #param_dataset_organization = parameters[3].valueAsText
-        #param_dataset_contact = parameters[4].valueAsText
         param_dataset_source = parameters[3].valueAsText
-        #param_dataset_type = parameters[6].valueAsText
         param_date_received = parameters[4].valueAsText
         param_restrictions = parameters[5].valueAsText
 
@@ -195,8 +192,6 @@ class ImportTabularDataTool:
         if field_dict['coordinates_obscured']:
             if file_line[field_dict['coordinates_obscured']] in (True, 'TRUE', 'true', 'T', 't', 1):
                 coordinates_obscured = True
-            #if file_line[field_dict['coordinates_obscured']] in (False, 'FALSE', 'false', 'F', 'f', 0):
-            #    coordinates_obscured = False
 
         # Geometry/Shape
         input_point = None

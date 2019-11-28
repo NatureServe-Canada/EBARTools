@@ -179,16 +179,6 @@ def readSpecies(geodatabase):
             species_dict[row['NATIONAL_SCIENTIFIC_NAME']] = row['SpeciesID']
     if len(species_dict) > 0:
         del row
-    #arcpy.MakeTableView_management(geodatabase + '/Species', 'species_view')
-    #arcpy.AddJoin_management('species_view', 'ELEMENT_NATIONAL_ID', geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
-    #                         'ELEMENT_NATIONAL_ID')
-    #with arcpy.da.SearchCursor('species_view', ['BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME',
-    #                                            'Species.SpeciesID']) as cursor:
-    #    for row in searchCursor(cursor):
-    #        species_dict[row['BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME']] = row['Species.SpeciesID']
-    #if len(species_dict) > 0:
-    #    del row
-    #arcpy.RemoveJoin_management('species_view', 'BIOTICS_ELEMENT_NATIONAL')
     return species_dict
 
 
@@ -265,18 +255,6 @@ def checkSpecies(scientific_name, geodatabase):
         if species_id:
             # found
             del row
-    #arcpy.MakeTableView_management(geodatabase + '/Species', 'species_view')
-    #arcpy.AddJoin_management('species_view', 'ELEMENT_NATIONAL_ID', geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
-    #                         'ELEMENT_NATIONAL_ID')
-    #with arcpy.da.SearchCursor('species_view', ['Species.SpeciesID'],
-    #                           "BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME = '" + scientific_name + "'",
-    #                           None) as cursor:
-    #    for row in searchCursor(cursor):
-    #        species_id = row['Species.SpeciesID']
-    #    if species_id:
-    #        # found
-    #        del row
-    #arcpy.RemoveJoin_management('species_view', 'BIOTICS_ELEMENT_NATIONAL')
     return species_id, short_citation
 
 
