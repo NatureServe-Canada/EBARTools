@@ -46,14 +46,15 @@ class AddSynonymsTool:
         for file_line in reader:
             scientific_name = file_line['SCIENTIFIC_NAME']
             if scientific_name in species_dict:
-                EBARUtils.displayMessage(messages, scientific_name + ' already has Species record')
+                EBARUtils.displayMessage(messages, 'WARNING: ' + scientific_name + ' already has Species record')
             elif scientific_name in synonym_dict:
-                EBARUtils.displayMessage(messages, scientific_name + ' already has Synonym record')
+                EBARUtils.displayMessage(messages, 'WARNING: ' + scientific_name + ' already has Synonym record')
             else:
                 # check element_national_id
                 element_national_id = int(float(file_line['ELEMENT_NATIONAL_ID']))
                 if element_national_id not in element_species_dict:
-                    EBARUtils.displayMessage(messages, element_national_id + ' does not have Species record')
+                    EBARUtils.displayMessage(messages,
+                                             'WARNING: ' + element_national_id + ' does not have Species record')
                 else:
                     # add
                     short_citation_author = None
@@ -67,6 +68,8 @@ class AddSynonymsTool:
                                                 'SHORT_CITATION_YEAR']) as insert_cursor:
                         insert_cursor.insertRow([element_species_dict[element_national_id], scientific_name,
                                                  short_citation_author, short_citation_year])
+                    EBARUtils.setNewID(param_geodatabase + '/Synonym', 'SynonymID',
+                                       "SynonymName = '" + scientific_name + "'")
                     added += 1
             count += 1
 

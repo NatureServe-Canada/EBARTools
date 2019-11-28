@@ -348,6 +348,8 @@ class ImportTabularDataTool:
 if __name__ == '__main__':
     itd = ImportTabularDataTool()
     # hard code parameters for debugging
+    param_geodatabase = arcpy.Parameter()
+    param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_raw_data_file = arcpy.Parameter()
     param_raw_data_file.value = 'C:/Users/rgree/OneDrive/EBAR_Sensitive_Material/Import_Routine_Data/Real_Data/' + \
                                 'Endemics_vertnet.csv'

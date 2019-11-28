@@ -61,19 +61,20 @@ class GenerateRangeMapTool:
         arcpy.env.workspace = param_geodatabase
 
         # check for species
-        species_id = EBARUtils.checkSpecies(param_species, param_geodatabase)
+        species_id, short_citation = EBARUtils.checkSpecies(param_species, param_geodatabase)
         if not species_id:
             EBARUtils.displayMessage(messages, 'ERROR: Species not found')
             # terminate with error
             return
             #raise arcpy.ExecuteError
+        param_species += '' + short_citation
 
         # check for secondary species
         species_ids = str(species_id)
         secondary_names = ''
         if param_secondary:
             for secondary in param_secondary:
-                secondary_id = EBARUtils.checkSpecies(secondary, param_geodatabase)
+                secondary_id, short_citation = EBARUtils.checkSpecies(secondary, param_geodatabase)
                 if not secondary_id:
                     EBARUtils.displayMessage(messages, 'ERROR: Secondary species not found')
                     # terminate with error
@@ -82,7 +83,7 @@ class GenerateRangeMapTool:
                 species_ids += ',' + str(secondary_id)
                 if len(secondary_names) > 0:
                     secondary_names += ', '
-                secondary_names += secondary
+                secondary_names += secondary + '' + short_citation
 
         # check for range map record and add if necessary
         EBARUtils.displayMessage(messages, 'Checking for existing range map')
@@ -194,7 +195,7 @@ class GenerateRangeMapTool:
             with arcpy.da.InsertCursor(param_geodatabase + '/SecondarySpecies',
                                        ['RangeMapID', 'SpeciesID']) as cursor:
                 for secondary in param_secondary:
-                    secondary_id = EBARUtils.checkSpecies(secondary, param_geodatabase)
+                    secondary_id, short_citation = EBARUtils.checkSpecies(secondary, param_geodatabase)
                     cursor.insertRow([range_map_id, secondary_id])
             EBARUtils.setNewID(param_geodatabase + '/SecondarySpecies', 'SecondarySpeciesID',
                                'RangeMapID = ' + str(range_map_id))
@@ -434,20 +435,21 @@ def GetBuffer(accuracy):
                         synonym_ids.append(search_row['TempAllInputs_SynonymID'])
                 del search_row
         # get names for IDs and combine with secondary names
-        #synonym_names = ''
         if len(synonym_ids) > 0:
-            with arcpy.da.SearchCursor(param_geodatabase + '/Synonym', ['SynonymName'],
+            with arcpy.da.SearchCursor(param_geodatabase + '/Synonym', ['SynonymName', 'SHORT_CITATION_AUTHOR',
+                                                                        'SHORT_CITATION_YEAR'],
                                        'SynonymID IN (' + ','.join(map(str, synonym_ids)) + ')') as search_cursor:
                 found = False
                 for search_row in EBARUtils.searchCursor(search_cursor):
-                    #if len(synonym_names) > 0:
-                    #    synonym_names += ', '
-                    #synonym_names += search_row['SynonymName']
                     found = True
                     if len(secondary_names) > 0:
                         secondary_names += ', '
                     secondary_names += search_row['SynonymName']
-                #if len(synonym_names) > 0:
+                    if search_row['SHORT_CITATION_AUTHOR']:
+                        secondary_names += ' (' + search_row['SHORT_CITATION_AUTHOR']
+                        if search_row['SHORT_CITATION_YEAR']:
+                            secondary_names += ' (' + str(int(search_row['SHORT_CITATION_YEAR']))
+                        secondary_names += ')'
                 if found:
                     del search_row
 
@@ -465,8 +467,6 @@ def GetBuffer(accuracy):
                         summary += search_row['DatasetSource_DatasetSourceName'] + ': ' + \
                             str(search_row['FREQUENCY']) + ' input record(s)'
                     del search_row
-                #notes = 'Primary Species: ' + param_species + '; Secondary Species: ' + secondary_names + \
-                #    '; Synonyms: ' + synonym_names
                 notes = 'Primary Species: ' + param_species + '; Synonyms: ' + secondary_names
                 update_cursor.updateRow([datetime.datetime.now(), summary, notes])
 
@@ -485,7 +485,7 @@ if __name__ == '__main__':
     grm = GenerateRangeMapTool()
     # hard code parameters for debugging
     param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value = 'C:/GIS/EBAR/EBAR_test.gdb'
+    param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_species = arcpy.Parameter()
     param_species.value = 'Carex abdita'
     param_secondary = arcpy.Parameter()

@@ -250,11 +250,18 @@ def readElementSpecies(geodatabase):
 def checkSpecies(scientific_name, geodatabase):
     """if exists return SpeciesID"""
     species_id = None
-    with arcpy.da.SearchCursor(geodatabase + '/BIOTICS_ELEMENT_NATIONAL', ['SpeciesID'],
+    short_citation = None
+    with arcpy.da.SearchCursor(geodatabase + '/BIOTICS_ELEMENT_NATIONAL', ['SpeciesID', 'SHORT_CITATION_AUTHOR',
+                                                                           'SHORT_CITATION_YEAR'],
                                "NATIONAL_SCIENTIFIC_NAME = '" + scientific_name + "'",
                                None) as cursor:
         for row in searchCursor(cursor):
             species_id = row['SpeciesID']
+            if row['SHORT_CITATION_AUTHOR']:
+                short_citation = ' (' + row['SHORT_CITATION_AUTHOR']
+                if row['SHORT_CITATION_YEAR']:
+                    short_citation += ', ' + str(int(row['SHORT_CITATION_YEAR']))
+                short_citation += ')'
         if species_id:
             # found
             del row
@@ -270,7 +277,7 @@ def checkSpecies(scientific_name, geodatabase):
     #        # found
     #        del row
     #arcpy.RemoveJoin_management('species_view', 'BIOTICS_ELEMENT_NATIONAL')
-    return species_id
+    return species_id, short_citation
 
 
 def readDatasetSourceUniqueIDs(geodatabase, dataset_source_id, feature_class_type):

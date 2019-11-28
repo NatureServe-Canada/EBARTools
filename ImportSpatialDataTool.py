@@ -106,7 +106,7 @@ class ImportSpatialDataTool:
         EBARUtils.displayMessage(messages, 'Reading full list of Species and Synonyms')
         species_dict = EBARUtils.readSpecies(param_geodatabase)
         synonym_id_dict = EBARUtils.readSynonyms(param_geodatabase)
-        synonym_species_id_dict = EBARUtils.readSynonymSpeciesIDs(param_geodatabase)
+        synonym_species_id_dict = EBARUtils.readSynonymSpecies(param_geodatabase)
 
         # read existing unique IDs into dict
         EBARUtils.displayMessage(messages, 'Reading existing unique IDs')
@@ -297,7 +297,7 @@ if __name__ == '__main__':
     isd = ImportSpatialDataTool()
     # hard code parameters for debugging
     param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value='C:/GIS/EBAR/EBAR_test.gdb'
+    param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_import_feature_class = arcpy.Parameter()
     param_import_feature_class.value = 'C:/GIS/EBAR/US_CDC_Data/Montana/MTNHP_Data_20191018.gdb/Plant_Occurrences'
     param_dataset_name = arcpy.Parameter()
