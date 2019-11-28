@@ -171,7 +171,7 @@ def checkAddField(table, field_name, field_type):
 
 
 def readSpecies(geodatabase):
-    """read existing species into dict and return"""
+    """read existing species names and IDs into dict and return"""
     species_dict = {}
     with arcpy.da.SearchCursor(geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
                                ['NATIONAL_SCIENTIFIC_NAME', 'SpeciesID']) as cursor:
@@ -192,7 +192,7 @@ def readSpecies(geodatabase):
     return species_dict
 
 
-def readSynonymIDs(geodatabase):
+def readSynonyms(geodatabase):
     """read existing synonyms and IDS into dict and return"""
     synonym_id_dict = {}
     with arcpy.da.SearchCursor(geodatabase + '/Synonym', ['SynonymName', 'SynonymID']) as cursor:
@@ -203,7 +203,7 @@ def readSynonymIDs(geodatabase):
     return synonym_id_dict
 
 
-def readSynonymSpeciesIDs(geodatabase):
+def readSynonymSpecies(geodatabase):
     """read existing synonyms and species IDs into dict return"""
     synonym_species_id_dict = {}
     with arcpy.da.SearchCursor(geodatabase + '/Synonym', ['SynonymName', 'SpeciesID']) as cursor:
@@ -212,6 +212,18 @@ def readSynonymSpeciesIDs(geodatabase):
     if len(synonym_species_id_dict) > 0:
         del row
     return synonym_species_id_dict
+
+
+def readElementSpecies(geodatabase):
+    """read existing element and species IDs into dict and return"""
+    element_species_dict = {}
+    with arcpy.da.SearchCursor(geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
+                               ['ELEMENT_NATIONAL_ID', 'SpeciesID']) as cursor:
+        for row in searchCursor(cursor):
+            element_species_dict[row['ELEMENT_NATIONAL_ID']] = row['SpeciesID']
+    if len(element_species_dict) > 0:
+        del row
+    return element_species_dict
 
 
 #def checkAddSpecies(species_dict, geodatabase, scientific_name):

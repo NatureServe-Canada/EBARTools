@@ -105,7 +105,7 @@ class ImportSpatialDataTool:
         # read existing species into dict
         EBARUtils.displayMessage(messages, 'Reading full list of Species and Synonyms')
         species_dict = EBARUtils.readSpecies(param_geodatabase)
-        synonym_id_dict = EBARUtils.readSynonymIDs(param_geodatabase)
+        synonym_id_dict = EBARUtils.readSynonyms(param_geodatabase)
         synonym_species_id_dict = EBARUtils.readSynonymSpeciesIDs(param_geodatabase)
 
         # read existing unique IDs into dict

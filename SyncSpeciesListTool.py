@@ -34,12 +34,8 @@ class SyncSpeciesListTool:
         reader = csv.DictReader(infile)
 
         # read existing IDs into list
-        IDs = []
         EBARUtils.displayMessage(messages, 'Reading existing IDs')
-        with arcpy.da.SearchCursor(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', ['ELEMENT_NATIONAL_ID']) as cursor:
-            for row in EBARUtils.searchCursor(cursor):
-                IDs.append(row['ELEMENT_NATIONAL_ID'])
-            del row
+        element_species_dict = EBARUtils.readElementSpecies(param_geodatabase)
 
         # process all file lines
         EBARUtils.displayMessage(messages, 'Processing file lines')
@@ -82,7 +78,7 @@ class SyncSpeciesListTool:
                           'SHORT_CITATION_YEAR']
         for file_line in reader:
             element_national_id = int(float(file_line['ELEMENT_NATIONAL_ID']))
-            if element_national_id in IDs:
+            if element_national_id in element_species_dict:
                 # update
                 with arcpy.da.UpdateCursor(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', biotics_fields,
                                            'ELEMENT_NATIONAL_ID = ' + str(element_national_id)) as update_cursor:

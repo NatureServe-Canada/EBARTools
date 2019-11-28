@@ -86,8 +86,8 @@ class ImportTabularDataTool:
         # read existing species into dict
         EBARUtils.displayMessage(messages, 'Reading full list of Species and Synonyms')
         species_dict = EBARUtils.readSpecies(param_geodatabase)
-        synonym_id_dict = EBARUtils.readSynonymIDs(param_geodatabase)
-        synonym_species_id_dict = EBARUtils.readSynonymSpeciesIDs(param_geodatabase)
+        synonym_dict = EBARUtils.readSynonyms(param_geodatabase)
+        synonym_species_dict = EBARUtils.readSynonymSpecies(param_geodatabase)
 
         # read existing unique IDs into dict
         EBARUtils.displayMessage(messages, 'Reading existing Unique IDs for the Dataset Source')
@@ -113,7 +113,7 @@ class ImportTabularDataTool:
             for file_line in reader:
                 # check/add point for current line
                 input_point_id, status = self.CheckAddPoint(id_dict, param_geodatabase, input_dataset_id, species_dict,
-                                                            synonym_id_dict, synonym_species_id_dict, file_line,
+                                                            synonym_dict, synonym_species_dict, file_line,
                                                             field_dict, no_match_list, messages)
                 # increment/report counts
                 count += 1
@@ -171,12 +171,12 @@ class ImportTabularDataTool:
         infile.close()
         return
 
-    def CheckAddPoint(self, id_dict, geodatabase, input_dataset_id, species_dict, synonym_id_dict,
-                      synonym_species_id_dict, file_line, field_dict, no_match_list, messages):
+    def CheckAddPoint(self, id_dict, geodatabase, input_dataset_id, species_dict, synonym_dict,
+                      synonym_species_dict, file_line, field_dict, no_match_list, messages):
         """If point already exists, check if needs update; otherwise, add"""
         # check for species
         if (file_line[field_dict['scientific_name']] not in species_dict and
-            file_line[field_dict['scientific_name']] not in synonym_id_dict):
+            file_line[field_dict['scientific_name']] not in synonym_dict):
             if file_line[field_dict['scientific_name']] not in no_match_list:
                 no_match_list.append(file_line[field_dict['scientific_name']])
                 EBARUtils.displayMessage(messages,
@@ -187,8 +187,8 @@ class ImportTabularDataTool:
             if file_line[field_dict['scientific_name']] in species_dict:
                 species_id = species_dict[file_line[field_dict['scientific_name']]]
             else:
-                species_id = synonym_species_id_dict[file_line[field_dict['scientific_name']]]
-                synonym_id = synonym_id_dict[file_line[field_dict['scientific_name']]]
+                species_id = synonym_species_dict[file_line[field_dict['scientific_name']]]
+                synonym_id = synonym_dict[file_line[field_dict['scientific_name']]]
 
         # CoordinatesObscured
         coordinates_obscured = False
