@@ -124,6 +124,12 @@ class ImportTabularData(object):
         "called whenever a parameter has been changed."""
         if parameters[0].altered and parameters[0].value:
             parameters[3].filter.list = EBARUtils.readDatasetSources(parameters[0].valueAsText, "('T')")
+            domains = arcpy.da.ListDomains(parameters[0].valueAsText)
+            restrictions_list = []
+            for domain in domains:
+                if domain.name == 'Restriction':
+                    restrictions_list = list(domain.codedValues.values())
+            parameters[5].filter.list = sorted(restrictions_list)
         return
 
     def updateMessages(self, parameters):
@@ -247,6 +253,12 @@ class ImportSpatialData(object):
         "called whenever a parameter has been changed."""
         if parameters[0].altered and parameters[0].value:
             parameters[3].filter.list = EBARUtils.readDatasetSources(parameters[0].valueAsText, "('S', 'L', 'P')")
+            domains = arcpy.da.ListDomains(parameters[0].valueAsText)
+            restrictions_list = []
+            for domain in domains:
+                if domain.name == 'Restriction':
+                    restrictions_list = list(domain.codedValues.values())
+            parameters[5].filter.list = sorted(restrictions_list)
         return
 
     def updateMessages(self, parameters):
