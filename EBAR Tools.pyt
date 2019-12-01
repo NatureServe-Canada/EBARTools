@@ -324,8 +324,9 @@ class GenerateRangeMap(object):
             datatype='GPString',
             parameterType='Required',
             direction='Input')
+        # cannot pre-specify the list if you want to allow a value not in the list
         #param_stage.filter.list = ['Auto-generated', 'Expert reviewed', 'Published']
-        #param_stage.value = 'Auto-generated'
+        param_stage.value = 'Auto-generated'
 
         params = [param_geodatabase, param_species, param_secondary, param_version, param_stage]
         return params
@@ -350,7 +351,14 @@ class GenerateRangeMap(object):
                     del row
             parameters[1].filter.list = spec_list
             parameters[2].filter.list = spec_list
+        # allow a stage value in addition to the ones in the standard list
+        if parameters[4].altered:
+            stage_list = ['Auto-generated', 'Expert reviewed', 'Published']
+            if parameters[4].valueAsText not in stage_list:
+                stage_list.append(parameters[4].valueAsText)
+            parameters[4].filter.list = stage_list
         return
+
 
     def updateMessages(self, parameters):
         """Modify the messages created by internal validation for each tool parameter.  This method is called " " \
