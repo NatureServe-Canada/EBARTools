@@ -72,6 +72,7 @@ class GenerateRangeMapTool:
         # check for secondary species
         species_ids = str(species_id)
         secondary_names = ''
+        additional_input_records = 0
         if param_secondary:
             for secondary in param_secondary:
                 secondary_id, short_citation = EBARUtils.checkSpecies(secondary, param_geodatabase)
@@ -200,7 +201,16 @@ class GenerateRangeMapTool:
         # select all points for species and buffer
         EBARUtils.displayMessage(messages, 'Buffering Input Points')
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/InputPoint', 'input_point_layer')
+        # select any from secondary inputs (chicken and egg - RangeMapID must already exist!)
+        arcpy.AddJoin_management('input_point_layer', 'InputPointID', param_geodatabase + '/SecondaryInput',
+                                 'InputPointID')
         arcpy.SelectLayerByAttribute_management('input_point_layer', 'NEW_SELECTION',
+                                                'SecondaryInput.RangeMapID = ' + str(range_map_id))
+        result = arcpy.GetCount_management('input_point_layer')
+        additional_input_records += int(result[0])
+        arcpy.RemoveJoin_management('input_point_layer', 'SecondaryInput')
+        # add "real" points to selection
+        arcpy.SelectLayerByAttribute_management('input_point_layer', 'ADD_TO_SELECTION',
                                                 'SpeciesID IN (' + species_ids + ') AND (Accuracy IS NULL'
                                                 ' OR Accuracy <= ' + str(EBARUtils.worst_accuracy) + ')'
                                                 ' AND MaxDate IS NOT NULL')
@@ -220,7 +230,16 @@ def GetBuffer(accuracy):
         # select all lines for species and buffer
         EBARUtils.displayMessage(messages, 'Buffering Input Lines')
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/InputLine', 'input_line_layer')
+        # select any from secondary inputs (chicken and egg - RangeMapID must already exist!)
+        arcpy.AddJoin_management('input_line_layer', 'InputLineID', param_geodatabase + '/SecondaryInput',
+                                 'InputLineID')
         arcpy.SelectLayerByAttribute_management('input_line_layer', 'NEW_SELECTION',
+                                                'SecondaryInput.RangeMapID = ' + str(range_map_id))
+        result = arcpy.GetCount_management('input_line_layer')
+        additional_input_records += int(result[0])
+        arcpy.RemoveJoin_management('input_line_layer', 'SecondaryInput')
+        # add "real" points to selection
+        arcpy.SelectLayerByAttribute_management('input_line_layer', 'ADD_TO_SELECTION',
                                                 'SpeciesID IN (' + species_ids + ') AND (Accuracy IS NULL'
                                                 ' OR Accuracy <= ' + str(EBARUtils.worst_accuracy) + ')'
                                                 ' AND MaxDate IS NOT NULL')
@@ -231,7 +250,16 @@ def GetBuffer(accuracy):
         # select all polygons for species
         EBARUtils.displayMessage(messages, 'Selecting Input Polygons')
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/InputPolygon', 'input_polygon_layer')
+        # select any from secondary inputs (chicken and egg - RangeMapID must already exist!)
+        arcpy.AddJoin_management('input_polygon_layer', 'InputPolygonID', param_geodatabase + '/SecondaryInput',
+                                 'InputPolygonID')
         arcpy.SelectLayerByAttribute_management('input_polygon_layer', 'NEW_SELECTION',
+                                                'SecondaryInput.RangeMapID = ' + str(range_map_id))
+        result = arcpy.GetCount_management('input_polygon_layer')
+        additional_input_records += int(result[0])
+        arcpy.RemoveJoin_management('input_polygon_layer', 'SecondaryInput')
+        # add "real" points to selection
+        arcpy.SelectLayerByAttribute_management('input_polygon_layer', 'ADD_TO_SELECTION',
                                                 'SpeciesID IN (' + species_ids + ') AND (Accuracy IS NULL'
                                                 ' OR Accuracy <= ' + str(EBARUtils.worst_accuracy) + ')'
                                                 ' AND MaxDate IS NOT NULL')
@@ -427,7 +455,7 @@ def GetBuffer(accuracy):
                     if search_row['TempAllInputs_SynonymID'] not in synonym_ids:
                         synonym_ids.append(search_row['TempAllInputs_SynonymID'])
                 del search_row
-        # get names for IDs and combine with secondary names
+        # get synonym names for IDs and combine with secondary names
         if len(synonym_ids) > 0:
             with arcpy.da.SearchCursor(param_geodatabase + '/Synonym', ['SynonymName', 'SHORT_CITATION_AUTHOR',
                                                                         'SHORT_CITATION_YEAR'],
@@ -460,7 +488,11 @@ def GetBuffer(accuracy):
                         summary += search_row['DatasetSource_DatasetSourceName'] + ': ' + \
                             str(search_row['FREQUENCY']) + ' input record(s)'
                     del search_row
-                notes = 'Primary Species: ' + param_species + '; Synonyms: ' + secondary_names
+                notes = 'Primary Species: ' + param_species
+                if len(secondary_names) > 0:
+                    notes += '; Synonyms: ' + secondary_names
+                if additional_input_records > 0:
+                    '; Additional Input Records: ' + str(additional_input_records)
                 update_cursor.updateRow([datetime.datetime.now(), summary, notes])
 
         # generate TOC entry and actual map!!!
