@@ -24,7 +24,7 @@ class ListElementNationalIDsTool:
 
     def RunListElementNationalIDsTool(self, parameters, messages):
         param_geodatabase = parameters[0].valueAsText
-        param_folder = parameters[1].valueAsText
+        #param_folder = parameters[1].valueAsText
         with arcpy.da.SearchCursor(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', ['ELEMENT_NATIONAL_ID']) as cursor:
             IDs = []
             count = 0
@@ -32,14 +32,18 @@ class ListElementNationalIDsTool:
                 IDs.append(row['ELEMENT_NATIONAL_ID'])
                 count += 1
                 if count % 1000 == 0:
-                    text_file = open(param_folder + '/ELEMENT_NATIONAL_IDs' + str(count) + '.txt', 'w')
-                    text_file.write(','.join(map(str, IDs)))
-                    text_file.close()
+                    EBARUtils.displayMessage(messages, str(count) + ':')
+                    EBARUtils.displayMessage(messages, ','.join(map(str, IDs)))
+                    #text_file = open(param_folder + '/ELEMENT_NATIONAL_IDs' + str(count) + '.txt', 'w')
+                    #text_file.write(','.join(map(str, IDs)))
+                    #text_file.close()
                     IDs = []
             del row
-            text_file = open(param_folder + '/ELEMENT_NATIONAL_IDs' + str(count) + '.txt', 'w')
-            text_file.write(','.join(map(str, IDs)))
-            text_file.close()
+            EBARUtils.displayMessage(messages, str(count) + ':')
+            EBARUtils.displayMessage(messages, ','.join(map(str, IDs)))
+            #text_file = open(param_folder + '/ELEMENT_NATIONAL_IDs' + str(count) + '.txt', 'w')
+            #text_file.write(','.join(map(str, IDs)))
+            #text_file.close()
             EBARUtils.displayMessage(messages, 'Listed ' + str(count) + ' ELEMENT_NATIONAL_ID values')
         return
 
@@ -50,7 +54,7 @@ if __name__ == '__main__':
     # hard code parameters for debugging
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value='C:/GIS/EBAR/EBAR_test.gdb'
-    param_folder = arcpy.Parameter()
-    param_folder.value='C:/GIS/EBAR'
-    parameters = [param_geodatabase, param_folder]
+    #param_folder = arcpy.Parameter()
+    #param_folder.value='C:/GIS/EBAR'
+    parameters = [param_geodatabase]
     leni.RunListElementNationalIDsTool(parameters, None)

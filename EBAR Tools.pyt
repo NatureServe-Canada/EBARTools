@@ -391,15 +391,15 @@ class ListElementNationalIDs(object):
             direction='Input')
         param_geodatabase.filter.list = ['Local Database', 'Remote Database']
 
-        # Output folder
-        param_folder = arcpy.Parameter(
-            displayName='Output Folder',
-            name='output_folder',
-            datatype='DEFolder',
-            parameterType='Required',
-            direction='Input')
+        ## Output folder
+        #param_folder = arcpy.Parameter(
+        #    displayName='Output Folder',
+        #    name='output_folder',
+        #    datatype='DEFolder',
+        #    parameterType='Required',
+        #    direction='Input')
 
-        params = [param_geodatabase, param_folder]
+        params = [param_geodatabase]
         return params
 
     def isLicensed(self):
