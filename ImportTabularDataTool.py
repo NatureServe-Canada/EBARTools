@@ -58,15 +58,23 @@ class ImportTabularDataTool:
         # use passed geodatabase as workspace (still seems to go to default geodatabase)
         arcpy.env.workspace = param_geodatabase
 
-        # check parameters
         # get dataset source id
         with arcpy.da.SearchCursor(param_geodatabase + '/DatasetSource', ['DatasetSourceID'],
                                    "DatasetSourceName = '" + param_dataset_source + "'") as cursor:
             for row in EBARUtils.searchCursor(cursor):
                 dataset_source_id = row['DatasetSourceID']
             del row
+
         # match field_dict with source
         field_dict = TabularFieldMapping.tabular_field_mapping_dict[param_dataset_source]
+
+        # encode restrictions using domain
+        domains = arcpy.da.ListDomains(parameters[0].valueAsText)
+        for domain in domains:
+            if domain.name == 'Restriction':
+                for key in domain.codedValues.keys():
+                    if domain.codedValues[key] == param_restrictions:
+                        param_restrictions = key
 
         # check/add InputDataset row
         dataset = param_dataset_name + ', ' + param_dataset_source + ', ' + str(param_date_received)
@@ -355,7 +363,7 @@ if __name__ == '__main__':
     param_date_received = arcpy.Parameter()
     param_date_received.value = 'October 15, 2019'
     param_restrictions = arcpy.Parameter()
-    param_restrictions.value = None
+    param_restrictions.value = 'Non-restricted'
     parameters = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_source,
                   param_date_received, param_restrictions]
     itd.RunImportTabularDataTool(parameters, None)
