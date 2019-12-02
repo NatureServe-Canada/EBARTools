@@ -58,6 +58,9 @@ class ImportTabularDataTool:
         # use passed geodatabase as workspace (still seems to go to default geodatabase)
         arcpy.env.workspace = param_geodatabase
 
+        # get table name prefix (needed for joined tables and feature classes in enterprise geodatabases)
+        table_name_prefix = EBARUtils.getTableNamePrefix(param_geodatabase)
+
         # get dataset source id
         with arcpy.da.SearchCursor(param_geodatabase + '/DatasetSource', ['DatasetSourceID'],
                                    "DatasetSourceName = '" + param_dataset_source + "'") as cursor:
@@ -68,13 +71,8 @@ class ImportTabularDataTool:
         # match field_dict with source
         field_dict = TabularFieldMapping.tabular_field_mapping_dict[param_dataset_source]
 
-        # encode restrictions using domain
-        domains = arcpy.da.ListDomains(parameters[0].valueAsText)
-        for domain in domains:
-            if domain.name == 'Restriction':
-                for key in domain.codedValues.keys():
-                    if domain.codedValues[key] == param_restrictions:
-                        param_restrictions = key
+        # encode restriction using domain
+        param_restrictions = EBARUtils.encodeRestriction(param_geodatabase, param_restrictions)
 
         # check/add InputDataset row
         dataset = param_dataset_name + ', ' + param_dataset_source + ', ' + str(param_date_received)
@@ -96,7 +94,7 @@ class ImportTabularDataTool:
 
         # read existing unique IDs into dict
         EBARUtils.displayMessage(messages, 'Reading existing Unique IDs for the Dataset Source')
-        id_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, dataset_source_id, 'Point')
+        id_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, table_name_prefix, dataset_source_id, 'Point')
 
         # try to open data file as a csv
         infile = io.open(param_raw_data_file, 'r', encoding='mbcs') # mbcs encoding is Windows ANSI

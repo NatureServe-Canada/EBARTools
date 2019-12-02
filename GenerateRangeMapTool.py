@@ -60,6 +60,9 @@ class GenerateRangeMapTool:
         # use passed geodatabase as workspace (still seems to go to default geodatabase)
         arcpy.env.workspace = param_geodatabase
 
+        # get table name prefix (needed for joined tables and feature classes in enterprise geodatabases)
+        table_name_prefix = EBARUtils.getTableNamePrefix(param_geodatabase)
+
         # check for species
         species_id, short_citation = EBARUtils.checkSpecies(param_species, param_geodatabase)
         if not species_id:
@@ -113,7 +116,7 @@ class GenerateRangeMapTool:
             with arcpy.da.SearchCursor('range_map_view', ['Review.DateCompleted']) as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     review_found = True
-                    if row['Review.DateCompleted']:
+                    if row[table_name_prefix + 'Review.DateCompleted']:
                         review_completed = True
                         break
                 if review_found:
@@ -125,10 +128,10 @@ class GenerateRangeMapTool:
                 #raise arcpy.ExecuteError
 
             # check for reviews in progress, and if so terminate
-            arcpy.AddJoin_management('range_map_view', 'Review.ReviewID',
+            arcpy.AddJoin_management('range_map_view', table_name_prefix + 'Review.ReviewID',
                                      param_geodatabase + '/EcoshapeReview', 'ReviewID', 'KEEP_COMMON')
             with arcpy.da.SearchCursor('range_map_view',
-                                       ['EcoshapeReview.ReviewID']) as cursor:
+                                       [table_name_prefix + 'EcoshapeReview.ReviewID']) as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     ecoshape_review = True
                     break
@@ -205,7 +208,7 @@ class GenerateRangeMapTool:
         arcpy.AddJoin_management('input_point_layer', 'InputPointID', param_geodatabase + '/SecondaryInput',
                                  'InputPointID')
         arcpy.SelectLayerByAttribute_management('input_point_layer', 'NEW_SELECTION',
-                                                'SecondaryInput.RangeMapID = ' + str(range_map_id))
+                                                table_name_prefix + 'SecondaryInput.RangeMapID = ' + str(range_map_id))
         result = arcpy.GetCount_management('input_point_layer')
         additional_input_records += int(result[0])
         arcpy.RemoveJoin_management('input_point_layer', 'SecondaryInput')
@@ -234,7 +237,7 @@ def GetBuffer(accuracy):
         arcpy.AddJoin_management('input_line_layer', 'InputLineID', param_geodatabase + '/SecondaryInput',
                                  'InputLineID')
         arcpy.SelectLayerByAttribute_management('input_line_layer', 'NEW_SELECTION',
-                                                'SecondaryInput.RangeMapID = ' + str(range_map_id))
+                                                table_name_prefix + 'SecondaryInput.RangeMapID = ' + str(range_map_id))
         result = arcpy.GetCount_management('input_line_layer')
         additional_input_records += int(result[0])
         arcpy.RemoveJoin_management('input_line_layer', 'SecondaryInput')
@@ -254,7 +257,7 @@ def GetBuffer(accuracy):
         arcpy.AddJoin_management('input_polygon_layer', 'InputPolygonID', param_geodatabase + '/SecondaryInput',
                                  'InputPolygonID')
         arcpy.SelectLayerByAttribute_management('input_polygon_layer', 'NEW_SELECTION',
-                                                'SecondaryInput.RangeMapID = ' + str(range_map_id))
+                                                table_name_prefix + 'SecondaryInput.RangeMapID = ' + str(range_map_id))
         result = arcpy.GetCount_management('input_polygon_layer')
         additional_input_records += int(result[0])
         arcpy.RemoveJoin_management('input_polygon_layer', 'SecondaryInput')
@@ -395,7 +398,8 @@ def GetBuffer(accuracy):
         arcpy.AddJoin_management('pairwise_intersect_layer', 'DatasetSourceID',
                                  param_geodatabase + '/DatasetSource', 'DatasetSourceID', 'KEEP_COMMON')
         arcpy.Statistics_analysis('pairwise_intersect_layer', 'TempEcoshapeCountBySource', [['InputPointID', 'COUNT']],
-                                  ['EcoshapeID', 'DatasetSource.DatasetSourceName', 'DatasetSource.DatasetType'])
+                                  ['EcoshapeID', table_name_prefix + 'DatasetSource.DatasetSourceName',
+                                   table_name_prefix + 'DatasetSource.DatasetType'])
         arcpy.RemoveJoin_management('pairwise_intersect_layer', 'DatasetSource')
         arcpy.RemoveJoin_management('pairwise_intersect_layer', 'InputDataset')
 
@@ -439,14 +443,14 @@ def GetBuffer(accuracy):
         if arcpy.Exists('TempOverallCountBySource'):
             arcpy.Delete_management('TempOverallCountBySource')
         arcpy.Statistics_analysis('all_inputs_layer', 'TempOverallCountBySource', [['InputDatasetID', 'COUNT']],
-                                  ['DatasetSource.DatasetSourceName'])
+                                  [table_name_prefix + 'DatasetSource.DatasetSourceName'])
 
         # get synonyms used
         EBARUtils.displayMessage(messages, 'Documenting Synonyms used')
         if arcpy.Exists('TempUniqueSynonyms'):
             arcpy.Delete_management('TempUniqueSynonyms')
         arcpy.Statistics_analysis('all_inputs_layer', 'TempUniqueSynonyms', [['InputDatasetID', 'COUNT']],
-                                  ['TempAllInputs.SynonymID'])
+                                  [table_name_prefix + 'TempAllInputs.SynonymID'])
         # build list of unique IDs
         synonym_ids = []
         with arcpy.da.SearchCursor('TempUniqueSynonyms', ['TempAllInputs_SynonymID']) as search_cursor:

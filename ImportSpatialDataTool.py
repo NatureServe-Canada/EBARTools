@@ -49,6 +49,9 @@ class ImportSpatialDataTool:
         # use passed geodatabase as workspace (still seems to go to default geodatabase)
         arcpy.env.workspace = param_geodatabase
 
+        # get table name prefix (needed for joined tables and feature classes in enterprise geodatabases)
+        table_name_prefix = EBARUtils.getTableNamePrefix(param_geodatabase)
+
         # determine type of feature class
         desc = arcpy.Describe(param_import_feature_class)
         feature_class_type = desc.shapeType
@@ -88,13 +91,8 @@ class ImportSpatialDataTool:
                                      'ERROR: Feature Class Type and Dataset Source Type do not match')
             return
 
-        # encode restrictions using domain
-        domains = arcpy.da.ListDomains(parameters[0].valueAsText)
-        for domain in domains:
-            if domain.name == 'Restriction':
-                for key in domain.codedValues.keys():
-                    if domain.codedValues[key] == param_restrictions:
-                        param_restrictions = key
+        # encode restriction using domain
+        param_restrictions = EBARUtils.encodeRestriction(param_geodatabase, param_restrictions)
 
         # check/add InputDataset row
         dataset = param_dataset_name + ', ' + param_dataset_source + ', ' + str(param_date_received)
@@ -116,7 +114,7 @@ class ImportSpatialDataTool:
 
         # read existing unique IDs into dict
         EBARUtils.displayMessage(messages, 'Reading existing unique IDs')
-        id_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, dataset_source_id, feature_class_type)
+        id_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, table_name_prefix, dataset_source_id, feature_class_type)
 
         # make temp copy of features being imported so that it is geodatabase format
         EBARUtils.displayMessage(messages, 'Copying features to temporary feature class')

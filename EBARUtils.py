@@ -258,7 +258,7 @@ def checkSpecies(scientific_name, geodatabase):
     return species_id, short_citation
 
 
-def readDatasetSourceUniqueIDs(geodatabase, dataset_source_id, feature_class_type):
+def readDatasetSourceUniqueIDs(geodatabase, table_name_prefix, dataset_source_id, feature_class_type):
     """read existing unique ids for dataset source into dict and return"""
     # different feature class for each type
     if feature_class_type in ('Polygon', 'MultiPatch'):
@@ -268,8 +268,8 @@ def readDatasetSourceUniqueIDs(geodatabase, dataset_source_id, feature_class_typ
     else: # Polyline
         feature_class = 'InputLine'
     arcpy.MakeFeatureLayer_management(geodatabase + '/' + feature_class, 'feature_layer')
-    spatial_id_field = feature_class + '.' + feature_class + 'ID'
-    source_id_field = feature_class + '.DatasetSourceUniqueID'
+    spatial_id_field = table_name_prefix + feature_class + '.' + feature_class + 'ID'
+    source_id_field = table_name_prefix + feature_class + '.DatasetSourceUniqueID'
     # join to Dataset and read IDs
     arcpy.AddJoin_management('feature_layer', 'InputDatasetID', geodatabase + '/InputDataset', 'InputDatasetID')
     unique_ids_dict = {}
@@ -352,3 +352,23 @@ def readDatasetSources(param_geodatabase, dataset_source_type):
         if len(source_list) > 0:
             del row
     return source_list
+
+
+def encodeRestriction(geodatabase, restriction):
+    """encode restriction using domain"""
+    domains = arcpy.da.ListDomains(geodatabase)
+    for domain in domains:
+        if domain.name == 'Restriction':
+            for key in domain.codedValues.keys():
+                if domain.codedValues[key] == restriction:
+                    restriction = key
+    return restriction
+
+
+def getTableNamePrefix(geodatabase):
+    """get table name prefix (needed for joined tables and feature classes in enterprise geodatabases)"""
+    table_name_prefix = ''
+    desc = arcpy.Describe(geodatabase)
+    if desc.workspaceType == 'RemoteDatabase':
+        table_name_prefix = desc.connectionProperties.database + '.' + desc.connectionProperties.user + '.'
+    return table_name_prefix
