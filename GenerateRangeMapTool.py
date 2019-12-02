@@ -113,7 +113,7 @@ class GenerateRangeMapTool:
                                       param_geodatabase + '/Review', 'RangeMapID', 'KEEP_COMMON')
 
             # check for completed reviews, and if so terminate
-            with arcpy.da.SearchCursor('range_map_view', ['Review.DateCompleted']) as cursor:
+            with arcpy.da.SearchCursor('range_map_view', [table_name_prefix + 'Review.DateCompleted']) as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     review_found = True
                     if row[table_name_prefix + 'Review.DateCompleted']:
@@ -143,8 +143,8 @@ class GenerateRangeMapTool:
                 return
                 #raise arcpy.ExecuteError
 
-            arcpy.RemoveJoin_management('range_map_view', 'EcoshapeReview')
-            arcpy.RemoveJoin_management('range_map_view', 'Review')
+            arcpy.RemoveJoin_management('range_map_view', table_name_prefix + 'EcoshapeReview')
+            arcpy.RemoveJoin_management('range_map_view', table_name_prefix + 'Review')
 
             # no reviews completed or in progress, so delete any existing related records
             EBARUtils.displayMessage(messages, 'Range Map already exists with but with no review(s) completed or in '
@@ -211,7 +211,7 @@ class GenerateRangeMapTool:
                                                 table_name_prefix + 'SecondaryInput.RangeMapID = ' + str(range_map_id))
         result = arcpy.GetCount_management('input_point_layer')
         additional_input_records += int(result[0])
-        arcpy.RemoveJoin_management('input_point_layer', 'SecondaryInput')
+        arcpy.RemoveJoin_management('input_point_layer', table_name_prefix + 'SecondaryInput')
         # add "real" points to selection
         arcpy.SelectLayerByAttribute_management('input_point_layer', 'ADD_TO_SELECTION',
                                                 'SpeciesID IN (' + species_ids + ') AND (Accuracy IS NULL'
@@ -240,7 +240,7 @@ def GetBuffer(accuracy):
                                                 table_name_prefix + 'SecondaryInput.RangeMapID = ' + str(range_map_id))
         result = arcpy.GetCount_management('input_line_layer')
         additional_input_records += int(result[0])
-        arcpy.RemoveJoin_management('input_line_layer', 'SecondaryInput')
+        arcpy.RemoveJoin_management('input_line_layer', table_name_prefix + 'SecondaryInput')
         # add "real" points to selection
         arcpy.SelectLayerByAttribute_management('input_line_layer', 'ADD_TO_SELECTION',
                                                 'SpeciesID IN (' + species_ids + ') AND (Accuracy IS NULL'
@@ -260,7 +260,7 @@ def GetBuffer(accuracy):
                                                 table_name_prefix + 'SecondaryInput.RangeMapID = ' + str(range_map_id))
         result = arcpy.GetCount_management('input_polygon_layer')
         additional_input_records += int(result[0])
-        arcpy.RemoveJoin_management('input_polygon_layer', 'SecondaryInput')
+        arcpy.RemoveJoin_management('input_polygon_layer', table_name_prefix + 'SecondaryInput')
         # add "real" points to selection
         arcpy.SelectLayerByAttribute_management('input_polygon_layer', 'ADD_TO_SELECTION',
                                                 'SpeciesID IN (' + species_ids + ') AND (Accuracy IS NULL'
@@ -400,8 +400,8 @@ def GetBuffer(accuracy):
         arcpy.Statistics_analysis('pairwise_intersect_layer', 'TempEcoshapeCountBySource', [['InputPointID', 'COUNT']],
                                   ['EcoshapeID', table_name_prefix + 'DatasetSource.DatasetSourceName',
                                    table_name_prefix + 'DatasetSource.DatasetType'])
-        arcpy.RemoveJoin_management('pairwise_intersect_layer', 'DatasetSource')
-        arcpy.RemoveJoin_management('pairwise_intersect_layer', 'InputDataset')
+        arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'DatasetSource')
+        arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'InputDataset')
 
         # update range map ecoshapes with summary (and high-grade presence for some polygon dataset sources)
         EBARUtils.displayMessage(messages, 'Updating Range Map Ecoshape records with summary')
@@ -409,20 +409,22 @@ def GetBuffer(accuracy):
                                    ['EcoshapeID', 'Presence', 'RangeMapEcoshapeNotes'],
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
             for update_row in EBARUtils.updateCursor(update_cursor):
-                with arcpy.da.SearchCursor('TempEcoshapeCountBySource',
-                                           ['DatasetSource_DatasetSourceName', 'DatasetSource_DatasetType',
-                                            'FREQUENCY'],
-                                           'TempPairwiseIntersect_EcoshapeID = ' + \
-                                           str(update_row['EcoshapeID'])) as search_cursor:
+                # kludge because arc ends up with different field names under Enterprise gdb after joining
+                field_names = [f.name for f in arcpy.ListFields('TempEcoshapeCountBySource') if f.aliasName in
+                               ['DatasetSourceName', 'DatasetType', 'FREQUENCY','frequency']]
+                id_field_name = [f.name for f in arcpy.ListFields('TempEcoshapeCountBySource') if f.aliasName ==
+                                 'EcoshapeID'][0]
+                with arcpy.da.SearchCursor('TempEcoshapeCountBySource', field_names,
+                                           id_field_name + ' = ' + str(update_row['EcoshapeID'])) as search_cursor:
                     summary = ''
                     presence = update_row['Presence']
                     for search_row in EBARUtils.searchCursor(search_cursor):
                         if len(summary) > 0:
                             summary += ', '
-                        summary += search_row['DatasetSource_DatasetSourceName'] + ': ' + \
-                            str(search_row['FREQUENCY']) + ' input record(s)'
+                        summary += search_row[field_names[0]] + ': ' + \
+                            str(search_row[field_names[2]]) + ' input record(s)'
                         # high-grade Presence Expected to Present for some dataset sources
-                        if presence == 'X' and (search_row['DatasetSource_DatasetType'] in
+                        if presence == 'X' and (search_row[field_names[1]] in
                                                 ('Element Occurrences', 'Source Feature Polygons',
                                                  'Source Feature Lines', 'Source Feature Points',
                                                  'Species Observation Polygons')):
@@ -453,11 +455,13 @@ def GetBuffer(accuracy):
                                   [table_name_prefix + 'TempAllInputs.SynonymID'])
         # build list of unique IDs
         synonym_ids = []
-        with arcpy.da.SearchCursor('TempUniqueSynonyms', ['TempAllInputs_SynonymID']) as search_cursor:
+        # kludge because arc ends up with different field names under Enterprise gdb after joining
+        id_field_name = [f.name for f in arcpy.ListFields('TempUniqueSynonyms') if f.aliasName in ['SynonymID']][0]
+        with arcpy.da.SearchCursor('TempUniqueSynonyms', [id_field_name]) as search_cursor:
             for search_row in EBARUtils.searchCursor(search_cursor):
-                if search_row['TempAllInputs_SynonymID']:
-                    if search_row['TempAllInputs_SynonymID'] not in synonym_ids:
-                        synonym_ids.append(search_row['TempAllInputs_SynonymID'])
+                if search_row[id_field_name]:
+                    if search_row[id_field_name] not in synonym_ids:
+                        synonym_ids.append(search_row[id_field_name])
                 del search_row
         # get synonym names for IDs and combine with secondary names
         if len(synonym_ids) > 0:
@@ -483,14 +487,16 @@ def GetBuffer(accuracy):
         with arcpy.da.UpdateCursor('range_map_view', ['RangeDate', 'RangeMetadata', 'RangeMapNotes'],
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
             for update_row in update_cursor:
-                with arcpy.da.SearchCursor('TempOverallCountBySource',
-                                           ['DatasetSource_DatasetSourceName', 'FREQUENCY']) as search_cursor:
+                # kludge because arc ends up with different field names under Enterprise gdb after joining
+                field_names = [f.name for f in arcpy.ListFields('TempEcoshapeCountBySource') if f.aliasName in
+                               ['DatasetSourceName','FREQUENCY','frequency']]
+                with arcpy.da.SearchCursor('TempOverallCountBySource', field_names) as search_cursor:
                     summary = ''
                     for search_row in EBARUtils.searchCursor(search_cursor):
                         if len(summary) > 0:
                             summary += ', '
-                        summary += search_row['DatasetSource_DatasetSourceName'] + ': ' + \
-                            str(search_row['FREQUENCY']) + ' input record(s)'
+                        summary += search_row[field_names[0]] + ': ' + \
+                            str(search_row[field_names[1]]) + ' input record(s)'
                     del search_row
                 notes = 'Primary Species: ' + param_species
                 if len(secondary_names) > 0:
@@ -516,11 +522,12 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_species = arcpy.Parameter()
-    param_species.value = 'Carex abdita'
+    param_species.value = 'Myotis septentrionalis'
     param_secondary = arcpy.Parameter()
     param_secondary.value = None
     param_version = arcpy.Parameter()
     param_version.value = '1.0'
-    param_stage = 'Auto-generated'
+    param_stage = arcpy.Parameter()
+    param_stage.value = 'Auto-generated'
     parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage]
     grm.RunGenerateRangeMapTool(parameters, None)
