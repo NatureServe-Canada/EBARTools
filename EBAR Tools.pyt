@@ -326,7 +326,7 @@ class GenerateRangeMap(object):
             direction='Input')
         # cannot pre-specify the list if you want to allow a value not in the list
         #param_stage.filter.list = ['Auto-generated', 'Expert reviewed', 'Published']
-        param_stage.value = 'Auto-generated'
+        #param_stage.value = 'Auto-generated'
 
         params = [param_geodatabase, param_species, param_secondary, param_version, param_stage]
         return params
