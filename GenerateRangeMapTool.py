@@ -282,7 +282,7 @@ def GetBuffer(accuracy):
             # 1000 years in the past
             fake_date_expr = 'datetime.datetime(datetime.datetime.now().year - 1000, 1, 1)'
             arcpy.CalculateField_management('TempAllInputs', 'MaxDate', fake_date_expr)
-        result = arcpy.SelectLayerByAttribute_management('NEW_SELECTION',
+        result = arcpy.SelectLayerByAttribute_management('TempAllInputs', 'NEW_SELECTION',
                                                          "EORank IS NOT NULL AND EORank NOT IN ('H', 'H?', 'X', 'X?')")
         if int(result[1]) > 0:
             # 1000 years in the future
