@@ -69,22 +69,6 @@ class ImportTabularData(object):
             parameterType='Required',
             direction='Input')
         
-        ## Dataset Organization
-        #param_dataset_organization = arcpy.Parameter(
-        #    displayName='Dataset Organization',
-        #    name='dataset_organization',
-        #    datatype='GPString',
-        #    parameterType='Required',
-        #    direction='Input')
-        
-        ## Dataset Contact
-        #param_dataset_contact = arcpy.Parameter(
-        #    displayName='Dataset Contact',
-        #    name='dataset_contact',
-        #    datatype='GPString',
-        #    parameterType='Required',
-        #    direction='Input')
-        
         # Dataset Source
         param_dataset_source = arcpy.Parameter(
             displayName='Dataset Source',
@@ -180,22 +164,6 @@ class ImportSpatialData(object):
             parameterType='Required',
             direction='Input')
         
-        ## Dataset Organization
-        #param_dataset_organization = arcpy.Parameter(
-        #    displayName='Dataset Organization',
-        #    name='dataset_organization',
-        #    datatype='GPString',
-        #    parameterType='Required',
-        #    direction='Input')
-        
-        ## Dataset Contact
-        #param_dataset_contact = arcpy.Parameter(
-        #    displayName='Dataset Contact',
-        #    name='dataset_contact',
-        #    datatype='GPString',
-        #    parameterType='Required',
-        #    direction='Input')
-        
         # Dataset Source
         # - used to check for uniqueness of records using provided IDs
         # - one field map can be shared among multiple sources
@@ -205,22 +173,6 @@ class ImportSpatialData(object):
             datatype='GPString',
             parameterType='Required',
             direction='Input')
-
-        ## Dataset Type
-        ## - used during Generate Range Map to determine Presence
-        #param_dataset_type = arcpy.Parameter(
-        #    displayName ='Dataset Type',
-        #    name ='dataset_type',
-        #    datatype ='GPString',
-        #    parameterType ='Required',
-        #    direction ='Input')
-        #param_dataset_type.filter.list = ['Element Occurrences', # P
-        #                                  'Source Feature Polygons', # P
-        #                                  'Source Feature Points', # P
-        #                                  'Species Observation Polygons', # P
-        #                                  'Critical Habitat', # X
-        #                                  'Habitat Suitability', # X
-        #                                  'Range Estimate'] # X
 
         # Date Received
         param_date_received = arcpy.Parameter(
@@ -352,11 +304,12 @@ class GenerateRangeMap(object):
             parameters[1].filter.list = spec_list
             parameters[2].filter.list = spec_list
         # allow a stage value in addition to the ones in the standard list
-        if parameters[4].altered:
-            stage_list = ['Auto-generated', 'Expert reviewed', 'Published']
+        #if parameters[4].altered:
+        stage_list = ['Auto-generated', 'Expert reviewed', 'Published']
+        if parameters[4].value:
             if parameters[4].valueAsText not in stage_list:
                 stage_list.append(parameters[4].valueAsText)
-            parameters[4].filter.list = stage_list
+        parameters[4].filter.list = stage_list
         return
 
 

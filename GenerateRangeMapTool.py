@@ -282,7 +282,7 @@ def GetBuffer(accuracy):
             # 1000 years in the past
             fake_date_expr = 'datetime.datetime(datetime.datetime.now().year - 1000, 1, 1)'
             arcpy.CalculateField_management('TempAllInputs', 'MaxDate', fake_date_expr)
-        result = arcpy.SelectLayerByAttribute_management('TempAllInputs', 'NEW_SELECTION',
+        result = arcpy.SelectLayerByAttribute_management('NEW_SELECTION',
                                                          "EORank IS NOT NULL AND EORank NOT IN ('H', 'H?', 'X', 'X?')")
         if int(result[1]) > 0:
             # 1000 years in the future
@@ -340,7 +340,6 @@ def GetBuffer(accuracy):
                                        ['EcoshapeID', 'MAX_MaxDate']) as search_cursor:
                 for row in EBARUtils.searchCursor(search_cursor):
                     input_found = True
-                    # no eo rank gets Presence Expected
                     presence = 'X'
                     if row['MAX_MaxDate']:
                         if (datetime.datetime.now().year - row['MAX_MaxDate'].year) <= age_for_historical:
@@ -425,9 +424,7 @@ def GetBuffer(accuracy):
                             str(search_row[field_names[2]]) + ' input record(s)'
                         # high-grade Presence Expected to Present for some dataset sources
                         if presence == 'X' and (search_row[field_names[1]] in
-                                                ('Element Occurrences', 'Source Feature Polygons',
-                                                 'Source Feature Lines', 'Source Feature Points',
-                                                 'Species Observation Polygons')):
+                                                ('Element Occurrences', 'Source Features', 'Species Observations')):
                             presence = 'P'
                     del search_row
                 update_cursor.updateRow([update_row['EcoshapeID'], presence, summary])
