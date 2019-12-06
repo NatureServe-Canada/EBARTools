@@ -225,10 +225,10 @@ def GetBuffer(accuracy):
         ret = ''' + str(default_buffer_size) + '''
     return ret'''
         arcpy.CalculateField_management('input_point_layer', 'buffer', 'GetBuffer(!Accuracy!)', 'PYTHON3', code_block)
-        if arcpy.Exists('TempPointBuffer'):
-            arcpy.Delete_management('TempPointBuffer')
-        arcpy.Buffer_analysis('input_point_layer', 'TempPointBuffer', 'buffer')
-        #arcpy.Buffer_analysis('input_point_layer', 'TempPointBuffer', default_buffer_size)
+        temp_point_buffer = 'TempPointBuffer' + str(start_time.year) + str(start_time.month) + \
+            str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
+        arcpy.Buffer_analysis('input_point_layer', temp_point_buffer, 'buffer')
+        #arcpy.Buffer_analysis('input_point_layer', temp_point_buffer, default_buffer_size)
 
         # select all lines for species and buffer
         EBARUtils.displayMessage(messages, 'Buffering Input Lines')
@@ -246,9 +246,9 @@ def GetBuffer(accuracy):
                                                 'SpeciesID IN (' + species_ids + ') AND (Accuracy IS NULL'
                                                 ' OR Accuracy <= ' + str(EBARUtils.worst_accuracy) + ')'
                                                 ' AND MaxDate IS NOT NULL')
-        if arcpy.Exists('TempLineBuffer'):
-            arcpy.Delete_management('TempLineBuffer')
-        arcpy.Buffer_analysis('input_line_layer', 'TempLineBuffer', default_buffer_size)
+        temp_line_buffer = 'TempLineBuffer' + str(start_time.year) + str(start_time.month) + \
+            str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
+        arcpy.Buffer_analysis('input_line_layer', temp_line_buffer, default_buffer_size)
 
         # select all polygons for species
         EBARUtils.displayMessage(messages, 'Selecting Input Polygons')
@@ -269,35 +269,35 @@ def GetBuffer(accuracy):
 
         # merge buffer polygons and input polygons
         EBARUtils.displayMessage(messages, 'Merging Buffered Points and Lines and Input Polygons')
-        if arcpy.Exists('TempAllInputs'):
-            arcpy.Delete_management('TempAllInputs')
-        arcpy.Merge_management(['TempPointBuffer', 'TempLineBuffer', 'input_polygon_layer'], 'TempAllInputs', None,
+        temp_all_inputs = 'TempAllInputs' + str(start_time.year) + str(start_time.month) + \
+            str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
+        arcpy.Merge_management([temp_point_buffer, temp_line_buffer, 'input_polygon_layer'], temp_all_inputs, None,
                                'ADD_SOURCE_INFO')
 
         # eo ranks, when available, override dates in determining historical (fake the date to accomplish this)
         EBARUtils.displayMessage(messages, 'Applying EO Ranks, where available, to determine historical records')
-        result = arcpy.SelectLayerByAttribute_management('TempAllInputs', 'NEW_SELECTION',
+        result = arcpy.SelectLayerByAttribute_management(temp_all_inputs, 'NEW_SELECTION',
                                                          "EORank IN ('H', 'H?', 'X', 'X?')")
         if int(result[1]) > 0:
             # 1000 years in the past
             fake_date_expr = 'datetime.datetime(datetime.datetime.now().year - 1000, 1, 1)'
-            arcpy.CalculateField_management('TempAllInputs', 'MaxDate', fake_date_expr)
-        result = arcpy.SelectLayerByAttribute_management('TempAllInputs', 'NEW_SELECTION',
+            arcpy.CalculateField_management(temp_all_inputs, 'MaxDate', fake_date_expr)
+        result = arcpy.SelectLayerByAttribute_management(temp_all_inputs, 'NEW_SELECTION',
                                                          "EORank IS NOT NULL AND EORank NOT IN ('H', 'H?', 'X', 'X?')")
         if int(result[1]) > 0:
             # 1000 years in the future
             fake_date_expr = 'datetime.datetime(datetime.datetime.now().year + 1000, 1, 1)'
-            arcpy.CalculateField_management('TempAllInputs', 'MaxDate', fake_date_expr)
-        arcpy.SelectLayerByAttribute_management('TempAllInputs', 'CLEAR_SELECTION')
+            arcpy.CalculateField_management(temp_all_inputs, 'MaxDate', fake_date_expr)
+        arcpy.SelectLayerByAttribute_management(temp_all_inputs, 'CLEAR_SELECTION')
 
         # pairwise intersect buffers and ecoshape polygons
         EBARUtils.displayMessage(messages, 'Pairwise Intersecting All Inputs with Ecoshapes')
-        if arcpy.Exists('TempPairwiseIntersect'):
-            arcpy.Delete_management('TempPairwiseIntersect')
-        arcpy.PairwiseIntersect_analysis(['TempAllInputs',  param_geodatabase + '/Ecoshape'],
-                                         'TempPairwiseIntersect')
-        arcpy.AddIndex_management('TempPairwiseIntersect', 'InputDatasetID', 'idid_idx')
-        arcpy.MakeFeatureLayer_management('TempPairwiseIntersect', 'pairwise_intersect_layer')
+        temp_pairwise_intersect = 'TempPairwiseIntersect' + str(start_time.year) + str(start_time.month) + \
+            str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
+        arcpy.PairwiseIntersect_analysis([temp_all_inputs,  param_geodatabase + '/Ecoshape'],
+                                         temp_pairwise_intersect)
+        arcpy.AddIndex_management(temp_pairwise_intersect, 'InputDatasetID', 'idid_idx')
+        arcpy.MakeFeatureLayer_management(temp_pairwise_intersect, 'pairwise_intersect_layer')
 
         ## calculate proportion buffer per ecoshape piece based on size of full buffer
         #EBARUtils.displayMessage(messages, 'Calculating Proportion of Polygon per Ecoshape')
@@ -324,9 +324,9 @@ def GetBuffer(accuracy):
 
         # get max date per ecoshape
         EBARUtils.displayMessage(messages, 'Determining Maximum Date per Ecoshape')
-        if arcpy.Exists('TempEcoshapeMaxPolygon'):
-            arcpy.Delete_management('TempEcoshapeMaxPolygon')
-        arcpy.Statistics_analysis('pairwise_intersect_layer', 'TempEcoshapeMaxPolygon',
+        temp_ecoshape_max_polygon = 'TempEcoshapeMaxPolygon' + str(start_time.year) + str(start_time.month) + \
+            str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
+        arcpy.Statistics_analysis('pairwise_intersect_layer', temp_ecoshape_max_polygon,
                                   [['MaxDate', 'MAX']], 'EcoshapeID')
 
         # create RangeMapEcoshape records based on max date #and proportion overlap 
@@ -334,9 +334,9 @@ def GetBuffer(accuracy):
         with arcpy.da.InsertCursor(param_geodatabase + '/RangeMapEcoshape',
                                    ['RangeMapID', 'EcoshapeID', 'Presence']) as insert_cursor:
             input_found = False
-            #with arcpy.da.SearchCursor('TempEcoshapeMaxPolygon',
+            #with arcpy.da.SearchCursor(temp_ecoshape_max_polygon,
             #                           ['EcoshapeID', 'MAX_PolygonPropn', 'MAX_MaxDate']) as search_cursor:
-            with arcpy.da.SearchCursor('TempEcoshapeMaxPolygon',
+            with arcpy.da.SearchCursor(temp_ecoshape_max_polygon,
                                        ['EcoshapeID', 'MAX_MaxDate']) as search_cursor:
                 for row in EBARUtils.searchCursor(search_cursor):
                     input_found = True
@@ -360,9 +360,9 @@ def GetBuffer(accuracy):
 
         # get ecoshape input counts by dataset
         EBARUtils.displayMessage(messages, 'Counting Ecoshape inputs by Dataset')
-        if arcpy.Exists('TempEcoshapeCountByDataset'):
-            arcpy.Delete_management('TempEcoshapeCountByDataset')
-        arcpy.Statistics_analysis('pairwise_intersect_layer', 'TempEcoshapeCountByDataset',
+        temp_ecoshape_countby_dataset = 'TempEcoshapeCountByDataset' + str(start_time.year) + str(start_time.month) + \
+            str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
+        arcpy.Statistics_analysis('pairwise_intersect_layer', temp_ecoshape_countby_dataset,
                                   [['InputPointID', 'COUNT']], ['EcoshapeID', 'InputDatasetID'])
 
         # create RangeMapEcoshapeInputDataset records based on summary
@@ -373,7 +373,7 @@ def GetBuffer(accuracy):
             with arcpy.da.SearchCursor(param_geodatabase + '/RangeMapEcoshape', ['RangeMapEcoshapeID', 'EcoshapeID'],
                                        'RangeMapID = ' + str(range_map_id)) as rme_cursor:
                 for rme_row in EBARUtils.searchCursor(rme_cursor):
-                    with arcpy.da.SearchCursor('TempEcoshapeCountByDataset',
+                    with arcpy.da.SearchCursor(temp_ecoshape_countby_dataset,
                                                ['EcoshapeID', 'InputDatasetID', 'FREQUENCY']) as search_cursor:
                         for row in EBARUtils.searchCursor(search_cursor):
                             summary = str(row['FREQUENCY']) + ' input record(s)'
@@ -390,13 +390,13 @@ def GetBuffer(accuracy):
 
         # get ecoshape input counts by source
         EBARUtils.displayMessage(messages, 'Counting Ecoshape Inputs by Dataset Source')
-        if arcpy.Exists('TempEcoshapeCountBySource'):
-            arcpy.Delete_management('TempEcoshapeCountBySource')
+        temp_ecoshape_countby_source = 'TempEcoshapeCountBySource' + str(start_time.year) + str(start_time.month) + \
+            str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
         arcpy.AddJoin_management('pairwise_intersect_layer', 'InputDatasetID',
                                  param_geodatabase + '/InputDataset', 'InputDatasetID', 'KEEP_COMMON')
         arcpy.AddJoin_management('pairwise_intersect_layer', 'DatasetSourceID',
                                  param_geodatabase + '/DatasetSource', 'DatasetSourceID', 'KEEP_COMMON')
-        arcpy.Statistics_analysis('pairwise_intersect_layer', 'TempEcoshapeCountBySource', [['InputPointID', 'COUNT']],
+        arcpy.Statistics_analysis('pairwise_intersect_layer', temp_ecoshape_countby_source, [['InputPointID', 'COUNT']],
                                   ['EcoshapeID', table_name_prefix + 'DatasetSource.DatasetSourceName',
                                    table_name_prefix + 'DatasetSource.DatasetType'])
         arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'DatasetSource')
@@ -409,11 +409,11 @@ def GetBuffer(accuracy):
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
             for update_row in EBARUtils.updateCursor(update_cursor):
                 # kludge because arc ends up with different field names under Enterprise gdb after joining
-                field_names = [f.name for f in arcpy.ListFields('TempEcoshapeCountBySource') if f.aliasName in
+                field_names = [f.name for f in arcpy.ListFields(temp_ecoshape_countby_source) if f.aliasName in
                                ['DatasetSourceName', 'DatasetType', 'FREQUENCY','frequency']]
-                id_field_name = [f.name for f in arcpy.ListFields('TempEcoshapeCountBySource') if f.aliasName ==
+                id_field_name = [f.name for f in arcpy.ListFields(temp_ecoshape_countby_source) if f.aliasName ==
                                  'EcoshapeID'][0]
-                with arcpy.da.SearchCursor('TempEcoshapeCountBySource', field_names,
+                with arcpy.da.SearchCursor(temp_ecoshape_countby_source, field_names,
                                            id_field_name + ' = ' + str(update_row['EcoshapeID'])) as search_cursor:
                     summary = ''
                     presence = update_row['Presence']
@@ -433,28 +433,28 @@ def GetBuffer(accuracy):
         # get overall input counts by source (using original inputs)
         EBARUtils.displayMessage(messages, 'Counting overall inputs by Dataset Source')
         # select only those within ecoshapes
-        arcpy.MakeFeatureLayer_management('TempAllInputs', 'all_inputs_layer')
+        arcpy.MakeFeatureLayer_management(temp_all_inputs, 'all_inputs_layer')
         arcpy.AddJoin_management('all_inputs_layer', 'InputDatasetID',
                                  param_geodatabase + '/InputDataset', 'InputDatasetID', 'KEEP_COMMON')
         arcpy.AddJoin_management('all_inputs_layer', 'DatasetSourceID',
                                  param_geodatabase + '/DatasetSource', 'DatasetSourceID', 'KEEP_COMMON')
         arcpy.SelectLayerByLocation_management('all_inputs_layer', 'INTERSECT', param_geodatabase + '/Ecoshape')
-        if arcpy.Exists('TempOverallCountBySource'):
-            arcpy.Delete_management('TempOverallCountBySource')
-        arcpy.Statistics_analysis('all_inputs_layer', 'TempOverallCountBySource', [['InputDatasetID', 'COUNT']],
+        temp_overall_countby_source = 'TempOverallCountBySource' + str(start_time.year) + str(start_time.month) + \
+            str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
+        arcpy.Statistics_analysis('all_inputs_layer', temp_overall_countby_source, [['InputDatasetID', 'COUNT']],
                                   [table_name_prefix + 'DatasetSource.DatasetSourceName'])
 
         # get synonyms used
         EBARUtils.displayMessage(messages, 'Documenting Synonyms used')
-        if arcpy.Exists('TempUniqueSynonyms'):
-            arcpy.Delete_management('TempUniqueSynonyms')
-        arcpy.Statistics_analysis('all_inputs_layer', 'TempUniqueSynonyms', [['InputDatasetID', 'COUNT']],
-                                  [table_name_prefix + 'TempAllInputs.SynonymID'])
+        temp_unique_synonyms = 'TempUniqueSynonyms' + str(start_time.year) + str(start_time.month) + \
+            str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
+        arcpy.Statistics_analysis('all_inputs_layer', temp_unique_synonyms, [['InputDatasetID', 'COUNT']],
+                                  [table_name_prefix + temp_all_inputs + '.SynonymID'])
         # build list of unique IDs
         synonym_ids = []
         # kludge because arc ends up with different field names under Enterprise gdb after joining
-        id_field_name = [f.name for f in arcpy.ListFields('TempUniqueSynonyms') if f.aliasName in ['SynonymID']][0]
-        with arcpy.da.SearchCursor('TempUniqueSynonyms', [id_field_name]) as search_cursor:
+        id_field_name = [f.name for f in arcpy.ListFields(temp_unique_synonyms) if f.aliasName in ['SynonymID']][0]
+        with arcpy.da.SearchCursor(temp_unique_synonyms, [id_field_name]) as search_cursor:
             for search_row in EBARUtils.searchCursor(search_cursor):
                 if search_row[id_field_name]:
                     if search_row[id_field_name] not in synonym_ids:
@@ -485,9 +485,9 @@ def GetBuffer(accuracy):
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
             for update_row in update_cursor:
                 # kludge because arc ends up with different field names under Enterprise gdb after joining
-                field_names = [f.name for f in arcpy.ListFields('TempEcoshapeCountBySource') if f.aliasName in
+                field_names = [f.name for f in arcpy.ListFields(temp_ecoshape_countby_source) if f.aliasName in
                                ['DatasetSourceName','FREQUENCY','frequency']]
-                with arcpy.da.SearchCursor('TempOverallCountBySource', field_names) as search_cursor:
+                with arcpy.da.SearchCursor(temp_overall_countby_source, field_names) as search_cursor:
                     summary = ''
                     for search_row in EBARUtils.searchCursor(search_cursor):
                         if len(summary) > 0:
@@ -503,6 +503,26 @@ def GetBuffer(accuracy):
                 update_cursor.updateRow([datetime.datetime.now(), summary, notes])
 
         # generate TOC entry and actual map!!!
+
+        # temp clean-up
+        if arcpy.Exists(temp_point_buffer):
+            arcpy.Delete_management(temp_point_buffer)
+        if arcpy.Exists(temp_line_buffer):
+            arcpy.Delete_management(temp_line_buffer)
+        if arcpy.Exists(temp_all_inputs):
+            arcpy.Delete_management(temp_all_inputs)
+        if arcpy.Exists(temp_pairwise_intersect):
+            arcpy.Delete_management(temp_pairwise_intersect)
+        if arcpy.Exists(temp_ecoshape_max_polygon):
+            arcpy.Delete_management(temp_ecoshape_max_polygon)
+        if arcpy.Exists(temp_ecoshape_countby_dataset):
+            arcpy.Delete_management(temp_ecoshape_countby_dataset)
+        if arcpy.Exists(temp_ecoshape_countby_source):
+            arcpy.Delete_management(temp_ecoshape_countby_source)
+        if arcpy.Exists(temp_overall_countby_source):
+            arcpy.Delete_management(temp_overall_countby_source)
+        if arcpy.Exists(temp_unique_synonyms):
+            arcpy.Delete_management(temp_unique_synonyms)
 
         # end time
         end_time = datetime.datetime.now()
