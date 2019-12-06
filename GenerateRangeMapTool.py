@@ -450,6 +450,9 @@ def GetBuffer(accuracy):
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
         arcpy.Statistics_analysis('all_inputs_layer', temp_unique_synonyms, [['InputDatasetID', 'COUNT']],
                                   [table_name_prefix + temp_all_inputs + '.SynonymID'])
+        arcpy.RemoveJoin_management('all_inputs_layer', table_name_prefix + 'DatasetSource')
+        arcpy.RemoveJoin_management('all_inputs_layer', table_name_prefix + 'InputDataset')
+
         # build list of unique IDs
         synonym_ids = []
         # kludge because arc ends up with different field names under Enterprise gdb after joining
@@ -510,8 +513,10 @@ def GetBuffer(accuracy):
         if arcpy.Exists(temp_line_buffer):
             arcpy.Delete_management(temp_line_buffer)
         if arcpy.Exists(temp_all_inputs):
+            arcpy.Delete_management('all_inputs_layer')
             arcpy.Delete_management(temp_all_inputs)
         if arcpy.Exists(temp_pairwise_intersect):
+            arcpy.Delete_management('pairwise_intersect_layer')
             arcpy.Delete_management(temp_pairwise_intersect)
         if arcpy.Exists(temp_ecoshape_max_polygon):
             arcpy.Delete_management(temp_ecoshape_max_polygon)
