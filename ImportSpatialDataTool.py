@@ -284,8 +284,9 @@ class ImportSpatialDataTool:
             EBARUtils.setNewID(destination, id_field, 'InputDatasetID = ' + str(input_dataset_id))
 
         # temp clean-up
-        if arcpy.Exists(temp_import_features):
-            arcpy.Delete_management(temp_import_features)
+        ## trouble deleting on server only due to locks!!!
+        #if arcpy.Exists(temp_import_features):
+        #    arcpy.Delete_management(temp_import_features)
 
         # summary and end time
         EBARUtils.displayMessage(messages, 'Summary:')
