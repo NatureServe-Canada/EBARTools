@@ -488,7 +488,7 @@ def GetBuffer(accuracy):
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
             for update_row in update_cursor:
                 # kludge because arc ends up with different field names under Enterprise gdb after joining
-                field_names = [f.name for f in arcpy.ListFields(temp_ecoshape_countby_source) if f.aliasName in
+                field_names = [f.name for f in arcpy.ListFields(temp_overall_countby_source) if f.aliasName in
                                ['DatasetSourceName','FREQUENCY','frequency']]
                 with arcpy.da.SearchCursor(temp_overall_countby_source, field_names) as search_cursor:
                     summary = ''
@@ -508,26 +508,25 @@ def GetBuffer(accuracy):
         # generate TOC entry and actual map!!!
 
         # temp clean-up
-        if arcpy.Exists(temp_point_buffer):
-            arcpy.Delete_management(temp_point_buffer)
-        if arcpy.Exists(temp_line_buffer):
-            arcpy.Delete_management(temp_line_buffer)
-        if arcpy.Exists(temp_all_inputs):
-            arcpy.Delete_management('all_inputs_layer')
-            arcpy.Delete_management(temp_all_inputs)
-        if arcpy.Exists(temp_pairwise_intersect):
-            arcpy.Delete_management('pairwise_intersect_layer')
-            arcpy.Delete_management(temp_pairwise_intersect)
-        if arcpy.Exists(temp_ecoshape_max_polygon):
-            arcpy.Delete_management(temp_ecoshape_max_polygon)
-        if arcpy.Exists(temp_ecoshape_countby_dataset):
-            arcpy.Delete_management(temp_ecoshape_countby_dataset)
-        if arcpy.Exists(temp_ecoshape_countby_source):
-            arcpy.Delete_management(temp_ecoshape_countby_source)
-        if arcpy.Exists(temp_overall_countby_source):
-            arcpy.Delete_management(temp_overall_countby_source)
         if arcpy.Exists(temp_unique_synonyms):
             arcpy.Delete_management(temp_unique_synonyms)
+        if arcpy.Exists(temp_overall_countby_source):
+            arcpy.Delete_management(temp_overall_countby_source)
+        if arcpy.Exists(temp_ecoshape_countby_source):
+            arcpy.Delete_management(temp_ecoshape_countby_source)
+        if arcpy.Exists(temp_ecoshape_countby_dataset):
+            arcpy.Delete_management(temp_ecoshape_countby_dataset)
+        if arcpy.Exists(temp_ecoshape_max_polygon):
+            arcpy.Delete_management(temp_ecoshape_max_polygon)
+        if arcpy.Exists(temp_pairwise_intersect):
+            arcpy.Delete_management(temp_pairwise_intersect)
+        if arcpy.Exists(temp_line_buffer):
+            arcpy.Delete_management(temp_line_buffer)
+        if arcpy.Exists(temp_point_buffer):
+            arcpy.Delete_management(temp_point_buffer)
+        ## trouble deleting on server only due to locks!!!
+        #if arcpy.Exists(temp_all_inputs):
+        #    arcpy.Delete_management(temp_all_inputs)
 
         # end time
         end_time = datetime.datetime.now()
