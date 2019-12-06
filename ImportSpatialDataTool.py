@@ -118,13 +118,13 @@ class ImportSpatialDataTool:
 
         # make temp copy of features being imported so that it is geodatabase format
         EBARUtils.displayMessage(messages, 'Copying features to temporary feature class')
-        if arcpy.Exists('TempImportFeatures'):
-            arcpy.Delete_management('TempImportFeatures')
-        arcpy.CopyFeatures_management(param_import_feature_class, 'TempImportFeatures')
+        temp_import_features = 'TempImportFeatures' + str(start_time.year) + str(start_time.month) + \
+            str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
+        arcpy.CopyFeatures_management(param_import_feature_class, temp_import_features)
 
         # pre-processing
         EBARUtils.displayMessage(messages, 'Pre-processing features')
-        arcpy.MakeFeatureLayer_management('TempImportFeatures', 'import_features')
+        arcpy.MakeFeatureLayer_management(temp_import_features, 'import_features')
         EBARUtils.checkAddField('import_features', 'SpeciesID', 'LONG')
         EBARUtils.checkAddField('import_features', 'SynonymID', 'LONG')
         EBARUtils.checkAddField('import_features', 'ignore', 'SHORT')
@@ -282,6 +282,10 @@ class ImportSpatialDataTool:
             arcpy.Append_management('import_features', destination, 'NO_TEST', field_mappings)
             # set new id (will reset any previous IDs from same input dataset)
             EBARUtils.setNewID(destination, id_field, 'InputDatasetID = ' + str(input_dataset_id))
+
+        # temp clean-up
+        if arcpy.Exists(temp_import_features):
+            arcpy.Delete_management(temp_import_features)
 
         # summary and end time
         EBARUtils.displayMessage(messages, 'Summary:')
