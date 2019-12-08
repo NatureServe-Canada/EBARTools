@@ -352,14 +352,13 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_raw_data_file = arcpy.Parameter()
-    param_raw_data_file.value = 'C:/Users/rgree/OneDrive/EBAR_Sensitive_Material/Import_Routine_Data/Real_Data/' + \
-                                'Endemics_vertnet.csv'
+    param_raw_data_file.value = 'C:/GIS/EBAR/otherSpecies.csv'
     param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'VerNet Endemics'
+    param_dataset_name.value = 'Atlantic Canada Other Species'
     param_dataset_source = arcpy.Parameter()
-    param_dataset_source.value = 'VertNet'
+    param_dataset_source.value = 'Other'
     param_date_received = arcpy.Parameter()
-    param_date_received.value = 'October 15, 2019'
+    param_date_received.value = 'November 20, 2019'
     param_restrictions = arcpy.Parameter()
     param_restrictions.value = 'Non-restricted'
     parameters = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_source,
