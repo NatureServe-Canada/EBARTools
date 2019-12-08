@@ -135,16 +135,17 @@ class ImportSpatialDataTool:
 
         # loop to check/add species and flag duplicates
         overall_count = 0
+        inaccurate = 0
         duplicates = 0
         no_species_match = 0
         no_match_list = []
         with arcpy.da.UpdateCursor('import_features',
-                                   [field_dict['unique_id'], field_dict['scientific_name'],
+                                   [field_dict['unique_id'], field_dict['scientific_name'], field_dict['accuracy'],
                                     'SpeciesID', 'SynonymID', 'ignore']) as cursor:
             for row in EBARUtils.updateCursor(cursor):
                 overall_count += 1
                 if overall_count % 1000 == 0:
-                    EBARUtils.displayMessage(messages, 'Species and duplicates pre-processed ' + str(overall_count))
+                    EBARUtils.displayMessage(messages, 'Species, accuracy and duplicates pre-processed ' + str(overall_count))
                 ignore = 0
                 # check for species
                 species_id = None
@@ -163,17 +164,26 @@ class ImportSpatialDataTool:
                     else:
                         species_id = synonym_species_id_dict[row[field_dict['scientific_name']]]
                         synonym_id = synonym_id_dict[row[field_dict['scientific_name']]]
-                    # check for duplicates
+                    # check accuracy
                     # handle case where integer gets read as float with decimals
-                    uid_raw = row[field_dict['unique_id']]
-                    if isinstance(uid_raw, float):
-                        uid_raw = int(uid_raw)
-                    if str(uid_raw) in id_dict:
-                        duplicates += 1
+                    accuracy_raw = row[field_dict['accuracy']]
+                    if isinstance(accuracy_raw, float):
+                        accuracy_raw = int(uid_raw)
+                    if accuracy_raw > EBARUtils.worst_accuracy:
+                        inaccurate += 1
                         ignore = 1
+                    if ignore == 0:
+                        # check for duplicates
+                        # handle case where integer gets read as float with decimals
+                        uid_raw = row[field_dict['unique_id']]
+                        if isinstance(uid_raw, float):
+                            uid_raw = int(uid_raw)
+                        if str(uid_raw) in id_dict:
+                            duplicates += 1
+                            ignore = 1
                 # save
-                cursor.updateRow([row[field_dict['unique_id']], row[field_dict['scientific_name']], species_id,
-                                  synonym_id, ignore])
+                cursor.updateRow([row[field_dict['unique_id']], row[field_dict['scientific_name']],
+                                  row[field_dict['accuracy']], species_id, synonym_id, ignore])
             if overall_count > 0:
                 del row
         EBARUtils.displayMessage(messages, 'Species and duplicates pre-processed ' + str(overall_count))
@@ -296,6 +306,8 @@ class ImportSpatialDataTool:
         EBARUtils.displayMessage(messages, 'Summary:')
         EBARUtils.displayMessage(messages, 'Processed - ' + str(overall_count))
         EBARUtils.displayMessage(messages, 'Species not matched - ' + str(no_species_match))
+        EBARUtils.displayMessage(messages,
+                                 'Accuracy worse than ' + str(EBARUtils.worst_accuracy) + ' m - ' + str(inaccurate))
         EBARUtils.displayMessage(messages, 'Duplicates - ' + str(duplicates))
         end_time = datetime.datetime.now()
         EBARUtils.displayMessage(messages, 'End time: ' + str(end_time))
