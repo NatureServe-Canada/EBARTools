@@ -62,7 +62,7 @@ class ImportSpatialDataTool:
                                                                           'DatasetSourceType', 'URIField',
                                                                           'ScientificNameField', 'MinDateField',
                                                                           'MaxDateField', 'RepAccuracyField',
-                                                                          'EORankField'],
+                                                                          'EORankField', 'AccuracyField'],
                                    "DatasetSourceName = '" + param_dataset_source + "'") as cursor:
             for row in EBARUtils.searchCursor(cursor):
                 dataset_source_id = row['DatasetSourceID']
@@ -85,6 +85,7 @@ class ImportSpatialDataTool:
                 field_dict['max_date'] = row['MaxDateField']
                 field_dict['rep_accuracy'] = row['RepAccuracyField']
                 field_dict['eo_rank'] = row['EORankField']
+                field_dict['accuracy'] = row['AccuracyField']
             del row
         if not match:
             EBARUtils.displayMessage(messages,
@@ -269,6 +270,9 @@ class ImportSpatialDataTool:
             if field_dict['eo_rank'] and feature_class_type in ('Polygon', 'MultiPatch'):
                 field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', 'eo_rank',
                                                                     'EORank', 'TEXT'))
+            if field_dict['accuracy']:
+                field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict['accuracy'],
+                                                                    'Accuracy', 'LONG'))
             # append
             if feature_class_type in ('Polygon', 'MultiPatch'):
                 destination = param_geodatabase + '/InputPolygon'
