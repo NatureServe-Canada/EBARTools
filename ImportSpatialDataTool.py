@@ -140,12 +140,12 @@ class ImportSpatialDataTool:
         no_species_match = 0
         no_match_list = []
         with arcpy.da.UpdateCursor('import_features',
-                                   [field_dict['unique_id'], field_dict['scientific_name'], field_dict['accuracy'],
-                                    'SpeciesID', 'SynonymID', 'ignore']) as cursor:
+                                   [field_dict['unique_id'], field_dict['scientific_name'], 'SpeciesID', 'SynonymID',
+                                    'ignore']) as cursor:
             for row in EBARUtils.updateCursor(cursor):
                 overall_count += 1
                 if overall_count % 1000 == 0:
-                    EBARUtils.displayMessage(messages, 'Species, accuracy and duplicates pre-processed ' + str(overall_count))
+                    EBARUtils.displayMessage(messages, 'Species and duplicates pre-processed ' + str(overall_count))
                 ignore = 0
                 # check for species
                 species_id = None
@@ -164,32 +164,44 @@ class ImportSpatialDataTool:
                     else:
                         species_id = synonym_species_id_dict[row[field_dict['scientific_name']]]
                         synonym_id = synonym_id_dict[row[field_dict['scientific_name']]]
-                    # check accuracy
+                    # check for duplicates
                     # handle case where integer gets read as float with decimals
-                    accuracy_raw = row[field_dict['accuracy']]
-                    if isinstance(accuracy_raw, float):
-                        accuracy_raw = int(uid_raw)
-                    if accuracy_raw:
-                        if accuracy_raw > EBARUtils.worst_accuracy:
-                            inaccurate += 1
-                            ignore = 1
-                    if ignore == 0:
-                        # check for duplicates
-                        # handle case where integer gets read as float with decimals
-                        uid_raw = row[field_dict['unique_id']]
-                        if isinstance(uid_raw, float):
-                            uid_raw = int(uid_raw)
-                        if str(uid_raw) in id_dict:
-                            duplicates += 1
-                            ignore = 1
+                    uid_raw = row[field_dict['unique_id']]
+                    if isinstance(uid_raw, float):
+                        uid_raw = int(uid_raw)
+                    if str(uid_raw) in id_dict:
+                        duplicates += 1
+                        ignore = 1
                 # save
-                cursor.updateRow([row[field_dict['unique_id']], row[field_dict['scientific_name']],
-                                  row[field_dict['accuracy']], species_id, synonym_id, ignore])
+                cursor.updateRow([row[field_dict['unique_id']], row[field_dict['scientific_name']], species_id,
+                                  synonym_id, ignore])
             if overall_count > 0:
                 del row
         EBARUtils.displayMessage(messages, 'Species and duplicates pre-processed ' + str(overall_count))
 
-        if overall_count - duplicates - no_species_match > 0:
+        # check accuracy if provided
+        if field_dict['accuracy']:
+            overall_count = 0
+            with arcpy.da.UpdateCursor('import_features',
+                                       [field_dict['accuracy'], 'ignore'], 'ignore = 0') as cursor:
+                for row in EBARUtils.updateCursor(cursor):
+                    overall_count += 1
+                    if overall_count % 1000 == 0:
+                        EBARUtils.displayMessage(messages, 'Accuracy pre-processed ' + str(overall_count))
+                # handle case where integer gets read as float with decimals
+                accuracy_raw = row[field_dict['accuracy']]
+                if isinstance(accuracy_raw, float):
+                    accuracy_raw = int(uid_raw)
+                if accuracy_raw:
+                    if accuracy_raw > EBARUtils.worst_accuracy:
+                        inaccurate += 1
+                        cursor.updateRow([row[field_dict['accuracy']], 1])
+                if overall_count > 0:
+                    del row
+            EBARUtils.displayMessage(messages, 'Accuracy pre-processed ' + str(overall_count))
+
+        # other pre-processing (that doesn't result in ignoring input rows)
+        if overall_count - duplicates - no_species_match - inaccurate > 0:
             # select non-ignore
             arcpy.SelectLayerByAttribute_management('import_features', where_clause='ignore = 0')
 
@@ -325,13 +337,13 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_import_feature_class = arcpy.Parameter()
-    param_import_feature_class.value = 'C:/GIS/EBAR/US_CDC_Data/Montana/MTNHP_Data_20191018.gdb/Plant_Occurrences'
+    param_import_feature_class.value = 'C:/GIS/EBAR/CDN_CDC_Data/Atlantic_Canada/ebar.gdb/ACCDC_NS_ALL_NLS_191106_ebarSpp'
     param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'Montana Plant Occurrences'
+    param_dataset_name.value = 'Nova Scotia Observations'
     param_dataset_source = arcpy.Parameter()
-    param_dataset_source.value = 'MT Plant Occurrences'
+    param_dataset_source.value = 'ACCDC Observations'
     param_date_received = arcpy.Parameter()
-    param_date_received.value = 'October 18, 2019'
+    param_date_received.value = 'November 20, 2019'
     param_restrictions = arcpy.Parameter()
     param_restrictions.value = 'Non-restricted'
     parameters = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_source,
