@@ -104,8 +104,8 @@ class ImportTabularData(object):
         return True
 
     def updateParameters(self, parameters):
-        """Modify the values and properties of parameters before internal validation is performed.  This method is " + \
-        "called whenever a parameter has been changed."""
+        """Modify the values and properties of parameters before internal validation is performed.  This method is 
+        called whenever a parameter has been changed."""
         if parameters[0].altered and parameters[0].value:
             parameters[3].filter.list = EBARUtils.readDatasetSources(parameters[0].valueAsText, "('T')")
             domains = arcpy.da.ListDomains(parameters[0].valueAsText)
@@ -117,7 +117,7 @@ class ImportTabularData(object):
         return
 
     def updateMessages(self, parameters):
-        """Modify the messages created by internal validation for each tool parameter.  This method is called " " \
+        """Modify the messages created by internal validation for each tool parameter.  This method is called "
         "after internal validation."""
         return
 
@@ -201,21 +201,21 @@ class ImportSpatialData(object):
         return True
 
     def updateParameters(self, parameters):
-        """Modify the values and properties of parameters before internal validation is performed.  This method is " + \
-        "called whenever a parameter has been changed."""
+        """Modify the values and properties of parameters before internal validation is performed.  This method is 
+        called whenever a parameter has been changed."""
         if parameters[0].altered and parameters[0].value:
             parameters[3].filter.list = EBARUtils.readDatasetSources(parameters[0].valueAsText, "('S', 'L', 'P')")
-            domains = arcpy.da.ListDomains(parameters[0].valueAsText)
-            restrictions_list = []
-            for domain in domains:
-                if domain.name == 'Restriction':
-                    restrictions_list = list(domain.codedValues.values())
-            parameters[5].filter.list = sorted(restrictions_list)
+        domains = arcpy.da.ListDomains(parameters[0].valueAsText)
+        restrictions_list = []
+        for domain in domains:
+            if domain.name == 'Restriction':
+                restrictions_list = list(domain.codedValues.values())
+        parameters[5].filter.list = sorted(restrictions_list)
         return
 
     def updateMessages(self, parameters):
-        """Modify the messages created by internal validation for each tool parameter.  This method is called " " \
-        "after internal validation."""
+        """Modify the messages created by internal validation for each tool parameter.  This method is called 
+        after internal validation."""
         return
 
     def execute(self, parameters, messages):
@@ -288,8 +288,8 @@ class GenerateRangeMap(object):
         return True
 
     def updateParameters(self, parameters):
-        """Modify the values and properties of parameters before internal validation is performed.  This method is " + \
-        "called whenever a parameter has been changed."""
+        """Modify the values and properties of parameters before internal validation is performed.  This method is 
+        called whenever a parameter has been changed."""
         # filter list of species
         # make sure there is a geodatabase specified
         if parameters[0].altered and parameters[0].value:
@@ -314,8 +314,8 @@ class GenerateRangeMap(object):
 
 
     def updateMessages(self, parameters):
-        """Modify the messages created by internal validation for each tool parameter.  This method is called " " \
-        "after internal validation."""
+        """Modify the messages created by internal validation for each tool parameter.  This method is called 
+        after internal validation."""
         return
 
     def execute(self, parameters, messages):
@@ -360,13 +360,13 @@ class ListElementNationalIDs(object):
         return True
 
     def updateParameters(self, parameters):
-        """Modify the values and properties of parameters before internal validation is performed.  This method is " + \
-        "called whenever a parameter has been changed."""
+        """Modify the values and properties of parameters before internal validation is performed.  This method is 
+        called whenever a parameter has been changed."""
         return
 
     def updateMessages(self, parameters):
-        """Modify the messages created by internal validation for each tool parameter.  This method is called " " \
-        "after internal validation."""
+        """Modify the messages created by internal validation for each tool parameter.  This method is called 
+        after internal validation."""
         return
 
     def execute(self, parameters, messages):
@@ -411,13 +411,13 @@ class SyncSpeciesList(object):
         return True
 
     def updateParameters(self, parameters):
-        """Modify the values and properties of parameters before internal validation is performed.  This method is " + \
-        "called whenever a parameter has been changed."""
+        """Modify the values and properties of parameters before internal validation is performed.  This method is 
+        called whenever a parameter has been changed."""
         return
 
     def updateMessages(self, parameters):
-        """Modify the messages created by internal validation for each tool parameter.  This method is called " " \
-        "after internal validation."""
+        """Modify the messages created by internal validation for each tool parameter.  This method is called 
+        after internal validation."""
         return
 
     def execute(self, parameters, messages):
@@ -462,13 +462,13 @@ class AddSynonyms(object):
         return True
 
     def updateParameters(self, parameters):
-        """Modify the values and properties of parameters before internal validation is performed.  This method is " + \
-        "called whenever a parameter has been changed."""
+        """Modify the values and properties of parameters before internal validation is performed.  This method is 
+        called whenever a parameter has been changed."""
         return
 
     def updateMessages(self, parameters):
-        """Modify the messages created by internal validation for each tool parameter.  This method is called " " \
-        "after internal validation."""
+        """Modify the messages created by internal validation for each tool parameter.  This method is called 
+        after internal validation."""
         return
 
     def execute(self, parameters, messages):

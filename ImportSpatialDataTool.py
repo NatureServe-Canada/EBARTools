@@ -188,14 +188,14 @@ class ImportSpatialDataTool:
                     overall_count += 1
                     if overall_count % 1000 == 0:
                         EBARUtils.displayMessage(messages, 'Accuracy pre-processed ' + str(overall_count))
-                # handle case where integer gets read as float with decimals
-                accuracy_raw = row[field_dict['accuracy']]
-                if isinstance(accuracy_raw, float):
-                    accuracy_raw = int(uid_raw)
-                if accuracy_raw:
-                    if accuracy_raw > EBARUtils.worst_accuracy:
-                        inaccurate += 1
-                        cursor.updateRow([row[field_dict['accuracy']], 1])
+                    # handle case where integer gets read as float with decimals
+                    accuracy_raw = row[field_dict['accuracy']]
+                    if isinstance(accuracy_raw, float):
+                        accuracy_raw = int(uid_raw)
+                    if accuracy_raw:
+                        if accuracy_raw > EBARUtils.worst_accuracy:
+                            inaccurate += 1
+                            cursor.updateRow([row[field_dict['accuracy']], 1])
                 if overall_count > 0:
                     del row
             EBARUtils.displayMessage(messages, 'Accuracy pre-processed ' + str(overall_count))
