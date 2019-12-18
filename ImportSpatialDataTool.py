@@ -46,6 +46,11 @@ class ImportSpatialDataTool:
         param_date_received = parameters[4].valueAsText
         param_restrictions = parameters[5].valueAsText
 
+        # check dataset source
+        if param_dataset_source not in EBARUtils.readDatasetSources(param_geodatabase, "('S', 'L', 'P')"):
+            EBARUtils.displayMessage(messages, 'ERROR: Dataset Source is not valid')
+            return
+
         # use passed geodatabase as workspace (still seems to go to default geodatabase)
         arcpy.env.workspace = param_geodatabase
 

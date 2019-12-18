@@ -92,8 +92,9 @@ class ImportTabularData(object):
             displayName='Dataset Restrictions',
             name='dataset_restrictions',
             datatype='GPString',
-            parameterType='Optional',
+            parameterType='Required',
             direction='Input')
+        param_dataset_restrictions.value = 'Non-restricted'
         
         params = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_source,
                   param_date_received, param_dataset_restrictions]
@@ -106,14 +107,16 @@ class ImportTabularData(object):
     def updateParameters(self, parameters):
         """Modify the values and properties of parameters before internal validation is performed.  This method is 
         called whenever a parameter has been changed."""
-        if parameters[0].altered and parameters[0].value:
-            parameters[3].filter.list = EBARUtils.readDatasetSources(parameters[0].valueAsText, "('T')")
-            domains = arcpy.da.ListDomains(parameters[0].valueAsText)
-            restrictions_list = []
-            for domain in domains:
-                if domain.name == 'Restriction':
-                    restrictions_list = list(domain.codedValues.values())
-            parameters[5].filter.list = sorted(restrictions_list)
+        ## Dataset Source needs to be a textbox, not a filtered picklist,
+        ## because filtered picklists cannot be dynamic when published to a geoprocessing service
+        #if parameters[0].altered and parameters[0].value:
+        #    parameters[3].filter.list = EBARUtils.readDatasetSources(parameters[0].valueAsText, "('T')")
+        domains = arcpy.da.ListDomains(parameters[0].valueAsText)
+        restrictions_list = []
+        for domain in domains:
+            if domain.name == 'Restriction':
+                restrictions_list = list(domain.codedValues.values())
+        parameters[5].filter.list = sorted(restrictions_list)
         return
 
     def updateMessages(self, parameters):
@@ -189,8 +192,9 @@ class ImportSpatialData(object):
             displayName='Dataset Restrictions',
             name='dataset_restrictions',
             datatype='GPString',
-            parameterType='Optional',
+            parameterType='Required',
             direction='Input')
+        param_dataset_restrictions.value = 'Non-restricted'
         
         params = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_source,
                   param_date_received, param_dataset_restrictions]
@@ -203,8 +207,10 @@ class ImportSpatialData(object):
     def updateParameters(self, parameters):
         """Modify the values and properties of parameters before internal validation is performed.  This method is 
         called whenever a parameter has been changed."""
-        if parameters[0].altered and parameters[0].value:
-            parameters[3].filter.list = EBARUtils.readDatasetSources(parameters[0].valueAsText, "('S', 'L', 'P')")
+        ## Dataset Source needs to be a textbox, not a filtered picklist,
+        ## because filtered picklists cannot be dynamic when published to a geoprocessing service
+        #if parameters[0].altered and parameters[0].value:
+        #    parameters[3].filter.list = EBARUtils.readDatasetSources(parameters[0].valueAsText, "('S', 'L', 'P')")
         domains = arcpy.da.ListDomains(parameters[0].valueAsText)
         restrictions_list = []
         for domain in domains:
@@ -278,7 +284,7 @@ class GenerateRangeMap(object):
             direction='Input')
         # cannot pre-specify the list if you want to allow a value not in the list
         #param_stage.filter.list = ['Auto-generated', 'Expert reviewed', 'Published']
-        #param_stage.value = 'Auto-generated'
+        param_stage.value = 'Auto-generated'
 
         params = [param_geodatabase, param_species, param_secondary, param_version, param_stage]
         return params
@@ -292,24 +298,27 @@ class GenerateRangeMap(object):
         called whenever a parameter has been changed."""
         # filter list of species
         # make sure there is a geodatabase specified
-        if parameters[0].altered and parameters[0].value:
-            param_geodatabase = parameters[0].valueAsText
-            spec_list = []
-            with arcpy.da.SearchCursor(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', ['NATIONAL_SCIENTIFIC_NAME'],
-                                       sql_clause=(None,'ORDER BY NATIONAL_SCIENTIFIC_NAME')) as cursor:
-                for row in EBARUtils.searchCursor(cursor):
-                    spec_list.append(row['NATIONAL_SCIENTIFIC_NAME'])
-                if len(spec_list) > 0:
-                    del row
-            parameters[1].filter.list = spec_list
-            parameters[2].filter.list = spec_list
+        ## species need to be textboxes, not filtered picklists,
+        ## because filtered picklists cannot be dynamic when published to a geoprocessing service
+        #if parameters[0].altered and parameters[0].value:
+        #    param_geodatabase = parameters[0].valueAsText
+        #    spec_list = []
+        #    with arcpy.da.SearchCursor(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', ['NATIONAL_SCIENTIFIC_NAME'],
+        #                               sql_clause=(None,'ORDER BY NATIONAL_SCIENTIFIC_NAME')) as cursor:
+        #        for row in EBARUtils.searchCursor(cursor):
+        #            spec_list.append(row['NATIONAL_SCIENTIFIC_NAME'])
+        #        if len(spec_list) > 0:
+        #            del row
+        #    parameters[1].filter.list = spec_list
+        #    parameters[2].filter.list = spec_list
         # allow a stage value in addition to the ones in the standard list
-        #if parameters[4].altered:
-        stage_list = ['Auto-generated', 'Expert reviewed', 'Published']
-        if parameters[4].value:
-            if parameters[4].valueAsText not in stage_list:
-                stage_list.append(parameters[4].valueAsText)
-        parameters[4].filter.list = stage_list
+        ## only works for optional field when published to geoprocessing service
+        ##if parameters[4].altered:
+        #stage_list = ['Auto-generated', 'Expert reviewed', 'Published']
+        #if parameters[4].value:
+        #    if parameters[4].valueAsText not in stage_list:
+        #        stage_list.append(parameters[4].valueAsText)
+        #parameters[4].filter.list = stage_list
         return
 
 

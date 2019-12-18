@@ -350,7 +350,7 @@ def readDatasetSources(param_geodatabase, dataset_source_type):
     source_list = []
     with arcpy.da.SearchCursor(param_geodatabase + '/DatasetSource', ['DatasetSourceName'],
                                 "DatasetSourceType IN " + dataset_source_type,
-                                sql_clause=(None,'ORDER BY DatasetSourceName')) as cursor:
+                                sql_clause=(None, 'ORDER BY DatasetSourceName')) as cursor:
         for row in searchCursor(cursor):
             source_list.append(row['DatasetSourceName'])
         if len(source_list) > 0:

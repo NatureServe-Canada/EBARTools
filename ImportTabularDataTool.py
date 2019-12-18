@@ -55,6 +55,11 @@ class ImportTabularDataTool:
         param_date_received = parameters[4].valueAsText
         param_restrictions = parameters[5].valueAsText
 
+        # check dataset source
+        if param_dataset_source not in EBARUtils.readDatasetSources(param_geodatabase, "('T')"):
+            EBARUtils.displayMessage(messages, 'ERROR: Dataset Source is not valid')
+            return
+
         # use passed geodatabase as workspace (still seems to go to default geodatabase)
         arcpy.env.workspace = param_geodatabase
 
@@ -356,7 +361,7 @@ if __name__ == '__main__':
     param_dataset_name = arcpy.Parameter()
     param_dataset_name.value = 'Atlantic Canada Other Species'
     param_dataset_source = arcpy.Parameter()
-    param_dataset_source.value = 'Other'
+    param_dataset_source.value = 'Test'
     param_date_received = arcpy.Parameter()
     param_date_received.value = 'November 20, 2019'
     param_restrictions = arcpy.Parameter()
