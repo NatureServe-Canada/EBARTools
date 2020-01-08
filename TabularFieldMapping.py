@@ -149,7 +149,7 @@ canadensys_fields = {'quality_grade': None,
                      'individual_count': 'individualCount'}
 
 ncc_endemics_fields = {'quality_grade': None,
-                       'unique_id': 'OBSERVATIO',
+                       'unique_id': 'OBJECTID',
                        'uri': None,
                        'license': None,
                        'scientific_name': 'SCIENTIFIC',
