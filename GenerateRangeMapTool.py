@@ -273,28 +273,29 @@ def GetBuffer(accuracy):
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
         arcpy.Merge_management([temp_point_buffer, temp_line_buffer, 'input_polygon_layer'], temp_all_inputs, None,
                                'ADD_SOURCE_INFO')
+        arcpy.MakeFeatureLayer_management(temp_all_inputs, 'all_inputs_layer')
 
         # eo ranks, when available, override dates in determining historical (fake the date to accomplish this)
         EBARUtils.displayMessage(messages, 'Applying EO Ranks, where available, to determine historical records')
-        result = arcpy.SelectLayerByAttribute_management(temp_all_inputs, 'NEW_SELECTION',
+        result = arcpy.SelectLayerByAttribute_management('all_inputs_layer', 'NEW_SELECTION',
                                                          "EORank IN ('H', 'H?', 'X', 'X?')")
         if int(result[1]) > 0:
             # 1000 years in the past
             fake_date_expr = 'datetime.datetime(datetime.datetime.now().year - 1000, 1, 1)'
-            arcpy.CalculateField_management(temp_all_inputs, 'MaxDate', fake_date_expr)
-        result = arcpy.SelectLayerByAttribute_management(temp_all_inputs, 'NEW_SELECTION',
+            arcpy.CalculateField_management('all_inputs_layer', 'MaxDate', fake_date_expr)
+        result = arcpy.SelectLayerByAttribute_management('all_inputs_layer', 'NEW_SELECTION',
                                                          "EORank IS NOT NULL AND EORank NOT IN ('H', 'H?', 'X', 'X?')")
         if int(result[1]) > 0:
             # 1000 years in the future
             fake_date_expr = 'datetime.datetime(datetime.datetime.now().year + 1000, 1, 1)'
-            arcpy.CalculateField_management(temp_all_inputs, 'MaxDate', fake_date_expr)
-        arcpy.SelectLayerByAttribute_management(temp_all_inputs, 'CLEAR_SELECTION')
+            arcpy.CalculateField_management('all_inputs_layer', 'MaxDate', fake_date_expr)
+        arcpy.SelectLayerByAttribute_management('all_inputs_layer', 'CLEAR_SELECTION')
 
         # pairwise intersect buffers and ecoshape polygons
         EBARUtils.displayMessage(messages, 'Pairwise Intersecting All Inputs with Ecoshapes')
         temp_pairwise_intersect = 'TempPairwiseIntersect' + str(start_time.year) + str(start_time.month) + \
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
-        arcpy.PairwiseIntersect_analysis([temp_all_inputs,  param_geodatabase + '/Ecoshape'],
+        arcpy.PairwiseIntersect_analysis(['all_inputs_layer',  param_geodatabase + '/Ecoshape'],
                                          temp_pairwise_intersect)
         arcpy.AddIndex_management(temp_pairwise_intersect, 'InputDatasetID', 'idid_idx')
         arcpy.MakeFeatureLayer_management(temp_pairwise_intersect, 'pairwise_intersect_layer')
@@ -433,7 +434,6 @@ def GetBuffer(accuracy):
         # get overall input counts by source (using original inputs)
         EBARUtils.displayMessage(messages, 'Counting overall inputs by Dataset Source')
         # select only those within ecoshapes
-        arcpy.MakeFeatureLayer_management(temp_all_inputs, 'all_inputs_layer')
         arcpy.AddJoin_management('all_inputs_layer', 'InputDatasetID',
                                  param_geodatabase + '/InputDataset', 'InputDatasetID', 'KEEP_COMMON')
         arcpy.AddJoin_management('all_inputs_layer', 'DatasetSourceID',
@@ -524,7 +524,7 @@ def GetBuffer(accuracy):
             arcpy.Delete_management(temp_line_buffer)
         if arcpy.Exists(temp_point_buffer):
             arcpy.Delete_management(temp_point_buffer)
-        ## trouble deleting on server only due to locks!!!
+        ## trouble deleting on server only due to locks; could be layer?
         #if arcpy.Exists(temp_all_inputs):
         #    arcpy.Delete_management(temp_all_inputs)
 
