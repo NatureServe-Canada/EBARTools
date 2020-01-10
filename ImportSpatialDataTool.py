@@ -182,6 +182,8 @@ class ImportSpatialDataTool:
                                   synonym_id, ignore])
             if overall_count > 0:
                 del row
+                # index ignore to improve performance
+                arcpy.AddIndex_management('import_features', ['ignore'], 'temp_ignore_idx')
         EBARUtils.displayMessage(messages, 'Species and duplicates pre-processed ' + str(overall_count))
 
         # check accuracy if provided
