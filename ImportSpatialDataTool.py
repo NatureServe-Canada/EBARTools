@@ -133,7 +133,7 @@ class ImportSpatialDataTool:
         arcpy.MakeFeatureLayer_management(temp_import_features, 'import_features')
         EBARUtils.checkAddField('import_features', 'SpeciesID', 'LONG')
         EBARUtils.checkAddField('import_features', 'SynonymID', 'LONG')
-        EBARUtils.checkAddField('import_features', 'ignore', 'SHORT')
+        EBARUtils.checkAddField('import_features', 'ignore_imp', 'SHORT')
         if feature_class_type in ('Polygon', 'MultiPatch'):
             # EOs can only be polygons
             EBARUtils.checkAddField('import_features', 'eo_rank', 'TEXT')
@@ -146,19 +146,19 @@ class ImportSpatialDataTool:
         no_match_list = []
         with arcpy.da.UpdateCursor('import_features',
                                    [field_dict['unique_id'], field_dict['scientific_name'], 'SpeciesID', 'SynonymID',
-                                    'ignore']) as cursor:
+                                    'ignore_imp']) as cursor:
             for row in EBARUtils.updateCursor(cursor):
                 overall_count += 1
                 if overall_count % 1000 == 0:
                     EBARUtils.displayMessage(messages, 'Species and duplicates pre-processed ' + str(overall_count))
-                ignore = 0
+                ignore_imp = 0
                 # check for species
                 species_id = None
                 synonym_id = None
                 if (row[field_dict['scientific_name']] not in species_dict and
                     row[field_dict['scientific_name']] not in synonym_id_dict):
                     no_species_match += 1
-                    ignore = 1
+                    ignore_imp = 1
                     if row[field_dict['scientific_name']] not in no_match_list:
                         no_match_list.append(row[field_dict['scientific_name']])
                         EBARUtils.displayMessage(messages,
@@ -176,21 +176,21 @@ class ImportSpatialDataTool:
                         uid_raw = int(uid_raw)
                     if str(uid_raw) in id_dict:
                         duplicates += 1
-                        ignore = 1
+                        ignore_imp = 1
                 # save
                 cursor.updateRow([row[field_dict['unique_id']], row[field_dict['scientific_name']], species_id,
-                                  synonym_id, ignore])
+                                  synonym_id, ignore_imp])
             if overall_count > 0:
                 del row
-                # index ignore to improve performance
-                arcpy.AddIndex_management('import_features', ['ignore'], 'temp_ignore_idx')
+                # index ignore_imp to improve performance
+                arcpy.AddIndex_management('import_features', ['ignore_imp'], 'temp_ignore_imp_idx')
         EBARUtils.displayMessage(messages, 'Species and duplicates pre-processed ' + str(overall_count))
 
         # check accuracy if provided
         if field_dict['accuracy']:
             overall_count = 0
             with arcpy.da.UpdateCursor('import_features',
-                                       [field_dict['accuracy'], 'ignore'], 'ignore = 0') as cursor:
+                                       [field_dict['accuracy'], 'ignore_imp'], 'ignore_imp = 0') as cursor:
                 for row in EBARUtils.updateCursor(cursor):
                     overall_count += 1
                     if overall_count % 1000 == 0:
@@ -209,8 +209,8 @@ class ImportSpatialDataTool:
 
         # other pre-processing (that doesn't result in ignoring input rows)
         if overall_count - duplicates - no_species_match - inaccurate > 0:
-            # select non-ignore
-            arcpy.SelectLayerByAttribute_management('import_features', where_clause='ignore = 0')
+            # select non-ignore_imp
+            arcpy.SelectLayerByAttribute_management('import_features', where_clause='ignore_imp = 0')
 
             # loop to set eo rank
             if field_dict['eo_rank'] and feature_class_type in ('Polygon', 'MultiPatch'):
@@ -318,7 +318,7 @@ class ImportSpatialDataTool:
             EBARUtils.setNewID(destination, id_field, 'InputDatasetID = ' + str(input_dataset_id))
 
         # temp clean-up
-        ## trouble deleting on server only due to locks!!!
+        ## trouble deleting on server only due to locks; could be layer?
         #if arcpy.Exists(temp_import_features):
         #    arcpy.Delete_management(temp_import_features)
 

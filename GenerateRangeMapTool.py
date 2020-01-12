@@ -403,7 +403,8 @@ def GetBuffer(accuracy):
         arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'DatasetSource')
         arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'InputDataset')
 
-        # update range map ecoshapes with summary (and high-grade presence for some polygon dataset sources)
+        # update range map ecoshapes with summary
+        # (also high-grade presence for some polygon dataset sources, and check if review(s) should remove)
         EBARUtils.displayMessage(messages, 'Updating Range Map Ecoshape records with summary')
         with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape',
                                    ['EcoshapeID', 'Presence', 'RangeMapEcoshapeNotes'],
