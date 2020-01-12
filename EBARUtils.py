@@ -313,8 +313,11 @@ def extractDate(date_str):
                     try:
                         ret_date = datetime.datetime(year, month, day)
                     except ValueError:
-                        # handle rare case of month with less than 31 days and day of 31
-                        ret_date = datetime.datetime(year, month, 1)
+                        # handle rare cases such as month with less than 31 days and day of 31
+                        try:
+                            ret_date = datetime.datetime(year, month, 1)
+                        except:
+                            ret_date = datetime.datetime(year, 1, 1)
     return ret_date
 
 
