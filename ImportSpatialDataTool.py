@@ -209,13 +209,11 @@ class ImportSpatialDataTool:
 
         # other pre-processing (that doesn't result in ignoring input rows)
         if overall_count - duplicates - no_species_match - inaccurate > 0:
-            # select non-ignore_imp
-            arcpy.SelectLayerByAttribute_management('import_features', where_clause='ignore_imp = 0')
-
             # loop to set eo rank
             if field_dict['eo_rank'] and feature_class_type in ('Polygon', 'MultiPatch'):
                 count = 0
-                with arcpy.da.UpdateCursor('import_features', [field_dict['eo_rank'], 'eo_rank']) as cursor:
+                with arcpy.da.UpdateCursor('import_features', [field_dict['eo_rank'], 'eo_rank'],
+                                           'ignore_imp = 0') as cursor:
                     for row in EBARUtils.updateCursor(cursor):
                         count += 1
                         if count % 1000 == 0:
@@ -235,7 +233,8 @@ class ImportSpatialDataTool:
             if field_dict['min_date']:
                 EBARUtils.checkAddField('import_features', 'MinDate', 'DATE')
                 count = 0
-                with arcpy.da.UpdateCursor('import_features', [field_dict['min_date'], 'MinDate']) as cursor:
+                with arcpy.da.UpdateCursor('import_features', [field_dict['min_date'], 'MinDate'],
+                                           'ignore_imp = 0') as cursor:
                     for row in EBARUtils.updateCursor(cursor):
                         count += 1
                         if count % 1000 == 0:
@@ -253,7 +252,8 @@ class ImportSpatialDataTool:
             if field_dict['max_date']:
                 EBARUtils.checkAddField('import_features', 'MaxDate', 'DATE')
                 count = 0
-                with arcpy.da.UpdateCursor('import_features', [field_dict['max_date'], 'MaxDate']) as cursor:
+                with arcpy.da.UpdateCursor('import_features', [field_dict['max_date'], 'MaxDate'],
+                                           'ignore_imp = 0') as cursor:
                     for row in EBARUtils.updateCursor(cursor):
                         count += 1
                         if count % 1000 == 0:
@@ -268,6 +268,9 @@ class ImportSpatialDataTool:
                         cursor.updateRow([row[field_dict['max_date']], max_date])
                     del row
                 EBARUtils.displayMessage(messages, 'Max Date pre-processed ' + str(count))
+
+            # select non-ignore_imp
+            arcpy.SelectLayerByAttribute_management('import_features', where_clause='ignore_imp = 0')
 
             # add and set column for input dataset
             EBARUtils.checkAddField('import_features', 'InDSID', 'LONG')
