@@ -198,7 +198,7 @@ class ImportSpatialDataTool:
                     # handle case where integer gets read as float with decimals
                     accuracy_raw = row[field_dict['accuracy']]
                     if isinstance(accuracy_raw, float):
-                        accuracy_raw = int(uid_raw)
+                        accuracy_raw = int(accuracy_raw)
                     if accuracy_raw:
                         if accuracy_raw > EBARUtils.worst_accuracy:
                             inaccurate += 1
