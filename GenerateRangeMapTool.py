@@ -128,22 +128,23 @@ class GenerateRangeMapTool:
                 #raise arcpy.ExecuteError
 
             # check for reviews in progress, and if so terminate
-            arcpy.AddJoin_management('range_map_view', table_name_prefix + 'Review.ReviewID',
-                                     param_geodatabase + '/EcoshapeReview', 'ReviewID', 'KEEP_COMMON')
-            with arcpy.da.SearchCursor('range_map_view',
-                                       [table_name_prefix + 'EcoshapeReview.ReviewID']) as cursor:
-                for row in EBARUtils.searchCursor(cursor):
-                    ecoshape_review = True
-                    break
+            if review_found:
+                arcpy.AddJoin_management('range_map_view', table_name_prefix + 'Review.ReviewID',
+                                         param_geodatabase + '/EcoshapeReview', 'ReviewID', 'KEEP_COMMON')
+                with arcpy.da.SearchCursor('range_map_view',
+                                           [table_name_prefix + 'EcoshapeReview.ReviewID']) as cursor:
+                    for row in EBARUtils.searchCursor(cursor):
+                        ecoshape_review = True
+                        break
+                    if ecoshape_review:
+                        del row
                 if ecoshape_review:
-                    del row
-            if ecoshape_review:
-                EBARUtils.displayMessage(messages, 'ERROR: Range Map already exists with review(s) in progress')
-                # terminate with error
-                return
-                #raise arcpy.ExecuteError
+                    EBARUtils.displayMessage(messages, 'ERROR: Range Map already exists with review(s) in progress')
+                    # terminate with error
+                    return
+                    #raise arcpy.ExecuteError
 
-            arcpy.RemoveJoin_management('range_map_view', table_name_prefix + 'EcoshapeReview')
+                arcpy.RemoveJoin_management('range_map_view', table_name_prefix + 'EcoshapeReview')
             arcpy.RemoveJoin_management('range_map_view', table_name_prefix + 'Review')
 
             # no reviews completed or in progress, so delete any existing related records
