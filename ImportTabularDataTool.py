@@ -291,16 +291,19 @@ class ImportTabularDataTool:
                     if row:
                         del row
                     return id_dict[str(file_line[field_dict['unique_id']])], 'deleted'
-            if not coordinates_obscured:
-                # check if it has become unobscured
-                with arcpy.da.SearchCursor(geodatabase + '/InputPoint', ['CoordinatesObscured'],
-                                           "DatasetSourceUniqueID = '" + str(file_line[field_dict['unique_id']]) +
-                                           "' AND InputDatasetID = " + str(input_dataset_id)) as cursor:
-                    row = None
-                    for row in EBARUtils.searchCursor(cursor):
-                        update = row['CoordinatesObscured']
-                    if row:
-                        del row
+            if coordinates_obscured and private_coords:
+                # we don't know if private_coords were recorded last time, so update
+                update = True
+            #if not coordinates_obscured:
+            #    # check if it has become unobscured
+            #    with arcpy.da.SearchCursor(geodatabase + '/InputPoint', ['CoordinatesObscured'],
+            #                               "DatasetSourceUniqueID = '" + str(file_line[field_dict['unique_id']]) +
+            #                               "' AND InputDatasetID = " + str(input_dataset_id)) as cursor:
+            #        row = None
+            #        for row in EBARUtils.searchCursor(cursor):
+            #            update = row['CoordinatesObscured']
+            #        if row:
+            #            del row
             if not update:
                 # existing record that does not need to be updated
                 return id_dict[str(file_line[field_dict['unique_id']])], 'duplicate'
