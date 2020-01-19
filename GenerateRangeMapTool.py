@@ -92,11 +92,11 @@ class GenerateRangeMapTool:
         # check for range map record and add if necessary
         EBARUtils.displayMessage(messages, 'Checking for existing range map')
         range_map_id = None
-        arcpy.MakeTableView_management(param_geodatabase + '/RangeMap', 'range_map_view')
-        with arcpy.da.SearchCursor('range_map_view', ['RangeMapID'],
-                                   'SpeciesID = ' + str(species_id) +
-                                   " AND RangeVersion = '" + param_version +
-                                   "' AND RangeStage = '" + param_stage + "'") as cursor:
+        arcpy.MakeTableView_management(param_geodatabase + '/RangeMap', 'range_map_view',
+                                       'SpeciesID = ' + str(species_id) +
+                                       " AND RangeVersion = '" + param_version +
+                                       "' AND RangeStage = '" + param_stage + "'")
+        with arcpy.da.SearchCursor('range_map_view', ['RangeMapID']) as cursor:
             for row in EBARUtils.searchCursor(cursor):
                 range_map_id = row['RangeMapID']
             if range_map_id:
