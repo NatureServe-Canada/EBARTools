@@ -283,8 +283,10 @@ class ImportTabularDataTool:
             if quality_grade != 'research':
                 # delete it because it has been downgraded
                 with arcpy.da.UpdateCursor(geodatabase + '/InputPoint', ['CoordinatesObscured'],
-                                           "DatasetSourceUniqueID = '" + str(file_line[field_dict['unique_id']]) +
-                                           "' AND InputDatasetID = " + str(input_dataset_id)) as cursor:
+                                           "InputPointID = " +
+                                           str(id_dict[str(file_line[field_dict['unique_id']])])) as cursor:
+                                           #"DatasetSourceUniqueID = '" + str(file_line[field_dict['unique_id']]) +
+                                           #"' AND InputDatasetID = " + str(input_dataset_id)) as cursor:
                     row = None
                     for row in cursor:
                         cursor.deleteRow()
@@ -330,15 +332,20 @@ class ImportTabularDataTool:
 
         # update or insert
         if update:
+            #with arcpy.da.UpdateCursor(geodatabase + '/InputPoint',
+            #                           ['SHAPE@XY', 'InputPointID', 'CoordinatesObscured', 'Accuracy'],
+            #                           "DatasetSourceUniqueID = '" + str(file_line[field_dict['unique_id']]) +
+            #                           "' AND InputDatasetID = " + str(input_dataset_id)) as cursor:
             with arcpy.da.UpdateCursor(geodatabase + '/InputPoint',
-                                       ['SHAPE@XY', 'InputPointID', 'CoordinatesObscured', 'Accuracy'],
-                                       "DatasetSourceUniqueID = '" + str(file_line[field_dict['unique_id']]) +
-                                       "' AND InputDatasetID = " + str(input_dataset_id)) as cursor:
+                                       ['SHAPE@XY', 'CoordinatesObscured', 'Accuracy', 'InputDatasetID'],
+                                       "InputPointID = " +
+                                       str(id_dict[str(file_line[field_dict['unique_id']])])) as cursor:
                 for row in EBARUtils.updateCursor(cursor):
-                    input_point_id = row['InputPointID']
-                    cursor.updateRow([output_point, input_point_id, coordinates_obscured, accuracy])
+                    #input_point_id = row['InputPointID']
+                    #cursor.updateRow([output_point, input_point_id, coordinates_obscured, accuracy])
+                    cursor.updateRow([output_point, coordinates_obscured, accuracy, input_dataset_id])
                 del row
-            return input_point_id, 'updated'
+            return id_dict[str(file_line[field_dict['unique_id']])], 'updated'
         else:
             # insert, set new id and return
             point_fields = ['SHAPE@XY', 'InputDatasetID', 'DatasetSourceUniqueID', 'URI', 'License', 'SpeciesID',
