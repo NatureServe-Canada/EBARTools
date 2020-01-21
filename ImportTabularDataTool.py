@@ -214,6 +214,7 @@ class ImportTabularDataTool:
                 if (file_line[field_dict['private_longitude']] not in ('NA', '') and
                     file_line[field_dict['private_latitude']] not in ('NA', '')):
                     private_coords = True
+                    coordinates_obscured = False
                     input_point = arcpy.Point(float(file_line[field_dict['private_longitude']]),
                                               float(file_line[field_dict['private_latitude']]))
         if not private_coords:
@@ -243,6 +244,7 @@ class ImportTabularDataTool:
                     if accuracy > EBARUtils.worst_accuracy:
                         return None, 'inaccurate'
         else:
+            # provided accuracy is not relevant for obscured data, estimate based on 0.2 degree square
             accuracy = EBARUtils.estimateAccuracy(input_point.Y)
 
         # MaxDate
@@ -293,9 +295,9 @@ class ImportTabularDataTool:
                     if row:
                         del row
                     return id_dict[str(file_line[field_dict['unique_id']])], 'deleted'
-            if coordinates_obscured and private_coords:
-                # we don't know if private_coords were recorded last time, so update
-                update = True
+            #if coordinates_obscured and private_coords:
+            #    # we don't know if private_coords were recorded last time, so update
+            #    update = True
             #if not coordinates_obscured:
             #    # check if it has become unobscured
             #    with arcpy.da.SearchCursor(geodatabase + '/InputPoint', ['CoordinatesObscured'],
@@ -306,6 +308,17 @@ class ImportTabularDataTool:
             #            update = row['CoordinatesObscured']
             #        if row:
             #            del row
+            if private_coords:
+                # check if it was previously obscured, and if so update
+                with arcpy.da.SearchCursor(geodatabase + '/InputPoint', ['CoordinatesObscured'],
+                                           "InputPointID = " +
+                                           str(id_dict[str(file_line[field_dict['unique_id']])])) as cursor:
+                    row = None
+                    for row in EBARUtils.searchCursor(cursor):
+                        update = row['CoordinatesObscured']
+                    if row:
+                        del row
+
             if not update:
                 # existing record that does not need to be updated
                 return id_dict[str(file_line[field_dict['unique_id']])], 'duplicate'
