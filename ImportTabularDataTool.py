@@ -337,13 +337,15 @@ class ImportTabularDataTool:
             #                           "DatasetSourceUniqueID = '" + str(file_line[field_dict['unique_id']]) +
             #                           "' AND InputDatasetID = " + str(input_dataset_id)) as cursor:
             with arcpy.da.UpdateCursor(geodatabase + '/InputPoint',
-                                       ['SHAPE@XY', 'CoordinatesObscured', 'Accuracy', 'InputDatasetID'],
+                                       ['SHAPE@XY', 'InputDatasetID', 'URI', 'License', 'SpeciesID', 'SynonymID',
+                                        'MaxDate', 'CoordinatesObscured', 'Accuracy', 'IndividualCount'],
                                        "InputPointID = " +
                                        str(id_dict[str(file_line[field_dict['unique_id']])])) as cursor:
                 for row in EBARUtils.updateCursor(cursor):
                     #input_point_id = row['InputPointID']
                     #cursor.updateRow([output_point, input_point_id, coordinates_obscured, accuracy])
-                    cursor.updateRow([output_point, coordinates_obscured, accuracy, input_dataset_id])
+                    cursor.updateRow([output_point, input_dataset_id, uri, license, species_id, synonym_id, max_date,
+                                      coordinates_obscured, accuracy, individual_count])
                 del row
             return id_dict[str(file_line[field_dict['unique_id']])], 'updated'
         else:
