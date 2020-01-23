@@ -421,10 +421,11 @@ def GetBuffer(accuracy):
                     summary = ''
                     presence = update_row['Presence']
                     for search_row in EBARUtils.searchCursor(search_cursor):
-                        if len(summary) > 0:
+                        if len(summary) == 0:
+                            summary = 'Input records - '
+                        else:
                             summary += ', '
-                        summary += search_row[field_names[0]] + ': ' + \
-                            str(search_row[field_names[2]]) + ' input record(s)'
+                        summary += str(search_row[field_names[2]]) + ' ' + search_row[field_names[0]]
                         # high-grade Presence Expected to Present for some dataset sources
                         if presence == 'X' and (search_row[field_names[1]] in
                                                 ('Element Occurrences', 'Source Features', 'Species Observations')):
@@ -495,16 +496,17 @@ def GetBuffer(accuracy):
                 with arcpy.da.SearchCursor(temp_overall_countby_source, field_names) as search_cursor:
                     summary = ''
                     for search_row in EBARUtils.searchCursor(search_cursor):
-                        if len(summary) > 0:
+                        if len(summary) == 0:
+                            summary = 'Input records - '
+                        else:
                             summary += ', '
-                        summary += search_row[field_names[0]] + ': ' + \
-                            str(search_row[field_names[1]]) + ' input record(s)'
+                        summary += str(search_row[field_names[1]]) + ' ' + search_row[field_names[0]]
                     del search_row
-                notes = 'Primary Species: ' + param_species
+                notes = 'Primary Species - ' + param_species
                 if len(secondary_names) > 0:
-                    notes += '; Synonyms: ' + secondary_names
+                    notes += '; Synonyms - ' + secondary_names
                 if additional_input_records > 0:
-                    '; Additional Input Records: ' + str(additional_input_records)
+                    '; Additional Input Records - ' + str(additional_input_records)
                 update_cursor.updateRow([datetime.datetime.now(), summary, notes])
 
         # generate TOC entry and actual map!!!
