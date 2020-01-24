@@ -34,6 +34,8 @@ class ImportTabularDataTool:
         ## debugging/testing
         #print(locale.getpreferredencoding())
         #print(str(EBARUtils.estimateAccuracy(48.0, 0.0003)))
+        #print(str(EBARUtils.estimateAccuracy(48.0, 0.002)))
+        #print(str(EBARUtils.estimateAccuracy(48.0, 0.001)))
         #print(str(EBARUtils.estimateAccuracy(80.0, 0.2)))
         #print(str(EBARUtils.estimateAccuracy(40.0, 0.2)))
         #return
