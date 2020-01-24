@@ -20,7 +20,7 @@ import arcpy
 import io
 import csv
 import datetime
-#import locale
+import locale
 import EBARUtils
 import TabularFieldMapping
 
@@ -31,9 +31,11 @@ class ImportTabularDataTool:
         pass
 
     def RunImportTabularDataTool(self, parameters, messages):
-        # debugging/testing
+        ## debugging/testing
         #print(locale.getpreferredencoding())
-        #print(str(EBARUtils.estimateAccuracy(80.0)))
+        #print(str(EBARUtils.estimateAccuracy(48.0, 0.0003)))
+        #print(str(EBARUtils.estimateAccuracy(80.0, 0.2)))
+        #print(str(EBARUtils.estimateAccuracy(40.0, 0.2)))
         #return
 
         # check out any needed extension licenses
@@ -245,7 +247,7 @@ class ImportTabularDataTool:
                         return None, 'inaccurate'
         else:
             # provided accuracy is not relevant for obscured data, estimate based on 0.2 degree square
-            accuracy = EBARUtils.estimateAccuracy(input_point.Y)
+            accuracy = EBARUtils.estimateAccuracy(input_point.Y, 0.2)
 
         # MaxDate
         max_date = None

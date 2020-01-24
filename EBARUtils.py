@@ -21,10 +21,13 @@ worst_accuracy = 32000
 # WKIDs for datums/SRSs
 srs_dict = {'North America Albers Equal Area Conic': 102008,
             'WGS84': 4326,
+            'WGS 1984': 4326,
             'World Geodetic System 1984': 4326,
             'NAD83': 4269,
+            'NAD 1983': 4269,
             'North American Datum 1983': 4269,
             'NAD27': 4267,
+            'NAD 1927': 4267,
             'North American Datum 1927': 4267}
 
 
@@ -321,12 +324,16 @@ def extractDate(date_str):
     return ret_date
 
 
-def estimateAccuracy(latitude):
-    """calculate the diagonal of a square 0.2 x 0.2 degrees at the provided latitude"""
-    # create diagonal line 0.2 degrees x 0.2 degrees
+def estimateAccuracy(latitude, degrees):
+    """calculate the diagonal in metres of a square sized input_degrees x input_degrees at the provided latitude"""
+    # create diagonal line input_degrees x input_degrees
     # start with lat/lon points
-    pta_wgs84 = arcpy.PointGeometry(arcpy.Point(-95.9, latitude + 0.1), arcpy.SpatialReference(srs_dict['WGS84']))
-    ptb_wgs84 = arcpy.PointGeometry(arcpy.Point(-96.1, latitude - 0.1), arcpy.SpatialReference(srs_dict['WGS84']))
+    pta_wgs84 = arcpy.PointGeometry(arcpy.Point(-96.0 + (degrees / 2.0),
+                                                latitude + (degrees / 2.0)),
+                                    arcpy.SpatialReference(srs_dict['WGS84']))
+    ptb_wgs84 = arcpy.PointGeometry(arcpy.Point(-96.0 - (degrees / 2.0),
+                                                latitude - (degrees / 2.0)),
+                                    arcpy.SpatialReference(srs_dict['WGS84']))
     # project to metres
     pta_albers = pta_wgs84.projectAs(arcpy.SpatialReference(srs_dict['North America Albers Equal Area Conic']))
     ptb_albers = ptb_wgs84.projectAs(arcpy.SpatialReference(srs_dict['North America Albers Equal Area Conic']))
