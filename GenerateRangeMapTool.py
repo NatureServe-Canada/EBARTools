@@ -480,7 +480,7 @@ def GetBuffer(accuracy):
                     if search_row['SHORT_CITATION_AUTHOR']:
                         secondary_names += ' (' + search_row['SHORT_CITATION_AUTHOR']
                         if search_row['SHORT_CITATION_YEAR']:
-                            secondary_names += ' (' + str(int(search_row['SHORT_CITATION_YEAR']))
+                            secondary_names += ', ' + str(int(search_row['SHORT_CITATION_YEAR']))
                         secondary_names += ')'
                 if found:
                     del search_row
