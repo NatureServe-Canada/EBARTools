@@ -502,17 +502,17 @@ def GetBuffer(accuracy):
                             summary += ', '
                         summary += str(search_row[field_names[1]]) + ' ' + search_row[field_names[0]]
                     del search_row
-                #notes = 'Primary Species - ' + param_species
-                #if len(secondary_names) > 0:
-                #    notes += '; Synonyms - ' + secondary_names
-                #if additional_input_records > 0:
-                #    '; Additional Input Records - ' + str(additional_input_records)
-                notes = None
-                summary += '\r\n\r\nPrimary Species - ' + param_species
+                notes = 'Primary Species - ' + param_species
                 if len(secondary_names) > 0:
-                    summary += '; Synonyms - ' + secondary_names
+                    notes += '; Synonyms - ' + secondary_names
                 if additional_input_records > 0:
-                    summary += '; Additional Input Records - ' + str(additional_input_records)
+                    notes += '; Additional Input Records - ' + str(additional_input_records)
+                #notes = None
+                #summary += '\r\n\r\nPrimary Species - ' + param_species
+                #if len(secondary_names) > 0:
+                #    summary += '; Synonyms - ' + secondary_names
+                #if additional_input_records > 0:
+                #    summary += '; Additional Input Records - ' + str(additional_input_records)
                 update_cursor.updateRow([datetime.datetime.now(), summary, notes])
 
         # generate TOC entry and actual map!!!

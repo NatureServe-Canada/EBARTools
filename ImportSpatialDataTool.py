@@ -143,6 +143,7 @@ class ImportSpatialDataTool:
         inaccurate = 0
         duplicates = 0
         no_species_match = 0
+        bad_date = 0
         no_match_list = []
         with arcpy.da.UpdateCursor('import_features',
                                    [field_dict['unique_id'], field_dict['scientific_name'], 'SpeciesID', 'SynonymID',
@@ -266,6 +267,8 @@ class ImportSpatialDataTool:
                                 # extract date from text
                                 max_date = EBARUtils.extractDate(row[field_dict['max_date']].strip())
                         cursor.updateRow([row[field_dict['max_date']], max_date])
+                        if not max_date:
+                            bad_date += 1
                     del row
                 EBARUtils.displayMessage(messages, 'Max Date pre-processed ' + str(count))
 
@@ -332,6 +335,7 @@ class ImportSpatialDataTool:
         EBARUtils.displayMessage(messages,
                                  'Accuracy worse than ' + str(EBARUtils.worst_accuracy) + ' m - ' + str(inaccurate))
         EBARUtils.displayMessage(messages, 'Duplicates - ' + str(duplicates))
+        EBARUtils.displayMessage(messages, 'Imported without date - ' + str(bad_date))
         end_time = datetime.datetime.now()
         EBARUtils.displayMessage(messages, 'End time: ' + str(end_time))
         elapsed_time = end_time - start_time

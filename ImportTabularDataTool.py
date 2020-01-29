@@ -121,12 +121,13 @@ class ImportTabularDataTool:
         updates = 0
         non_research = 0
         deleted = 0
+        bad_date = 0
         try:
             for file_line in reader:
                 # check/add point for current line
-                input_point_id, status = self.CheckAddPoint(id_dict, param_geodatabase, input_dataset_id, species_dict,
-                                                            synonym_dict, synonym_species_dict, file_line,
-                                                            field_dict, no_match_list, messages)
+                input_point_id, status, max_date = self.CheckAddPoint(id_dict, param_geodatabase, input_dataset_id,
+                                                                      species_dict, synonym_dict, synonym_species_dict,
+                                                                      file_line, field_dict, no_match_list, messages)
                 # increment/report counts
                 count += 1
                 if count % 1000 == 0:
@@ -149,6 +150,8 @@ class ImportTabularDataTool:
                 elif status == 'deleted':
                     non_research += 1
                     deleted += 1
+                if status in ('new', 'updated') and not max_date:
+                    bad_date += 1
         except:
             # output error messages in exception so that summary of processing thus far gets displayed in finally
             EBARUtils.displayMessage(messages, '\nERROR processing file row ' + str(count + 1))
@@ -175,6 +178,7 @@ class ImportTabularDataTool:
             EBARUtils.displayMessage(messages, 'Duplicates updated - ' + str(updates))
             EBARUtils.displayMessage(messages, 'Non-research - ' + str(non_research))
             EBARUtils.displayMessage(messages, 'Non-research deleted - ' + str(deleted))
+            EBARUtils.displayMessage(messages, 'Imported without date - ' + str(bad_date))
             end_time = datetime.datetime.now()
             EBARUtils.displayMessage(messages, 'End time: ' + str(end_time))
             elapsed_time = end_time - start_time
@@ -193,7 +197,7 @@ class ImportTabularDataTool:
                 no_match_list.append(file_line[field_dict['scientific_name']])
                 EBARUtils.displayMessage(messages,
                                          'WARNING: No match for species ' + file_line[field_dict['scientific_name']])
-            return None, 'no_species_match'
+            return None, 'no_species_match', None
         else:
             synonym_id = None
             if file_line[field_dict['scientific_name']] in species_dict:
@@ -237,7 +241,7 @@ class ImportTabularDataTool:
                 arcpy.SpatialReference(EBARUtils.srs_dict['North America Albers Equal Area Conic']))
             output_point = output_geometry.lastPoint
         if not output_point:
-            return None, 'no_coords'
+            return None, 'no_coords', None
 
         # Accuracy
         accuracy = None
@@ -246,7 +250,7 @@ class ImportTabularDataTool:
                 if file_line[field_dict['accuracy']] not in ('NA', ''):
                     accuracy = round(float(file_line[field_dict['accuracy']]))
                     if accuracy > EBARUtils.worst_accuracy:
-                        return None, 'inaccurate'
+                        return None, 'inaccurate', None
         else:
             # provided accuracy is not relevant for obscured data, estimate based on 0.2 degree square
             accuracy = EBARUtils.estimateAccuracy(input_point.Y, 0.2)
@@ -274,7 +278,7 @@ class ImportTabularDataTool:
         # reject fossils records
         if field_dict['basis_of_record']:
             if file_line[field_dict['basis_of_record']] == 'FOSSIL_SPECIMEN':
-                return None, 'fossil'
+                return None, 'fossil', None
 
         # grade
         quality_grade = 'research'
@@ -298,7 +302,7 @@ class ImportTabularDataTool:
                         cursor.deleteRow()
                     if row:
                         del row
-                    return id_dict[str(file_line[field_dict['unique_id']])], 'deleted'
+                    return id_dict[str(file_line[field_dict['unique_id']])], 'deleted', None
             #if coordinates_obscured and private_coords:
             #    # we don't know if private_coords were recorded last time, so update
             #    update = True
@@ -325,7 +329,7 @@ class ImportTabularDataTool:
 
             if not update:
                 # existing record that does not need to be updated
-                return id_dict[str(file_line[field_dict['unique_id']])], 'duplicate'
+                return id_dict[str(file_line[field_dict['unique_id']])], 'duplicate', None
 
         # don't add non research grade
         if quality_grade != 'research':
@@ -364,7 +368,7 @@ class ImportTabularDataTool:
                     cursor.updateRow([output_point, input_dataset_id, uri, license, species_id, synonym_id, max_date,
                                       coordinates_obscured, accuracy, individual_count])
                 del row
-            return id_dict[str(file_line[field_dict['unique_id']])], 'updated'
+            return id_dict[str(file_line[field_dict['unique_id']])], 'updated', max_date
         else:
             # insert, set new id and return
             point_fields = ['SHAPE@XY', 'InputDatasetID', 'DatasetSourceUniqueID', 'URI', 'License', 'SpeciesID',
@@ -376,7 +380,7 @@ class ImportTabularDataTool:
                                                    individual_count])
             EBARUtils.setNewID(geodatabase + '/InputPoint', 'InputPointID', 'OBJECTID = ' + str(input_point_id))
             id_dict[str(file_line[field_dict['unique_id']])] = input_point_id
-            return input_point_id, 'new'
+            return input_point_id, 'new', max_date
 
 
 # controlling process
