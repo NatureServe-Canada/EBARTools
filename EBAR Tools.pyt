@@ -18,6 +18,7 @@ import GenerateRangeMapTool
 import ListElementNationalIDsTool
 import SyncSpeciesListTool
 import AddSynonymsTool
+import ApplyExternalRangeReviewTool
 import EBARUtils
 import datetime
 import locale
@@ -31,7 +32,7 @@ class Toolbox(object):
 
         # List of tool classes associated with this toolbox
         self.tools = [ImportTabularData, ImportSpatialData, GenerateRangeMap, ListElementNationalIDs, SyncSpeciesList,
-                      AddSynonyms]
+                      AddSynonyms, ApplyExternalRangeReview]
 
 
 class ImportTabularData(object):
@@ -388,8 +389,8 @@ class ListElementNationalIDs(object):
 class SyncSpeciesList(object):
     def __init__(self):
         """Define the tool (tool name is the name of the class)."""
-        self.label='Sync Species List'
-        self.description='Synchronize the BIOTIOCS_NATIONAL_ELMENT and Species tables with Biotics'
+        self.label = 'Sync Species List'
+        self.description = 'Synchronize the BIOTIOCS_NATIONAL_ELMENT and Species tables with Biotics'
         self.canRunInBackground = True
 
     def getParameterInfo(self):
@@ -439,8 +440,8 @@ class SyncSpeciesList(object):
 class AddSynonyms(object):
     def __init__(self):
         """Define the tool (tool name is the name of the class)."""
-        self.label='Add Synonyms'
-        self.description='Add BIOTICS Synonyms not already in the Species or Synonym tables'
+        self.label = 'Add Synonyms'
+        self.description = 'Add BIOTICS Synonyms not already in the Species or Synonym tables'
         self.canRunInBackground = True
 
     def getParameterInfo(self):
@@ -484,4 +485,105 @@ class AddSynonyms(object):
         """The source code of the tool."""
         ast = AddSynonymsTool.AddSynonymsTool()
         ast.RunAddSynonymsTool(parameters, messages)
+        return
+
+
+class ApplyExternalRangeReview(object):
+    def __init__(self):
+        """Define the tool (tool name is the name of the class)."""
+        self.label = 'Apply External Range Review'
+        self.description = 'Create review records for an exising range map based on third-party polygons'
+        self.canRunInBackground = True
+
+    def getParameterInfo(self):
+        """Define parameter definitions"""
+        # Geodatabase
+        param_geodatabase = arcpy.Parameter(
+            displayName='Geodatabase',
+            name='geodatabase',
+            datatype='DEWorkspace',
+            parameterType='Required',
+            direction='Input')
+        param_geodatabase.filter.list = ['Local Database', 'Remote Database']
+
+        # Species
+        param_species = arcpy.Parameter(
+            displayName='Species Scientific Name',
+            name='species',
+            datatype='GPString',
+            parameterType='Required',
+            direction='Input')
+
+        # Range Version
+        param_version = arcpy.Parameter(
+            displayName='Range Version',
+            name='range_version',
+            datatype='GPString',
+            parameterType='Required',
+            direction='Input')
+        param_version.value = '1.0'
+
+        # Range Stage
+        param_stage = arcpy.Parameter(
+            displayName='Range Stage',
+            name='range_stage',
+            datatype='GPString',
+            parameterType='Required',
+            direction='Input')
+
+        # External Range Polygons
+        param_external_range_polygons = arcpy.Parameter(
+            displayName='External Range Polygons',
+            name='external_range_polygons',
+            datatype='GPFeatureLayer',
+            parameterType='Required',
+            direction='Input')
+        param_external_range_polygons.filter.list = ['Polygon', 'MultiPatch']
+
+        # Scientific Name Field
+        param_scientific_name_field = arcpy.Parameter(
+            displayName='Scientific Name Field',
+            name='scientific_name_field',
+            datatype='GPString',
+            parameterType='Optional',
+            direction='Input')
+
+        # Ecoshape Name Field
+        param_ecoshape_name_field = arcpy.Parameter(
+            displayName='Ecoshape Name Field',
+            name='ecoshape_name_field',
+            datatype='GPString',
+            parameterType='Optional',
+            direction='Input')
+
+        # Review Label
+        param_review_label = arcpy.Parameter(
+            displayName='Review Label',
+            name='review_label',
+            datatype='GPString',
+            parameterType='Required',
+            direction='Input')
+
+        params = [param_geodatabase, param_species, param_version, param_stage, param_external_range_polygons,
+                  param_scientific_name_field, param_ecoshape_name_field, param_review_label]
+        return params
+
+    def isLicensed(self):
+        """Set whether tool is licensed to execute."""
+        return True
+
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal validation is performed.  This method is 
+        called whenever a parameter has been changed."""
+        return
+
+    def updateMessages(self, parameters):
+        """Modify the messages created by internal validation for each tool parameter.  This method is called 
+        after internal validation."""
+        return
+
+    def execute(self, parameters, messages):
+        """The source code of the tool."""
+        aerr = ApplyExternalRangeReviewTool.ApplyExternalRangeReviewTool()
+        aerr.RunApplyExternalRangeReviewTool(parameters, messages)
         return
