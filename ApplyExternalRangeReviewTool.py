@@ -50,6 +50,10 @@ class ApplyExternalRangeReviewTool:
         param_scientific_name_field = parameters[5].valueAsText
         param_ecoshape_name_field = parameters[6].valueAsText
         param_review_label = parameters[7].valueAsText
+        param_jurisdictions_covered = parameters[8].valueAsText
+        # convert to Python list
+        param_jurisdictions_covered = param_jurisdictions_covered.replace("'", '')
+        param_jurisdictions_covered = param_jurisdictions_covered.split(';')
         # use passed geodatabase as workspace (still seems to go to default geodatabase)
         arcpy.env.workspace = param_geodatabase
 
@@ -87,6 +91,16 @@ class ApplyExternalRangeReviewTool:
                 return
                 #raise arcpy.ExecuteError
 
+        # build list of jurisdictions
+        EBARUtils.displayMessage(messages, 'Building list of jurisdictions')
+        jur_dict = {}
+        with arcpy.da.SearchCursor(param_geodatabase + '/Jurisdiction',
+                                   ['JurisdictionID', 'JurisdictionName']) as cursor:
+            for row in EBARUtils.searchCursor(cursor):
+                jur_dict[row['JurisdictionID']] = row['JurisdictionName']
+            if len(jur_dict) > 0:
+                del row
+
         # subset external polygons (by species name if given)
         arcpy.MakeFeatureLayer_management(param_external_range_polygons, 'external_polygons_layer')
         if param_scientific_name_field:
@@ -116,7 +130,8 @@ class ApplyExternalRangeReviewTool:
                 review_id = row['ReviewID']
             del row
 
-        # check each RangeMapEcoshape and create EcoshapeReview Remove record for any not in external polygons
+        # check each RangeMapEcoshape and create EcoshapeReview Remove record for any in covered jurisdictions but not
+        # in external polygons
         EBARUtils.displayMessage(messages, 'Creating EcoshapeReview remove records')
         remove_count = 0
         if param_ecoshape_name_field:
@@ -130,10 +145,12 @@ class ApplyExternalRangeReviewTool:
             # check against EBAR ecoshapes
             with arcpy.da.SearchCursor('ecoshapes_layer',
                                        [table_name_prefix + 'RangeMapEcoshape.RangeMapID',
+                                        table_name_prefix + 'Ecoshape.JurisdictionID',
                                         table_name_prefix + 'Ecoshape.EcoshapeID',
                                         table_name_prefix + 'Ecoshape.EcoshapeName']) as search_cursor:
                 for row in EBARUtils.searchCursor(search_cursor):
                     if (row[table_name_prefix + 'RangeMapEcoshape.RangeMapID'] == range_map_id and
+                        jur_dict[row[table_name_prefix + 'Ecoshape.JurisdictionID']] in param_jurisdictions_covered and
                         row[table_name_prefix + 'Ecoshape.EcoshapeName'] not in external_ecoshapes):
                         with arcpy.da.InsertCursor(param_geodatabase + '/EcoshapeReview',
                                                    ['EcoshapeID', 'ReviewID', 'RemovalReason', 'EcoshapeReviewNotes',

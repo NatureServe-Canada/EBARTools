@@ -565,8 +565,18 @@ class ApplyExternalRangeReview(object):
             parameterType='Required',
             direction='Input')
 
+        # Jurisdictions Covered
+        param_jurisdictions_covered = arcpy.Parameter(
+            displayName='Jurisdictions Covered',
+            name='jurisdictions_covered',
+            datatype='GPString',
+            parameterType='Required',
+            direction='Input',
+            multiValue=True)
+
         params = [param_geodatabase, param_species, param_version, param_stage, param_external_range_polygons,
-                  param_scientific_name_field, param_ecoshape_name_field, param_review_label]
+                  param_scientific_name_field, param_ecoshape_name_field, param_review_label,
+                  param_jurisdictions_covered]
         return params
 
     def isLicensed(self):
@@ -576,6 +586,17 @@ class ApplyExternalRangeReview(object):
     def updateParameters(self, parameters):
         """Modify the values and properties of parameters before internal validation is performed.  This method is 
         called whenever a parameter has been changed."""
+        # build list of jurisdictions
+        if parameters[0].altered and parameters[0].value:
+            param_geodatabase = parameters[0].valueAsText
+            jur_list = []
+            with arcpy.da.SearchCursor(param_geodatabase + '/Jurisdiction', ['JurisdictionName'],
+                                       sql_clause=(None,'ORDER BY JurisdictionName')) as cursor:
+                for row in EBARUtils.searchCursor(cursor):
+                    jur_list.append(row['JurisdictionName'])
+                if len(jur_list) > 0:
+                    del row
+            parameters[8].filter.list = jur_list
         return
 
     def updateMessages(self, parameters):
