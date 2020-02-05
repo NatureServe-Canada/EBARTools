@@ -351,7 +351,8 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_import_feature_class = arcpy.Parameter()
-    param_import_feature_class.value = 'C:/GIS/EBAR/CDN_CDC_Data/Atlantic_Canada/ebar.gdb/ACCDC_NS_ALL_NLS_191106_ebarSpp'
+    param_import_feature_class.value = 'C:/GIS/EBAR/CDN_CDC_Data/Atlantic_Canada/ebar.gdb' + \
+        '/ACCDC_NS_ALL_NLS_191106_ebarSpp'
     param_dataset_name = arcpy.Parameter()
     param_dataset_name.value = 'Nova Scotia Observations'
     param_dataset_source = arcpy.Parameter()

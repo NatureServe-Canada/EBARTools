@@ -98,17 +98,20 @@ class ApplyExternalRangeReviewTool:
         arcpy.AddJoin_management('ecoshapes_layer', 'EcoshapeID', param_geodatabase + '/RangeMapEcoshape',
                                  'EcoshapeID', 'KEEP_COMMON')
         arcpy.SelectLayerByAttribute_management('ecoshapes_layer', 'NEW_SELECTION',
-                                                table_name_prefix + 'RangeMapEcoshape.RangeMapID = ' + str(range_map_id))
+                                                table_name_prefix + 'RangeMapEcoshape.RangeMapID = ' + \
+                                                    str(range_map_id))
 
         # create Review record
         # how to dynamically get username (only applicable when connected to enterprise gdb/service???
         EBARUtils.displayMessage(messages, 'Creating Review record')
         with arcpy.da.InsertCursor(param_geodatabase + '/Review',
-                                   ['RangeMapID', 'Username', 'DateCompleted']) as cursor:
-            object_id = cursor.insertRow([range_map_id, 'rgreenens', datetime.datetime.now()])
+                                   ['RangeMapID', 'Username', 'DateCompleted', 'ReviewNotes']) as cursor:
+            object_id = cursor.insertRow([range_map_id, 'rgreenens', datetime.datetime.now(),
+                                          param_review_label + ' auto-applied'])
         # review_id is an auto-generated value on the server!
         #EBARUtils.setNewID(param_geodatabase + '/Review', 'ReviewID', 'OBJECTID = ' + str(review_id))
-        with arcpy.da.SearchCursor(param_geodatabase + '/Review', ['ReviewID'], 'OBJECTID = ' + str(object_id)) as search_cursor:
+        with arcpy.da.SearchCursor(param_geodatabase + '/Review', ['ReviewID'],
+                                   'OBJECTID = ' + str(object_id)) as search_cursor:
             for row in EBARUtils.searchCursor(search_cursor):
                 review_id = row['ReviewID']
             del row

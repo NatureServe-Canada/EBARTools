@@ -530,6 +530,7 @@ class ApplyExternalRangeReview(object):
             datatype='GPString',
             parameterType='Required',
             direction='Input')
+        param_stage.value = 'Auto-generated'
 
         # External Range Polygons
         param_external_range_polygons = arcpy.Parameter(
