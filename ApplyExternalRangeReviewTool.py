@@ -52,8 +52,8 @@ class ApplyExternalRangeReviewTool:
         param_review_label = parameters[7].valueAsText
         param_jurisdictions_covered = parameters[8].valueAsText
         # convert to Python list
-        param_jurisdictions_covered = param_jurisdictions_covered.replace("'", '')
-        param_jurisdictions_covered = param_jurisdictions_covered.split(';')
+        param_jurisdictions_list = param_jurisdictions_covered.replace("'", '')
+        param_jurisdictions_list = param_jurisdictions_list.split(';')
         # use passed geodatabase as workspace (still seems to go to default geodatabase)
         arcpy.env.workspace = param_geodatabase
 
@@ -93,22 +93,34 @@ class ApplyExternalRangeReviewTool:
 
         # build list of jurisdictions
         EBARUtils.displayMessage(messages, 'Building list of jurisdictions')
-        jur_dict = {}
+        jur_id_dict = {}
+        jur_name_dict = {}
         with arcpy.da.SearchCursor(param_geodatabase + '/Jurisdiction',
                                    ['JurisdictionID', 'JurisdictionName']) as cursor:
             for row in EBARUtils.searchCursor(cursor):
-                jur_dict[row['JurisdictionID']] = row['JurisdictionName']
-            if len(jur_dict) > 0:
+                jur_id_dict[row['JurisdictionID']] = row['JurisdictionName']
+                jur_name_dict[row['JurisdictionName']] = row['JurisdictionID']
+            if len(jur_id_dict) > 0:
                 del row
+        # convert names to comma-separated list of ids
+        jur_ids_comma = ''
+        for jur_name in param_jurisdictions_list:
+            if len(jur_ids_comma) > 0:
+                jur_ids_comma += ','
+            jur_ids_comma += str(jur_name_dict[jur_name])
 
         # subset external polygons (by species name if given)
+        EBARUtils.displayMessage(messages, 'Selecting external polygons for species')
         arcpy.MakeFeatureLayer_management(param_external_range_polygons, 'external_polygons_layer')
         if param_scientific_name_field:
             arcpy.SelectLayerByAttribute_management('external_polygons_layer', 'NEW_SELECTION',
                                                     param_scientific_name_field + "= '" + param_species + "'")
 
         # subset RangeMapEcoshapes (by range map)
+        EBARUtils.displayMessage(messages, 'Selecting RangeMapEcoshapes')
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/Ecoshape', 'ecoshapes_layer')
+        #arcpy.AddJoin_management('ecoshapes_layer', 'JurisdictionID', param_geodatabase + '/Jurisdiction',
+        #                         'JurisdictionID', 'KEEP_COMMON')
         arcpy.AddJoin_management('ecoshapes_layer', 'EcoshapeID', param_geodatabase + '/RangeMapEcoshape',
                                  'EcoshapeID', 'KEEP_COMMON')
         arcpy.SelectLayerByAttribute_management('ecoshapes_layer', 'NEW_SELECTION',
@@ -122,8 +134,8 @@ class ApplyExternalRangeReviewTool:
                                    ['RangeMapID', 'Username', 'DateCompleted', 'ReviewNotes']) as cursor:
             object_id = cursor.insertRow([range_map_id, 'rgreenens', datetime.datetime.now(),
                                           param_review_label + ' auto-applied'])
-        # review_id is an auto-generated value on the server!
-        #EBARUtils.setNewID(param_geodatabase + '/Review', 'ReviewID', 'OBJECTID = ' + str(review_id))
+        # review_id is an auto-generated value on the server (will always be -1 in local gdb)
+        #EBARUtils.setNewID(param_geodatabase + '/Review', 'ReviewID', 'OBJECTID = ' + str(object_id))
         with arcpy.da.SearchCursor(param_geodatabase + '/Review', ['ReviewID'],
                                    'OBJECTID = ' + str(object_id)) as search_cursor:
             for row in EBARUtils.searchCursor(search_cursor):
@@ -150,7 +162,7 @@ class ApplyExternalRangeReviewTool:
                                         table_name_prefix + 'Ecoshape.EcoshapeName']) as search_cursor:
                 for row in EBARUtils.searchCursor(search_cursor):
                     if (row[table_name_prefix + 'RangeMapEcoshape.RangeMapID'] == range_map_id and
-                        jur_dict[row[table_name_prefix + 'Ecoshape.JurisdictionID']] in param_jurisdictions_covered and
+                        jur_id_dict[row[table_name_prefix + 'Ecoshape.JurisdictionID']] in param_jurisdictions_list and
                         row[table_name_prefix + 'Ecoshape.EcoshapeName'] not in external_ecoshapes):
                         with arcpy.da.InsertCursor(param_geodatabase + '/EcoshapeReview',
                                                    ['EcoshapeID', 'ReviewID', 'RemovalReason', 'EcoshapeReviewNotes',
@@ -163,8 +175,49 @@ class ApplyExternalRangeReviewTool:
             #arcpy.SelectLayerByLocation_management('ecoshapes_layer', 'INTERSECT', 'external_polygons_layer')
             pass
            
+        # check each external polygon and create EcoshapeReview Add record for any in covered jurisdictions but not
+        # in RangeMapEcoshape
+        EBARUtils.displayMessage(messages, 'Creating EcoshapeReview add records')
+        add_count = 0
+        if param_ecoshape_name_field:
+            # read all ecoshapes (name not guaranteed to be unique!!!)
+            ecoshape_dict = {}
+            with arcpy.da.SearchCursor(param_geodatabase + '/Ecoshape',
+                                       ['EcoshapeName', 'EcoshapeID']) as search_cursor:
+                for row in EBARUtils.searchCursor(search_cursor):
+                    ecoshape_dict[row['EcoshapeName']] = row['EcoshapeID']
+                if len(ecoshape_dict) > 0:
+                    del row
+            # read ecoshapes in current range
+            range_ecoshapes = []
+            with arcpy.da.SearchCursor('ecoshapes_layer', [table_name_prefix + 'Ecoshape.EcoshapeName'],
+                                       table_name_prefix + \
+                                           'Ecoshape.JurisdictionID IN (' + jur_ids_comma + ')'
+                                       ) as search_cursor:
+                for row in EBARUtils.searchCursor(search_cursor):
+                    range_ecoshapes.append(row[table_name_prefix + 'Ecoshape.EcoshapeName'])
+                if len(range_ecoshapes) > 0:
+                    del row
+            # check against external ecoshapes
+            with arcpy.da.SearchCursor('external_polygons_layer',
+                                       [param_ecoshape_name_field]) as search_cursor:
+                for row in EBARUtils.searchCursor(search_cursor):
+                    if row[param_ecoshape_name_field] not in range_ecoshapes:
+                        # get ecoshape id (possibility of dup names!!!)
+                        with arcpy.da.InsertCursor(param_geodatabase + '/EcoshapeReview',
+                                                   ['EcoshapeID', 'ReviewID', 'RemovalReason', 'EcoshapeReviewNotes',
+                                                    'UseForMapGen', 'AddRemove', 'Username']) as cursor:
+                            cursor.insertRow([ecoshape_dict[row[param_ecoshape_name_field]], review_id, 'O',
+                                              'In ' + param_review_label, 1, 1, 'rgreenens'])
+                            add_count += 1
+        else:
+            # use intersect if no external ecoshape names that match EBAR ecoshape names???
+            #arcpy.SelectLayerByLocation_management('ecoshapes_layer', 'INTERSECT', 'external_polygons_layer')
+            pass
+
         # summary and end time
         EBARUtils.displayMessage(messages, str(remove_count) + ' EcshopeReview remove records created')
+        EBARUtils.displayMessage(messages, str(add_count) + ' EcshopeReview add records created')
         end_time = datetime.datetime.now()
         EBARUtils.displayMessage(messages, 'End time: ' + str(end_time))
         elapsed_time = end_time - start_time
@@ -179,7 +232,7 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_species = arcpy.Parameter()
-    param_species.value = 'Crataegus atrovirens'
+    param_species.value = 'Crataegus okennonii'
     param_version = arcpy.Parameter()
     param_version.value = '0.9'
     param_stage = arcpy.Parameter()
@@ -193,6 +246,9 @@ if __name__ == '__main__':
     param_ecoshape_name_field .value = 'ECOSECTION_NAME'
     param_review_label = arcpy.Parameter()
     param_review_label.value = 'BC expert review'
+    param_jurisdictions_covered = arcpy.Parameter()
+    param_jurisdictions_covered.value = "'British Columbia'"
     parameters = [param_geodatabase, param_species, param_version, param_stage, param_external_range_polygons,
-                  param_scientific_name_field, param_ecoshape_name_field, param_review_label]
+                  param_scientific_name_field, param_ecoshape_name_field, param_review_label,
+                  param_jurisdictions_covered]
     aerr.RunApplyExternalRangeReviewTool(parameters, None)
