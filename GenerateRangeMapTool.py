@@ -186,8 +186,8 @@ class GenerateRangeMapTool:
         else:
             # create RangeMap record
             with arcpy.da.InsertCursor('range_map_view',
-                                       ['SpeciesID', 'RangeVersion', 'RangeStage']) as cursor:
-                range_map_id = cursor.insertRow([species_id, param_version, param_stage])
+                                       ['SpeciesID', 'RangeVersion', 'RangeStage', 'IncludeInEBARReviewer']) as cursor:
+                range_map_id = cursor.insertRow([species_id, param_version, param_stage, 0])
             EBARUtils.setNewID(param_geodatabase + '/RangeMap', 'RangeMapID', 'OBJECTID = ' + str(range_map_id))
             EBARUtils.displayMessage(messages, 'Range Map record created')
 
