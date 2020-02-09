@@ -428,7 +428,8 @@ def GetBuffer(accuracy):
                         summary += str(search_row[field_names[2]]) + ' ' + search_row[field_names[0]]
                         # high-grade Presence Expected to Present for some dataset sources
                         if presence == 'X' and (search_row[field_names[1]] in
-                                                ('Element Occurrences', 'Source Features', 'Species Observations')):
+                                                ('Element Occurrences', 'Source Features', 'Species Observations',
+                                                 'Critical Habitat')):
                             presence = 'P'
                     del search_row
                 update_cursor.updateRow([update_row['EcoshapeID'], presence, summary])
