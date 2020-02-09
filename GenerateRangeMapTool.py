@@ -367,9 +367,66 @@ def GetBuffer(accuracy):
         arcpy.Statistics_analysis('pairwise_intersect_layer', temp_ecoshape_countby_dataset,
                                   [['InputPointID', 'COUNT']], ['EcoshapeID', 'InputDatasetID'])
 
+        # get ecoshape input counts by source
+        EBARUtils.displayMessage(messages, 'Counting Ecoshape Inputs by Dataset Source')
+        temp_ecoshape_countby_source = 'TempEcoshapeCountBySource' + str(start_time.year) + str(start_time.month) + \
+            str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
+        arcpy.AddJoin_management('pairwise_intersect_layer', 'InputDatasetID',
+                                 param_geodatabase + '/InputDataset', 'InputDatasetID', 'KEEP_COMMON')
+        arcpy.AddJoin_management('pairwise_intersect_layer', 'DatasetSourceID',
+                                 param_geodatabase + '/DatasetSource', 'DatasetSourceID', 'KEEP_COMMON')
+        arcpy.Statistics_analysis('pairwise_intersect_layer', temp_ecoshape_countby_source, [['InputPointID', 'COUNT']],
+                                  ['EcoshapeID', table_name_prefix + 'DatasetSource.DatasetSourceName',
+                                   table_name_prefix + 'DatasetSource.DatasetType'])
+        arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'DatasetSource')
+        arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'InputDataset')
+
+        # update range map ecoshapes with summary
+        # (also check if review(s) should remove, and high-grade presence for some polygon dataset sources)
+        ecoshape_reviews = 0
+        EBARUtils.displayMessage(messages, 'Updating Range Map Ecoshape records with summary')
+        with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape',
+                                   ['EcoshapeID', 'Presence', 'RangeMapEcoshapeNotes'],
+                                   'RangeMapID = ' + str(range_map_id)) as update_cursor:
+            for update_row in EBARUtils.updateCursor(update_cursor):
+                # check for ecoshape "remove" reviews
+                remove = False
+                with arcpy.da.SearchCursor(param_geodatabase + '/EcoshapeReview', ['OBJECTID'],
+                                           "UseForMapGen = 1 AND AddRemove = '2' AND EcoshapeID = " + \
+                                               str(update_row['EcoshapeID'])) as search_cursor:
+                    for search_row in EBARUtils.searchCursor(search_cursor):
+                        ecoshape_reviews += 1
+                        remove = True
+                if remove:
+                    del search_row
+                    update_cursor.deleteRow()
+                else:
+                    # kludge because arc ends up with different field names under Enterprise gdb after joining
+                    field_names = [f.name for f in arcpy.ListFields(temp_ecoshape_countby_source) if f.aliasName in
+                                   ['DatasetSourceName', 'DatasetType', 'FREQUENCY','frequency']]
+                    id_field_name = [f.name for f in arcpy.ListFields(temp_ecoshape_countby_source) if f.aliasName ==
+                                     'EcoshapeID'][0]
+                    with arcpy.da.SearchCursor(temp_ecoshape_countby_source, field_names,
+                                               id_field_name + ' = ' + str(update_row['EcoshapeID'])) as search_cursor:
+                        summary = ''
+                        presence = update_row['Presence']
+                        for search_row in EBARUtils.searchCursor(search_cursor):
+                            if len(summary) == 0:
+                                summary = 'Input records - '
+                            else:
+                                summary += ', '
+                            summary += str(search_row[field_names[2]]) + ' ' + search_row[field_names[0]]
+                            # high-grade Presence Expected to Present for some dataset sources
+                            if presence == 'X' and (search_row[field_names[1]] in
+                                                    ('Element Occurrences', 'Source Features', 'Species Observations',
+                                                     'Critical Habitat')):
+                                presence = 'P'
+                        del search_row
+                    update_cursor.updateRow([update_row['EcoshapeID'], presence, summary])
+            del update_row
+
         # create RangeMapEcoshapeInputDataset records based on summary
         EBARUtils.displayMessage(messages, 'Creating Range Map Ecoshape Input Dataset records')
-        ecoshape_summary = ''
         with arcpy.da.InsertCursor(param_geodatabase + '/RangeMapEcoshapeInputDataset',
                                    ['RangeMapEcoshapeID', 'InputDatasetID', 'InputDataSummary']) as insert_cursor:
             with arcpy.da.SearchCursor(param_geodatabase + '/RangeMapEcoshape', ['RangeMapEcoshapeID', 'EcoshapeID'],
@@ -389,51 +446,6 @@ def GetBuffer(accuracy):
                                    'RangeMapEcoshpInputDatasetID',
                                    'RangeMapEcoshapeID = ' + str(rme_row['RangeMapEcoshapeID']))
             del rme_row
-
-        # get ecoshape input counts by source
-        EBARUtils.displayMessage(messages, 'Counting Ecoshape Inputs by Dataset Source')
-        temp_ecoshape_countby_source = 'TempEcoshapeCountBySource' + str(start_time.year) + str(start_time.month) + \
-            str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
-        arcpy.AddJoin_management('pairwise_intersect_layer', 'InputDatasetID',
-                                 param_geodatabase + '/InputDataset', 'InputDatasetID', 'KEEP_COMMON')
-        arcpy.AddJoin_management('pairwise_intersect_layer', 'DatasetSourceID',
-                                 param_geodatabase + '/DatasetSource', 'DatasetSourceID', 'KEEP_COMMON')
-        arcpy.Statistics_analysis('pairwise_intersect_layer', temp_ecoshape_countby_source, [['InputPointID', 'COUNT']],
-                                  ['EcoshapeID', table_name_prefix + 'DatasetSource.DatasetSourceName',
-                                   table_name_prefix + 'DatasetSource.DatasetType'])
-        arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'DatasetSource')
-        arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'InputDataset')
-
-        # update range map ecoshapes with summary
-        # (also high-grade presence for some polygon dataset sources, and check if review(s) should remove)
-        EBARUtils.displayMessage(messages, 'Updating Range Map Ecoshape records with summary')
-        with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape',
-                                   ['EcoshapeID', 'Presence', 'RangeMapEcoshapeNotes'],
-                                   'RangeMapID = ' + str(range_map_id)) as update_cursor:
-            for update_row in EBARUtils.updateCursor(update_cursor):
-                # kludge because arc ends up with different field names under Enterprise gdb after joining
-                field_names = [f.name for f in arcpy.ListFields(temp_ecoshape_countby_source) if f.aliasName in
-                               ['DatasetSourceName', 'DatasetType', 'FREQUENCY','frequency']]
-                id_field_name = [f.name for f in arcpy.ListFields(temp_ecoshape_countby_source) if f.aliasName ==
-                                 'EcoshapeID'][0]
-                with arcpy.da.SearchCursor(temp_ecoshape_countby_source, field_names,
-                                           id_field_name + ' = ' + str(update_row['EcoshapeID'])) as search_cursor:
-                    summary = ''
-                    presence = update_row['Presence']
-                    for search_row in EBARUtils.searchCursor(search_cursor):
-                        if len(summary) == 0:
-                            summary = 'Input records - '
-                        else:
-                            summary += ', '
-                        summary += str(search_row[field_names[2]]) + ' ' + search_row[field_names[0]]
-                        # high-grade Presence Expected to Present for some dataset sources
-                        if presence == 'X' and (search_row[field_names[1]] in
-                                                ('Element Occurrences', 'Source Features', 'Species Observations',
-                                                 'Critical Habitat')):
-                            presence = 'P'
-                    del search_row
-                update_cursor.updateRow([update_row['EcoshapeID'], presence, summary])
-            del update_row
 
         # get overall input counts by source (using original inputs)
         EBARUtils.displayMessage(messages, 'Counting overall inputs by Dataset Source')
@@ -456,7 +468,6 @@ def GetBuffer(accuracy):
                                   [table_name_prefix + temp_all_inputs + '.SynonymID'])
         arcpy.RemoveJoin_management('all_inputs_layer', table_name_prefix + 'DatasetSource')
         arcpy.RemoveJoin_management('all_inputs_layer', table_name_prefix + 'InputDataset')
-
         # build list of unique IDs
         synonym_ids = []
         # kludge because arc ends up with different field names under Enterprise gdb after joining
@@ -502,18 +513,16 @@ def GetBuffer(accuracy):
                         else:
                             summary += ', '
                         summary += str(search_row[field_names[1]]) + ' ' + search_row[field_names[0]]
+                if ecoshape_reviews > 0:
+                    if len(summary) > 0:
+                        summary += '; '
+                    summary += 'Expert Ecoshape Reviews - ' + str(ecoshape_reviews)
                     del search_row
                 notes = 'Primary Species - ' + param_species
                 if len(secondary_names) > 0:
                     notes += '; Synonyms - ' + secondary_names
                 if additional_input_records > 0:
                     notes += '; Additional Input Records - ' + str(additional_input_records)
-                #notes = None
-                #summary += '\r\n\r\nPrimary Species - ' + param_species
-                #if len(secondary_names) > 0:
-                #    summary += '; Synonyms - ' + secondary_names
-                #if additional_input_records > 0:
-                #    summary += '; Additional Input Records - ' + str(additional_input_records)
                 update_cursor.updateRow([datetime.datetime.now(), summary, notes])
 
         # generate TOC entry and actual map!!!
@@ -554,12 +563,12 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_species = arcpy.Parameter()
-    param_species.value = 'Myotis septentrionalis'
+    param_species.value = 'Crataegus atrovirens'
     param_secondary = arcpy.Parameter()
     param_secondary.value = None
     param_version = arcpy.Parameter()
-    param_version.value = '1.0'
+    param_version.value = '0.99'
     param_stage = arcpy.Parameter()
-    param_stage.value = 'Auto-generated'
+    param_stage.value = 'Expert reviewed'
     parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage]
     grm.RunGenerateRangeMapTool(parameters, None)
