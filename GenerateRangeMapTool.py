@@ -403,8 +403,6 @@ def GetBuffer(accuracy):
             EBARUtils.displayMessage(messages, 'WARNING: No inputs/buffers overlap ecoshapes')
             # terminate
             return
-        EBARUtils.setNewID(param_geodatabase + '/RangeMapEcoshape', 'RangeMapEcoshapeID',
-                           'RangeMapID = ' + str(range_map_id))
 
         # get ecoshape input counts by dataset
         EBARUtils.displayMessage(messages, 'Counting Ecoshape inputs by Dataset')
@@ -430,21 +428,28 @@ def GetBuffer(accuracy):
         # apply Reviews, Presence categories and summaries to RangeMapEcoshape records
         EBARUtils.displayMessage(messages,
                                  'Applying Reviews, Presence categories and summaries to RangeMapEcoshape records')
-        # get previous range maps with same primary and secondary species
-
         ecoshape_reviews = 0
+        if len(prev_range_map_ids) > 0:
+            arcpy.MakeTableView_management(param_geodatabase + '/EcoshapeReview', 'ecoshape_review_view')
+            arcpy.AddJoin_management('ecoshape_review_view', 'ReviewID', param_geodatabase + '/Review', 'ReviewID')
+        # loop existing ecoshapes
         with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape',
                                    ['EcoshapeID', 'Presence', 'RangeMapEcoshapeNotes'],
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
             for update_row in EBARUtils.updateCursor(update_cursor):
                 # check for ecoshape "remove" reviews
                 remove = False
-                with arcpy.da.SearchCursor(param_geodatabase + '/EcoshapeReview', ['OBJECTID'],
-                                           "UseForMapGen = 1 AND AddRemove = '2' AND EcoshapeID = " + \
-                                               str(update_row['EcoshapeID'])) as search_cursor:
-                    for search_row in EBARUtils.searchCursor(search_cursor):
-                        ecoshape_reviews += 1
-                        remove = True
+                if len(prev_range_map_ids) > 0:
+                    with arcpy.da.SearchCursor('ecoshape_review_view', [table_name_prefix + 'EcoshapeReview.OBJECTID'],
+                                               table_name_prefix + 'Review.RangeMapID IN (' + \
+                                                   prev_range_map_ids + ') AND ' + table_name_prefix + \
+                                                   'EcoshapeReview.UseForMapGen = 1 AND ' + table_name_prefix + \
+                                                   "EcoshapeReview.AddRemove = '2' AND "  + table_name_prefix + \
+                                                   'EcoshapeReview.EcoshapeID = ' + \
+                                                   str(update_row['EcoshapeID'])) as search_cursor:
+                        for search_row in EBARUtils.searchCursor(search_cursor):
+                            ecoshape_reviews += 1
+                            remove = True
                 if remove:
                     del search_row
                     update_cursor.deleteRow()
@@ -473,6 +478,38 @@ def GetBuffer(accuracy):
                             del search_row
                     update_cursor.updateRow([update_row['EcoshapeID'], presence, summary])
             del update_row
+        # loop add review records
+        add = False
+        if len(prev_range_map_ids) > 0:
+            with arcpy.da.SearchCursor('ecoshape_review_view', [table_name_prefix + 'EcoshapeReview.EcoshapeID'],
+                                        table_name_prefix + 'Review.RangeMapID IN (' + \
+                                            prev_range_map_ids + ') AND ' + table_name_prefix + \
+                                            'EcoshapeReview.UseForMapGen = 1 AND ' + table_name_prefix + \
+                                            "EcoshapeReview.AddRemove = '1'") as search_cursor:
+                search_row = None
+                for search_row in EBARUtils.searchCursor(search_cursor):
+                    # check for ecoshape
+                    add = True
+                    with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape', ['EcoshapeID'],
+                                               'RangeMapID = ' + str(range_map_id) + ' AND EcoshapeID = ' + \
+                                                   str(search_row[table_name_prefix + \
+                                                   'EcoshapeReview.EcoshapeID'])) as update_cursor:
+                        for update_row in EBARUtils.updateCursor(update_cursor):
+                            add = False
+                    if not add:
+                        del update_row
+                    else:
+                        ecoshape_reviews += 1
+                        with arcpy.da.InsertCursor(param_geodatabase + '/RangeMapEcoshape',
+                                                   ['RangeMapID', 'EcoshapeID', 'Presence',
+                                                    'RangeMapEcoshapeNotes']) as insert_cursor:
+                            insert_cursor.insertRow([range_map_id,
+                                                     search_row[table_name_prefix + 'EcoshapeReview.EcoshapeID'], 'X',
+                                                     'Expert Ecoshape Review'])
+                if search_row:
+                    del search_row
+        EBARUtils.setNewID(param_geodatabase + '/RangeMapEcoshape', 'RangeMapEcoshapeID',
+                           'RangeMapID = ' + str(range_map_id))
 
         # create RangeMapEcoshapeInputDataset records based on summary
         EBARUtils.displayMessage(messages, 'Creating Range Map Ecoshape Input Dataset records')
@@ -612,13 +649,13 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_species = arcpy.Parameter()
-    param_species.value = 'Dodia kononenkoi'
+    param_species.value = 'Crataegus okennonii'
     param_secondary = arcpy.Parameter()
     param_secondary.value = None
     #param_secondary.value = "'Dodia verticalis'"
     #param_secondary.value = "'Dodia tarandus';'Dodia verticalis'"
     param_version = arcpy.Parameter()
-    param_version.value = '0.98'
+    param_version.value = '0.99'
     param_stage = arcpy.Parameter()
     param_stage.value = 'Auto-generated'
     parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage]
