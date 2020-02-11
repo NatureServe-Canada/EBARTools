@@ -74,6 +74,7 @@ class GenerateRangeMapTool:
 
         # check for secondary species
         species_ids = str(species_id)
+        secondary_ids = []
         secondary_names = ''
         additional_input_records = 0
         if param_secondary:
@@ -85,25 +86,63 @@ class GenerateRangeMapTool:
                     return
                     #raise arcpy.ExecuteError
                 species_ids += ',' + str(secondary_id)
+                if secondary_id in secondary_ids:
+                    EBARUtils.displayMessage(messages, 'ERROR: Same secondary species specified more than once')
+                    # terminate with error
+                    return
+                    #raise arcpy.ExecuteError
+                secondary_ids.append(secondary_id)
                 if len(secondary_names) > 0:
                     secondary_names += ', '
                 secondary_names += secondary + '' + short_citation
 
         # check for range map record and add if necessary
         EBARUtils.displayMessage(messages, 'Checking for existing range map')
+        range_map_ids = ''
         range_map_id = None
-        arcpy.MakeTableView_management(param_geodatabase + '/RangeMap', 'range_map_view',
-                                       'SpeciesID = ' + str(species_id) +
-                                       " AND RangeVersion = '" + param_version +
-                                       "' AND RangeStage = '" + param_stage + "'")
-        with arcpy.da.SearchCursor('range_map_view', ['RangeMapID']) as cursor:
+        arcpy.MakeTableView_management(param_geodatabase + '/RangeMap', 'range_map_view')
+                                       #'SpeciesID = ' + str(species_id) +
+                                       #" AND RangeVersion = '" + param_version +
+                                       #"' AND RangeStage = '" + param_stage + "'")
+        arcpy.SelectLayerByAttribute_management('range_map_view', 'NEW_SELECTION', 'SpeciesID = ' + str(species_id))
+        # need to build list of range map candidates because match requires secondary species to also match
+        match_candidate = []
+        candidate_secondary_count = {}
+        candidate_secondary_match_count = {}
+        arcpy.AddJoin_management('range_map_view', 'RangeMapID',
+                                 param_geodatabase + '/SecondarySpecies', 'RangeMapID', 'KEEP_ALL')
+        field_list = [table_name_prefix + 'RangeMap.RangeMapID',
+                      table_name_prefix + 'RangeMap.RangeVersion',
+                      table_name_prefix + 'RangeMap.RangeStage',
+                      table_name_prefix + 'SecondarySpecies.SpeciesID']
+        with arcpy.da.SearchCursor('range_map_view', field_list) as cursor:
+            row = None
             for row in EBARUtils.searchCursor(cursor):
-                range_map_id = row['RangeMapID']
-            if range_map_id:
-                # found
+                if (row[table_name_prefix + 'RangeMap.RangeVersion'] == param_version and 
+                    row[table_name_prefix + 'RangeMap.RangeStage'] == param_stage):
+                    # candidate because species, version and range match
+                    if row[table_name_prefix + 'RangeMap.RangeMapID'] not in match_candidate:
+                        match_candidate.append(row[table_name_prefix + 'RangeMap.RangeMapID'])
+                        candidate_secondary_match_count[row[table_name_prefix + 'RangeMap.RangeMapID']] = 0
+                        candidate_secondary_count[row[table_name_prefix + 'RangeMap.RangeMapID']] = 0
+                    if row[table_name_prefix + 'SecondarySpecies.SpeciesID'] in secondary_ids:
+                        # secondary matches
+                        candidate_secondary_match_count[row[table_name_prefix + 'RangeMap.RangeMapID']] += 1
+                    if row[table_name_prefix + 'SecondarySpecies.SpeciesID']:
+                        # secondary count
+                        candidate_secondary_count[row[table_name_prefix + 'RangeMap.RangeMapID']] += 1
+            if row:
                 del row
+        arcpy.RemoveJoin_management('range_map_view', table_name_prefix + 'SecondarySpecies')
+        # check candidates
+        for candidate in match_candidate:
+            if (candidate_secondary_match_count[candidate] == len(secondary_ids) and
+                candidate_secondary_count[candidate] == len(secondary_ids)):
+                range_map_id = candidate
 
         if range_map_id:
+            arcpy.SelectLayerByAttribute_management('range_map_view', 'NEW_SELECTION',
+                                                    'RangeMapID = ' + str(range_map_id))
             # check for completed Reviews or Reviews in progress
             review_found = False
             review_completed = False
@@ -184,6 +223,7 @@ class GenerateRangeMapTool:
                     EBARUtils.displayMessage(messages, 'Existing Secondary Species records deleted')
 
         else:
+            arcpy.SelectLayerByAttribute_management('range_map_view', 'CLEAR_SELECTION')
             # create RangeMap record
             with arcpy.da.InsertCursor('range_map_view',
                                        ['SpeciesID', 'RangeVersion', 'RangeStage', 'IncludeInEBARReviewer']) as cursor:
@@ -381,10 +421,11 @@ def GetBuffer(accuracy):
         arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'DatasetSource')
         arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'InputDataset')
 
-        # update range map ecoshapes with summary
-        # (also check if review(s) should remove, and high-grade presence for some polygon dataset sources)
+        # apply Reviews, Presence categories and summaries to RangeMapEcoshape records
+        EBARUtils.displayMessage(messages,
+                                 'Applying Reviews, Presence categories and summaries to RangeMapEcoshape records')
+        # get previous range maps with same 
         ecoshape_reviews = 0
-        EBARUtils.displayMessage(messages, 'Updating Range Map Ecoshape records with summary')
         with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape',
                                    ['EcoshapeID', 'Presence', 'RangeMapEcoshapeNotes'],
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
@@ -421,7 +462,8 @@ def GetBuffer(accuracy):
                                                     ('Element Occurrences', 'Source Features', 'Species Observations',
                                                      'Critical Habitat')):
                                 presence = 'P'
-                        del search_row
+                        if summary != '':
+                            del search_row
                     update_cursor.updateRow([update_row['EcoshapeID'], presence, summary])
             del update_row
 
@@ -563,12 +605,13 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_species = arcpy.Parameter()
-    param_species.value = 'Crataegus atrovirens'
+    param_species.value = 'Dodia kononenkoi'
     param_secondary = arcpy.Parameter()
-    param_secondary.value = None
+    #param_secondary.value = None
+    param_secondary.value = "'Dodia tarandus';'Dodia verticalis'"
     param_version = arcpy.Parameter()
-    param_version.value = '0.99'
+    param_version.value = '0.9'
     param_stage = arcpy.Parameter()
-    param_stage.value = 'Expert reviewed'
+    param_stage.value = 'Auto-generated'
     parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage]
     grm.RunGenerateRangeMapTool(parameters, None)
