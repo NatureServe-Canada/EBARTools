@@ -230,8 +230,15 @@ class GenerateRangeMapTool:
             arcpy.SelectLayerByAttribute_management('range_map_view', 'CLEAR_SELECTION')
             # create RangeMap record
             with arcpy.da.InsertCursor('range_map_view',
-                                       ['SpeciesID', 'RangeVersion', 'RangeStage', 'IncludeInEBARReviewer']) as cursor:
-                range_map_id = cursor.insertRow([species_id, param_version, param_stage, 0])
+                                       ['SpeciesID', 'RangeVersion', 'RangeStage', 'RangeDate', 'RangeMapNotes',
+                                        'IncludeInEBARReviewer']) as cursor:
+                notes = 'Primary Species - ' + param_species
+                if len(secondary_names) > 0:
+                    notes += '; Synonyms - ' + secondary_names
+                if additional_input_records > 0:
+                    notes += '; Additional Input Records - ' + str(additional_input_records)
+                range_map_id = cursor.insertRow([species_id, param_version, param_stage, datetime.datetime.now(),
+                                                 notes, 0])
             EBARUtils.setNewID(param_geodatabase + '/RangeMap', 'RangeMapID', 'OBJECTID = ' + str(range_map_id))
             EBARUtils.displayMessage(messages, 'Range Map record created')
 
@@ -587,9 +594,9 @@ def GetBuffer(accuracy):
                 if search_row:
                     del search_row
 
-        # update RangeMap date and metadata
+        # update RangeMap metadata
         EBARUtils.displayMessage(messages, 'Updating Range Map record with overall summary')
-        with arcpy.da.UpdateCursor('range_map_view', ['RangeDate', 'RangeMetadata', 'RangeMapNotes'],
+        with arcpy.da.UpdateCursor('range_map_view', ['RangeMetadata'],
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
             for update_row in update_cursor:
                 # kludge because arc ends up with different field names under Enterprise gdb after joining
@@ -610,12 +617,7 @@ def GetBuffer(accuracy):
                     if len(summary) > 0:
                         summary += '; '
                     summary += 'Expert Ecoshape Reviews - ' + str(ecoshape_reviews)
-                notes = 'Primary Species - ' + param_species
-                if len(secondary_names) > 0:
-                    notes += '; Synonyms - ' + secondary_names
-                if additional_input_records > 0:
-                    notes += '; Additional Input Records - ' + str(additional_input_records)
-                update_cursor.updateRow([datetime.datetime.now(), summary, notes])
+                update_cursor.updateRow([summary])
 
         # generate TOC entry and actual map!!!
 
