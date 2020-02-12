@@ -514,6 +514,15 @@ class ImportExternalRangeReview(object):
             parameterType='Required',
             direction='Input')
 
+        # Secondary Species
+        param_secondary = arcpy.Parameter(
+            displayName='Secondary Species',
+            name='secondary_species',
+            datatype='GPString',
+            parameterType='Optional',
+            direction='Input',
+            multiValue=True)
+
         # Range Version
         param_version = arcpy.Parameter(
             displayName='Range Version',
@@ -541,14 +550,6 @@ class ImportExternalRangeReview(object):
             direction='Input')
         param_external_range_polygons.filter.list = ['Polygon', 'MultiPatch']
 
-        # Scientific Name Field
-        param_scientific_name_field = arcpy.Parameter(
-            displayName='Scientific Name Field',
-            name='scientific_name_field',
-            datatype='GPString',
-            parameterType='Optional',
-            direction='Input')
-
         # Ecoshape Name Field
         param_ecoshape_name_field = arcpy.Parameter(
             displayName='Ecoshape Name Field',
@@ -574,8 +575,8 @@ class ImportExternalRangeReview(object):
             direction='Input',
             multiValue=True)
 
-        params = [param_geodatabase, param_species, param_version, param_stage, param_external_range_polygons,
-                  param_scientific_name_field, param_ecoshape_name_field, param_review_label,
+        params = [param_geodatabase, param_species, param_secondary, param_version, param_stage,
+                  param_external_range_polygons, param_ecoshape_name_field, param_review_label,
                   param_jurisdictions_covered]
         return params
 
