@@ -199,32 +199,30 @@ class GenerateRangeMapTool:
             with arcpy.da.SearchCursor(param_geodatabase + '/RangeMapEcoshape', ['RangeMapEcoshapeID'],
                                        'RangeMapID = ' + str(range_map_id)) as rme_cursor:
                 for rme_row in EBARUtils.searchCursor(rme_cursor):
-                    rmeid = False
                     with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshapeInputDataset',
                                                ['RangeMapEcoshpInputDatasetID'],
                                                 'RangeMapEcoshapeID = ' + \
                                                 str(rme_row['RangeMapEcoshapeID'])) as rmeid_cursor:
+                        rmeid_row = None
                         for rmeid_row in rmeid_cursor:
                             rmeid_cursor.deleteRow()
                             rmeid = True
-                        if rmeid:
+                        if rmeid_row:
                             del rmeid_row
             with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape', ['RangeMapEcoshapeID'],
                                        'RangeMapID = ' + str(range_map_id)) as rme_cursor:
-                range_map_ecoshape = False
+                rme_row = None
                 for rme_row in EBARUtils.updateCursor(rme_cursor):
                     rme_cursor.deleteRow()
-                    range_map_ecoshape = True
-                if range_map_ecoshape:
+                if rme_row:
                     del rme_row
                     EBARUtils.displayMessage(messages, 'Existing Range Map Ecoshape records deleted')
-            existing_secondary = False
             with arcpy.da.UpdateCursor(param_geodatabase + '/SecondarySpecies', ['SecondarySpeciesID'],
                                        'RangeMapID = ' + str(range_map_id)) as es_cursor:
+                es_row = None
                 for es_row in EBARUtils.updateCursor(es_cursor):
                     es_cursor.deleteRow()
-                    existing_secondary = True
-                if existing_secondary:
+                if es_row:
                     del es_row
                     EBARUtils.displayMessage(messages, 'Existing Secondary Species records deleted')
 
@@ -513,25 +511,28 @@ def GetBuffer(accuracy):
 
         # create RangeMapEcoshapeInputDataset records based on summary
         EBARUtils.displayMessage(messages, 'Creating Range Map Ecoshape Input Dataset records')
-        with arcpy.da.InsertCursor(param_geodatabase + '/RangeMapEcoshapeInputDataset',
-                                   ['RangeMapEcoshapeID', 'InputDatasetID', 'InputDataSummary']) as insert_cursor:
-            with arcpy.da.SearchCursor(param_geodatabase + '/RangeMapEcoshape', ['RangeMapEcoshapeID', 'EcoshapeID'],
-                                       'RangeMapID = ' + str(range_map_id)) as rme_cursor:
-                for rme_row in EBARUtils.searchCursor(rme_cursor):
-                    with arcpy.da.SearchCursor(temp_ecoshape_countby_dataset,
-                                               ['EcoshapeID', 'InputDatasetID', 'FREQUENCY']) as search_cursor:
-                        for row in EBARUtils.searchCursor(search_cursor):
-                            summary = str(row['FREQUENCY']) + ' input record(s)'
-                            insert_cursor.insertRow([rme_row['RangeMapEcoshapeID'], row['InputDatasetID'], summary])
-                        del row
-                del rme_row
-        with arcpy.da.SearchCursor(param_geodatabase + '/RangeMapEcoshape', ['RangeMapEcoshapeID'],
-                                   'RangeMapID = ' + str(range_map_id)) as rme_cursor:
+        with arcpy.da.SearchCursor(param_geodatabase + '/RangeMapEcoshape', ['RangeMapEcoshapeID', 'EcoshapeID'],
+                                    'RangeMapID = ' + str(range_map_id)) as rme_cursor:
+            rme_row = None
             for rme_row in EBARUtils.searchCursor(rme_cursor):
-                EBARUtils.setNewID(param_geodatabase + '/RangeMapEcoshapeInputDataset',
-                                   'RangeMapEcoshpInputDatasetID',
-                                   'RangeMapEcoshapeID = ' + str(rme_row['RangeMapEcoshapeID']))
-            del rme_row
+                with arcpy.da.SearchCursor(temp_ecoshape_countby_dataset,
+                                            ['EcoshapeID', 'InputDatasetID', 'FREQUENCY'],
+                                            'EcoshapeID = ' + str(rme_row['EcoshapeID'])) as search_cursor:
+                    row = None
+                    for row in EBARUtils.searchCursor(search_cursor):
+                        summary = str(row['FREQUENCY']) + ' input record(s)'
+                        with arcpy.da.InsertCursor(param_geodatabase + '/RangeMapEcoshapeInputDataset',
+                                                   ['RangeMapEcoshapeID', 'InputDatasetID',
+                                                    'InputDataSummary']) as insert_cursor:
+                            insert_cursor.insertRow([rme_row['RangeMapEcoshapeID'], row['InputDatasetID'], summary])
+                        EBARUtils.setNewID(param_geodatabase + '/RangeMapEcoshapeInputDataset',
+                                           'RangeMapEcoshpInputDatasetID',
+                                           'RangeMapEcoshapeID = ' + str(rme_row['RangeMapEcoshapeID']) + \
+                                           'AND InputDatasetID = ' + str(row['InputDatasetID']))
+                    if row:
+                        del row
+            if rme_row:
+                del rme_row
 
         # get overall input counts by source (using original inputs)
         EBARUtils.displayMessage(messages, 'Counting overall inputs by Dataset Source')
@@ -569,9 +570,8 @@ def GetBuffer(accuracy):
             with arcpy.da.SearchCursor(param_geodatabase + '/Synonym', ['SynonymName', 'SHORT_CITATION_AUTHOR',
                                                                         'SHORT_CITATION_YEAR'],
                                        'SynonymID IN (' + ','.join(map(str, synonym_ids)) + ')') as search_cursor:
-                found = False
+                search_row = None
                 for search_row in EBARUtils.searchCursor(search_cursor):
-                    found = True
                     if len(secondary_names) > 0:
                         secondary_names += ', '
                     secondary_names += search_row['SynonymName']
@@ -580,7 +580,7 @@ def GetBuffer(accuracy):
                         if search_row['SHORT_CITATION_YEAR']:
                             secondary_names += ', ' + str(int(search_row['SHORT_CITATION_YEAR']))
                         secondary_names += ')'
-                if found:
+                if search_row:
                     del search_row
 
         # update RangeMap date and metadata
@@ -630,9 +630,10 @@ def GetBuffer(accuracy):
             arcpy.Delete_management(temp_line_buffer)
         if arcpy.Exists(temp_point_buffer):
             arcpy.Delete_management(temp_point_buffer)
-        ## trouble deleting on server only due to locks; could be layer?
-        #if arcpy.Exists(temp_all_inputs):
-        #    arcpy.Delete_management(temp_all_inputs)
+        # trouble deleting on server only due to locks; could be layer?
+        if param_geodatabase[-4:].lower() == '.gdb':
+            if arcpy.Exists(temp_all_inputs):
+                arcpy.Delete_management(temp_all_inputs)
 
         # end time
         end_time = datetime.datetime.now()

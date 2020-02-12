@@ -324,9 +324,10 @@ class ImportSpatialDataTool:
             EBARUtils.setNewID(destination, id_field, 'InputDatasetID = ' + str(input_dataset_id))
 
         # temp clean-up
-        ## trouble deleting on server only due to locks; could be layer?
-        #if arcpy.Exists(temp_import_features):
-        #    arcpy.Delete_management(temp_import_features)
+        # trouble deleting on server only due to locks; could be layer?
+        if param_geodatabase[-4:].lower() == '.gdb':
+            if arcpy.Exists(temp_import_features):
+                arcpy.Delete_management(temp_import_features)
 
         # summary and end time
         EBARUtils.displayMessage(messages, 'Summary:')
