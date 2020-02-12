@@ -4,7 +4,7 @@
 # Credits: Randal Greene, Christine Terwissen
 # © NatureServe Canada 2019 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
-# Program: ApplyExternalRangeReviewTool.py
+# Program: ImportExternalRangeReviewTool.py
 # ArcGIS Python tool for creating review records for an exising range map based on third-party polygons
 
 # Notes:
@@ -20,12 +20,12 @@ import arcpy
 import datetime
 
 
-class ApplyExternalRangeReviewTool:
+class ImportExternalRangeReviewTool:
     """Create review records for an exising range map based on third-party polygons"""
     def __init__(self):
         pass
 
-    def RunApplyExternalRangeReviewTool(self, parameters, messages):
+    def RunImportExternalRangeReviewTool(self, parameters, messages):
         # debugging/testing
         #print(locale.getpreferredencoding())
         #return
@@ -238,7 +238,7 @@ class ApplyExternalRangeReviewTool:
 
 # controlling process
 if __name__ == '__main__':
-    aerr = ApplyExternalRangeReviewTool()
+    ierr = ImportExternalRangeReviewTool()
     # hard code parameters for debugging
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
@@ -262,4 +262,4 @@ if __name__ == '__main__':
     parameters = [param_geodatabase, param_species, param_version, param_stage, param_external_range_polygons,
                   param_scientific_name_field, param_ecoshape_name_field, param_review_label,
                   param_jurisdictions_covered]
-    aerr.RunApplyExternalRangeReviewTool(parameters, None)
+    ierr.RunImportExternalRangeReviewTool(parameters, None)

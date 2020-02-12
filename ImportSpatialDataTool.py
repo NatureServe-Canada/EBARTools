@@ -342,7 +342,11 @@ class ImportSpatialDataTool:
         EBARUtils.displayMessage(messages,
                                  'Accuracy worse than ' + str(EBARUtils.worst_accuracy) + ' m - ' + str(inaccurate))
         EBARUtils.displayMessage(messages, 'Duplicates - ' + str(duplicates))
-        EBARUtils.displayMessage(messages, 'Imported without date - ' + str(bad_date))
+        if field_dict['max_date']:
+            EBARUtils.displayMessage(messages, 'Imported without date - ' + str(bad_date))
+        else:
+            EBARUtils.displayMessage(messages, 'Imported without date - ' + str(overall_count - no_species_match - 
+                                                                                inaccurate - duplicates))
         end_time = datetime.datetime.now()
         EBARUtils.displayMessage(messages, 'End time: ' + str(end_time))
         elapsed_time = end_time - start_time

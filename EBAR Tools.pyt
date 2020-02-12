@@ -18,7 +18,7 @@ import GenerateRangeMapTool
 import ListElementNationalIDsTool
 import SyncSpeciesListTool
 import AddSynonymsTool
-import ApplyExternalRangeReviewTool
+import ImportExternalRangeReviewTool
 import EBARUtils
 import datetime
 import locale
@@ -32,7 +32,7 @@ class Toolbox(object):
 
         # List of tool classes associated with this toolbox
         self.tools = [ImportTabularData, ImportSpatialData, GenerateRangeMap, ListElementNationalIDs, SyncSpeciesList,
-                      AddSynonyms, ApplyExternalRangeReview]
+                      AddSynonyms, ImportExternalRangeReview]
 
 
 class ImportTabularData(object):
@@ -488,10 +488,10 @@ class AddSynonyms(object):
         return
 
 
-class ApplyExternalRangeReview(object):
+class ImportExternalRangeReview(object):
     def __init__(self):
         """Define the tool (tool name is the name of the class)."""
-        self.label = 'Apply External Range Review'
+        self.label = 'Import External Range Review'
         self.description = 'Create review records for an exising range map based on third-party polygons'
         self.canRunInBackground = True
 
@@ -606,6 +606,6 @@ class ApplyExternalRangeReview(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        aerr = ApplyExternalRangeReviewTool.ApplyExternalRangeReviewTool()
-        aerr.RunApplyExternalRangeReviewTool(parameters, messages)
+        ierr = ImportExternalRangeReviewTool.ImportExternalRangeReviewTool()
+        ierr.RunImportExternalRangeReviewTool(parameters, messages)
         return
