@@ -69,6 +69,7 @@ class ImportSpatialDataTool:
                                                                           'MaxDateField', 'RepAccuracyField',
                                                                           'EORankField', 'AccuracyField'],
                                    "DatasetSourceName = '" + param_dataset_source + "'") as cursor:
+            row = None
             for row in EBARUtils.searchCursor(cursor):
                 dataset_source_id = row['DatasetSourceID']
                 # check match between feature class type and dataset source type
@@ -91,7 +92,8 @@ class ImportSpatialDataTool:
                 field_dict['rep_accuracy'] = row['RepAccuracyField']
                 field_dict['eo_rank'] = row['EORankField']
                 field_dict['accuracy'] = row['AccuracyField']
-            del row
+            if row:
+                del row
         if not match:
             EBARUtils.displayMessage(messages,
                                      'ERROR: Feature Class Type and Dataset Source Type do not match')
@@ -236,6 +238,7 @@ class ImportSpatialDataTool:
                 count = 0
                 with arcpy.da.UpdateCursor('import_features', [field_dict['min_date'], 'MinDate'],
                                            'ignore_imp = 0') as cursor:
+                    row = None
                     for row in EBARUtils.updateCursor(cursor):
                         count += 1
                         if count % 1000 == 0:
@@ -248,13 +251,15 @@ class ImportSpatialDataTool:
                                 # extract date from text
                                 min_date = EBARUtils.extractDate(row[field_dict['min_date']].strip())
                         cursor.updateRow([row[field_dict['min_date']], min_date])
-                    del row
+                    if row:
+                        del row
                 EBARUtils.displayMessage(messages, 'Min Date pre-processed ' + str(count))
             if field_dict['max_date']:
                 EBARUtils.checkAddField('import_features', 'MaxDate', 'DATE')
                 count = 0
                 with arcpy.da.UpdateCursor('import_features', [field_dict['max_date'], 'MaxDate'],
                                            'ignore_imp = 0') as cursor:
+                    row = None
                     for row in EBARUtils.updateCursor(cursor):
                         count += 1
                         if count % 1000 == 0:
@@ -269,7 +274,8 @@ class ImportSpatialDataTool:
                         cursor.updateRow([row[field_dict['max_date']], max_date])
                         if not max_date:
                             bad_date += 1
-                    del row
+                    if row:
+                        del row
                 EBARUtils.displayMessage(messages, 'Max Date pre-processed ' + str(count))
 
             # select non-ignore_imp

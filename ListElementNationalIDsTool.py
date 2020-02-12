@@ -28,6 +28,7 @@ class ListElementNationalIDsTool:
         with arcpy.da.SearchCursor(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', ['ELEMENT_NATIONAL_ID']) as cursor:
             IDs = []
             count = 0
+            row = None
             for row in EBARUtils.searchCursor(cursor):
                 IDs.append(row['ELEMENT_NATIONAL_ID'])
                 count += 1
@@ -38,7 +39,8 @@ class ListElementNationalIDsTool:
                     #text_file.write(','.join(map(str, IDs)))
                     #text_file.close()
                     IDs = []
-            del row
+            if row:
+                del row
             EBARUtils.displayMessage(messages, str(count) + ':')
             EBARUtils.displayMessage(messages, ','.join(map(str, IDs)))
             #text_file = open(param_folder + '/ELEMENT_NATIONAL_IDs' + str(count) + '.txt', 'w')

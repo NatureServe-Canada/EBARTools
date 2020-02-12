@@ -434,6 +434,7 @@ def GetBuffer(accuracy):
         with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape',
                                    ['EcoshapeID', 'Presence', 'RangeMapEcoshapeNotes'],
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
+            update_row = None
             for update_row in EBARUtils.updateCursor(update_cursor):
                 # check for ecoshape "remove" reviews
                 remove = False
@@ -475,7 +476,8 @@ def GetBuffer(accuracy):
                         if summary != '':
                             del search_row
                     update_cursor.updateRow([update_row['EcoshapeID'], presence, summary])
-            del update_row
+            if update_row:
+                del update_row
         # loop add review records
         add = False
         if len(prev_range_map_ids) > 0:
@@ -560,10 +562,12 @@ def GetBuffer(accuracy):
         # kludge because arc ends up with different field names under Enterprise gdb after joining
         id_field_name = [f.name for f in arcpy.ListFields(temp_unique_synonyms) if f.aliasName in ['SynonymID']][0]
         with arcpy.da.SearchCursor(temp_unique_synonyms, [id_field_name]) as search_cursor:
+            search_row = None
             for search_row in EBARUtils.searchCursor(search_cursor):
                 if search_row[id_field_name]:
                     if search_row[id_field_name] not in synonym_ids:
                         synonym_ids.append(search_row[id_field_name])
+            if search_row:
                 del search_row
         # get synonym names for IDs and combine with secondary names
         if len(synonym_ids) > 0:
@@ -593,17 +597,19 @@ def GetBuffer(accuracy):
                                ['DatasetSourceName','FREQUENCY','frequency']]
                 with arcpy.da.SearchCursor(temp_overall_countby_source, field_names) as search_cursor:
                     summary = ''
+                    search_row = None
                     for search_row in EBARUtils.searchCursor(search_cursor):
                         if len(summary) == 0:
                             summary = 'Input records - '
                         else:
                             summary += ', '
                         summary += str(search_row[field_names[1]]) + ' ' + search_row[field_names[0]]
+                    if search_row:
+                        del search_row
                 if ecoshape_reviews > 0:
                     if len(summary) > 0:
                         summary += '; '
                     summary += 'Expert Ecoshape Reviews - ' + str(ecoshape_reviews)
-                    del search_row
                 notes = 'Primary Species - ' + param_species
                 if len(secondary_names) > 0:
                     notes += '; Synonyms - ' + secondary_names

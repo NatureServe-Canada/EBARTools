@@ -82,6 +82,7 @@ class SyncSpeciesListTool:
                 # update
                 with arcpy.da.UpdateCursor(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', biotics_fields,
                                            'ELEMENT_NATIONAL_ID = ' + str(element_national_id)) as update_cursor:
+                    update_row = None
                     for update_row in EBARUtils.updateCursor(update_cursor):
                         update_values = []
                         for field in biotics_fields:
@@ -90,7 +91,8 @@ class SyncSpeciesListTool:
                             else:
                                 update_values.append(None)
                         update_cursor.updateRow(update_values)
-                    del update_row
+                    if update_row:
+                        del update_row
             else:
                 # create new Species and BIOTICS_ELEMENT_NATIONAL records
                 # start with a dummy species id so setNewID can work!

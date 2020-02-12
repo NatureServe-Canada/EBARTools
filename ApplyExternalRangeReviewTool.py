@@ -83,7 +83,6 @@ class ApplyExternalRangeReviewTool:
             for row in EBARUtils.searchCursor(cursor):
                 range_map_id = row['RangeMapID']
             if range_map_id:
-                # found
                 del row
             else:
                 EBARUtils.displayMessage(messages, 'ERROR: Range Map not found')
@@ -140,9 +139,11 @@ class ApplyExternalRangeReviewTool:
         else:
             with arcpy.da.SearchCursor(param_geodatabase + '/Review', ['ReviewID'],
                                        'OBJECTID = ' + str(object_id)) as search_cursor:
+                row = None
                 for row in EBARUtils.searchCursor(search_cursor):
                     review_id = row['ReviewID']
-                del row
+                if row:
+                    del row
 
         # check each RangeMapEcoshape and create EcoshapeReview Remove record for any in covered jurisdictions but not
         # in external polygons

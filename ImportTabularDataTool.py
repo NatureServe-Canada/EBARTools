@@ -73,9 +73,11 @@ class ImportTabularDataTool:
         # get dataset source id
         with arcpy.da.SearchCursor(param_geodatabase + '/DatasetSource', ['DatasetSourceID'],
                                    "DatasetSourceName = '" + param_dataset_source + "'") as cursor:
+            row = None
             for row in EBARUtils.searchCursor(cursor):
                 dataset_source_id = row['DatasetSourceID']
-            del row
+            if row:
+                del row
 
         # match field_dict with source
         field_dict = TabularFieldMapping.tabular_field_mapping_dict[param_dataset_source]
@@ -362,12 +364,14 @@ class ImportTabularDataTool:
                                         'MaxDate', 'CoordinatesObscured', 'Accuracy', 'IndividualCount'],
                                        "InputPointID = " +
                                        str(id_dict[str(file_line[field_dict['unique_id']])])) as cursor:
+                row = None
                 for row in EBARUtils.updateCursor(cursor):
                     #input_point_id = row['InputPointID']
                     #cursor.updateRow([output_point, input_point_id, coordinates_obscured, accuracy])
                     cursor.updateRow([output_point, input_dataset_id, uri, license, species_id, synonym_id, max_date,
                                       coordinates_obscured, accuracy, individual_count])
-                del row
+                if row:
+                    del row
             return id_dict[str(file_line[field_dict['unique_id']])], 'updated', max_date
         else:
             # insert, set new id and return
