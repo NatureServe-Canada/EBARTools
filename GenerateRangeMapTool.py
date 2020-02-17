@@ -232,7 +232,7 @@ class GenerateRangeMapTool:
             with arcpy.da.InsertCursor('range_map_view',
                                        ['SpeciesID', 'RangeVersion', 'RangeStage', 'RangeDate', 'RangeMapNotes',
                                         'IncludeInEBARReviewer']) as cursor:
-                notes = 'Primary Species - ' + param_species
+                notes = 'Primary Species Name - ' + param_species
                 if len(secondary_names) > 0:
                     notes += '; Synonyms - ' + secondary_names
                 if additional_input_records > 0:
