@@ -49,8 +49,8 @@ class GenerateRangeMapTool:
         # make variables for parms
         EBARUtils.displayMessage(messages, 'Processing parameters')
         param_geodatabase = parameters[0].valueAsText
-        param_species = parameters[1].valueAsText.lower()
-        param_secondary = parameters[2].valueAsText.lower()
+        param_species = parameters[1].valueAsText
+        param_secondary = parameters[2].valueAsText
         if param_secondary:
             param_secondary = param_secondary.replace("'", '')
             param_secondary = param_secondary.split(';')
@@ -64,7 +64,7 @@ class GenerateRangeMapTool:
         table_name_prefix = EBARUtils.getTableNamePrefix(param_geodatabase)
 
         # check for species
-        species_id, short_citation = EBARUtils.checkSpecies(param_species, param_geodatabase)
+        species_id, short_citation = EBARUtils.checkSpecies(param_species.lower(), param_geodatabase)
         if not species_id:
             EBARUtils.displayMessage(messages, 'ERROR: Species not found')
             # terminate with error
@@ -79,7 +79,7 @@ class GenerateRangeMapTool:
         additional_input_records = 0
         if param_secondary:
             for secondary in param_secondary:
-                secondary_id, short_citation = EBARUtils.checkSpecies(secondary, param_geodatabase)
+                secondary_id, short_citation = EBARUtils.checkSpecies(secondary.lower(), param_geodatabase)
                 if not secondary_id:
                     EBARUtils.displayMessage(messages, 'ERROR: Secondary species not found')
                     # terminate with error
@@ -235,8 +235,6 @@ class GenerateRangeMapTool:
                 notes = 'Primary Species Name - ' + param_species
                 if len(secondary_names) > 0:
                     notes += '; Synonyms - ' + secondary_names
-                if additional_input_records > 0:
-                    notes += '; Additional Input Records - ' + str(additional_input_records)
                 range_map_id = cursor.insertRow([species_id, param_version, param_stage, datetime.datetime.now(),
                                                  notes, 0])
             EBARUtils.setNewID(param_geodatabase + '/RangeMap', 'RangeMapID', 'OBJECTID = ' + str(range_map_id))
@@ -596,7 +594,7 @@ def GetBuffer(accuracy):
 
         # update RangeMap metadata
         EBARUtils.displayMessage(messages, 'Updating Range Map record with overall summary')
-        with arcpy.da.UpdateCursor('range_map_view', ['RangeMetadata'],
+        with arcpy.da.UpdateCursor('range_map_view', ['RangeMetadata', 'RangeDate', 'RangeMapNotes'],
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
             for update_row in update_cursor:
                 # kludge because arc ends up with different field names under Enterprise gdb after joining
@@ -617,7 +615,12 @@ def GetBuffer(accuracy):
                     if len(summary) > 0:
                         summary += '; '
                     summary += 'Expert Ecoshape Reviews - ' + str(ecoshape_reviews)
-                update_cursor.updateRow([summary])
+                notes = 'Primary Species Name - ' + param_species
+                if len(secondary_names) > 0:
+                    notes += '; Synonyms - ' + secondary_names
+                if additional_input_records > 0:
+                    notes += '; Additional Input Records - ' + str(additional_input_records)
+                update_cursor.updateRow([summary, datetime.datetime.now(), notes])
 
         # generate TOC entry and actual map!!!
 

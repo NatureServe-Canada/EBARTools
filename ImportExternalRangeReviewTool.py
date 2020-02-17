@@ -44,8 +44,9 @@ class ImportExternalRangeReviewTool:
         EBARUtils.displayMessage(messages, 'Processing parameters')
         param_geodatabase = parameters[0].valueAsText
         param_species = parameters[1].valueAsText.lower()
-        param_secondary = parameters[2].valueAsText.lower()
+        param_secondary = parameters[2].valueAsText
         if param_secondary:
+            param_secondary = param_secondary.lower()
             param_secondary = param_secondary.replace("'", '')
             param_secondary = param_secondary.split(';')
         param_version = parameters[3].valueAsText

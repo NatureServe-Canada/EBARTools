@@ -246,7 +246,7 @@ def checkSpecies(scientific_name, geodatabase):
     short_citation = None
     with arcpy.da.SearchCursor(geodatabase + '/BIOTICS_ELEMENT_NATIONAL', ['SpeciesID', 'SHORT_CITATION_AUTHOR',
                                                                            'SHORT_CITATION_YEAR'],
-                               "NATIONAL_SCIENTIFIC_NAME = '" + scientific_name + "'",
+                               "LOWER(NATIONAL_SCIENTIFIC_NAME) = '" + scientific_name.lower() + "'",
                                None) as cursor:
         for row in searchCursor(cursor):
             species_id = row['SpeciesID']

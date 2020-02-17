@@ -362,12 +362,12 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_import_feature_class = arcpy.Parameter()
-    param_import_feature_class.value = 'C:/GIS/EBAR/CDN_CDC_Data/Atlantic_Canada/ebar.gdb' + \
-        '/ACCDC_NS_ALL_NLS_191106_ebarSpp'
+    param_import_feature_class.value = 'C:/GIS/EBAR/CDN_CDC_Data/Saskatchewan/SKCDC_obs_freshwater_20200213.gdb' + \
+        '/obs_20200213_pt'
     param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'Nova Scotia Observations'
+    param_dataset_name.value = 'SK Freshwater Obs Pts'
     param_dataset_source = arcpy.Parameter()
-    param_dataset_source.value = 'ACCDC Observations'
+    param_dataset_source.value = 'SK Observations'
     param_date_received = arcpy.Parameter()
     param_date_received.value = 'November 20, 2019'
     param_restrictions = arcpy.Parameter()

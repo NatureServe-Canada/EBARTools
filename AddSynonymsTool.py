@@ -44,10 +44,10 @@ class AddSynonymsTool:
         count = 0
         added = 0
         for file_line in reader:
-            scientific_name = file_line['SCIENTIFIC_NAME'].lower()
-            if scientific_name in species_dict:
+            scientific_name = file_line['SCIENTIFIC_NAME']
+            if scientific_name.lower() in species_dict:
                 EBARUtils.displayMessage(messages, 'WARNING: ' + scientific_name + ' already has Species record')
-            elif scientific_name in synonym_dict:
+            elif scientific_name.lower() in synonym_dict:
                 EBARUtils.displayMessage(messages, 'WARNING: ' + scientific_name + ' already has Synonym record')
             else:
                 # check element_national_id
