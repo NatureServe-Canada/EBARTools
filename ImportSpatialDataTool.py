@@ -158,8 +158,8 @@ class ImportSpatialDataTool:
                 # check for species
                 species_id = None
                 synonym_id = None
-                if (row[field_dict['scientific_name']] not in species_dict and
-                    row[field_dict['scientific_name']] not in synonym_id_dict):
+                if (row[field_dict['scientific_name']].lower() not in species_dict and
+                    row[field_dict['scientific_name']].lower() not in synonym_id_dict):
                     no_species_match += 1
                     ignore_imp = 1
                     if row[field_dict['scientific_name']] not in no_match_list:
@@ -167,11 +167,11 @@ class ImportSpatialDataTool:
                         EBARUtils.displayMessage(messages,
                                                  'WARNING: No match for species ' + row[field_dict['scientific_name']])
                 else:
-                    if row[field_dict['scientific_name']] in species_dict:
-                        species_id = species_dict[row[field_dict['scientific_name']]]
+                    if row[field_dict['scientific_name']].lower() in species_dict:
+                        species_id = species_dict[row[field_dict['scientific_name']].lower()]
                     else:
-                        species_id = synonym_species_id_dict[row[field_dict['scientific_name']]]
-                        synonym_id = synonym_id_dict[row[field_dict['scientific_name']]]
+                        species_id = synonym_species_id_dict[row[field_dict['scientific_name']].lower()]
+                        synonym_id = synonym_id_dict[row[field_dict['scientific_name']].lower()]
                     # check for duplicates
                     # handle case where integer gets read as float with decimals
                     uid_raw = row[field_dict['unique_id']]

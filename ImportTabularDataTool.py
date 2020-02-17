@@ -193,8 +193,8 @@ class ImportTabularDataTool:
                       synonym_species_dict, file_line, field_dict, no_match_list, messages):
         """If point already exists, check if needs update; otherwise, add"""
         # check for species
-        if (file_line[field_dict['scientific_name']] not in species_dict and
-            file_line[field_dict['scientific_name']] not in synonym_dict):
+        if (file_line[field_dict['scientific_name']].lower() not in species_dict and
+            file_line[field_dict['scientific_name']].lower() not in synonym_dict):
             if file_line[field_dict['scientific_name']] not in no_match_list:
                 no_match_list.append(file_line[field_dict['scientific_name']])
                 EBARUtils.displayMessage(messages,
@@ -202,11 +202,11 @@ class ImportTabularDataTool:
             return None, 'no_species_match', None
         else:
             synonym_id = None
-            if file_line[field_dict['scientific_name']] in species_dict:
-                species_id = species_dict[file_line[field_dict['scientific_name']]]
+            if file_line[field_dict['scientific_name']].lower() in species_dict:
+                species_id = species_dict[file_line[field_dict['scientific_name']].lower()]
             else:
-                species_id = synonym_species_dict[file_line[field_dict['scientific_name']]]
-                synonym_id = synonym_dict[file_line[field_dict['scientific_name']]]
+                species_id = synonym_species_dict[file_line[field_dict['scientific_name']].lower()]
+                synonym_id = synonym_dict[file_line[field_dict['scientific_name']].lower()]
 
         # CoordinatesObscured
         coordinates_obscured = False

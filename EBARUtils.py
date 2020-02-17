@@ -179,9 +179,9 @@ def readSpecies(geodatabase):
     with arcpy.da.SearchCursor(geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
                                ['NATIONAL_SCIENTIFIC_NAME', 'SpeciesID']) as cursor:
         for row in searchCursor(cursor):
-            species_dict[row['NATIONAL_SCIENTIFIC_NAME']] = row['SpeciesID']
-    if len(species_dict) > 0:
-        del row
+            species_dict[row['NATIONAL_SCIENTIFIC_NAME'].lower()] = row['SpeciesID']
+        if len(species_dict) > 0:
+            del row
     return species_dict
 
 
@@ -190,7 +190,7 @@ def readSynonyms(geodatabase):
     synonym_id_dict = {}
     with arcpy.da.SearchCursor(geodatabase + '/Synonym', ['SynonymName', 'SynonymID']) as cursor:
         for row in searchCursor(cursor):
-            synonym_id_dict[row['SynonymName']] = row['SynonymID']
+            synonym_id_dict[row['SynonymName'].lower()] = row['SynonymID']
     if len(synonym_id_dict) > 0:
         del row
     return synonym_id_dict
@@ -201,7 +201,7 @@ def readSynonymSpecies(geodatabase):
     synonym_species_id_dict = {}
     with arcpy.da.SearchCursor(geodatabase + '/Synonym', ['SynonymName', 'SpeciesID']) as cursor:
         for row in searchCursor(cursor):
-            synonym_species_id_dict[row['SynonymName']] = row['SpeciesID']
+            synonym_species_id_dict[row['SynonymName'].lower()] = row['SpeciesID']
     if len(synonym_species_id_dict) > 0:
         del row
     return synonym_species_id_dict

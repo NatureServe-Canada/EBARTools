@@ -44,7 +44,7 @@ class AddSynonymsTool:
         count = 0
         added = 0
         for file_line in reader:
-            scientific_name = file_line['SCIENTIFIC_NAME']
+            scientific_name = file_line['SCIENTIFIC_NAME'].lower()
             if scientific_name in species_dict:
                 EBARUtils.displayMessage(messages, 'WARNING: ' + scientific_name + ' already has Species record')
             elif scientific_name in synonym_dict:

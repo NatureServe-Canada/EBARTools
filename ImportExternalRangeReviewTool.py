@@ -43,8 +43,8 @@ class ImportExternalRangeReviewTool:
         # make variables for parms
         EBARUtils.displayMessage(messages, 'Processing parameters')
         param_geodatabase = parameters[0].valueAsText
-        param_species = parameters[1].valueAsText
-        param_secondary = parameters[2].valueAsText
+        param_species = parameters[1].valueAsText.lower()
+        param_secondary = parameters[2].valueAsText.lower()
         if param_secondary:
             param_secondary = param_secondary.replace("'", '')
             param_secondary = param_secondary.split(';')
