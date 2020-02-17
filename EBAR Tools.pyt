@@ -492,7 +492,7 @@ class ImportExternalRangeReview(object):
     def __init__(self):
         """Define the tool (tool name is the name of the class)."""
         self.label = 'Import External Range Review'
-        self.description = 'Create review records for an exising range map based on third-party polygons'
+        self.description = 'Create review records for an existing range map based on third-party polygons'
         self.canRunInBackground = True
 
     def getParameterInfo(self):
