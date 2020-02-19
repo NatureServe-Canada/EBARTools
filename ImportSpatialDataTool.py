@@ -144,16 +144,17 @@ class ImportSpatialDataTool:
         overall_count = 0
         inaccurate = 0
         duplicates = 0
+        no_coords = 0
         no_species_match = 0
         bad_date = 0
         no_match_list = []
         with arcpy.da.UpdateCursor('import_features',
                                    [field_dict['unique_id'], field_dict['scientific_name'], 'SpeciesID', 'SynonymID',
-                                    'ignore_imp']) as cursor:
+                                    'ignore_imp', 'SHAPE@']) as cursor:
             for row in EBARUtils.updateCursor(cursor):
                 overall_count += 1
                 if overall_count % 1000 == 0:
-                    EBARUtils.displayMessage(messages, 'Species and duplicates pre-processed ' + str(overall_count))
+                    EBARUtils.displayMessage(messages, 'Species, coordinates and duplicates pre-processed ' + str(overall_count))
                 ignore_imp = 0
                 # check for species
                 species_id = None
@@ -172,17 +173,22 @@ class ImportSpatialDataTool:
                     else:
                         species_id = synonym_species_id_dict[row[field_dict['scientific_name']].lower()]
                         synonym_id = synonym_id_dict[row[field_dict['scientific_name']].lower()]
-                    # check for duplicates
-                    # handle case where integer gets read as float with decimals
-                    uid_raw = row[field_dict['unique_id']]
-                    if isinstance(uid_raw, float):
-                        uid_raw = int(uid_raw)
-                    if str(uid_raw) in id_dict:
-                        duplicates += 1
-                        ignore_imp = 1
+                    # check coordinates
+                    if not row['SHAPE@']:
+                        no_coords += 1
+                        ignore_ime = 1
+                    else:
+                        # check for duplicates
+                        # handle case where integer gets read as float with decimals
+                        uid_raw = row[field_dict['unique_id']]
+                        if isinstance(uid_raw, float):
+                            uid_raw = int(uid_raw)
+                        if str(uid_raw) in id_dict:
+                            duplicates += 1
+                            ignore_imp = 1
                 # save
                 cursor.updateRow([row[field_dict['unique_id']], row[field_dict['scientific_name']], species_id,
-                                  synonym_id, ignore_imp])
+                                  synonym_id, ignore_imp, row['SHAPE@']])
             if overall_count > 0:
                 del row
                 # index ignore_imp to improve performance
@@ -211,7 +217,7 @@ class ImportSpatialDataTool:
             EBARUtils.displayMessage(messages, 'Accuracy pre-processed ' + str(overall_count))
 
         # other pre-processing (that doesn't result in ignoring input rows)
-        if overall_count - duplicates - no_species_match - inaccurate > 0:
+        if overall_count - duplicates - no_species_match - no_coords - inaccurate > 0:
             # loop to set eo rank
             if field_dict['eo_rank'] and feature_class_type in ('Polygon', 'MultiPatch'):
                 count = 0
@@ -339,6 +345,7 @@ class ImportSpatialDataTool:
         EBARUtils.displayMessage(messages, 'Summary:')
         EBARUtils.displayMessage(messages, 'Processed - ' + str(overall_count))
         EBARUtils.displayMessage(messages, 'Species not matched - ' + str(no_species_match))
+        EBARUtils.displayMessage(messages, 'No coordinates - ' + str(no_coords))
         EBARUtils.displayMessage(messages,
                                  'Accuracy worse than ' + str(EBARUtils.worst_accuracy) + ' m - ' + str(inaccurate))
         EBARUtils.displayMessage(messages, 'Duplicates - ' + str(duplicates))
@@ -346,7 +353,7 @@ class ImportSpatialDataTool:
             EBARUtils.displayMessage(messages, 'Imported without date - ' + str(bad_date))
         else:
             EBARUtils.displayMessage(messages, 'Imported without date - ' + str(overall_count - no_species_match - 
-                                                                                inaccurate - duplicates))
+                                                                                no_coords - inaccurate - duplicates))
         end_time = datetime.datetime.now()
         EBARUtils.displayMessage(messages, 'End time: ' + str(end_time))
         elapsed_time = end_time - start_time
