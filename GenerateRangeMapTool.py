@@ -446,11 +446,11 @@ def GetBuffer(accuracy):
                 if len(prev_range_map_ids) > 0:
                     with arcpy.da.SearchCursor('ecoshape_review_view', [table_name_prefix + 'EcoshapeReview.OBJECTID'],
                                                table_name_prefix + 'Review.RangeMapID IN (' + \
-                                                   prev_range_map_ids + ') AND ' + table_name_prefix + \
-                                                   'EcoshapeReview.UseForMapGen = 1 AND ' + table_name_prefix + \
-                                                   "EcoshapeReview.AddRemove = '2' AND "  + table_name_prefix + \
-                                                   'EcoshapeReview.EcoshapeID = ' + \
-                                                   str(update_row['EcoshapeID'])) as search_cursor:
+                                               prev_range_map_ids + ') AND ' + table_name_prefix + \
+                                               'EcoshapeReview.UseForMapGen = 1 AND ' + table_name_prefix + \
+                                               "EcoshapeReview.Markup = 'R' AND "  + table_name_prefix + \
+                                               'EcoshapeReview.EcoshapeID = ' + \
+                                               str(update_row['EcoshapeID'])) as search_cursor:
                         for search_row in EBARUtils.searchCursor(search_cursor):
                             ecoshape_reviews += 1
                             remove = True
@@ -458,7 +458,7 @@ def GetBuffer(accuracy):
                     del search_row
                     update_cursor.deleteRow()
                 else:
-                    # kludge because arc ends up with different field names under Enterprise gdb after joining
+                    # update - kludge because arc ends up with different field names under Enterprise gdb after joining
                     field_names = [f.name for f in arcpy.ListFields(temp_ecoshape_countby_source) if f.aliasName in
                                    ['DatasetSourceName', 'DatasetType', 'FREQUENCY','frequency']]
                     id_field_name = [f.name for f in arcpy.ListFields(temp_ecoshape_countby_source) if f.aliasName ==
@@ -480,17 +480,34 @@ def GetBuffer(accuracy):
                                 presence = 'P'
                         if summary != '':
                             del search_row
+                    # check for ecoshape "update" reviews
+                    if len(prev_range_map_ids) > 0:
+                        with arcpy.da.SearchCursor('ecoshape_review_view', [table_name_prefix + 'EcoshapeReview.OBJECTID',
+                                                                            table_name_prefix + 'EcoshapeReview.Markup'],
+                                                   table_name_prefix + 'Review.RangeMapID IN (' + \
+                                                   prev_range_map_ids + ') AND ' + table_name_prefix + \
+                                                   'EcoshapeReview.UseForMapGen = 1 AND ' + table_name_prefix + \
+                                                   "EcoshapeReview.Markup IN ('P', 'X', 'H') AND "  + table_name_prefix + \
+                                                   'EcoshapeReview.EcoshapeID = ' + \
+                                                   str(update_row['EcoshapeID'])) as search_cursor:
+                            search_row = None
+                            for search_row in EBARUtils.searchCursor(search_cursor):
+                                ecoshape_reviews += 1
+                                presence = search_row[table_name_prefix + 'EcoshapeReview.Markup']
+                            if search_row:
+                                del search_row
                     update_cursor.updateRow([update_row['EcoshapeID'], presence, summary])
             if update_row:
                 del update_row
         # loop add review records
         add = False
         if len(prev_range_map_ids) > 0:
-            with arcpy.da.SearchCursor('ecoshape_review_view', [table_name_prefix + 'EcoshapeReview.EcoshapeID'],
+            with arcpy.da.SearchCursor('ecoshape_review_view', [table_name_prefix + 'EcoshapeReview.EcoshapeID',
+                                                                table_name_prefix + 'EcoshapeReview.Markup'],
                                         table_name_prefix + 'Review.RangeMapID IN (' + \
                                             prev_range_map_ids + ') AND ' + table_name_prefix + \
                                             'EcoshapeReview.UseForMapGen = 1 AND ' + table_name_prefix + \
-                                            "EcoshapeReview.AddRemove = '1'") as search_cursor:
+                                            "EcoshapeReview.Markup IN ('P', 'X', 'H')") as search_cursor:
                 search_row = None
                 for search_row in EBARUtils.searchCursor(search_cursor):
                     # check for ecoshape
@@ -509,7 +526,8 @@ def GetBuffer(accuracy):
                                                    ['RangeMapID', 'EcoshapeID', 'Presence',
                                                     'RangeMapEcoshapeNotes']) as insert_cursor:
                             insert_cursor.insertRow([range_map_id,
-                                                     search_row[table_name_prefix + 'EcoshapeReview.EcoshapeID'], 'X',
+                                                     search_row[table_name_prefix + 'EcoshapeReview.EcoshapeID'],
+                                                     search_row[table_name_prefix + 'EcoshapeReview.Markup'],
                                                      'Expert Ecoshape Review'])
                 if search_row:
                     del search_row
