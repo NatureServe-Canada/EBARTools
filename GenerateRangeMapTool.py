@@ -408,7 +408,7 @@ def GetBuffer(accuracy):
             return
 
         # get ecoshape input counts by dataset
-        EBARUtils.displayMessage(messages, 'Counting Ecoshape inputs by Dataset')
+        EBARUtils.displayMessage(messages, 'Counting Ecoshape Inputs by Dataset')
         temp_ecoshape_countby_dataset = 'TempEcoshapeCountByDataset' + str(start_time.year) + str(start_time.month) + \
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
         arcpy.Statistics_analysis('pairwise_intersect_layer', temp_ecoshape_countby_dataset,
