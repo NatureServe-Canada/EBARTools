@@ -76,7 +76,8 @@ class GenerateRangeMapTool:
         species_ids = str(species_id)
         secondary_ids = []
         secondary_names = ''
-        additional_input_records = 0
+        #additional_input_records = 0
+        #excluded_input_records = 0
         if param_secondary:
             for secondary in param_secondary:
                 secondary_id, short_citation = EBARUtils.checkSpecies(secondary.lower(), param_geodatabase)
@@ -259,14 +260,25 @@ class GenerateRangeMapTool:
                                  'InputPointID')
         arcpy.SelectLayerByAttribute_management('input_point_layer', 'NEW_SELECTION',
                                                 table_name_prefix + 'SecondaryInput.RangeMapID = ' + str(range_map_id))
-        result = arcpy.GetCount_management('input_point_layer')
-        additional_input_records += int(result[0])
+        #result = arcpy.GetCount_management('input_point_layer')
+        #additional_input_records += int(result[0])
         arcpy.RemoveJoin_management('input_point_layer', table_name_prefix + 'SecondaryInput')
         # add "real" points to selection
         arcpy.SelectLayerByAttribute_management('input_point_layer', 'ADD_TO_SELECTION',
                                                 'SpeciesID IN (' + species_ids + ') AND (Accuracy IS NULL'
                                                 ' OR Accuracy <= ' + str(EBARUtils.worst_accuracy) + ')'
                                                 ' AND MaxDate IS NOT NULL')
+        #result = arcpy.GetCount_management('input_point_layer')
+        #input_point_count = int(result[0])
+        # remove excluded points from selection
+        arcpy.AddJoin_management('input_point_layer', 'InputPointID', param_geodatabase + '/InputFeedback',
+                                 'InputPointID')
+        arcpy.SelectLayerByAttribute_management('input_point_layer', 'REMOVE_FROM_SELECTION',
+                                                table_name_prefix + 'InputFeedback.ExcludeFromRangeMaps = 1')
+        #result = arcpy.GetCount_management('input_point_layer')
+        #excluded_input_records += input_point_count - int(result[0])
+        arcpy.RemoveJoin_management('input_point_layer', table_name_prefix + 'InputFeedback')
+        # add field for buffer
         EBARUtils.checkAddField('input_point_layer', 'buffer', 'LONG')
         code_block = '''
 def GetBuffer(accuracy):
@@ -288,14 +300,25 @@ def GetBuffer(accuracy):
                                  'InputLineID')
         arcpy.SelectLayerByAttribute_management('input_line_layer', 'NEW_SELECTION',
                                                 table_name_prefix + 'SecondaryInput.RangeMapID = ' + str(range_map_id))
-        result = arcpy.GetCount_management('input_line_layer')
-        additional_input_records += int(result[0])
+        #result = arcpy.GetCount_management('input_line_layer')
+        #additional_input_records += int(result[0])
         arcpy.RemoveJoin_management('input_line_layer', table_name_prefix + 'SecondaryInput')
         # add "real" points to selection
         arcpy.SelectLayerByAttribute_management('input_line_layer', 'ADD_TO_SELECTION',
                                                 'SpeciesID IN (' + species_ids + ') AND (Accuracy IS NULL'
                                                 ' OR Accuracy <= ' + str(EBARUtils.worst_accuracy) + ')'
                                                 ' AND MaxDate IS NOT NULL')
+        #result = arcpy.GetCount_management('input_line_layer')
+        #input_line_count = int(result[0])
+        # remove excluded lines from selection
+        arcpy.AddJoin_management('input_line_layer', 'InputLineID', param_geodatabase + '/InputFeedback',
+                                 'InputLineID')
+        arcpy.SelectLayerByAttribute_management('input_line_layer', 'REMOVE_FROM_SELECTION',
+                                                table_name_prefix + 'InputFeedback.ExcludeFromRangeMaps = 1')
+        #result = arcpy.GetCount_management('input_line_layer')
+        #excluded_input_records += input_line_count - int(result[0])
+        arcpy.RemoveJoin_management('input_line_layer', table_name_prefix + 'InputFeedback')
+        # buffer
         temp_line_buffer = 'TempLineBuffer' + str(start_time.year) + str(start_time.month) + \
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
         arcpy.Buffer_analysis('input_line_layer', temp_line_buffer, default_buffer_size)
@@ -308,8 +331,8 @@ def GetBuffer(accuracy):
                                  'InputPolygonID')
         arcpy.SelectLayerByAttribute_management('input_polygon_layer', 'NEW_SELECTION',
                                                 table_name_prefix + 'SecondaryInput.RangeMapID = ' + str(range_map_id))
-        result = arcpy.GetCount_management('input_polygon_layer')
-        additional_input_records += int(result[0])
+        #result = arcpy.GetCount_management('input_polygon_layer')
+        #additional_input_records += int(result[0])
         arcpy.RemoveJoin_management('input_polygon_layer', table_name_prefix + 'SecondaryInput')
         # add "real" points to selection
         arcpy.SelectLayerByAttribute_management('input_polygon_layer', 'ADD_TO_SELECTION',
@@ -317,6 +340,16 @@ def GetBuffer(accuracy):
                                                 ' OR Accuracy <= ' + str(EBARUtils.worst_accuracy) + ')'
                                                 ' AND MaxDate IS NOT NULL')
 
+        #result = arcpy.GetCount_management('input_polygon_layer')
+        #input_polygon_count = int(result[0])
+        # remove excluded lines from selection
+        arcpy.AddJoin_management('input_polygon_layer', 'InputPolygonID', param_geodatabase + '/InputFeedback',
+                                 'InputPolygonID')
+        arcpy.SelectLayerByAttribute_management('input_polygon_layer', 'REMOVE_FROM_SELECTION',
+                                                table_name_prefix + 'InputFeedback.ExcludeFromRangeMaps = 1')
+        #result = arcpy.GetCount_management('input_polygon_layer')
+        #excluded_input_records += input_polygon_count - int(result[0])
+        arcpy.RemoveJoin_management('input_polygon_layer', table_name_prefix + 'InputFeedback')
         # merge buffer polygons and input polygons
         EBARUtils.displayMessage(messages, 'Merging Buffered Points and Lines and Input Polygons')
         temp_all_inputs = 'TempAllInputs' + str(start_time.year) + str(start_time.month) + \
@@ -629,15 +662,19 @@ def GetBuffer(accuracy):
                         summary += str(search_row[field_names[1]]) + ' ' + search_row[field_names[0]]
                     if search_row:
                         del search_row
-                if ecoshape_reviews > 0:
-                    if len(summary) > 0:
-                        summary += '; '
-                    summary += 'Expert Ecoshape Reviews - ' + str(ecoshape_reviews)
+                #if ecoshape_reviews > 0:
+                #    if len(summary) > 0:
+                #        summary += '; '
+                #    summary += 'Expert Ecoshape Reviews - ' + str(ecoshape_reviews)
                 notes = 'Primary Species Name - ' + param_species
                 if len(secondary_names) > 0:
                     notes += '; Synonyms - ' + secondary_names
-                if additional_input_records > 0:
-                    notes += '; Additional Input Records - ' + str(additional_input_records)
+                #if additional_input_records > 0:
+                #    notes += '; Additional Input Records - ' + str(additional_input_records)
+                #if excluded_input_records > 0:
+                #    notes += '; Excluded Input Records - ' + str(excluded_input_records)
+                if ecoshape_reviews > 0:
+                    notes += '; Expert Ecoshape Reviews - ' + str(ecoshape_reviews)
                 update_cursor.updateRow([summary, datetime.datetime.now(), notes])
 
         # generate TOC entry and actual map!!!
@@ -679,13 +716,13 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_species = arcpy.Parameter()
-    param_species.value = 'Crataegus okennonii'
+    param_species.value = 'Draba yukonensis'
     param_secondary = arcpy.Parameter()
     param_secondary.value = None
     #param_secondary.value = "'Dodia verticalis'"
     #param_secondary.value = "'Dodia tarandus';'Dodia verticalis'"
     param_version = arcpy.Parameter()
-    param_version.value = '0.99'
+    param_version.value = '1.1'
     param_stage = arcpy.Parameter()
     param_stage.value = 'Auto-generated'
     parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage]

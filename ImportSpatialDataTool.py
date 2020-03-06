@@ -369,16 +369,15 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_import_feature_class = arcpy.Parameter()
-    param_import_feature_class.value = 'C:/GIS/EBAR/CDN_CDC_Data/Saskatchewan/SKCDC_obs_freshwater_20200213.gdb' + \
-        '/obs_20200213_pt'
+    param_import_feature_class.value = 'C:/GIS/EBAR/US_CDC_Data/Nature_Serve/EBAR_EOs_NJ_OH_supplement_20200305.shp'
     param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'SK Freshwater Obs Pts'
+    param_dataset_name.value = 'NJ OH Supplement'
     param_dataset_source = arcpy.Parameter()
-    param_dataset_source.value = 'SK Observations'
+    param_dataset_source.value = 'US Element Occurrences'
     param_date_received = arcpy.Parameter()
-    param_date_received.value = 'November 20, 2019'
+    param_date_received.value = 'March 6, 2020'
     param_restrictions = arcpy.Parameter()
-    param_restrictions.value = 'Non-restricted'
+    param_restrictions.value = 'Restricted EBAR'
     parameters = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_source,
                   param_date_received, param_restrictions]
     isd.RunImportSpatialDataTool(parameters, None)
