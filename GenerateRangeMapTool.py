@@ -457,32 +457,41 @@ def GetBuffer(accuracy):
             input_found = False
             #with arcpy.da.SearchCursor(temp_ecoshape_max_polygon,
             #                           ['EcoshapeID', 'MAX_PolygonPropn', 'MAX_MaxDate']) as search_cursor:
-            with arcpy.da.SearchCursor(temp_ecoshape_max_polygon,
-                                       [temp_pairwise_intersect + '_EcoshapeID', 'DatasetSource_DatasetType',
-                                        'MAX_' + temp_pairwise_intersect + '_MaxDate'],
-                                        sql_clause=(None, 'ORDER BY ' + temp_pairwise_intersect + \
-                                            '_EcoshapeID')) as search_cursor:
+            #with arcpy.da.SearchCursor(temp_ecoshape_max_polygon,
+            #                           [temp_pairwise_intersect + '_EcoshapeID', 'DatasetSource_DatasetType',
+            #                            'MAX_' + temp_pairwise_intersect + '_MaxDate'],
+            #                            sql_clause=(None, 'ORDER BY ' + temp_pairwise_intersect + \
+            #                                '_EcoshapeID')) as search_cursor:
+            # kludge because arc ends up with different field names under Enterprise gdb after joining
+            field_names = [f.name for f in arcpy.ListFields(temp_ecoshape_max_polygon) if f.aliasName in
+                            ['EcoshapeID', 'DatasetType',
+                             'MAX_' + table_name_prefix + temp_pairwise_intersect + '.maxdate',
+                             'MAX_' + table_name_prefix + temp_pairwise_intersect + '.MaxDate']]
+            id_field_name = [f.name for f in arcpy.ListFields(temp_ecoshape_max_polygon) if f.aliasName ==
+                             'EcoshapeID'][0]
+            with arcpy.da.SearchCursor(temp_ecoshape_max_polygon, field_names,
+                                       sql_clause=(None, 'ORDER BY ' + id_field_name)) as search_cursor:
                 ecoshape_id = None
                 # start at "lowest" level
                 presence = 'H'
                 for row in EBARUtils.searchCursor(search_cursor):
                     input_found = True
                     if ecoshape_id:
-                        if row[temp_pairwise_intersect + '_EcoshapeID'] != ecoshape_id:
+                        if row[field_names[0]] != ecoshape_id:
                             # save previous ecoshape
                             insert_cursor.insertRow([range_map_id, ecoshape_id, presence])
                             # start new ecoshape
                             ecoshape_id = None
                             presence = 'H'
-                    ecoshape_id = row[temp_pairwise_intersect + '_EcoshapeID']
+                    ecoshape_id = row[field_names[0]]
                     # only check for "upgrades"
-                    if row['DatasetSource_DatasetType'] in ['Habitat Suitability', 'Range Estimate']:
+                    if row[field_names[1]] in ['Habitat Suitability', 'Range Estimate']:
                         if presence == 'H':
                             presence = 'X'
-                    if ((row['DatasetSource_DatasetType'] == 'Critical Habitat') or
-                        (row['DatasetSource_DatasetType'] in ['Element Occurrences', 'Source Features',
+                    if ((row[field_names[1]] == 'Critical Habitat') or
+                        (row[field_names[1]] in ['Element Occurrences', 'Source Features',
                                                               'Species Observations'] and
-                         (datetime.datetime.now().year - row['MAX_' + temp_pairwise_intersect + '_MaxDate'].year)
+                         (datetime.datetime.now().year - row[field_names[2]].year)
                          <= age_for_historical)):
                         if presence in ['H', 'X']:
                             presence = 'P'
