@@ -263,21 +263,11 @@ class GenerateRangeMapTool:
         #result = arcpy.GetCount_management('input_point_layer')
         #additional_input_records += int(result[0])
         arcpy.RemoveJoin_management('input_point_layer', table_name_prefix + 'SecondaryInput')
-        # add "real" points to selection based on type
-        arcpy.AddJoin_management('input_point_layer', 'InputDatasetID',
-                                 param_geodatabase + '/InputDataset', 'InputDatasetID', 'KEEP_COMMON')
-        arcpy.AddJoin_management('input_point_layer', 'DatasetSourceID',
-                                 param_geodatabase + '/DatasetSource', 'DatasetSourceID', 'KEEP_COMMON')
-        where_clause = table_name_prefix + 'InputPoint.SpeciesID IN (' + species_ids + ') AND (' + \
-                       table_name_prefix + 'InputPoint.Accuracy IS NULL OR ' + table_name_prefix + \
-                       'InputPoint.Accuracy <= ' + str(EBARUtils.worst_accuracy) + ') AND ((' + \
-                       table_name_prefix + "DatasetSource.DatasetType IN ('Element Occurrences', 'Source Features'," + \
-                       " 'Species Observations') AND " + table_name_prefix + 'InputPoint.MaxDate IS NOT NULL) OR (' + \
-                       table_name_prefix + "DatasetSource.DatasetType IN ('Critical Habitat', 'Range Estimate'," + \
-                       " 'Habitat Suitabilty')))"
-        arcpy.SelectLayerByAttribute_management('input_point_layer', 'ADD_TO_SELECTION', where_clause)
-        arcpy.RemoveJoin_management('input_point_layer', table_name_prefix + 'DatasetSource')
-        arcpy.RemoveJoin_management('input_point_layer', table_name_prefix + 'InputDataset')
+        # add "real" points to selection
+        arcpy.SelectLayerByAttribute_management('input_point_layer', 'ADD_TO_SELECTION',
+                                                'SpeciesID IN (' + species_ids + ') AND (Accuracy IS NULL'
+                                                ' OR Accuracy <= ' + str(EBARUtils.worst_accuracy) + ')'
+                                                ' AND MaxDate IS NOT NULL')
         #result = arcpy.GetCount_management('input_point_layer')
         #input_point_count = int(result[0])
         # remove excluded points from selection
@@ -285,9 +275,9 @@ class GenerateRangeMapTool:
                                  'InputPointID')
         arcpy.SelectLayerByAttribute_management('input_point_layer', 'REMOVE_FROM_SELECTION',
                                                 table_name_prefix + 'InputFeedback.ExcludeFromRangeMaps = 1')
-        arcpy.RemoveJoin_management('input_point_layer', table_name_prefix + 'InputFeedback')
         #result = arcpy.GetCount_management('input_point_layer')
         #excluded_input_records += input_point_count - int(result[0])
+        arcpy.RemoveJoin_management('input_point_layer', table_name_prefix + 'InputFeedback')
         # add field for buffer
         EBARUtils.checkAddField('input_point_layer', 'buffer', 'LONG')
         code_block = '''
@@ -313,21 +303,11 @@ def GetBuffer(accuracy):
         #result = arcpy.GetCount_management('input_line_layer')
         #additional_input_records += int(result[0])
         arcpy.RemoveJoin_management('input_line_layer', table_name_prefix + 'SecondaryInput')
-        # add "real" lines to selection based on type
-        arcpy.AddJoin_management('input_line_layer', 'InputDatasetID',
-                                 param_geodatabase + '/InputDataset', 'InputDatasetID', 'KEEP_COMMON')
-        arcpy.AddJoin_management('input_line_layer', 'DatasetSourceID',
-                                 param_geodatabase + '/DatasetSource', 'DatasetSourceID', 'KEEP_COMMON')
-        where_clause = table_name_prefix + 'InputLine.SpeciesID IN (' + species_ids + ') AND (' + \
-                       table_name_prefix + 'InputLine.Accuracy IS NULL OR ' + table_name_prefix + \
-                       'InputLine.Accuracy <= ' + str(EBARUtils.worst_accuracy) + ') AND ((' + \
-                       table_name_prefix + "DatasetSource.DatasetType IN ('Element Occurrences', 'Source Features'," + \
-                       " 'Species Observations') AND " + table_name_prefix + 'InputLine.MaxDate IS NOT NULL) OR (' + \
-                       table_name_prefix + "DatasetSource.DatasetType IN ('Critical Habitat', 'Range Estimate'," + \
-                       " 'Habitat Suitabilty')))"
-        arcpy.SelectLayerByAttribute_management('input_line_layer', 'ADD_TO_SELECTION', where_clause)
-        arcpy.RemoveJoin_management('input_line_layer', table_name_prefix + 'DatasetSource')
-        arcpy.RemoveJoin_management('input_line_layer', table_name_prefix + 'InputDataset')
+        # add "real" points to selection
+        arcpy.SelectLayerByAttribute_management('input_line_layer', 'ADD_TO_SELECTION',
+                                                'SpeciesID IN (' + species_ids + ') AND (Accuracy IS NULL'
+                                                ' OR Accuracy <= ' + str(EBARUtils.worst_accuracy) + ')'
+                                                ' AND MaxDate IS NOT NULL')
         #result = arcpy.GetCount_management('input_line_layer')
         #input_line_count = int(result[0])
         # remove excluded lines from selection
@@ -354,21 +334,12 @@ def GetBuffer(accuracy):
         #result = arcpy.GetCount_management('input_polygon_layer')
         #additional_input_records += int(result[0])
         arcpy.RemoveJoin_management('input_polygon_layer', table_name_prefix + 'SecondaryInput')
-        # add "real" polygons to selection based on type
-        arcpy.AddJoin_management('input_polygon_layer', 'InputDatasetID',
-                                 param_geodatabase + '/InputDataset', 'InputDatasetID', 'KEEP_COMMON')
-        arcpy.AddJoin_management('input_polygon_layer', 'DatasetSourceID',
-                                 param_geodatabase + '/DatasetSource', 'DatasetSourceID', 'KEEP_COMMON')
-        where_clause = table_name_prefix + 'InputPolygon.SpeciesID IN (' + species_ids + ') AND (' + \
-                       table_name_prefix + 'InputPolygon.Accuracy IS NULL OR ' + table_name_prefix + \
-                       'InputPolygon.Accuracy <= ' + str(EBARUtils.worst_accuracy) + ') AND ((' + \
-                       table_name_prefix + "DatasetSource.DatasetType IN ('Element Occurrences', 'Source Features'," + \
-                       " 'Species Observations') AND " + table_name_prefix + 'InputPolygon.MaxDate IS NOT NULL) OR (' + \
-                       table_name_prefix + "DatasetSource.DatasetType IN ('Critical Habitat', 'Range Estimate'," + \
-                       " 'Habitat Suitabilty')))"
-        arcpy.SelectLayerByAttribute_management('input_polygon_layer', 'ADD_TO_SELECTION', where_clause)
-        arcpy.RemoveJoin_management('input_polygon_layer', table_name_prefix + 'DatasetSource')
-        arcpy.RemoveJoin_management('input_polygon_layer', table_name_prefix + 'InputDataset')
+        # add "real" points to selection
+        arcpy.SelectLayerByAttribute_management('input_polygon_layer', 'ADD_TO_SELECTION',
+                                                'SpeciesID IN (' + species_ids + ') AND (Accuracy IS NULL'
+                                                ' OR Accuracy <= ' + str(EBARUtils.worst_accuracy) + ')'
+                                                ' AND MaxDate IS NOT NULL')
+
         #result = arcpy.GetCount_management('input_polygon_layer')
         #input_polygon_count = int(result[0])
         # remove excluded lines from selection
@@ -379,7 +350,6 @@ def GetBuffer(accuracy):
         #result = arcpy.GetCount_management('input_polygon_layer')
         #excluded_input_records += input_polygon_count - int(result[0])
         arcpy.RemoveJoin_management('input_polygon_layer', table_name_prefix + 'InputFeedback')
-
         # merge buffer polygons and input polygons
         EBARUtils.displayMessage(messages, 'Merging Buffered Points and Lines and Input Polygons')
         temp_all_inputs = 'TempAllInputs' + str(start_time.year) + str(start_time.month) + \
@@ -436,59 +406,34 @@ def GetBuffer(accuracy):
         #arcpy.Statistics_analysis('pairwise_intersect_layer', 'TempEcoshapeMaxPolygon',
         #                          [['PolygonPropn', 'MAX'], ['MaxDate', 'MAX']], 'EcoshapeID')
 
-        # get max date by type per ecoshape
-        EBARUtils.displayMessage(messages, 'Determining Maximum Date per Ecoshape and DatasetType')
+        # get max date per ecoshape
+        EBARUtils.displayMessage(messages, 'Determining Maximum Date per Ecoshape')
         temp_ecoshape_max_polygon = 'TempEcoshapeMaxPolygon' + str(start_time.year) + str(start_time.month) + \
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
-        arcpy.AddJoin_management('pairwise_intersect_layer', 'InputDatasetID',
-                                 param_geodatabase + '/InputDataset', 'InputDatasetID', 'KEEP_COMMON')
-        arcpy.AddJoin_management('pairwise_intersect_layer', 'DatasetSourceID',
-                                 param_geodatabase + '/DatasetSource', 'DatasetSourceID', 'KEEP_COMMON')
         arcpy.Statistics_analysis('pairwise_intersect_layer', temp_ecoshape_max_polygon,
-                                  [['MaxDate', 'MAX']], [table_name_prefix + temp_pairwise_intersect + '.EcoshapeID',
-                                                         table_name_prefix + 'DatasetSource.DatasetType'])
-        arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'DatasetSource')
-        arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'InputDataset')
+                                  [['MaxDate', 'MAX']], 'EcoshapeID')
 
-        # create RangeMapEcoshape records based on dataset type and max date #and proportion overlap 
-        EBARUtils.displayMessage(messages, 'Creating Range Map Ecoshape records based on DatasetType and Maximum Date')
+        # create RangeMapEcoshape records based on max date #and proportion overlap 
+        EBARUtils.displayMessage(messages, 'Creating Range Map Ecoshape records')
         with arcpy.da.InsertCursor(param_geodatabase + '/RangeMapEcoshape',
                                    ['RangeMapID', 'EcoshapeID', 'Presence']) as insert_cursor:
             input_found = False
             #with arcpy.da.SearchCursor(temp_ecoshape_max_polygon,
             #                           ['EcoshapeID', 'MAX_PolygonPropn', 'MAX_MaxDate']) as search_cursor:
             with arcpy.da.SearchCursor(temp_ecoshape_max_polygon,
-                                       [temp_pairwise_intersect + '_EcoshapeID', 'DatasetSource_DatasetType',
-                                        'MAX_' + temp_pairwise_intersect + '_MaxDate'],
-                                        sql_clause=(None, 'ORDER BY ' + temp_pairwise_intersect + \
-                                            '_EcoshapeID')) as search_cursor:
-                ecoshape_id = None
-                # start at "lowest" level
-                presence = 'H'
+                                       ['EcoshapeID', 'MAX_MaxDate']) as search_cursor:
                 for row in EBARUtils.searchCursor(search_cursor):
                     input_found = True
-                    if ecoshape_id:
-                        if row[temp_pairwise_intersect + '_EcoshapeID'] != ecoshape_id:
-                            # save previous ecoshape
-                            insert_cursor.insertRow([range_map_id, ecoshape_id, presence])
-                            # start new ecoshape
-                            ecoshape_id = None
-                            presence = 'H'
-                    ecoshape_id = row[temp_pairwise_intersect + '_EcoshapeID']
-                    # only check for "upgrades"
-                    if row['DatasetSource_DatasetType'] in ['Habitat Suitability', 'Range Estimate']:
-                        if presence == 'H':
-                            presence = 'X'
-                    if ((row['DatasetSource_DatasetType'] == 'Critical Habitat') or
-                        (row['DatasetSource_DatasetType'] in ['Element Occurrences', 'Source Features',
-                                                              'Species Observations'] and
-                         (datetime.datetime.now().year - row['MAX_' + temp_pairwise_intersect + '_MaxDate'].year)
-                         <= age_for_historical)):
-                        if presence in ['H', 'X']:
+                    presence = 'X'
+                    if row['MAX_MaxDate']:
+                        if (datetime.datetime.now().year - row['MAX_MaxDate'].year) <= age_for_historical:
+                            # eo rank not in ('H', 'H?', 'X', 'X?') or "new" date gets Present
                             presence = 'P'
+                        else:
+                            # otherwise Historical
+                            presence = 'H'
+                    insert_cursor.insertRow([range_map_id, row['EcoshapeID'], presence])
                 if input_found:
-                    # save final ecoshape
-                    insert_cursor.insertRow([range_map_id, ecoshape_id, presence])
                     del row
         if not input_found:
             EBARUtils.displayMessage(messages, 'WARNING: No inputs/buffers overlap ecoshapes')
@@ -516,9 +461,9 @@ def GetBuffer(accuracy):
         arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'DatasetSource')
         arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'InputDataset')
 
-        # apply Reviews and summaries to RangeMapEcoshape records
+        # apply Reviews, Presence categories and summaries to RangeMapEcoshape records
         EBARUtils.displayMessage(messages,
-                                 'Applying Reviews and summaries to RangeMapEcoshape records')
+                                 'Applying Reviews, Presence categories and summaries to RangeMapEcoshape records')
         ecoshape_reviews = 0
         if len(prev_range_map_ids) > 0:
             arcpy.MakeTableView_management(param_geodatabase + '/EcoshapeReview', 'ecoshape_review_view')
@@ -561,6 +506,11 @@ def GetBuffer(accuracy):
                             else:
                                 summary += ', '
                             summary += str(search_row[field_names[2]]) + ' ' + search_row[field_names[0]]
+                            # high-grade Presence Expected to Present for some dataset sources
+                            if presence == 'X' and (search_row[field_names[1]] in
+                                                    ('Element Occurrences', 'Source Features', 'Species Observations',
+                                                     'Critical Habitat')):
+                                presence = 'P'
                         if summary != '':
                             del search_row
                     # check for ecoshape "update" reviews
@@ -766,13 +716,13 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_species = arcpy.Parameter()
-    param_species.value = 'Carex viridula'
+    param_species.value = 'Draba yukonensis'
     param_secondary = arcpy.Parameter()
     param_secondary.value = None
     #param_secondary.value = "'Dodia verticalis'"
     #param_secondary.value = "'Dodia tarandus';'Dodia verticalis'"
     param_version = arcpy.Parameter()
-    param_version.value = '1.0'
+    param_version.value = '1.1'
     param_stage = arcpy.Parameter()
     param_stage.value = 'Auto-generated'
     parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage]
