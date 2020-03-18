@@ -98,7 +98,7 @@ class GenerateRangeMapTool:
                 secondary_names += secondary + '' + short_citation
 
         # check for range map record and add if necessary
-        EBARUtils.displayMessage(messages, 'Checking for existing range map')
+        EBARUtils.displayMessage(messages, 'Checking for existing Range Map')
         range_map_id = None
         arcpy.MakeTableView_management(param_geodatabase + '/RangeMap', 'range_map_view')
         # filter just on species
@@ -168,7 +168,7 @@ class GenerateRangeMapTool:
                 if review_found:
                     del row
             if review_completed:
-                EBARUtils.displayMessage(messages, 'ERROR: Range Map already exists with completed review(s)')
+                EBARUtils.displayMessage(messages, 'ERROR: Range Map already exists with completed Review(s)')
                 # terminate with error
                 return
                 #raise arcpy.ExecuteError
@@ -185,7 +185,7 @@ class GenerateRangeMapTool:
                     if ecoshape_review:
                         del row
                 if ecoshape_review:
-                    EBARUtils.displayMessage(messages, 'ERROR: Range Map already exists with review(s) in progress')
+                    EBARUtils.displayMessage(messages, 'ERROR: Range Map already exists with Review(s) in progress')
                     # terminate with error
                     return
                     #raise arcpy.ExecuteError
@@ -194,7 +194,7 @@ class GenerateRangeMapTool:
             arcpy.RemoveJoin_management('range_map_view', table_name_prefix + 'Review')
 
             # no reviews completed or in progress, so delete any existing related records
-            EBARUtils.displayMessage(messages, 'Range Map already exists with but with no review(s) completed or in '
+            EBARUtils.displayMessage(messages, 'Range Map already exists with but with no Review(s) completed or in '
                                                'progress, so existing related records will be deleted')
             # consider replacing the following code blocks with select then Delete Rows tools
             with arcpy.da.SearchCursor(param_geodatabase + '/RangeMapEcoshape', ['RangeMapEcoshapeID'],
@@ -226,6 +226,14 @@ class GenerateRangeMapTool:
                 if es_row:
                     del es_row
                     EBARUtils.displayMessage(messages, 'Existing Secondary Species records deleted')
+            with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapInput', ['OBJECTID'],
+                                       'RangeMapID = ' + str(range_map_id)) as rmi_cursor:
+                rmi_row = None
+                for rmi_row in EBARUtils.updateCursor(rmi_cursor):
+                    rmi_cursor.deleteRow()
+                if rmi_row:
+                    del rmi_row
+                    EBARUtils.displayMessage(messages, 'Existing Range Map Input records deleted')
 
         else:
             arcpy.SelectLayerByAttribute_management('range_map_view', 'CLEAR_SELECTION')
@@ -386,6 +394,20 @@ def GetBuffer(accuracy):
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
         arcpy.Merge_management([temp_point_buffer, temp_line_buffer, 'input_polygon_layer'], temp_all_inputs, None,
                                'ADD_SOURCE_INFO')
+        EBARUtils.checkAddField(temp_all_inputs, 'RangeMapID', 'LONG')
+        arcpy.CalculateField_management(temp_all_inputs, 'RangeMapID', range_map_id)
+        EBARUtils.checkAddField(temp_all_inputs, 'OriginalGeometryType', 'TEXT')
+        code_block = '''
+def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
+    ret = 'P'
+    if input_line_id:
+        ret = 'L'
+    elif input_polygon_id:
+        ret = 'Y'
+    return ret'''
+        arcpy.CalculateField_management(temp_all_inputs, 'OriginalGeometryType',
+                                        'GetGeometryType(!InputPointID!, !InputLineID!, !InputPolygonID!)', 'PYTHON3',
+                                        code_block)
         arcpy.MakeFeatureLayer_management(temp_all_inputs, 'all_inputs_layer')
 
         # eo ranks, when available, override dates in determining historical (fake the date to accomplish this)
@@ -511,8 +533,8 @@ def GetBuffer(accuracy):
         arcpy.Statistics_analysis('pairwise_intersect_layer', temp_ecoshape_countby_dataset,
                                   [['InputPointID', 'COUNT']], ['EcoshapeID', 'InputDatasetID'])
 
-        # get ecoshape input counts by source
-        EBARUtils.displayMessage(messages, 'Counting Ecoshape Inputs by Dataset Source')
+        # get ecoshape input counts by source and restricted input counts
+        EBARUtils.displayMessage(messages, 'Counting Ecoshape Inputs by Dataset Source and Restricted Inputs')
         temp_ecoshape_countby_source = 'TempEcoshapeCountBySource' + str(start_time.year) + str(start_time.month) + \
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
         arcpy.AddJoin_management('pairwise_intersect_layer', 'InputDatasetID',
@@ -522,6 +544,13 @@ def GetBuffer(accuracy):
         arcpy.Statistics_analysis('pairwise_intersect_layer', temp_ecoshape_countby_source, [['InputPointID', 'COUNT']],
                                   ['EcoshapeID', table_name_prefix + 'DatasetSource.DatasetSourceName',
                                    table_name_prefix + 'DatasetSource.DatasetType'])
+        temp_ecoshape_restricted = 'TempEcoshapeRestricted' + str(start_time.year) + str(start_time.month) + \
+            str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
+        arcpy.SelectLayerByAttribute_management('pairwise_intersect_layer', 'NEW_SELECTION',
+                                                table_name_prefix + "InputDataset.Restrictions IN ('R', 'E')")
+        arcpy.Statistics_analysis('pairwise_intersect_layer', temp_ecoshape_restricted, [['InputPointID', 'COUNT']],
+                                  ['EcoshapeID'])
+        arcpy.SelectLayerByAttribute_management('pairwise_intersect_layer', 'CLEAR_SELECTION')
         arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'DatasetSource')
         arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'InputDataset')
 
@@ -532,7 +561,7 @@ def GetBuffer(accuracy):
         if len(prev_range_map_ids) > 0:
             arcpy.MakeTableView_management(param_geodatabase + '/EcoshapeReview', 'ecoshape_review_view')
             arcpy.AddJoin_management('ecoshape_review_view', 'ReviewID', param_geodatabase + '/Review', 'ReviewID')
-        # loop existing ecoshapes
+        # loop existing range map ecoshapes
         with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape',
                                    ['EcoshapeID', 'Presence', 'RangeMapEcoshapeNotes'],
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
@@ -555,9 +584,10 @@ def GetBuffer(accuracy):
                     del search_row
                     update_cursor.deleteRow()
                 else:
-                    # update - kludge because arc ends up with different field names under Enterprise gdb after joining
+                    # update
+                    # kludge because arc ends up with different field names under Enterprise gdb after joining
                     field_names = [f.name for f in arcpy.ListFields(temp_ecoshape_countby_source) if f.aliasName in
-                                   ['DatasetSourceName', 'DatasetType', 'FREQUENCY','frequency']]
+                                   ['DatasetSourceName', 'DatasetType', 'FREQUENCY', 'frequency']]
                     id_field_name = [f.name for f in arcpy.ListFields(temp_ecoshape_countby_source) if f.aliasName ==
                                      'EcoshapeID'][0]
                     with arcpy.da.SearchCursor(temp_ecoshape_countby_source, field_names,
@@ -571,6 +601,19 @@ def GetBuffer(accuracy):
                                 summary += ', '
                             summary += str(search_row[field_names[2]]) + ' ' + search_row[field_names[0]]
                         if summary != '':
+                            del search_row
+                    # get restricted count
+                    # kludge because arc ends up with different field names under Enterprise gdb after joining
+                    field_names = [f.name for f in arcpy.ListFields(temp_ecoshape_restricted) if f.aliasName in
+                                   ['FREQUENCY', 'frequency']]
+                    id_field_name = [f.name for f in arcpy.ListFields(temp_ecoshape_restricted) if f.aliasName ==
+                                     'EcoshapeID'][0]
+                    search_row = None
+                    with arcpy.da.SearchCursor(temp_ecoshape_restricted, field_names,
+                                               id_field_name + ' = ' + str(update_row['EcoshapeID'])) as search_cursor:
+                        for search_row in EBARUtils.searchCursor(search_cursor):
+                            summary += ' (' + str(search_row[field_names[0]]) + ' RESTRICTED)'
+                        if search_row:
                             del search_row
                     # check for ecoshape "update" reviews
                     if len(prev_range_map_ids) > 0:
@@ -651,8 +694,8 @@ def GetBuffer(accuracy):
             if rme_row:
                 del rme_row
 
-        # get overall input counts by source (using original inputs)
-        EBARUtils.displayMessage(messages, 'Counting overall inputs by Dataset Source')
+        # get overall input counts by source and restricted input counts (using original inputs)
+        EBARUtils.displayMessage(messages, 'Counting Overall Inputs by Dataset Source and Restricted Inputs')
         # select only those within ecoshapes
         arcpy.AddJoin_management('all_inputs_layer', 'InputDatasetID',
                                  param_geodatabase + '/InputDataset', 'InputDatasetID', 'KEEP_COMMON')
@@ -663,6 +706,53 @@ def GetBuffer(accuracy):
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
         arcpy.Statistics_analysis('all_inputs_layer', temp_overall_countby_source, [['InputDatasetID', 'COUNT']],
                                   [table_name_prefix + 'DatasetSource.DatasetSourceName'])
+        temp_overall_restricted = 'TempOverallRestricted' + str(start_time.year) + str(start_time.month) + \
+            str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
+        arcpy.Statistics_analysis('all_inputs_layer', temp_overall_restricted, [['InputDatasetID', 'COUNT']],
+                                  [table_name_prefix + 'InputDataset.Restrictions'])
+
+        # create RangeMapInput records from Non-restricted for overlay display in EBAR Reviewer
+        EBARUtils.displayMessage(messages, 'Creating RangeMapInput records for overlay display in EBAR Reviewer')
+        arcpy.SelectLayerByAttribute_management('all_inputs_layer', 'SUBSET_SELECTION',
+                                                table_name_prefix + "InputDataset.Restrictions = 'N'")
+        arcpy.AddJoin_management('all_inputs_layer', 'SpeciesID',
+                                 param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', 'SpeciesID', 'KEEP_COMMON')
+        arcpy.AddJoin_management('all_inputs_layer', 'SynonymID',
+                                 param_geodatabase + '/Synonym', 'SynonymID', 'KEEP_ALL')
+        field_mappings = arcpy.FieldMappings()
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
+                                                            table_name_prefix + temp_all_inputs + '.RangeMapID',
+                                                            'RangeMapID', 'LONG'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer', table_name_prefix + \
+                                                                temp_all_inputs + '.OriginalGeometryType',
+                                                            'OriginalGeometryType', 'TEXT'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer', table_name_prefix + \
+                                                                'BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME',
+                                                            'NationalScientificName', 'TEXT'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
+                                                            table_name_prefix + 'Synonym.SynonymName',
+                                                            'SynonymName', 'TEXT'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
+                                                            table_name_prefix + 'DatasetSource.DatasetSourceName',
+                                                            'DatasetSourceName', 'TEXT'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
+                                                            table_name_prefix + 'DatasetSource.DatasetType',
+                                                            'DatasetType', 'TEXT'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
+                                                            table_name_prefix + temp_all_inputs + '.Accuracy',
+                                                            'Accuracy', 'LONG'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
+                                                            table_name_prefix + temp_all_inputs + '.MaxDate',
+                                                            'MaxDate', 'DATE'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer', table_name_prefix + \
+                                                                temp_all_inputs + '.CoordinatesObscured',
+                                                            'CoordinatesObscured', 'SHORT'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer', table_name_prefix + \
+                                                                temp_all_inputs + '.RepresentationAccuracy',
+                                                            'RepresentationAccuracy', 'TEXT'))
+        arcpy.Append_management('all_inputs_layer', param_geodatabase + '/RangeMapInput', 'NO_TEST', field_mappings)
+        arcpy.RemoveJoin_management('all_inputs_layer', table_name_prefix + 'Synonym')
+        arcpy.RemoveJoin_management('all_inputs_layer', table_name_prefix + 'BIOTICS_ELEMENT_NATIONAL')
 
         # get synonyms used
         EBARUtils.displayMessage(messages, 'Documenting Synonyms used')
@@ -703,13 +793,14 @@ def GetBuffer(accuracy):
                     del search_row
 
         # update RangeMap metadata
-        EBARUtils.displayMessage(messages, 'Updating Range Map record with overall summary')
+        EBARUtils.displayMessage(messages, 'Updating Range Map record with Overall Summary')
         with arcpy.da.UpdateCursor('range_map_view', ['RangeMetadata', 'RangeDate', 'RangeMapNotes'],
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
             for update_row in update_cursor:
+                # input records
                 # kludge because arc ends up with different field names under Enterprise gdb after joining
                 field_names = [f.name for f in arcpy.ListFields(temp_overall_countby_source) if f.aliasName in
-                               ['DatasetSourceName','FREQUENCY','frequency']]
+                               ['DatasetSourceName', 'FREQUENCY', 'frequency']]
                 with arcpy.da.SearchCursor(temp_overall_countby_source, field_names) as search_cursor:
                     summary = ''
                     search_row = None
@@ -721,6 +812,19 @@ def GetBuffer(accuracy):
                         summary += str(search_row[field_names[1]]) + ' ' + search_row[field_names[0]]
                     if search_row:
                         del search_row
+                # restricted count
+                # kludge because arc ends up with different field names under Enterprise gdb after joining
+                field_names = [f.name for f in arcpy.ListFields(temp_overall_restricted) if f.aliasName in
+                               ['Restrictions', 'FREQUENCY', 'frequency']]
+                with arcpy.da.SearchCursor(temp_overall_restricted, field_names) as search_cursor:
+                    restricted = 0
+                    for search_row in EBARUtils.searchCursor(search_cursor):
+                        if search_row[field_names[0]] in ['R', 'E']:
+                            restricted += search_row[field_names[1]]
+                    if restricted > 0:
+                        del search_row
+                        summary += ' (' + str(restricted) + ' RESTRICTED)'
+                ## expert reviews
                 #if ecoshape_reviews > 0:
                 #    if len(summary) > 0:
                 #        summary += '; '
@@ -728,10 +832,13 @@ def GetBuffer(accuracy):
                 notes = 'Primary Species Name - ' + param_species
                 if len(secondary_names) > 0:
                     notes += '; Synonyms - ' + secondary_names
+                ## additional input records
                 #if additional_input_records > 0:
                 #    notes += '; Additional Input Records - ' + str(additional_input_records)
+                ## excluded input records
                 #if excluded_input_records > 0:
                 #    notes += '; Excluded Input Records - ' + str(excluded_input_records)
+                # expert ecoshape reviews
                 if ecoshape_reviews > 0:
                     notes += '; Expert Ecoshape Reviews - ' + str(ecoshape_reviews)
                 update_cursor.updateRow([summary, datetime.datetime.now(), notes])
@@ -743,8 +850,12 @@ def GetBuffer(accuracy):
             arcpy.Delete_management(temp_unique_synonyms)
         if arcpy.Exists(temp_overall_countby_source):
             arcpy.Delete_management(temp_overall_countby_source)
+        if arcpy.Exists(temp_overall_restricted):
+            arcpy.Delete_management(temp_overall_restricted)
         if arcpy.Exists(temp_ecoshape_countby_source):
             arcpy.Delete_management(temp_ecoshape_countby_source)
+        if arcpy.Exists(temp_ecoshape_restricted):
+            arcpy.Delete_management(temp_ecoshape_restricted)
         if arcpy.Exists(temp_ecoshape_countby_dataset):
             arcpy.Delete_management(temp_ecoshape_countby_dataset)
         if arcpy.Exists(temp_ecoshape_max_polygon):
