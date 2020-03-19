@@ -556,7 +556,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
 
         # apply Reviews and summaries to RangeMapEcoshape records
         EBARUtils.displayMessage(messages,
-                                 'Applying Reviews and summaries to RangeMapEcoshape records')
+                                 'Applying Reviews and summaries to Range Map Ecoshape records')
         ecoshape_reviews = 0
         if len(prev_range_map_ids) > 0:
             arcpy.MakeTableView_management(param_geodatabase + '/EcoshapeReview', 'ecoshape_review_view')
@@ -748,9 +748,6 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer', table_name_prefix + \
                                                                 temp_all_inputs + '.CoordinatesObscured',
                                                             'CoordinatesObscured', 'SHORT'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer', table_name_prefix + \
-                                                                temp_all_inputs + '.RepresentationAccuracy',
-                                                            'RepresentationAccuracy', 'TEXT'))
         arcpy.Append_management('all_inputs_layer', param_geodatabase + '/RangeMapInput', 'NO_TEST', field_mappings)
         arcpy.RemoveJoin_management('all_inputs_layer', table_name_prefix + 'Synonym')
         arcpy.RemoveJoin_management('all_inputs_layer', table_name_prefix + 'BIOTICS_ELEMENT_NATIONAL')
