@@ -595,12 +595,10 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                         summary = ''
                         presence = update_row['Presence']
                         for search_row in EBARUtils.searchCursor(search_cursor):
-                            if len(summary) == 0:
-                                summary = 'Input records - '
-                            else:
+                            if len(summary) > 0:
                                 summary += ', '
                             summary += str(search_row[field_names[2]]) + ' ' + search_row[field_names[0]]
-                        if summary != '':
+                        if len(summary) > 0:
                             del search_row
                     # get restricted count
                     # kludge because arc ends up with different field names under Enterprise gdb after joining
@@ -608,13 +606,16 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                    ['FREQUENCY', 'frequency']]
                     id_field_name = [f.name for f in arcpy.ListFields(temp_ecoshape_restricted) if f.aliasName ==
                                      'EcoshapeID'][0]
-                    search_row = None
+                    restricted = 0
                     with arcpy.da.SearchCursor(temp_ecoshape_restricted, field_names,
                                                id_field_name + ' = ' + str(update_row['EcoshapeID'])) as search_cursor:
                         for search_row in EBARUtils.searchCursor(search_cursor):
-                            summary += ' (' + str(search_row[field_names[0]]) + ' RESTRICTED)'
-                        if search_row:
+                            restricted = search_row[field_names[0]]
+                        if restricted > 0:
                             del search_row
+                            summary = 'Input records (' + str(restricted) + ' RESTRICTED) - ' + summary
+                        else:
+                            summary = 'Input records - ' + summary
                     # check for ecoshape "update" reviews
                     if len(prev_range_map_ids) > 0:
                         with arcpy.da.SearchCursor('ecoshape_review_view', [table_name_prefix + 'EcoshapeReview.OBJECTID',
@@ -712,7 +713,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                   [table_name_prefix + 'InputDataset.Restrictions'])
 
         # create RangeMapInput records from Non-restricted for overlay display in EBAR Reviewer
-        EBARUtils.displayMessage(messages, 'Creating RangeMapInput records for overlay display in EBAR Reviewer')
+        EBARUtils.displayMessage(messages, 'Creating Range Map Input records for overlay display in EBAR Reviewer')
         arcpy.SelectLayerByAttribute_management('all_inputs_layer', 'SUBSET_SELECTION',
                                                 table_name_prefix + "InputDataset.Restrictions = 'N'")
         arcpy.AddJoin_management('all_inputs_layer', 'SpeciesID',
@@ -803,14 +804,11 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                ['DatasetSourceName', 'FREQUENCY', 'frequency']]
                 with arcpy.da.SearchCursor(temp_overall_countby_source, field_names) as search_cursor:
                     summary = ''
-                    search_row = None
                     for search_row in EBARUtils.searchCursor(search_cursor):
-                        if len(summary) == 0:
-                            summary = 'Input records - '
-                        else:
+                        if len(summary) > 0:
                             summary += ', '
                         summary += str(search_row[field_names[1]]) + ' ' + search_row[field_names[0]]
-                    if search_row:
+                    if len(summary) > 0:
                         del search_row
                 # restricted count
                 # kludge because arc ends up with different field names under Enterprise gdb after joining
@@ -823,7 +821,9 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                             restricted += search_row[field_names[1]]
                     if restricted > 0:
                         del search_row
-                        summary += ' (' + str(restricted) + ' RESTRICTED)'
+                        summary = 'Input Records (' + str(restricted) + ' RESTRICTED) - ' + summary
+                    else:
+                        summary = 'Input Records - ' + summary
                 ## expert reviews
                 #if ecoshape_reviews > 0:
                 #    if len(summary) > 0:
