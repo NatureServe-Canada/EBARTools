@@ -558,6 +558,14 @@ class ImportExternalRangeReview(object):
             parameterType='Optional',
             direction='Input')
 
+        # Presence Field
+        param_presence_field = arcpy.Parameter(
+            displayName='Presence Field',
+            name='presence_field',
+            datatype='GPString',
+            parameterType='Optional',
+            direction='Input')
+
         # Review Label
         param_review_label = arcpy.Parameter(
             displayName='Review Label',
@@ -576,8 +584,8 @@ class ImportExternalRangeReview(object):
             multiValue=True)
 
         params = [param_geodatabase, param_species, param_secondary, param_version, param_stage,
-                  param_external_range_polygons, param_ecoshape_name_field, param_review_label,
-                  param_jurisdictions_covered]
+                  param_external_range_polygons, param_ecoshape_name_field, param_presence_field,
+                  param_review_label, param_jurisdictions_covered]
         return params
 
     def isLicensed(self):
@@ -597,7 +605,7 @@ class ImportExternalRangeReview(object):
                     jur_list.append(row['JurisdictionName'])
                 if len(jur_list) > 0:
                     del row
-            parameters[8].filter.list = jur_list
+            parameters[9].filter.list = jur_list
         return
 
     def updateMessages(self, parameters):
