@@ -58,9 +58,15 @@ class GenerateRangeMapTool:
         param_stage = parameters[4].valueAsText
         param_scope = parameters[5].valueAsText
         national_jur_ids = None
+        scope = None
         if param_scope:
             if param_scope == 'National':
                 national_jur_ids = '(1,2,3,4,5,6,7,8,9,10,11,12,13)'
+                scope = 'N'
+            if param_scope == 'Global':
+                scope = 'G'
+            if param_scope == 'North American':
+                scope = 'A'
 
         # use passed geodatabase as workspace (still seems to go to default geodatabase)
         arcpy.env.workspace = param_geodatabase
@@ -249,14 +255,6 @@ class GenerateRangeMapTool:
                 notes = 'Primary Species Name - ' + param_species
                 if len(secondary_names) > 0:
                     notes += '; Synonyms - ' + secondary_names
-                scope = None
-                if param_scope:
-                    if param_scope == 'National':
-                        scope = 'N'
-                    if param_scope == 'Global':
-                        scope = 'G'
-                    if param_scope == 'North American':
-                        scope = 'A'
                 range_map_id = cursor.insertRow([species_id, param_version, param_stage, datetime.datetime.now(),
                                                  notes, 0], scope)
             EBARUtils.setNewID(param_geodatabase + '/RangeMap', 'RangeMapID', 'OBJECTID = ' + str(range_map_id))
