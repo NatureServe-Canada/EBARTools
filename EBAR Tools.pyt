@@ -1,6 +1,6 @@
 # Project: Ecosytem-based Automated Range Mapping (EBAR)
-# Credits: Randal Greene, Christine Terwissen
-# © NatureServe Canada 2019 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+# Credits: Randal Greene, Christine Terwissen, Meg Southee
+# © NatureServe Canada 2020 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 # Program: EBAR Tools.pyt
 # ArcGIS Python toolbox for importing species datasets and generating EBAR maps
@@ -19,6 +19,7 @@ import ListElementNationalIDsTool
 import SyncSpeciesListTool
 import AddSynonymsTool
 import ImportExternalRangeReviewTool
+import SyncSpeciesListKBA
 import EBARUtils
 import datetime
 import locale
@@ -399,7 +400,58 @@ class SyncSpeciesList(object):
     def __init__(self):
         """Define the tool (tool name is the name of the class)."""
         self.label = 'Sync Species List'
-        self.description = 'Synchronize the BIOTIOCS_NATIONAL_ELMENT and Species tables with Biotics'
+        self.description = 'Synchronize the BIOTICS_NATIONAL_ELEMENT and Species tables with Biotics'
+        self.canRunInBackground = True
+
+    def getParameterInfo(self):
+        """Define parameter definitions"""
+        # Geodatabase
+        param_geodatabase = arcpy.Parameter(
+            displayName='Geodatabase',
+            name='geodatabase',
+            datatype='DEWorkspace',
+            parameterType='Required',
+            direction='Input')
+        param_geodatabase.filter.list = ['Local Database', 'Remote Database']
+
+        # CSV
+        param_csv = arcpy.Parameter(
+            displayName='CSV File',
+            name='csv_file',
+            datatype='DEFile',
+            parameterType='Required',
+            direction='Input')
+        param_csv.filter.list = ['txt', 'csv']
+
+        params = [param_geodatabase, param_csv]
+        return params
+
+    def isLicensed(self):
+        """Set whether tool is licensed to execute."""
+        return True
+
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal validation is performed.  This method is
+        called whenever a parameter has been changed."""
+        return
+
+    def updateMessages(self, parameters):
+        """Modify the messages created by internal validation for each tool parameter.  This method is called
+        after internal validation."""
+        return
+
+    def execute(self, parameters, messages):
+        """The source code of the tool."""
+        ssl = SyncSpeciesListTool.SyncSpeciesListTool()
+        ssl.RunSyncSpeciesListTool(parameters, messages)
+        return
+
+
+class SyncSpeciesListKBA(object):
+    def __init__(self):
+        """Define the tool (tool name is the name of the class)."""
+        self.label = 'Sync Species List KBA'
+        self.description = 'Synchronize the Species tables with WCS KBA updates'
         self.canRunInBackground = True
 
     def getParameterInfo(self):
@@ -441,8 +493,8 @@ class SyncSpeciesList(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        ssl = SyncSpeciesListTool.SyncSpeciesListTool()
-        ssl.RunSyncSpeciesListTool(parameters, messages)
+        sslkba = SyncSpeciesListKBA.SyncSpeciesListKBA()
+        sslkba.RunSyncSpeciesListKBATool(parameters, messages)
         return
 
 
