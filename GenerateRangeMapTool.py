@@ -807,7 +807,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
 
         # update RangeMap metadata
         EBARUtils.displayMessage(messages, 'Updating Range Map record with Overall Summary')
-        with arcpy.da.UpdateCursor('range_map_view', ['RangeMetadata', 'RangeDate', 'RangeMapNotes'],
+        with arcpy.da.UpdateCursor('range_map_view', ['RangeMetadata', 'RangeDate', 'RangeMapNotes', 'Scope'],
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
             for update_row in update_cursor:
                 # input records
@@ -853,7 +853,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                 # expert ecoshape reviews
                 if ecoshape_reviews > 0:
                     notes += '; Expert Ecoshape Reviews - ' + str(ecoshape_reviews)
-                update_cursor.updateRow([summary, datetime.datetime.now(), notes])
+                update_cursor.updateRow([summary, datetime.datetime.now(), notes, scope])
 
         # generate TOC entry and actual map!!!
 
