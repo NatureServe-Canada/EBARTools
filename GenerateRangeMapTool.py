@@ -256,7 +256,7 @@ class GenerateRangeMapTool:
                 if len(secondary_names) > 0:
                     notes += '; Synonyms - ' + secondary_names
                 range_map_id = cursor.insertRow([species_id, param_version, param_stage, datetime.datetime.now(),
-                                                 notes, 0], scope)
+                                                 notes, 0, scope])
             EBARUtils.setNewID(param_geodatabase + '/RangeMap', 'RangeMapID', 'OBJECTID = ' + str(range_map_id))
             EBARUtils.displayMessage(messages, 'Range Map record created')
 
