@@ -618,8 +618,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                             summary = 'Input records - ' + summary
                     # check for ecoshape "update" reviews
                     if len(prev_range_map_ids) > 0:
-                        with arcpy.da.SearchCursor('ecoshape_review_view', [table_name_prefix + 'EcoshapeReview.OBJECTID',
-                                                                            table_name_prefix + 'EcoshapeReview.Markup'],
+                        with arcpy.da.SearchCursor('ecoshape_review_view', [table_name_prefix + 'EcoshapeReview.Markup'],
                                                    table_name_prefix + 'Review.RangeMapID IN (' + \
                                                    prev_range_map_ids + ') AND ' + table_name_prefix + \
                                                    'EcoshapeReview.UseForMapGen = 1 AND ' + table_name_prefix + \
@@ -635,15 +634,14 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     update_cursor.updateRow([update_row['EcoshapeID'], presence, summary])
             if update_row:
                 del update_row
-        # loop add review records
-        add = False
+        # loop review records and check for need to add
         if len(prev_range_map_ids) > 0:
             with arcpy.da.SearchCursor('ecoshape_review_view', [table_name_prefix + 'EcoshapeReview.EcoshapeID',
                                                                 table_name_prefix + 'EcoshapeReview.Markup'],
                                         table_name_prefix + 'Review.RangeMapID IN (' + \
-                                            prev_range_map_ids + ') AND ' + table_name_prefix + \
-                                            'EcoshapeReview.UseForMapGen = 1 AND ' + table_name_prefix + \
-                                            "EcoshapeReview.Markup IN ('P', 'X', 'H')") as search_cursor:
+                                        prev_range_map_ids + ') AND ' + table_name_prefix + \
+                                        'EcoshapeReview.UseForMapGen = 1 AND ' + table_name_prefix + \
+                                        "EcoshapeReview.Markup IN ('P', 'X', 'H')") as search_cursor:
                 search_row = None
                 for search_row in EBARUtils.searchCursor(search_cursor):
                     # check for ecoshape
