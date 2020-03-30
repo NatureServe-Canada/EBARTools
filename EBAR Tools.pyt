@@ -542,20 +542,11 @@ class ImportExternalRangeReview(object):
         param_stage.value = 'Auto-generated'
 
         # External Range Polygons
-        param_external_range_polygons = arcpy.Parameter(
-            displayName='External Range Polygons',
-            name='external_range_polygons',
-            datatype='GPFeatureLayer',
+        param_external_range_table = arcpy.Parameter(
+            displayName='External Range Table',
+            name='external_range_table',
+            datatype='GPTableView',
             parameterType='Required',
-            direction='Input')
-        param_external_range_polygons.filter.list = ['Polygon', 'MultiPatch']
-
-        # Ecoshape Name Field
-        param_ecoshape_name_field = arcpy.Parameter(
-            displayName='Ecoshape Name Field',
-            name='ecoshape_name_field',
-            datatype='GPString',
-            parameterType='Optional',
             direction='Input')
 
         # Presence Field
@@ -579,13 +570,12 @@ class ImportExternalRangeReview(object):
             displayName='Jurisdictions Covered',
             name='jurisdictions_covered',
             datatype='GPString',
-            parameterType='Required',
+            parameterType='Optional',
             direction='Input',
             multiValue=True)
 
         params = [param_geodatabase, param_species, param_secondary, param_version, param_stage,
-                  param_external_range_polygons, param_ecoshape_name_field, param_presence_field,
-                  param_review_label, param_jurisdictions_covered]
+                  param_external_range_table, param_presence_field, param_review_label, param_jurisdictions_covered]
         return params
 
     def isLicensed(self):
@@ -605,7 +595,7 @@ class ImportExternalRangeReview(object):
                     jur_list.append(row['JurisdictionName'])
                 if len(jur_list) > 0:
                     del row
-            parameters[9].filter.list = jur_list
+            parameters[8].filter.list = jur_list
         return
 
     def updateMessages(self, parameters):
