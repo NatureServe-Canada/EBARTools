@@ -56,6 +56,11 @@ class GenerateRangeMapTool:
             param_secondary = param_secondary.split(';')
         param_version = parameters[3].valueAsText
         param_stage = parameters[4].valueAsText
+        param_scope = parameters[5].valueAsText
+        national_jur_ids = None
+        if param_scope:
+            if param_scope == 'National':
+                national_jur_ids = '(1,2,3,4,5,6,7,8,9,10,11,12,13)'
 
         # use passed geodatabase as workspace (still seems to go to default geodatabase)
         arcpy.env.workspace = param_geodatabase
@@ -240,12 +245,20 @@ class GenerateRangeMapTool:
             # create RangeMap record
             with arcpy.da.InsertCursor('range_map_view',
                                        ['SpeciesID', 'RangeVersion', 'RangeStage', 'RangeDate', 'RangeMapNotes',
-                                        'IncludeInEBARReviewer']) as cursor:
+                                        'IncludeInEBARReviewer', 'RangeMapScope']) as cursor:
                 notes = 'Primary Species Name - ' + param_species
                 if len(secondary_names) > 0:
                     notes += '; Synonyms - ' + secondary_names
+                scope = None
+                if param_scope:
+                    if param_scope == 'National':
+                        scope = 'N'
+                    if param_scope == 'Global':
+                        scope = 'G'
+                    if param_scope == 'North American':
+                        scope = 'A'
                 range_map_id = cursor.insertRow([species_id, param_version, param_stage, datetime.datetime.now(),
-                                                 notes, 0])
+                                                 notes, 0], scope)
             EBARUtils.setNewID(param_geodatabase + '/RangeMap', 'RangeMapID', 'OBJECTID = ' + str(range_map_id))
             EBARUtils.displayMessage(messages, 'Range Map record created')
 
@@ -428,10 +441,14 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
 
         # pairwise intersect buffers and ecoshape polygons
         EBARUtils.displayMessage(messages, 'Pairwise Intersecting All Inputs with Ecoshapes')
+        if national_jur_ids:
+            arcpy.MakeFeatureLayer_management(param_geodatabase + '/Ecoshape', 'ecoshape_layer',
+                                              'JurisdictionID IN ' + national_jur_ids)
+        else:
+            arcpy.MakeFeatureLayer_management(param_geodatabase + '/Ecoshape', 'ecoshape_layer')
         temp_pairwise_intersect = 'TempPairwiseIntersect' + str(start_time.year) + str(start_time.month) + \
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
-        arcpy.PairwiseIntersect_analysis(['all_inputs_layer',  param_geodatabase + '/Ecoshape'],
-                                         temp_pairwise_intersect)
+        arcpy.PairwiseIntersect_analysis(['all_inputs_layer',  'ecoshape_layer'], temp_pairwise_intersect)
         arcpy.AddIndex_management(temp_pairwise_intersect, 'InputDatasetID', 'idid_idx')
         arcpy.MakeFeatureLayer_management(temp_pairwise_intersect, 'pairwise_intersect_layer')
 
@@ -700,7 +717,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                  param_geodatabase + '/InputDataset', 'InputDatasetID', 'KEEP_COMMON')
         arcpy.AddJoin_management('all_inputs_layer', 'DatasetSourceID',
                                  param_geodatabase + '/DatasetSource', 'DatasetSourceID', 'KEEP_COMMON')
-        arcpy.SelectLayerByLocation_management('all_inputs_layer', 'INTERSECT', param_geodatabase + '/Ecoshape')
+        arcpy.SelectLayerByLocation_management('all_inputs_layer', 'INTERSECT', 'ecoshape_layer')
         temp_overall_countby_source = 'TempOverallCountBySource' + str(start_time.year) + str(start_time.month) + \
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
         arcpy.Statistics_analysis('all_inputs_layer', temp_overall_countby_source, [['InputDatasetID', 'COUNT']],
@@ -890,5 +907,7 @@ if __name__ == '__main__':
     param_version.value = '1.0'
     param_stage = arcpy.Parameter()
     param_stage.value = 'Auto-generated'
-    parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage]
+    param_scope = arcpy.Parameter()
+    param_scope.value = 'National'
+    parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope]
     grm.RunGenerateRangeMapTool(parameters, None)

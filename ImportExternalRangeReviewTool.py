@@ -98,7 +98,7 @@ class ImportExternalRangeReviewTool:
                 secondary_ids.append(secondary_id)
 
         # check for range map record
-        EBARUtils.displayMessage(messages, 'Checking for existing range map')
+        EBARUtils.displayMessage(messages, 'Checking for existing Range Map')
         range_map_id = None
         arcpy.MakeTableView_management(param_geodatabase + '/RangeMap', 'range_map_view',
                                        'SpeciesID = ' + str(species_id) +

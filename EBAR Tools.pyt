@@ -287,7 +287,16 @@ class GenerateRangeMap(object):
         #param_stage.filter.list = ['Auto-generated', 'Expert reviewed', 'Published']
         param_stage.value = 'Auto-generated'
 
-        params = [param_geodatabase, param_species, param_secondary, param_version, param_stage]
+        # Scope
+        param_scope = arcpy.Parameter(
+            displayName='Scope',
+            name='scope',
+            datatype='GPString',
+            parameterType='Optional',
+            direction='Input')
+        param_scope.filter.list = ['National', 'Global', 'North American']
+
+        params = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope]
         return params
 
     def isLicensed(self):
