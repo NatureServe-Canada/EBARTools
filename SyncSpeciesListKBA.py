@@ -21,13 +21,18 @@ import EBARUtils
 
 class SyncSpeciesListKBA:
     """Synchronize the Species tables with WCS KBA updates"""
+
     def __init__(self):
         pass
 
     def RunSyncSpeciesListKBATool(self, parameters, messages):
+
         # make variables for parms
         param_geodatabase = parameters[0].valueAsText
         param_csv = parameters[1].valueAsText
+
+        # arcpy.env.workspace = param_geodatabase
+        # print(arcpy.env.workspace)
 
         # try to open data file as a csv
         infile = io.open(param_csv, 'r', encoding='mbcs')  # mbcs encoding is Windows ANSI
@@ -36,40 +41,90 @@ class SyncSpeciesListKBA:
         # read existing IDs into list
         EBARUtils.displayMessage(messages, 'Reading existing IDs')
 
-        # FIGURE OUT WHAT IS GOING ON WITH THIS DICTIONARY AND IF IT IS NECESSARY
+        # dictionary of element_national_id and species_id
         element_species_dict = EBARUtils.readElementSpecies(param_geodatabase)
 
-        # process all file lines
-        EBARUtils.displayMessage(messages, 'Processing file lines')
+        # process input csv
+        EBARUtils.displayMessage(messages, 'Processing input csv file')
         count = 0
         skipped = 0
+        species_fields = ["ELEMENT_NATIONAL_ID",
+                          "ELEMENT_CODE",
+                          "NATIONAL_SCIENTIFIC_NAME",
+                          "NATIONAL_ENGL_NAME",
+                          "KBATrigger",
+                          "RemainingKBAPotential",
+                          "KBATrigger_G",
+                          "KBATrigger_G_A1",
+                          "KBATrigger_G_B1",
+                          "KBATrigger_N",
+                          "KBATrigger_N_A1",
+                          "KBATrigger_N_B1",
+                          "KBATrigger_N_PercThreshold",
+                          "ECCC_PrioritySpecies",
+                          "Endemic"]
 
         for file_line in reader:
             element_national_id = int(float(file_line['ELEMENT_NATIONAL_ID']))
 
-            # NOTE: LOOKS FOR ELEMENT_NATIONAL_ID IN DICTIONARY THAT CONTAINS SPECIES_ID AS WELL
+            # If the record has an element_national_id that is in the biotics table, process it
             if element_national_id in element_species_dict:
 
-                # update records using an update cursor
+                EBARUtils.displayMessage(messages, "READ ROW. ELEMENT_NATIONAL_ID = {}".format(element_national_id))
 
+                # Generate list of existing element_national_id values in the species_kba table
+                existing_values = [row[0] for row in arcpy.da.SearchCursor(param_geodatabase + "\\Species_KBA",
+                                                                           "ELEMENT_NATIONAL_ID")]
 
-                EBARUtils.displayMessage(messages, "READING ROW.  ELEMENT_NATIONAL_ID = {}".format(element_national_id))
+                # If the record is in the species_kba table, then update it
+                if element_national_id in existing_values:
 
+                    print("UPDATE RECORD")
+
+                    with arcpy.da.UpdateCursor(param_geodatabase + '\\SPECIES_KBA', species_fields,
+                                               'ELEMENT_NATIONAL_ID = ' + str(element_national_id)) as update_cursor:
+                        update_row = None
+                        for update_row in EBARUtils.updateCursor(update_cursor):
+                            update_values = []
+                            for field in species_fields:
+                                if len(file_line[field]) > 0:
+                                    update_values.append(file_line[field])
+                                else:
+                                    update_values.append(None)
+                            update_cursor.updateRow(update_values)
+                        if update_row:
+                            del update_row
+
+                # If the record is in the species csv but not in the species_kba table, then insert it
+                else:
+
+                    print("INSERT RECORD")
+
+                    with arcpy.da.InsertCursor(param_geodatabase + '\\SPECIES_KBA', species_fields,
+                                               'ELEMENT_NATIONAL_ID = ' + str(element_national_id)) as insert_cursor:
+                        insert_values = []
+                        for field in species_fields:
+                            if len(file_line[field]) > 0:
+                                insert_values.append(file_line[field])
+                            else:
+                                insert_values.append(None)
+                        insert_cursor.insertRow(insert_values)
+
+            # If the record has no element_national_id or if the id is not in the biotics table
             else:
                 # do not update and do not add new records
-
-                EBARUtils.displayMessage(messages, "ELEMENT_NATIONAL_ID does not exist.")
+                EBARUtils.displayMessage(messages, "SKIP ROW. ELEMENT_NATIONAL_ID = {} not in BIOTICS table.".format(
+                    element_national_id))
 
                 # ADD CLAUSE TO OUTPUT THIS LIST OF ELEMENT_NATIONAL_IDs TO A TEXT FILE
-
                 pass
                 skipped += 1
             count += 1
 
         # summary and end time
-        EBARUtils.displayMessage(messages, 'Summary:')
+        EBARUtils.displayMessage(messages, '\nSummary:')
         EBARUtils.displayMessage(messages, 'Processed - ' + str(count))
-        EBARUtils.displayMessage(messages, 'Added - ' + str(skipped))
+        EBARUtils.displayMessage(messages, 'Skipped - ' + str(skipped))
 
         infile.close()
         return
@@ -84,5 +139,3 @@ if __name__ == '__main__':
     param_csv.value = 'C:\\GIS_Processing\\KBA\\Scripts\\GITHUB\\WCS_Species_test.csv'
     parameters = [param_geodatabase, param_csv]
     sslkba.RunSyncSpeciesListKBATool(parameters, None)
-
-
