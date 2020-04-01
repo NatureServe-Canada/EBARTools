@@ -216,9 +216,8 @@ class GenerateRangeMapTool:
                                                 'RangeMapEcoshapeID = ' + \
                                                 str(rme_row['RangeMapEcoshapeID'])) as rmeid_cursor:
                         rmeid_row = None
-                        for rmeid_row in rmeid_cursor:
+                        for rmeid_row in EBARUtils.updateCursor(rmeid_cursor):
                             rmeid_cursor.deleteRow()
-                            rmeid = True
                         if rmeid_row:
                             del rmeid_row
             with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape', ['RangeMapEcoshapeID'],

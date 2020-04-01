@@ -63,11 +63,12 @@ class AddSynonymsTool:
                     short_citation_year = None
                     if len(file_line['SHORT_CITATION_YEAR']) > 0:
                         short_citation_year = file_line['SHORT_CITATION_YEAR']
-                    with arcpy.da.InsertCursor(param_geodatabase + '/Synonym',
-                                               ['SpeciesID', 'SynonymName', 'SHORT_CITATION_AUTHOR',
-                                                'SHORT_CITATION_YEAR']) as insert_cursor:
-                        insert_cursor.insertRow([element_species_dict[element_national_id], scientific_name,
-                                                 short_citation_author, short_citation_year])
+                    insert_cursor = arcpy.da.InsertCursor(param_geodatabase + '/Synonym',
+                                                          ['SpeciesID', 'SynonymName', 'SHORT_CITATION_AUTHOR',
+                                                           'SHORT_CITATION_YEAR'])
+                    insert_cursor.insertRow([element_species_dict[element_national_id], scientific_name,
+                                             short_citation_author, short_citation_year])
+                    del insert_cursor
                     EBARUtils.setNewID(param_geodatabase + '/Synonym', 'SynonymID',
                                        "SynonymName = '" + scientific_name + "'")
                     added += 1
