@@ -5,7 +5,7 @@
 # © NatureServe Canada 2019 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 # Program: SyncSpeciesListTool.py
-# ArcGIS Python tool for Synchronizing the BIOTIOCS_NATIONAL_ELMENT and Species tables with Biotics
+# ArcGIS Python tool for Synchronizing the BIOTICS_NATIONAL_ELEMENT and Species tables with Biotics
 
 # Notes:
 # - Normally called from EBAR Tools.pyt, unless doing interactive debugging
