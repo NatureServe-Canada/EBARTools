@@ -49,20 +49,71 @@ class SyncSpeciesListKBA:
         count = 0
         skipped = 0
         species_fields = ["ELEMENT_NATIONAL_ID",
-                          "ELEMENT_CODE",
-                          "NATIONAL_SCIENTIFIC_NAME",
-                          "NATIONAL_ENGL_NAME",
                           "KBATrigger",
                           "RemainingKBAPotential",
                           "KBATrigger_G",
                           "KBATrigger_G_A1",
                           "KBATrigger_G_B1",
+                          "KBATrigger_G_PercThreshold",
+                          "MinKBASize_G",
                           "KBATrigger_N",
                           "KBATrigger_N_A1",
                           "KBATrigger_N_B1",
                           "KBATrigger_N_PercThreshold",
+                          "MinKBASize_N",
+                          "KBATrigger_Applicability",
+                          "EBAR_Mapping",
                           "ECCC_PrioritySpecies",
-                          "Endemic"]
+                          "GeoRestricted_G_ExpertInput",
+                          "GeoRestricted_N_ExpertInput",
+                          "GeoRestricted_ExpertName",
+                          "GlobalName_Level",
+                          "FullSpecies_ElementCode",
+                          "IUCN_InternalTaxonId",
+                          "IUCN_AssessmentId",
+                          "COSEWIC_Date",
+                          "COSEWIC_Criteria",
+                          "COSEWIC_Report",
+                          "IUCN_CD",
+                          "IUCN_AssessmentDate",
+                          "IUCN_Criteria",
+                          "IUCN_CriteriaVersion",
+                          "IUCN_Systems",
+                          "IUCN_PossiblyExtinct",
+                          "IUCN_PopulationTrend",
+                          "IUCN_PresenceCA",
+                          "IUCN_OriginCA",
+                          "IUCN_SeasonalityCA",
+                          "IUCN_AOORange",
+                          "IUCN_EOORange",
+                          "IUCN_Congregatory",
+                          "IUCN_PopulationSize",
+                          "IUCN_LocationsNumber",
+                          "IUCN_MovementPatterns",
+                          "IUCN_AreaRestricted",
+                          "IUCN_YearOfPopulationEstimate",
+                          "PRECAUTIONARY_G_RANK",
+                          "G_RANK_PopReduction",
+                          "PRECAUTIONARY_N_RANK",
+                          "PRECAUTIONARY_N_RANK_Breeding",
+                          "PRECAUTIONARY_N_RANK_NonBreeding",
+                          "PRECAUTIONARY_N_RANK_Migrant",
+                          "N_RANK_PopReduction",
+                          "BeyondNAmerica",
+                          "BeyondUSCanada",
+                          "AOO_N_COSEWIC",
+                          "Range_G_IUCN",
+                          "Range_N_IUCN",
+                          "Range_N_ECCC",
+                          "Source_NSCGlobalList",
+                          "Source_NSCNationalList",
+                          "Source_NSCOtherTaxa",
+                          "Source_NSCEndemics",
+                          "Source_IUCNSimpleSummary",
+                          "Source_Other",
+                          "PotentialKBAs"
+
+                          ]
 
         for file_line in reader:
             element_national_id = int(float(file_line['ELEMENT_NATIONAL_ID']))
@@ -136,6 +187,6 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:\\GIS_Processing\\KBA\\Scripts\\GITHUB\\EBARDev.gdb'
     param_csv = arcpy.Parameter()
-    param_csv.value = 'C:\\GIS_Processing\\KBA\\Scripts\\GITHUB\\WCS_Species_test.csv'
+    param_csv.value = 'C:\\GIS_Processing\\KBA\\Scripts\\GITHUB\\Elements.csv'
     parameters = [param_geodatabase, param_csv]
     sslkba.RunSyncSpeciesListKBATool(parameters, None)
