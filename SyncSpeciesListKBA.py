@@ -64,9 +64,18 @@ class SyncSpeciesListKBA:
                           "KBATrigger_Applicability",
                           "EBAR_Mapping",
                           "ECCC_PrioritySpecies",
-                          "GeoRestricted_G_ExpertInput",
-                          "GeoRestricted_N_ExpertInput",
-                          "GeoRestricted_ExpertName",
+                          "B1_GeoRestrict_G_ExpertInput",
+                          "B1_GeoRestrict_N_ExpertInput",
+                          "B1_GeoRestrict_ExpertName",
+                          "B_TaxonomicGroup",
+                          "B2_RestrictedRange",
+                          "B2_NSpeciesNeeded",
+                          "B2_Sources",
+                          "B3_Subcriterion",
+                          "B3_RegionRestricted",
+                          "B3_Region",
+                          "B3_NSpeciesNeeded",
+                          "B3_Sources",
                           "GlobalName_Level",
                           "FullSpecies_ElementCode",
                           "IUCN_InternalTaxonId",
@@ -105,6 +114,7 @@ class SyncSpeciesListKBA:
                           "Range_G_IUCN",
                           "Range_N_IUCN",
                           "Range_N_ECCC",
+                          "PercentRangeCanada",
                           "Source_NSCGlobalList",
                           "Source_NSCNationalList",
                           "Source_NSCOtherTaxa",
@@ -271,8 +281,8 @@ class SyncSpeciesListKBA:
                 else:
                     # do not update and do not add new records
                     EBARUtils.displayMessage(messages,
-                                             "SKIP ROW. ELEMENT_NATIONAL_ID = {} not in BIOTICS table.".format(
-                                                 element_national_id))
+                                             "SKIP ROW {}. ELEMENT_NATIONAL_ID = {} not in BIOTICS table.".format(count,
+                                                                                                                  element_national_id))
 
                     # IDEA: ADD CLAUSE TO OUTPUT THIS LIST OF ELEMENT_NATIONAL_IDs TO A TEXT FILE
                     pass
