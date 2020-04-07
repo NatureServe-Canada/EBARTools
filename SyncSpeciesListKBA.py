@@ -111,10 +111,9 @@ class SyncSpeciesListKBA:
                           "Source_NSCEndemics",
                           "Source_IUCNSimpleSummary",
                           "Source_Other",
-                          "PotentialKBAs"
+                          "PotentialKBAs",
+                          "SpeciesID"
                           ]
-
-        #print(species_fields[1:])
 
         for file_line in reader:
 
@@ -128,31 +127,58 @@ class SyncSpeciesListKBA:
                 # If the record has an element_national_id that is in the biotics table, process it
                 if element_national_id in element_species_dict:
 
-                    EBARUtils.displayMessage(messages, "READ ROW {}. ELEMENT_NATIONAL_ID = {}".format(count, element_national_id))
-
-                    # Get the corresponding SPECIES ID from the element_species dictionary
+                    # Get the corresponding SpeciesID from the element_species dictionary
                     species_id = element_species_dict.get(element_national_id)
 
+                    EBARUtils.displayMessage(messages,
+                                             "READ ROW {}. ELEMENT_NATIONAL_ID = {}. SPECIES_ID = {}".format(count,
+                                                                                                             element_national_id,
+                                                                                                             species_id))
+
                     # Generate list of existing element_national_id values in the species_kba table
-                    # NOTE need to use SPECIESID because ELEMENT_NATIONAL_ID is not in the species_kba table
                     existing_values = [row[0] for row in arcpy.da.SearchCursor(param_geodatabase + "\\Species_KBA",
-                                                                               "SPECIESID")]
+                                                                               "ELEMENT_NATIONAL_ID")]
 
                     # If the record is in the species_kba table, then update it
-                    if species_id in existing_values:
+                    if element_national_id in existing_values:
 
                         print("UPDATE RECORD")
 
+                        # THIS BLOCK WORKS FOR ALL FIELDS, BUT NOT FOR SpeciesID
+                        # with arcpy.da.UpdateCursor(param_geodatabase + '\\SPECIES_KBA', species_fields,
+                        #                            'ELEMENT_NATIONAL_ID = ' + str(element_national_id)) as update_cursor:
+                        #     update_row = None
+                        #     for update_row in EBARUtils.updateCursor(update_cursor):
+                        #         update_values = []
+                        #
+                        #         for field in species_fields:
+                        #
+                        #             if len(file_line[field]) > 0:
+                        #                 update_values.append(file_line[field])
+                        #
+                        #             else:
+                        #                 update_values.append(None)
+                        #
+                        #         update_cursor.updateRow(update_values)
+                        #
+                        #     if update_row:
+                        #         del update_row
+
                         with arcpy.da.UpdateCursor(param_geodatabase + '\\SPECIES_KBA', species_fields,
-                                                   'SPECIESID = ' + str(species_id)) as update_cursor:
+                                                   'ELEMENT_NATIONAL_ID = ' + str(
+                                                       element_national_id)) as update_cursor:
                             update_row = None
                             for update_row in EBARUtils.updateCursor(update_cursor):
                                 update_values = []
 
-                                # ignore the ELEMENT_NATIONAL_ID by starting at index position 1
-                                for field in species_fields[1:]:
+                                for field in species_fields:
 
-                                    if len(file_line[field]) > 0:
+                                    # special case to insert the species id from the dictionary, because this field is
+                                    # not in the input CSV
+                                    if field == "SpeciesID":
+                                        update_values.append(species_id)
+
+                                    elif len(file_line[field]) > 0:
                                         update_values.append(file_line[field])
 
                                     else:
@@ -163,21 +189,20 @@ class SyncSpeciesListKBA:
                             if update_row:
                                 del update_row
 
-                    # If the record is in the species csv but not in the species_kba table, then insert it
+                        # If the record is in the species csv but not in the species_kba table, then insert it
                     else:
 
                         print("INSERT RECORD")
 
-                        # THE INSERT CURSOR IS BROKEN AND NEEDS TO BE FIXED
-                        with arcpy.da.InsertCursor(param_geodatabase + '\\SPECIES_KBA', species_fields) as insert_cursor:
+                        with arcpy.da.InsertCursor(param_geodatabase + '\\SPECIES_KBA',
+                                                   species_fields) as insert_cursor:
                             insert_values = []
 
-                            # NEED TO ADD SCRIPT TO ADD THE SPECIESID AS WELL
+                            for field in species_fields:
+                                if field == "SpeciesID":
+                                    insert_values.append(species_id)
 
-                            # ignore the ELEMENT_NATIONAL_ID by starting at index position 1
-                            for field in species_fields[1:]:
-
-                                if len(file_line[field]) > 0:
+                                elif len(file_line[field]) > 0:
                                     insert_values.append(file_line[field])
 
                                 else:
@@ -185,13 +210,71 @@ class SyncSpeciesListKBA:
 
                             insert_cursor.insertRow(insert_values)
 
+
+                #     ### TRYING TO WORK DIRECTLY WITH SPECIES ID
+                #     # Get the corresponding SPECIES ID from the element_species dictionary
+                #     species_id = element_species_dict.get(element_national_id)
+                #
+                #     # Generate list of existing element_national_id values in the species_kba table
+                #     # NOTE need to use SPECIESID because ELEMENT_NATIONAL_ID is not in the species_kba table
+                #     existing_values = [row[0] for row in arcpy.da.SearchCursor(param_geodatabase + "\\Species_KBA",
+                #                                                                "SPECIESID")]
+                #
+                #     # If the record is in the species_kba table, then update it
+                #     if species_id in existing_values:
+                #
+                #         print("UPDATE RECORD")
+                #
+                #         with arcpy.da.UpdateCursor(param_geodatabase + '\\SPECIES_KBA', species_fields,
+                #                                    'SPECIESID = ' + str(species_id)) as update_cursor:
+                #             update_row = None
+                #             for update_row in EBARUtils.updateCursor(update_cursor):
+                #                 update_values = []
+                #
+                #                 # ignore the ELEMENT_NATIONAL_ID by starting at index position 1
+                #                 for field in species_fields[1:]:
+                #
+                #                     if len(file_line[field]) > 0:
+                #                         update_values.append(file_line[field])
+                #
+                #                     else:
+                #                         update_values.append(None)
+                #
+                #                 update_cursor.updateRow(update_values)
+                #
+                #             if update_row:
+                #                 del update_row
+                #
+                #     # If the record is in the species csv but not in the species_kba table, then insert it
+                #     else:
+                #
+                #         print("INSERT RECORD")
+                #
+                #         # THE INSERT CURSOR IS BROKEN AND NEEDS TO BE FIXED
+                #         with arcpy.da.InsertCursor(param_geodatabase + '\\SPECIES_KBA', species_fields) as insert_cursor:
+                #             insert_values = []
+                #
+                #             # NEED TO ADD SCRIPT TO ADD THE SPECIESID AS WELL
+                #
+                #             # ignore the ELEMENT_NATIONAL_ID by starting at index position 1
+                #             for field in species_fields[1:]:
+                #
+                #                 if len(file_line[field]) > 0:
+                #                     insert_values.append(file_line[field])
+                #
+                #                 else:
+                #                     insert_values.append(None)
+                #
+                #             insert_cursor.insertRow(insert_values)
+
                 # If the record has no element_national_id or if the id is not in the biotics table
                 else:
                     # do not update and do not add new records
-                    EBARUtils.displayMessage(messages, "SKIP ROW. ELEMENT_NATIONAL_ID = {} not in BIOTICS table.".format(
-                        element_national_id))
+                    EBARUtils.displayMessage(messages,
+                                             "SKIP ROW. ELEMENT_NATIONAL_ID = {} not in BIOTICS table.".format(
+                                                 element_national_id))
 
-                    # ADD CLAUSE TO OUTPUT THIS LIST OF ELEMENT_NATIONAL_IDs TO A TEXT FILE
+                    # IDEA: ADD CLAUSE TO OUTPUT THIS LIST OF ELEMENT_NATIONAL_IDs TO A TEXT FILE
                     pass
                 skipped += 1
             count += 1
@@ -203,6 +286,7 @@ class SyncSpeciesListKBA:
 
         infile.close()
         return
+
 
 # controlling process
 if __name__ == '__main__':
