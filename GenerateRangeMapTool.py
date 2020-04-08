@@ -418,6 +418,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         arcpy.CalculateField_management(temp_all_inputs, 'OriginalGeometryType',
                                         'GetGeometryType(!InputPointID!, !InputLineID!, !InputPolygonID!)', 'PYTHON3',
                                         code_block)
+        EBARUtils.checkAddField(temp_all_inputs, 'TempDate', 'DATE')
+        arcpy.CalculateField_management(temp_all_inputs, 'TempDate', '!MaxDate!', 'PYTHON3')
         arcpy.MakeFeatureLayer_management(temp_all_inputs, 'all_inputs_layer')
 
         # eo ranks, when available, override dates in determining historical (fake the date to accomplish this)
@@ -427,13 +429,13 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         if int(result[1]) > 0:
             # 1000 years in the past
             fake_date_expr = 'datetime.datetime(datetime.datetime.now().year - 1000, 1, 1)'
-            arcpy.CalculateField_management('all_inputs_layer', 'MaxDate', fake_date_expr)
+            arcpy.CalculateField_management('all_inputs_layer', 'TempDate', fake_date_expr)
         result = arcpy.SelectLayerByAttribute_management('all_inputs_layer', 'NEW_SELECTION',
                                                          "EORank IS NOT NULL AND EORank NOT IN ('H', 'H?', 'X', 'X?')")
         if int(result[1]) > 0:
             # 1000 years in the future
             fake_date_expr = 'datetime.datetime(datetime.datetime.now().year + 1000, 1, 1)'
-            arcpy.CalculateField_management('all_inputs_layer', 'MaxDate', fake_date_expr)
+            arcpy.CalculateField_management('all_inputs_layer', 'TempDate', fake_date_expr)
         arcpy.SelectLayerByAttribute_management('all_inputs_layer', 'CLEAR_SELECTION')
 
         # pairwise intersect buffers and ecoshape polygons
@@ -470,7 +472,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         #if arcpy.Exists('TempEcoshapeMaxPolygon'):
         #    arcpy.Delete_management('TempEcoshapeMaxPolygon')
         #arcpy.Statistics_analysis('pairwise_intersect_layer', 'TempEcoshapeMaxPolygon',
-        #                          [['PolygonPropn', 'MAX'], ['MaxDate', 'MAX']], 'EcoshapeID')
+        #                          [['PolygonPropn', 'MAX'], ['TempDate', 'MAX']], 'EcoshapeID')
 
         # get max date by type per ecoshape
         EBARUtils.displayMessage(messages, 'Determining Maximum Date per Ecoshape and DatasetType')
@@ -481,7 +483,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         arcpy.AddJoin_management('pairwise_intersect_layer', 'DatasetSourceID',
                                  param_geodatabase + '/DatasetSource', 'DatasetSourceID', 'KEEP_COMMON')
         arcpy.Statistics_analysis('pairwise_intersect_layer', temp_ecoshape_max_polygon,
-                                  [['MaxDate', 'MAX']], [table_name_prefix + temp_pairwise_intersect + '.EcoshapeID',
+                                  [['TempDate', 'MAX']], [table_name_prefix + temp_pairwise_intersect + '.EcoshapeID',
                                                          table_name_prefix + 'DatasetSource.DatasetType'])
         arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'DatasetSource')
         arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'InputDataset')
@@ -492,17 +494,17 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                    ['RangeMapID', 'EcoshapeID', 'Presence']) as insert_cursor:
             input_found = False
             #with arcpy.da.SearchCursor(temp_ecoshape_max_polygon,
-            #                           ['EcoshapeID', 'MAX_PolygonPropn', 'MAX_MaxDate']) as search_cursor:
+            #                           ['EcoshapeID', 'MAX_PolygonPropn', 'MAX_TempDate']) as search_cursor:
             #with arcpy.da.SearchCursor(temp_ecoshape_max_polygon,
             #                           [temp_pairwise_intersect + '_EcoshapeID', 'DatasetSource_DatasetType',
-            #                            'MAX_' + temp_pairwise_intersect + '_MaxDate'],
+            #                            'MAX_' + temp_pairwise_intersect + '_TempDate'],
             #                            sql_clause=(None, 'ORDER BY ' + temp_pairwise_intersect + \
             #                                '_EcoshapeID')) as search_cursor:
             # kludge because arc ends up with different field names under Enterprise gdb after joining
             field_names = [f.name for f in arcpy.ListFields(temp_ecoshape_max_polygon) if f.aliasName in
                             ['EcoshapeID', 'DatasetType',
-                             'MAX_' + table_name_prefix + temp_pairwise_intersect + '.maxdate',
-                             'MAX_' + table_name_prefix + temp_pairwise_intersect + '.MaxDate']]
+                             'MAX_' + table_name_prefix + temp_pairwise_intersect + '.tempdate',
+                             'MAX_' + table_name_prefix + temp_pairwise_intersect + '.TempDate']]
             id_field_name = [f.name for f in arcpy.ListFields(temp_ecoshape_max_polygon) if f.aliasName ==
                              'EcoshapeID'][0]
             with arcpy.da.SearchCursor(temp_ecoshape_max_polygon, field_names,
