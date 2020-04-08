@@ -54,6 +54,8 @@ class SyncSpeciesListKBA:
                           "KBATrigger_G",
                           "KBATrigger_G_A1",
                           "KBATrigger_G_B1",
+                          "KBATrigger_G_B2",
+                          "KBATrigger_G_B3",
                           "KBATrigger_G_PercThreshold",
                           "MinKBASize_G",
                           "KBATrigger_N",
@@ -64,6 +66,7 @@ class SyncSpeciesListKBA:
                           "KBATrigger_Applicability",
                           "EBAR_Mapping",
                           "ECCC_PrioritySpecies",
+                          "Endemism_Type",
                           "B1_GeoRestrict_G_ExpertInput",
                           "B1_GeoRestrict_N_ExpertInput",
                           "B1_GeoRestrict_ExpertName",
@@ -121,6 +124,7 @@ class SyncSpeciesListKBA:
                           "Source_NSCEndemics",
                           "Source_IUCNSimpleSummary",
                           "Source_Other",
+                          "NSC_Comments",
                           "PotentialKBAs",
                           "SpeciesID"
                           ]
@@ -271,8 +275,8 @@ class SyncSpeciesListKBA:
 
         # summary and end time
         EBARUtils.displayMessage(messages, '\nSummary:')
-        EBARUtils.displayMessage(messages, 'Processed - ' + str(count))
-        EBARUtils.displayMessage(messages, 'Skipped - ' + str(skipped))
+        EBARUtils.displayMessage(messages, 'Records read - ' + str(count))
+        EBARUtils.displayMessage(messages, 'Records skipped - ' + str(skipped))
 
         infile.close()
         return
