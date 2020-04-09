@@ -382,8 +382,9 @@ def GetBuffer(accuracy):
                        'InputPolygon.Accuracy <= ' + str(EBARUtils.worst_accuracy) + ') AND ((' + \
                        table_name_prefix + "DatasetSource.DatasetType IN ('Element Occurrences', 'Source Features'," + \
                        " 'Species Observations') AND " + table_name_prefix + 'InputPolygon.MaxDate IS NOT NULL) OR (' + \
-                       table_name_prefix + "DatasetSource.DatasetType IN ('Critical Habitat', 'Range Estimate'," + \
-                       " 'Habitat Suitabilty')))"
+                       table_name_prefix + "DatasetSource.DatasetType = 'Element Occurrences' AND " + \
+                       table_name_prefix + 'InputPolygon.EORank IS NOT NULL) OR (' + table_name_prefix + \
+                       "DatasetSource.DatasetType IN ('Critical Habitat', 'Range Estimate', 'Habitat Suitabilty')))"
         arcpy.SelectLayerByAttribute_management('input_polygon_layer', 'ADD_TO_SELECTION', where_clause)
         arcpy.RemoveJoin_management('input_polygon_layer', table_name_prefix + 'DatasetSource')
         arcpy.RemoveJoin_management('input_polygon_layer', table_name_prefix + 'InputDataset')
@@ -431,7 +432,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             fake_date_expr = 'datetime.datetime(datetime.datetime.now().year - 1000, 1, 1)'
             arcpy.CalculateField_management('all_inputs_layer', 'TempDate', fake_date_expr)
         result = arcpy.SelectLayerByAttribute_management('all_inputs_layer', 'NEW_SELECTION',
-                                                         "EORank IS NOT NULL AND EORank NOT IN ('H', 'H?', 'X', 'X?')")
+                                                         'TempDate IS NULL AND EORank IS NOT NULL ' + \
+                                                             "AND EORank NOT IN ('H', 'H?', 'X', 'X?')")
         if int(result[1]) > 0:
             # 1000 years in the future
             fake_date_expr = 'datetime.datetime(datetime.datetime.now().year + 1000, 1, 1)'
@@ -760,8 +762,14 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                             table_name_prefix + temp_all_inputs + '.MaxDate',
                                                             'MaxDate', 'DATE'))
         field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer', table_name_prefix + \
-                                                                temp_all_inputs + '.CoordinatesObscured',
+                                                            temp_all_inputs + '.CoordinatesObscured',
                                                             'CoordinatesObscured', 'SHORT'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
+                                                            table_name_prefix + temp_all_inputs + '.EORank',
+                                                            'EORank', 'TEXT'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
+                                                            table_name_prefix + temp_all_inputs + '.URI',
+                                                            'URI', 'TEXT'))
         arcpy.Append_management('all_inputs_layer', param_geodatabase + '/RangeMapInput', 'NO_TEST', field_mappings)
         arcpy.RemoveJoin_management('all_inputs_layer', table_name_prefix + 'Synonym')
         arcpy.RemoveJoin_management('all_inputs_layer', table_name_prefix + 'BIOTICS_ELEMENT_NATIONAL')
@@ -877,10 +885,10 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             arcpy.Delete_management(temp_line_buffer)
         if arcpy.Exists(temp_point_buffer):
             arcpy.Delete_management(temp_point_buffer)
-        # trouble deleting on server only due to locks; could be layer?
-        if param_geodatabase[-4:].lower() == '.gdb':
-            if arcpy.Exists(temp_all_inputs):
-                arcpy.Delete_management(temp_all_inputs)
+        ## trouble deleting on server only due to locks; could be layer?
+        #if param_geodatabase[-4:].lower() == '.gdb':
+        #    if arcpy.Exists(temp_all_inputs):
+        #        arcpy.Delete_management(temp_all_inputs)
 
         # end time
         end_time = datetime.datetime.now()
@@ -907,6 +915,7 @@ if __name__ == '__main__':
     param_stage = arcpy.Parameter()
     param_stage.value = 'Auto-generated'
     param_scope = arcpy.Parameter()
-    param_scope.value = 'National'
+    #param_scope.value = 'National'
+    param_scope.value = None
     parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope]
     grm.RunGenerateRangeMapTool(parameters, None)
