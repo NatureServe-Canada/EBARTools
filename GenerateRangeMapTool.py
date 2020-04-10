@@ -433,7 +433,9 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             arcpy.CalculateField_management('all_inputs_layer', 'TempDate', fake_date_expr)
         result = arcpy.SelectLayerByAttribute_management('all_inputs_layer', 'NEW_SELECTION',
                                                          'TempDate IS NULL AND EORank IS NOT NULL ' + \
-                                                             "AND EORank NOT IN ('H', 'H?', 'X', 'X?')")
+                                                             "AND EORank NOT IN (' ', 'H', 'H?', 'X', 'X?')")
+                                                             #"AND EORank NOT IN (' ', 'F', 'F?', 'H', 'H?', 'NR', " + \
+                                                             #"'U', 'X', 'X?,')")
         if int(result[1]) > 0:
             # 1000 years in the future
             fake_date_expr = 'datetime.datetime(datetime.datetime.now().year + 1000, 1, 1)'
@@ -770,6 +772,9 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
                                                             table_name_prefix + temp_all_inputs + '.URI',
                                                             'URI', 'TEXT'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer', table_name_prefix + \
+                                                            temp_all_inputs + '.DatasetSourceUniqueID',
+                                                            'DatasetSourceUniqueID', 'TEXT'))
         arcpy.Append_management('all_inputs_layer', param_geodatabase + '/RangeMapInput', 'NO_TEST', field_mappings)
         arcpy.RemoveJoin_management('all_inputs_layer', table_name_prefix + 'Synonym')
         arcpy.RemoveJoin_management('all_inputs_layer', table_name_prefix + 'BIOTICS_ELEMENT_NATIONAL')
@@ -885,10 +890,10 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             arcpy.Delete_management(temp_line_buffer)
         if arcpy.Exists(temp_point_buffer):
             arcpy.Delete_management(temp_point_buffer)
-        ## trouble deleting on server only due to locks; could be layer?
-        #if param_geodatabase[-4:].lower() == '.gdb':
-        #    if arcpy.Exists(temp_all_inputs):
-        #        arcpy.Delete_management(temp_all_inputs)
+        # trouble deleting on server only due to locks; could be layer?
+        if param_geodatabase[-4:].lower() == '.gdb':
+            if arcpy.Exists(temp_all_inputs):
+                arcpy.Delete_management(temp_all_inputs)
 
         # end time
         end_time = datetime.datetime.now()
