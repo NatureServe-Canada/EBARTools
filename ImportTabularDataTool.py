@@ -141,7 +141,7 @@ class ImportTabularDataTool:
                 elif status == 'inaccurate':
                     inaccurate += 1
                 elif status == 'fossil':
-                    fossil += 1
+                    fossils += 1
                 elif status == 'duplicate':
                     duplicates += 1
                 elif status == 'updated':
