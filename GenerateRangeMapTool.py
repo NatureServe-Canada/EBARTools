@@ -53,9 +53,9 @@ class GenerateRangeMapTool:
         EBARUtils.displayMessage(messages, 'Species Scientific Name: ' + param_species)
         param_secondary = parameters[2].valueAsText
         if param_secondary:
+            EBARUtils.displayMessage(messages, 'Secondary Species: ' + param_secondary)
             param_secondary = param_secondary.replace("'", '')
             param_secondary = param_secondary.split(';')
-            EBARUtils.displayMessage(messages, 'Secondary Species: ' + param_secondary)
         param_version = parameters[3].valueAsText
         EBARUtils.displayMessage(messages, 'Range Version: ' + param_version)
         param_stage = parameters[4].valueAsText
