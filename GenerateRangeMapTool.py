@@ -50,16 +50,21 @@ class GenerateRangeMapTool:
         EBARUtils.displayMessage(messages, 'Processing parameters')
         param_geodatabase = parameters[0].valueAsText
         param_species = parameters[1].valueAsText
+        EBARUtils.displayMessage(messages, 'Species Scientific Name: ' + param_species)
         param_secondary = parameters[2].valueAsText
         if param_secondary:
             param_secondary = param_secondary.replace("'", '')
             param_secondary = param_secondary.split(';')
+            EBARUtils.displayMessage(messages, 'Secondary Species: ' + param_secondary)
         param_version = parameters[3].valueAsText
+        EBARUtils.displayMessage(messages, 'Range Version: ' + param_version)
         param_stage = parameters[4].valueAsText
+        EBARUtils.displayMessage(messages, 'Range Stage: ' + param_stage)
         param_scope = parameters[5].valueAsText
         national_jur_ids = None
         scope = None
         if param_scope:
+            EBARUtils.displayMessage(messages, 'Scope: ' + param_scope)
             if param_scope == 'National':
                 national_jur_ids = '(1,2,3,4,5,6,7,8,9,10,11,12,13)'
                 scope = 'N'
@@ -530,13 +535,14 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     if row[field_names[1]] in ['Habitat Suitability', 'Range Estimate']:
                         if presence == 'H':
                             presence = 'X'
-                    if ((row[field_names[1]] == 'Critical Habitat') or
-                        (row[field_names[1]] in ['Element Occurrences', 'Source Features',
-                                                              'Species Observations'] and
-                         (datetime.datetime.now().year - row[field_names[2]].year)
-                         <= age_for_historical)):
-                        if presence in ['H', 'X']:
-                            presence = 'P'
+                    if row[field_names[2]]:
+                        if ((row[field_names[1]] == 'Critical Habitat') or
+                            (row[field_names[1]] in ['Element Occurrences', 'Source Features',
+                                                     'Species Observations'] and
+                             (datetime.datetime.now().year - row[field_names[2]].year)
+                             <= age_for_historical)):
+                            if presence in ['H', 'X']:
+                                presence = 'P'
                 if input_found:
                     # save final ecoshape
                     insert_cursor.insertRow([range_map_id, ecoshape_id, presence])
