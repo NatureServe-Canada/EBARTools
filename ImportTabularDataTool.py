@@ -279,7 +279,7 @@ class ImportTabularDataTool:
 
         # reject fossils records
         if field_dict['basis_of_record']:
-            if file_line[field_dict['basis_of_record']] == 'FOSSIL_SPECIMEN':
+            if file_line[field_dict['basis_of_record']].lower() in ('fossil_specimen', 'fossil', 'fossilspecimen'):
                 return None, 'fossil', None
 
         # grade
