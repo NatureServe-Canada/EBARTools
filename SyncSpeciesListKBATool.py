@@ -45,7 +45,8 @@ class SyncSpeciesListKBATool:
         EBARUtils.displayMessage(messages, 'Processing input csv file')
         count = 1
         skipped = 0
-        species_fields = ["ELEMENT_NATIONAL_ID",
+        species_fields = ["SpeciesID",
+                          "ELEMENT_NATIONAL_ID",
                           "KBATrigger",
                           "RemainingKBAPotential",
                           "KBATrigger_G",
@@ -122,8 +123,7 @@ class SyncSpeciesListKBATool:
                           "Source_IUCNSimpleSummary",
                           "Source_Other",
                           "NSC_Comments",
-                          "PotentialKBAs",
-                          "SpeciesID"
+                          "PotentialKBAs"
                           ]
 
         for file_line in reader:
@@ -147,7 +147,7 @@ class SyncSpeciesListKBATool:
                                                                                                              element_national_id,
                                                                                                              species_id))
 
-                    # Generate list of existing element_national_id values in the species_kba table
+                    # Generate list of existing element_national_id values in the Species table
                     existing_values = [row[0] for row in arcpy.da.SearchCursor(param_geodatabase + "\\Species",
                                                                                "ELEMENT_NATIONAL_ID")]
 
@@ -181,7 +181,7 @@ class SyncSpeciesListKBATool:
                             if update_row:
                                 del update_row
 
-                        # If the record is in the species csv but not in the species_kba table, then insert it
+                        # If the record is in the species csv but not in the Species table, then insert it
                     else:
 
                         print("INSERT RECORD")
@@ -204,6 +204,7 @@ class SyncSpeciesListKBATool:
 
                 # If the record has no element_national_id or if the element_national_id is not in the biotics table
                 else:
+
                     # do not update and do not add new records
                     EBARUtils.displayMessage(messages,
                                              "SKIP ROW {}. ELEMENT_NATIONAL_ID = {} not in BIOTICS table.".format(count,
