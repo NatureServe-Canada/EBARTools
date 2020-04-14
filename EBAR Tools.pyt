@@ -33,7 +33,7 @@ class Toolbox(object):
 
         # List of tool classes associated with this toolbox
         self.tools = [ImportTabularData, ImportSpatialData, GenerateRangeMap, ListElementNationalIDs, SyncSpeciesList,
-                      AddSynonyms, ImportExternalRangeReview]
+                      AddSynonyms, ImportExternalRangeReview, SyncSpeciesListKBA]
 
 
 class ImportTabularData(object):
