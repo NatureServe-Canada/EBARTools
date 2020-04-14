@@ -31,9 +31,6 @@ class SyncSpeciesListKBATool:
         param_geodatabase = parameters[0].valueAsText
         param_csv = parameters[1].valueAsText
 
-        # arcpy.env.workspace = param_geodatabase
-        # print(arcpy.env.workspace)
-
         # try to open data file as a csv
         infile = io.open(param_csv, 'r', encoding='mbcs')  # mbcs encoding is Windows ANSI
         reader = csv.DictReader(infile)
@@ -151,7 +148,7 @@ class SyncSpeciesListKBATool:
                                                                                                              species_id))
 
                     # Generate list of existing element_national_id values in the species_kba table
-                    existing_values = [row[0] for row in arcpy.da.SearchCursor(param_geodatabase + "\\SpeciesKBA",
+                    existing_values = [row[0] for row in arcpy.da.SearchCursor(param_geodatabase + "\\Species",
                                                                                "ELEMENT_NATIONAL_ID")]
 
                     # If the record is in the species_kba table, then update it
@@ -159,7 +156,7 @@ class SyncSpeciesListKBATool:
 
                         # print("UPDATE RECORD")
 
-                        with arcpy.da.UpdateCursor(param_geodatabase + '\\SpeciesKBA', species_fields,
+                        with arcpy.da.UpdateCursor(param_geodatabase + '\\Species', species_fields,
                                                    'ELEMENT_NATIONAL_ID = ' + str(
                                                        element_national_id)) as update_cursor:
                             update_row = None
@@ -189,7 +186,7 @@ class SyncSpeciesListKBATool:
 
                         print("INSERT RECORD")
 
-                        with arcpy.da.InsertCursor(param_geodatabase + '\\SpeciesKBA',
+                        with arcpy.da.InsertCursor(param_geodatabase + '\\Species',
                                                    species_fields) as insert_cursor:
                             insert_values = []
 
@@ -205,72 +202,13 @@ class SyncSpeciesListKBATool:
 
                             insert_cursor.insertRow(insert_values)
 
-
-                #     ### TRYING TO WORK DIRECTLY WITH SPECIES ID
-                #     # Get the corresponding SPECIES ID from the element_species dictionary
-                #     species_id = element_species_dict.get(element_national_id)
-                #
-                #     # Generate list of existing element_national_id values in the species_kba table
-                #     # NOTE need to use SPECIESID because ELEMENT_NATIONAL_ID is not in the species_kba table
-                #     existing_values = [row[0] for row in arcpy.da.SearchCursor(param_geodatabase + "\\Species_KBA",
-                #                                                                "SPECIESID")]
-                #
-                #     # If the record is in the species_kba table, then update it
-                #     if species_id in existing_values:
-                #
-                #         print("UPDATE RECORD")
-                #
-                #         with arcpy.da.UpdateCursor(param_geodatabase + '\\SpeciesKBA', species_fields,
-                #                                    'SPECIESID = ' + str(species_id)) as update_cursor:
-                #             update_row = None
-                #             for update_row in EBARUtils.updateCursor(update_cursor):
-                #                 update_values = []
-                #
-                #                 # ignore the ELEMENT_NATIONAL_ID by starting at index position 1
-                #                 for field in species_fields[1:]:
-                #
-                #                     if len(file_line[field]) > 0:
-                #                         update_values.append(file_line[field])
-                #
-                #                     else:
-                #                         update_values.append(None)
-                #
-                #                 update_cursor.updateRow(update_values)
-                #
-                #             if update_row:
-                #                 del update_row
-                #
-                #     # If the record is in the species csv but not in the species_kba table, then insert it
-                #     else:
-                #
-                #         print("INSERT RECORD")
-                #
-                #         # THE INSERT CURSOR IS BROKEN AND NEEDS TO BE FIXED
-                #         with arcpy.da.InsertCursor(param_geodatabase + '\\SpeciesKBA', species_fields) as insert_cursor:
-                #             insert_values = []
-                #
-                #             # NEED TO ADD SCRIPT TO ADD THE SPECIESID AS WELL
-                #
-                #             # ignore the ELEMENT_NATIONAL_ID by starting at index position 1
-                #             for field in species_fields[1:]:
-                #
-                #                 if len(file_line[field]) > 0:
-                #                     insert_values.append(file_line[field])
-                #
-                #                 else:
-                #                     insert_values.append(None)
-                #
-                #             insert_cursor.insertRow(insert_values)
-
-                # If the record has no element_national_id or if the id is not in the biotics table
+                # If the record has no element_national_id or if the element_national_id is not in the biotics table
                 else:
                     # do not update and do not add new records
                     EBARUtils.displayMessage(messages,
                                              "SKIP ROW {}. ELEMENT_NATIONAL_ID = {} not in BIOTICS table.".format(count,
                                                                                                                   element_national_id))
                     skipped += 1
-                    # IDEA: ADD CLAUSE TO OUTPUT THIS LIST OF ELEMENT_NATIONAL_IDs TO A TEXT FILE
-
             count += 1
 
         # summary and end time
@@ -285,10 +223,12 @@ class SyncSpeciesListKBATool:
 # controlling process
 if __name__ == '__main__':
     sslkba = SyncSpeciesListKBATool()
-    # hard code parameters for debugging
+
+    # hard-coded parameters for debugging
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:\\GIS_Processing\\KBA\\Scripts\\GITHUB\\EBARDev.gdb'
     param_csv = arcpy.Parameter()
     param_csv.value = 'C:\\GIS_Processing\\KBA\\Scripts\\GITHUB\\Elements.csv'
     parameters = [param_geodatabase, param_csv]
+
     sslkba.RunSyncSpeciesListKBATool(parameters, None)
