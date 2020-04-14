@@ -20,7 +20,7 @@ import EBARUtils
 
 
 class SyncSpeciesListKBATool:
-    """Synchronize the Species tables with WCS KBA updates"""
+    """Synchronize the Species table with WCS KBA trigger species updates"""
 
     def __init__(self):
         pass
