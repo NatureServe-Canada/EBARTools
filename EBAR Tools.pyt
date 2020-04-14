@@ -19,7 +19,7 @@ import ListElementNationalIDsTool
 import SyncSpeciesListTool
 import AddSynonymsTool
 import ImportExternalRangeReviewTool
-import SyncSpeciesListKBA
+import SyncSpeciesListKBATool
 import EBARUtils
 import datetime
 import locale
