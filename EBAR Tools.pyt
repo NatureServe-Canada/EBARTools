@@ -493,7 +493,7 @@ class SyncSpeciesListKBA(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        sslkba = SyncSpeciesListKBA.SyncSpeciesListKBA()
+        sslkba = SyncSpeciesListKBA.SyncSpeciesListKBATool()
         sslkba.RunSyncSpeciesListKBATool(parameters, messages)
         return
 
