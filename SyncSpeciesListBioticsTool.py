@@ -19,12 +19,12 @@ import csv
 import EBARUtils
 
 
-class SyncSpeciesListTool:
+class SyncSpeciesListBioticsTool:
     """Synchronize the BIOTIOCS_NATIONAL_ELMENT and Species tables with Biotics"""
     def __init__(self):
         pass
 
-    def RunSyncSpeciesListTool(self, parameters, messages):
+    def RunSyncSpeciesListBioticsTool(self, parameters, messages):
         # make variables for parms
         param_geodatabase = parameters[0].valueAsText
         param_csv = parameters[1].valueAsText
@@ -158,7 +158,7 @@ class SyncSpeciesListTool:
 
 # controlling process
 if __name__ == '__main__':
-    ssl = SyncSpeciesListTool()
+    ssl = SyncSpeciesListBioticsTool()
     # hard code parameters for debugging
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
@@ -166,4 +166,4 @@ if __name__ == '__main__':
     param_csv.value='C:/Users/rgree/OneDrive/EBAR/Data Mining/Species Prioritization/Biotics Sync/' + \
                     'BioticsSpeciesExample2.csv'
     parameters = [param_geodatabase, param_csv]
-    ssl.RunSyncSpeciesListTool(parameters, None)
+    ssl.RunSyncSpeciesListBioticsTool(parameters, None)

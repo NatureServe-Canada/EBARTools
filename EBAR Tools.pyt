@@ -16,7 +16,7 @@ import ImportTabularDataTool
 import ImportSpatialDataTool
 import GenerateRangeMapTool
 import ListElementNationalIDsTool
-import SyncSpeciesListTool
+import SyncSpeciesListBioticsTool
 import AddSynonymsTool
 import ImportExternalRangeReviewTool
 import SyncSpeciesListKBA
@@ -32,8 +32,8 @@ class Toolbox(object):
         self.alias = ''
 
         # List of tool classes associated with this toolbox
-        self.tools = [ImportTabularData, ImportSpatialData, GenerateRangeMap, ListElementNationalIDs, SyncSpeciesList,
-                      AddSynonyms, ImportExternalRangeReview, SyncSpeciesListKBA]
+        self.tools = [ImportTabularData, ImportSpatialData, GenerateRangeMap, ListElementNationalIDs,
+                      SyncSpeciesListBiotics, AddSynonyms, ImportExternalRangeReview, SyncSpeciesListKBA]
 
 
 class ImportTabularData(object):
@@ -396,10 +396,10 @@ class ListElementNationalIDs(object):
         return
 
 
-class SyncSpeciesList(object):
+class SyncSpeciesListBiotics(object):
     def __init__(self):
         """Define the tool (tool name is the name of the class)."""
-        self.label = 'Sync Species List'
+        self.label = 'Sync Species List Biotics'
         self.description = 'Synchronize the BIOTICS_NATIONAL_ELEMENT and Species tables with Biotics'
         self.canRunInBackground = True
 
@@ -442,8 +442,8 @@ class SyncSpeciesList(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        ssl = SyncSpeciesListTool.SyncSpeciesListTool()
-        ssl.RunSyncSpeciesListTool(parameters, messages)
+        ssl = SyncSpeciesListBioticsTool.SyncSpeciesListBioticsTool()
+        ssl.RunSyncSpeciesListBioticsTool(parameters, messages)
         return
 
 
