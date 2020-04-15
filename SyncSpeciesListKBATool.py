@@ -106,7 +106,7 @@ class SyncSpeciesListKBATool:
                           "G_RANK_PopReduction",
                           "PRECAUTIONARY_N_RANK",
                           "PRECAUTIONARY_N_RANK_Breeding",
-                          "PRECAUTIONARY_N_RANK_NonBreeding",
+                          "PRECAUTIONARY_N_RANK_NonBreed",
                           "PRECAUTIONARY_N_RANK_Migrant",
                           "N_RANK_PopReduction",
                           "BeyondNAmerica",
@@ -148,7 +148,7 @@ class SyncSpeciesListKBATool:
                                                                                                              species_id))
 
                     # Generate list of existing element_national_id values in the Species table
-                    existing_values = [row[0] for row in arcpy.da.SearchCursor(param_geodatabase + "\\Species",
+                    existing_values = [row[0] for row in arcpy.da.SearchCursor(param_geodatabase + '\\Species',
                                                                                "ELEMENT_NATIONAL_ID")]
 
                     # If the record is in the species_kba table, then update it
