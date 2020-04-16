@@ -68,7 +68,6 @@ class SyncSpeciesListBioticsTool:
                           'COSEWIC_NAME',
                           'ENGLISH_COSEWIC_COM_NAME',
                           'FRENCH_COSEWIC_COM_NAME',
-                          'IUCN_CD',
                           'CA_ORIGIN',
                           'CA_REGULARITY',
                           'CA_CONFIDENCE',
