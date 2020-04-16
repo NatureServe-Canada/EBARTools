@@ -105,7 +105,9 @@ class SyncSpeciesListBioticsTool:
                           'US_STATES',
                           'CA_DISTRIBUTION_COMMENTS',
                           'TAX_COM',
-                          'INACTIVE_IND']
+                          'INACTIVE_IND',
+                          'N_ENDEMISM_DESC',
+                          'G_JURIS_ENDEM_DESC']
         for file_line in reader:
             element_national_id = int(float(file_line['ELEMENT_NATIONAL_ID']))
             if element_national_id in element_species_dict:
