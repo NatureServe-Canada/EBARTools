@@ -231,7 +231,7 @@ class SyncSpeciesListKBATool:
 
         # summary and output messages
         EBARUtils.displayMessage(messages, '\nSummary:')
-        EBARUtils.displayMessage(messages, 'Records read - ' + str(count))
+        EBARUtils.displayMessage(messages, 'Records read - ' + str(count - 1))
         EBARUtils.displayMessage(messages, 'Records skipped - ' + str(skipped))
         EBARUtils.displayMessage(messages, '\nPrint out of Element_National_ID values with no match in Biotics table:')
         EBARUtils.displayMessage(messages, ','.join(map(str, IDs)))
@@ -250,8 +250,7 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:\\GIS_Processing\\KBA\\Scripts\\GITHUB\\EBARDev.gdb'
     param_csv = arcpy.Parameter()
-    #param_csv.value = 'C:\\GIS_Processing\\KBA\\Scripts\\GITHUB\\EBARTools\\SpeciesElementsExample.csv'
-    param_csv.value = 'C:\\GIS_Processing\\KBA\\Scripts\\GITHUB\\Elements.csv'
+    param_csv.value = 'C:\\GIS_Processing\\KBA\\Scripts\\GITHUB\\EBARTools\\SpeciesElementsExample.csv'
     parameters = [param_geodatabase, param_csv]
 
     sslkba.RunSyncSpeciesListKBATool(parameters, None)
