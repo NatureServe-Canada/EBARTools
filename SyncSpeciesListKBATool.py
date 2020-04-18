@@ -156,18 +156,30 @@ class SyncSpeciesListKBATool:
                                                                                                              element_national_id,
                                                                                                              species_id))
 
-                    # Generate list of existing element_national_id values in the Species table
+                    # # Generate list of existing element_national_id values in the Species table
+                    # existing_values = [row[0] for row in arcpy.da.SearchCursor(param_geodatabase + '\\Species',
+                    #                                                            "ELEMENT_NATIONAL_ID")]
+
+                    # # If the record is in the species_kba table, then update it
+                    # if element_national_id in existing_values:
+
+                    # Generate list of existing species_id values in the Species table
                     existing_values = [row[0] for row in arcpy.da.SearchCursor(param_geodatabase + '\\Species',
-                                                                               "ELEMENT_NATIONAL_ID")]
+                                                                               "SpeciesID")]
 
                     # If the record is in the species_kba table, then update it
-                    if element_national_id in existing_values:
+                    if species_id in existing_values:
 
                         # print("UPDATE RECORD")
 
+                        # with arcpy.da.UpdateCursor(param_geodatabase + '\\Species', species_fields,
+                        #                            'ELEMENT_NATIONAL_ID = ' + str(
+                        #                                element_national_id)) as update_cursor:
+
                         with arcpy.da.UpdateCursor(param_geodatabase + '\\Species', species_fields,
-                                                   'ELEMENT_NATIONAL_ID = ' + str(
-                                                       element_national_id)) as update_cursor:
+                                                   'SpeciesID = ' + str(
+                                                       species_id)) as update_cursor:
+
                             update_row = None
                             for update_row in EBARUtils.updateCursor(update_cursor):
                                 update_values = []
