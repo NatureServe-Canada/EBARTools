@@ -6,11 +6,11 @@
 
 # Program: SyncSpeciesListKBATool.py
 # ArcGIS Python tool to synchronize the Species table with the Biotics table in the EBAR-KBA database.
-# This tool also populates fields in the Species table that are specific to the WCS Canada workflow to identify KBAs.
+# This tool populates fields in the Species table that are specific to the WCS Canada workflow to identify KBAs.
 
 # Notes:
-# - Normally called from EBAR Tools.pyt, unless doing interactive debugging
-#   (see controlling process at the end of this file)
+# Normally called from EBAR Tools.pyt, unless doing interactive debugging
+# (see controlling process at the end of this file)
 
 
 # Import Python packages
@@ -33,19 +33,24 @@ class SyncSpeciesListKBATool:
         param_geodatabase = parameters[0].valueAsText
         param_csv = parameters[1].valueAsText
 
-        # Open input csv data file (note: output from R script)
+        # Open input csv data file (note: this file is from R script output)
         infile = io.open(param_csv, 'r', encoding='mbcs')  # mbcs encoding is Windows ANSI
         reader = csv.DictReader(infile)
 
-        # Access the dictionary of existing element_national_id and species_id values (in Biotics table)
-        element_species_dict = EBARUtils.readElementSpecies(param_geodatabase)
+        # Use os library to access the folder that contains the geodatabase paramater
+        root_dir = os.path.dirname(param_geodatabase)
 
-        # Assign variables for input & output csv files
-        EBARUtils.displayMessage(messages, 'Processing input csv file')
-        count = 1
+        # Create output csv file to write the skipped element_national_id values
+        outfile_name = root_dir + "\\output_skipped_element_national_ids.csv"
+        outfile = open(outfile_name, 'w')
+
+        # Assign variables
+        line_count = 1
+        processed = 0
+        skipped_no_id = 0
         skipped = 0
+        id_list = []
         species_fields = ["SpeciesID",
-                          # "ELEMENT_NATIONAL_ID",
                           "KBATrigger",
                           "RemainingKBAPotential",
                           "KBATrigger_G",
@@ -125,26 +130,24 @@ class SyncSpeciesListKBATool:
                           "PotentialKBAs"
                           ]
 
-        # Use os library to access the folder that contains the geodatabase paramater
-        root_dir = os.path.dirname(param_geodatabase)
+        # Access the dictionary of existing element_national_id and species_id values (in Biotics table)
+        element_species_dict = EBARUtils.readElementSpecies(param_geodatabase)
 
-        # Create output csv file to write the skipped element_national_id values
-        outfile_name = root_dir + "\\output_skipped_element_national_ids.csv"
-        outfile = open(outfile_name, 'w')
-        IDs = []
-        # out_string = ""
+        EBARUtils.displayMessage(messages, 'Processing input csv file...')
 
         for file_line in reader:
 
-            # Skip any rows that don't have an ELEMENT_NATIONAL_ID
+            # If the csv record has no element_national_id, skip it
             if file_line['ELEMENT_NATIONAL_ID'] is "":
-                skipped += 1
-                pass
+                skipped_no_id += 1
+
+                # # Verbose messages for debugging
+                # EBARUtils.displayMessage(messages, "READ ROW {}. NO ELEMENT_NATIONAL_ID.".format(count))
 
             else:
                 element_national_id = int(file_line['ELEMENT_NATIONAL_ID'])
 
-                # If the csv record has an element_national_id that is in the Biotics table, process it
+                # If the csv record has element_national_id in Biotics table, process it
                 if element_national_id in element_species_dict:
 
                     # Get the corresponding SpeciesID from the element_species_dict dictionary
@@ -152,15 +155,16 @@ class SyncSpeciesListKBATool:
 
                     # Verbose messages for debugging
                     EBARUtils.displayMessage(messages,
-                                             "READ ROW {}. ELEMENT_NATIONAL_ID = {}. SPECIES_ID = {}".format(count,
+                                             "READ ROW {}. ELEMENT_NATIONAL_ID = {}. SPECIES_ID = {}".format(line_count,
                                                                                                              element_national_id,
                                                                                                              species_id))
 
-                    # Generate list of existing species_id values in the Species table
+                    # Generate list of existing SpeciesID values in the Species table
                     existing_values = [row[0] for row in arcpy.da.SearchCursor(param_geodatabase + '\\Species',
                                                                                "SpeciesID")]
 
-                    # If the record is in the Species table, then update it
+                    # If the SpeciesID generated for the record (i.e. from Biotics) is in the Species table,
+                    # then update it
                     if species_id in existing_values:
 
                         # # Message for debugging
@@ -192,7 +196,8 @@ class SyncSpeciesListKBATool:
                             if update_row:
                                 del update_row
 
-                    # If the record is in the species csv but not in the Species table, then insert it
+                    # If the SpeciesID generated for the record (i.e. from Biotics) is NOT in the Species table,
+                    # then insert it
                     else:
 
                         # # Message for debugging
@@ -215,34 +220,28 @@ class SyncSpeciesListKBATool:
 
                             insert_cursor.insertRow(insert_values)
 
-                # If the csv record has no element_national_id or if the element_national_id is not in the Biotics table
-                # then skip it
+                    # Increase count for processed records
+                    processed += 1
+
+                # If the element_national_id is not in the Biotics table, skip it
                 else:
 
                     # Verbose message for debugging
-                    # Do not update and do not add new records
                     EBARUtils.displayMessage(messages,
-                                             "SKIP ROW {}. ELEMENT_NATIONAL_ID = {} not in BIOTICS table.".format(count,
+                                             "SKIP ROW {}. ELEMENT_NATIONAL_ID = {} not in BIOTICS table.".format(line_count,
                                                                                                                   element_national_id))
 
-                    # Append skipped element_national id values to list for ArcPy message print out
-                    IDs.append(element_national_id)
+                    # Append element_national id value to id_list
+                    id_list.append(element_national_id)
 
                     # Increase counter for skipped records
                     skipped += 1
 
-                    # # to start the out_string when it is empty
-                    # if len(out_string) > 0:
-                    #     out_string += ', '
-                    #
-                    # # add value to the comma separated string
-                    # out_string += str(element_national_id)
-
             # Increase counter for the lines read in the input csv file
-            count += 1
+            line_count += 1
 
         # Write skipped element_national_id values to output file using a comma to separate them
-        outfile.write(','.join(map(str, IDs)))
+        outfile.write(','.join(map(str, id_list)))
 
         # Close the open csv files
         infile.close()
@@ -250,10 +249,12 @@ class SyncSpeciesListKBATool:
 
         # Print tool summary and output messages
         EBARUtils.displayMessage(messages, 'Summary:')
-        EBARUtils.displayMessage(messages, 'Records read - ' + str(count - 1))
-        EBARUtils.displayMessage(messages, 'Records skipped - ' + str(skipped))
-        EBARUtils.displayMessage(messages, 'Print out of Element_National_ID values with no match in Biotics table:')
-        EBARUtils.displayMessage(messages, ','.join(map(str, IDs)))
+        EBARUtils.displayMessage(messages, 'Lines read - ' + str(line_count - 1))
+        EBARUtils.displayMessage(messages, 'Records processed - ' + str(processed))
+        EBARUtils.displayMessage(messages, 'Records skipped (no Element_National_ID) - ' + str(skipped_no_id))
+        EBARUtils.displayMessage(messages, 'Records skipped (no match to Biotics table) - ' + str(skipped))
+        EBARUtils.displayMessage(messages, 'List of Element_National_ID values with no match in Biotics table:')
+        EBARUtils.displayMessage(messages, ','.join(map(str, id_list)))
         EBARUtils.displayMessage(messages, 'The above list of values are also recorded here {}'.format(outfile_name))
 
         return
