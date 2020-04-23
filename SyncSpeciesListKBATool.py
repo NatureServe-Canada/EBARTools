@@ -37,8 +37,8 @@ class SyncSpeciesListKBATool:
         infile = io.open(param_csv, 'r', encoding='mbcs')  # mbcs encoding is Windows ANSI
         reader = csv.DictReader(infile)
 
-        # Use os library to access the folder that contains the geodatabase paramater
-        root_dir = os.path.dirname(param_geodatabase)
+        # Use os library to access the folder that contains the csv file
+        root_dir = os.path.dirname(param_csv)
 
         # Create output csv file to write the skipped element_national_id values
         outfile_name = root_dir + "\\output_skipped_element_national_ids.csv"
@@ -153,11 +153,11 @@ class SyncSpeciesListKBATool:
                     # Get the corresponding SpeciesID from the element_species_dict dictionary
                     species_id = element_species_dict.get(element_national_id)
 
-                    # Verbose messages for debugging
-                    EBARUtils.displayMessage(messages,
-                                             "READ ROW {}. ELEMENT_NATIONAL_ID = {}. SPECIES_ID = {}".format(line_count,
-                                                                                                             element_national_id,
-                                                                                                             species_id))
+                    # # Verbose messages for debugging
+                    # EBARUtils.displayMessage(messages,
+                    #                          "READ ROW {}. ELEMENT_NATIONAL_ID = {}. SPECIES_ID = {}".format(line_count,
+                    #                                                                                          element_national_id,
+                    #                                                                                          species_id))
 
                     # Generate list of existing SpeciesID values in the Species table
                     existing_values = [row[0] for row in arcpy.da.SearchCursor(param_geodatabase + '\\Species',
@@ -226,10 +226,10 @@ class SyncSpeciesListKBATool:
                 # If the element_national_id is not in the Biotics table, skip it
                 else:
 
-                    # Verbose message for debugging
-                    EBARUtils.displayMessage(messages,
-                                             "SKIP ROW {}. ELEMENT_NATIONAL_ID = {} not in BIOTICS table.".format(line_count,
-                                                                                                                  element_national_id))
+                    # # Verbose message for debugging
+                    # EBARUtils.displayMessage(messages,
+                    #                          "SKIP ROW {}. ELEMENT_NATIONAL_ID = {} not in BIOTICS table.".format(line_count,
+                    #                                                                                               element_national_id))
 
                     # Append element_national id value to id_list
                     id_list.append(element_national_id)
