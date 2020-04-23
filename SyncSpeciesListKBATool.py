@@ -40,6 +40,9 @@ class SyncSpeciesListKBATool:
         # Use os library to access the folder that contains the csv file
         root_dir = os.path.dirname(param_csv)
 
+        # Debugging message
+        EBARUtils.displayMessage(messages, 'Output csv location: ' + root_dir)
+
         # Create output csv file to write the skipped element_national_id values
         outfile_name = root_dir + "\\output_skipped_element_national_ids.csv"
         outfile = open(outfile_name, 'w')
