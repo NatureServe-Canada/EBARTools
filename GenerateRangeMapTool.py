@@ -549,8 +549,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     del row
         if not input_found:
             EBARUtils.displayMessage(messages, 'WARNING: No inputs/buffers overlap ecoshapes')
-            # terminate
-            return
+            ## terminate
+            #return
 
         # get ecoshape input counts by dataset
         EBARUtils.displayMessage(messages, 'Counting Ecoshape Inputs by Dataset')
