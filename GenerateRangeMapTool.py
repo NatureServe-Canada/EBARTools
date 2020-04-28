@@ -318,6 +318,8 @@ def GetBuffer(accuracy):
     ret = accuracy
     if not ret:
         ret = ''' + str(default_buffer_size) + '''
+    elif ret <= 0:
+        ret = ''' + str(default_buffer_size) + '''
     return ret'''
         arcpy.CalculateField_management('input_point_layer', 'buffer', 'GetBuffer(!Accuracy!)', 'PYTHON3', code_block)
         temp_point_buffer = 'TempPointBuffer' + str(start_time.year) + str(start_time.month) + \
