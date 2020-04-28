@@ -589,7 +589,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             arcpy.AddJoin_management('ecoshape_review_view', 'ReviewID', param_geodatabase + '/Review', 'ReviewID')
         # loop existing range map ecoshapes
         with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape',
-                                   ['EcoshapeID', 'Presence', 'RangeMapEcoshapeNotes'],
+                                   ['EcoshapeID', 'Presence', 'RangeMapEcoshapeNotes', 'MigrantStatus'],
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
             update_row = None
             for update_row in EBARUtils.updateCursor(update_cursor):
@@ -644,7 +644,9 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                             summary = 'Input records - ' + summary
                     # check for ecoshape "update" reviews
                     if len(prev_range_map_ids) > 0:
-                        with arcpy.da.SearchCursor('ecoshape_review_view', [table_name_prefix + 'EcoshapeReview.Markup'],
+                        with arcpy.da.SearchCursor('ecoshape_review_view',
+                                                   [table_name_prefix + 'EcoshapeReview.Markup',
+                                                    table_name_prefix + 'EcoshapeReview.MigrantStatus'],
                                                    table_name_prefix + 'Review.RangeMapID IN (' + \
                                                    prev_range_map_ids + ') AND ' + table_name_prefix + \
                                                    'EcoshapeReview.UseForMapGen = 1 AND ' + table_name_prefix + \
@@ -655,15 +657,18 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                             for search_row in EBARUtils.searchCursor(search_cursor):
                                 ecoshape_reviews += 1
                                 presence = search_row[table_name_prefix + 'EcoshapeReview.Markup']
+                                migrant_status = search_row[table_name_prefix + 'EcoshapeReview.MigrantStatus']
                             if search_row:
                                 del search_row
-                    update_cursor.updateRow([update_row['EcoshapeID'], presence, summary])
+                    update_cursor.updateRow([update_row['EcoshapeID'], presence, summary, migrant_status])
             if update_row:
                 del update_row
         # loop review records and check for need to add
         if len(prev_range_map_ids) > 0:
-            with arcpy.da.SearchCursor('ecoshape_review_view', [table_name_prefix + 'EcoshapeReview.EcoshapeID',
-                                                                table_name_prefix + 'EcoshapeReview.Markup'],
+            with arcpy.da.SearchCursor('ecoshape_review_view',
+                                       [table_name_prefix + 'EcoshapeReview.EcoshapeID',
+                                        table_name_prefix + 'EcoshapeReview.Markup',
+                                        table_name_prefix + 'EcoshapeReview.MigrantStatus'],
                                         table_name_prefix + 'Review.RangeMapID IN (' + \
                                         prev_range_map_ids + ') AND ' + table_name_prefix + \
                                         'EcoshapeReview.UseForMapGen = 1 AND ' + table_name_prefix + \
@@ -684,11 +689,12 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                         ecoshape_reviews += 1
                         with arcpy.da.InsertCursor(param_geodatabase + '/RangeMapEcoshape',
                                                    ['RangeMapID', 'EcoshapeID', 'Presence',
-                                                    'RangeMapEcoshapeNotes']) as insert_cursor:
+                                                    'RangeMapEcoshapeNotes', 'MigrantStatus']) as insert_cursor:
                             insert_cursor.insertRow([range_map_id,
                                                      search_row[table_name_prefix + 'EcoshapeReview.EcoshapeID'],
                                                      search_row[table_name_prefix + 'EcoshapeReview.Markup'],
-                                                     'Expert Ecoshape Review'])
+                                                     'Expert Ecoshape Review',
+                                                     search_row[table_name_prefix + 'EcoshapeReview.MigrantStatus']])
                 if search_row:
                     del search_row
         EBARUtils.setNewID(param_geodatabase + '/RangeMapEcoshape', 'RangeMapEcoshapeID',
