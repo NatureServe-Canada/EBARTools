@@ -620,6 +620,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                id_field_name + ' = ' + str(update_row['EcoshapeID'])) as search_cursor:
                         summary = ''
                         presence = update_row['Presence']
+                        migrant_status = update_row['MigrantStatus']
                         for search_row in EBARUtils.searchCursor(search_cursor):
                             if len(summary) > 0:
                                 summary += ', '
