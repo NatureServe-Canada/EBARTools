@@ -207,6 +207,7 @@ class ImportTabularDataTool:
             else:
                 species_id = synonym_species_dict[file_line[field_dict['scientific_name']].lower()]
                 synonym_id = synonym_dict[file_line[field_dict['scientific_name']].lower()]
+        unique_id_species = str(file_line[field_dict['unique_id']]) + ' - ' + str(species_id)
 
         # CoordinatesObscured
         coordinates_obscured = False
@@ -290,13 +291,12 @@ class ImportTabularDataTool:
         # check for existing point with same unique_id within the dataset source
         delete = False
         update = False
-        if str(file_line[field_dict['unique_id']]) in id_dict:
+        if unique_id_species in id_dict:
             # already exists
             if quality_grade != 'research':
                 # delete it because it has been downgraded
                 with arcpy.da.UpdateCursor(geodatabase + '/InputPoint', ['CoordinatesObscured'],
-                                           "InputPointID = " +
-                                           str(id_dict[str(file_line[field_dict['unique_id']])])) as cursor:
+                                           "InputPointID = " + str(id_dict[unique_id_species])) as cursor:
                                            #"DatasetSourceUniqueID = '" + str(file_line[field_dict['unique_id']]) +
                                            #"' AND InputDatasetID = " + str(input_dataset_id)) as cursor:
                     row = None
@@ -304,7 +304,7 @@ class ImportTabularDataTool:
                         cursor.deleteRow()
                     if row:
                         del row
-                    return id_dict[str(file_line[field_dict['unique_id']])], 'deleted', None
+                    return id_dict[unique_id_species], 'deleted', None
             #if coordinates_obscured and private_coords:
             #    # we don't know if private_coords were recorded last time, so update
             #    update = True
@@ -321,8 +321,7 @@ class ImportTabularDataTool:
             if private_coords:
                 # check if it was previously obscured, and if so update
                 with arcpy.da.SearchCursor(geodatabase + '/InputPoint', ['CoordinatesObscured'],
-                                           "InputPointID = " +
-                                           str(id_dict[str(file_line[field_dict['unique_id']])])) as cursor:
+                                           "InputPointID = " + str(id_dict[unique_id_species])) as cursor:
                     row = None
                     for row in EBARUtils.searchCursor(cursor):
                         update = row['CoordinatesObscured']
@@ -331,7 +330,7 @@ class ImportTabularDataTool:
 
             if not update:
                 # existing record that does not need to be updated
-                return id_dict[str(file_line[field_dict['unique_id']])], 'duplicate', None
+                return id_dict[unique_id_species], 'duplicate', None
 
         # don't add non research grade
         if quality_grade != 'research':
@@ -362,8 +361,7 @@ class ImportTabularDataTool:
             with arcpy.da.UpdateCursor(geodatabase + '/InputPoint',
                                        ['SHAPE@XY', 'InputDatasetID', 'URI', 'License', 'SpeciesID', 'SynonymID',
                                         'MaxDate', 'CoordinatesObscured', 'Accuracy', 'IndividualCount'],
-                                       "InputPointID = " +
-                                       str(id_dict[str(file_line[field_dict['unique_id']])])) as cursor:
+                                       "InputPointID = " + str(id_dict[unique_id_species])) as cursor:
                 row = None
                 for row in EBARUtils.updateCursor(cursor):
                     #input_point_id = row['InputPointID']
@@ -372,7 +370,7 @@ class ImportTabularDataTool:
                                       coordinates_obscured, accuracy, individual_count])
                 if row:
                     del row
-            return id_dict[str(file_line[field_dict['unique_id']])], 'updated', max_date
+            return id_dict[unique_id_species], 'updated', max_date
         else:
             # insert, set new id and return
             point_fields = ['SHAPE@XY', 'InputDatasetID', 'DatasetSourceUniqueID', 'URI', 'License', 'SpeciesID',
@@ -383,7 +381,7 @@ class ImportTabularDataTool:
                                                    synonym_id, max_date, coordinates_obscured, accuracy,
                                                    individual_count])
             EBARUtils.setNewID(geodatabase + '/InputPoint', 'InputPointID', 'OBJECTID = ' + str(input_point_id))
-            id_dict[str(file_line[field_dict['unique_id']])] = input_point_id
+            id_dict[unique_id_species] = input_point_id
             return input_point_id, 'new', max_date
 
 

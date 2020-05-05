@@ -275,14 +275,15 @@ def readDatasetSourceUniqueIDs(geodatabase, table_name_prefix, dataset_source_id
     arcpy.MakeFeatureLayer_management(geodatabase + '/' + feature_class, 'feature_layer')
     spatial_id_field = table_name_prefix + feature_class + '.' + feature_class + 'ID'
     source_id_field = table_name_prefix + feature_class + '.DatasetSourceUniqueID'
+    species_id_field = table_name_prefix + feature_class + '.SpeciesID'
     # join to Dataset and read IDs
     arcpy.AddJoin_management('feature_layer', 'InputDatasetID', geodatabase + '/InputDataset', 'InputDatasetID')
     unique_ids_dict = {}
     with arcpy.da.SearchCursor('feature_layer',
-                               [spatial_id_field, source_id_field],
+                               [spatial_id_field, source_id_field, species_id_field],
                                'InputDataset.DatasetSourceID = ' + str(dataset_source_id)) as cursor:
         for row in searchCursor(cursor):
-            unique_ids_dict[row[source_id_field]] = row[spatial_id_field]
+            unique_ids_dict[row[source_id_field] + ' - ' + str(row[species_id_field])] = row[spatial_id_field]
     if len(unique_ids_dict) > 0:
         del row
     return unique_ids_dict

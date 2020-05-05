@@ -183,7 +183,7 @@ class ImportSpatialDataTool:
                         uid_raw = row[field_dict['unique_id']]
                         if isinstance(uid_raw, float):
                             uid_raw = int(uid_raw)
-                        if str(uid_raw) in id_dict:
+                        if str(uid_raw) + ' - ' + str(species_id) in id_dict:
                             duplicates += 1
                             ignore_imp = 1
                 # save
