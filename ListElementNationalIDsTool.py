@@ -23,29 +23,36 @@ class ListElementNationalIDsTool:
         pass
 
     def RunListElementNationalIDsTool(self, parameters, messages):
+        # make variables for parms
         param_geodatabase = parameters[0].valueAsText
         #param_folder = parameters[1].valueAsText
-        with arcpy.da.SearchCursor(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', ['ELEMENT_NATIONAL_ID']) as cursor:
+
+        # get table name prefix (needed for joined tables and feature classes in enterprise geodatabases)
+        table_name_prefix = EBARUtils.getTableNamePrefix(param_geodatabase)
+
+        # join to allow selecting on ActiveEBAR flag
+        arcpy.MakeTableView_management(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', 'biotics_view')
+        arcpy.AddJoin_management('biotics_view', 'SpeciesID', param_geodatabase + '/Species', 'SpeciesID',
+                                 'KEEP_COMMON')
+
+        # process active rows
+        with arcpy.da.SearchCursor('biotics_view',
+                                   [table_name_prefix + 'BIOTICS_ELEMENT_NATIONAL.ELEMENT_NATIONAL_ID'],
+                                   table_name_prefix + 'Species.ActiveEBAR = 1') as cursor:
             IDs = []
             count = 0
             row = None
             for row in EBARUtils.searchCursor(cursor):
-                IDs.append(row['ELEMENT_NATIONAL_ID'])
+                IDs.append(row[table_name_prefix + 'BIOTICS_ELEMENT_NATIONAL.ELEMENT_NATIONAL_ID'])
                 count += 1
                 if count % 1000 == 0:
                     EBARUtils.displayMessage(messages, str(count) + ':')
                     EBARUtils.displayMessage(messages, ','.join(map(str, IDs)))
-                    #text_file = open(param_folder + '/ELEMENT_NATIONAL_IDs' + str(count) + '.txt', 'w')
-                    #text_file.write(','.join(map(str, IDs)))
-                    #text_file.close()
                     IDs = []
             if row:
                 del row
             EBARUtils.displayMessage(messages, str(count) + ':')
             EBARUtils.displayMessage(messages, ','.join(map(str, IDs)))
-            #text_file = open(param_folder + '/ELEMENT_NATIONAL_IDs' + str(count) + '.txt', 'w')
-            #text_file.write(','.join(map(str, IDs)))
-            #text_file.close()
             EBARUtils.displayMessage(messages, 'Listed ' + str(count) + ' ELEMENT_NATIONAL_ID values')
         return
 
@@ -55,7 +62,7 @@ if __name__ == '__main__':
     leni = ListElementNationalIDsTool()
     # hard code parameters for debugging
     param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value='C:/GIS/EBAR/EBAR_test.gdb'
+    param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     #param_folder = arcpy.Parameter()
     #param_folder.value='C:/GIS/EBAR'
     parameters = [param_geodatabase]
