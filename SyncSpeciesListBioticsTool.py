@@ -129,8 +129,8 @@ class SyncSpeciesListBioticsTool:
                 # create new Species and BIOTICS_ELEMENT_NATIONAL records
                 # start with a dummy species id so setNewID can work!
                 with arcpy.da.InsertCursor(param_geodatabase + '/Species',
-                                           ['SpeciesID']) as insert_cursor:
-                    insert_cursor.insertRow([999999])
+                                           ['SpeciesID', 'ActiveEBAR']) as insert_cursor:
+                    insert_cursor.insertRow([999999, 1])
                 species_id = EBARUtils.setNewID(param_geodatabase + '/Species', 'SpeciesID', 'SpeciesID = 999999')
                 biotics_fields.append('SpeciesID')
                 with arcpy.da.InsertCursor(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
