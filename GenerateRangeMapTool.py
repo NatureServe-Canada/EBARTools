@@ -561,8 +561,10 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         arcpy.Statistics_analysis('pairwise_intersect_layer', temp_ecoshape_countby_dataset,
                                   [['InputPointID', 'COUNT']], ['EcoshapeID', 'InputDatasetID'])
 
-        # get ecoshape input counts by source and restricted input counts
-        EBARUtils.displayMessage(messages, 'Counting Ecoshape Inputs by Dataset Source and Restricted Inputs')
+        ## get ecoshape input counts by source and restricted input counts
+        #EBARUtils.displayMessage(messages, 'Counting Ecoshape Inputs by Dataset Source and Restricted Inputs')
+        # get ecoshape input counts by source
+        EBARUtils.displayMessage(messages, 'Counting Ecoshape Inputs by Dataset Source')
         temp_ecoshape_countby_source = 'TempEcoshapeCountBySource' + str(start_time.year) + str(start_time.month) + \
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
         arcpy.AddJoin_management('pairwise_intersect_layer', 'InputDatasetID',
@@ -572,13 +574,13 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         arcpy.Statistics_analysis('pairwise_intersect_layer', temp_ecoshape_countby_source, [['InputPointID', 'COUNT']],
                                   ['EcoshapeID', table_name_prefix + 'DatasetSource.DatasetSourceName',
                                    table_name_prefix + 'DatasetSource.DatasetType'])
-        temp_ecoshape_restricted = 'TempEcoshapeRestricted' + str(start_time.year) + str(start_time.month) + \
-            str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
-        arcpy.SelectLayerByAttribute_management('pairwise_intersect_layer', 'NEW_SELECTION',
-                                                table_name_prefix + "InputDataset.Restrictions IN ('R', 'E')")
-        arcpy.Statistics_analysis('pairwise_intersect_layer', temp_ecoshape_restricted, [['InputPointID', 'COUNT']],
-                                  ['EcoshapeID'])
-        arcpy.SelectLayerByAttribute_management('pairwise_intersect_layer', 'CLEAR_SELECTION')
+        #temp_ecoshape_restricted = 'TempEcoshapeRestricted' + str(start_time.year) + str(start_time.month) + \
+        #    str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
+        #arcpy.SelectLayerByAttribute_management('pairwise_intersect_layer', 'NEW_SELECTION',
+        #                                        table_name_prefix + "InputDataset.Restrictions IN ('R', 'E')")
+        #arcpy.Statistics_analysis('pairwise_intersect_layer', temp_ecoshape_restricted, [['InputPointID', 'COUNT']],
+        #                          ['EcoshapeID'])
+        #arcpy.SelectLayerByAttribute_management('pairwise_intersect_layer', 'CLEAR_SELECTION')
         arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'DatasetSource')
         arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'InputDataset')
 
@@ -629,22 +631,23 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                             summary += str(search_row[field_names[2]]) + ' ' + search_row[field_names[0]]
                         if len(summary) > 0:
                             del search_row
-                    # get restricted count
-                    # kludge because arc ends up with different field names under Enterprise gdb after joining
-                    field_names = [f.name for f in arcpy.ListFields(temp_ecoshape_restricted) if f.aliasName in
-                                   ['FREQUENCY', 'frequency']]
-                    id_field_name = [f.name for f in arcpy.ListFields(temp_ecoshape_restricted) if f.aliasName ==
-                                     'EcoshapeID'][0]
-                    restricted = 0
-                    with arcpy.da.SearchCursor(temp_ecoshape_restricted, field_names,
-                                               id_field_name + ' = ' + str(update_row['EcoshapeID'])) as search_cursor:
-                        for search_row in EBARUtils.searchCursor(search_cursor):
-                            restricted = search_row[field_names[0]]
-                        if restricted > 0:
-                            del search_row
-                            summary = 'Input records (' + str(restricted) + ' RESTRICTED) - ' + summary
-                        else:
-                            summary = 'Input records - ' + summary
+                    ## get restricted count
+                    ## kludge because arc ends up with different field names under Enterprise gdb after joining
+                    #field_names = [f.name for f in arcpy.ListFields(temp_ecoshape_restricted) if f.aliasName in
+                    #               ['FREQUENCY', 'frequency']]
+                    #id_field_name = [f.name for f in arcpy.ListFields(temp_ecoshape_restricted) if f.aliasName ==
+                    #                 'EcoshapeID'][0]
+                    #restricted = 0
+                    #with arcpy.da.SearchCursor(temp_ecoshape_restricted, field_names,
+                    #                           id_field_name + ' = ' + str(update_row['EcoshapeID'])) as search_cursor:
+                    #    for search_row in EBARUtils.searchCursor(search_cursor):
+                    #        restricted = search_row[field_names[0]]
+                    #    if restricted > 0:
+                    #        del search_row
+                    #        summary = 'Input records (' + str(restricted) + ' RESTRICTED) - ' + summary
+                    #    else:
+                    #        summary = 'Input records - ' + summary
+                    summary = 'Input records - ' + summary
                     # check for ecoshape "update" reviews
                     if len(prev_range_map_ids) > 0:
                         with arcpy.da.SearchCursor('ecoshape_review_view',
@@ -728,8 +731,10 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             if rme_row:
                 del rme_row
 
-        # get overall input counts by source and restricted input counts (using original inputs)
-        EBARUtils.displayMessage(messages, 'Counting Overall Inputs by Dataset Source and Restricted Inputs')
+        ## get overall input counts by source and restricted input counts (using original inputs)
+        #EBARUtils.displayMessage(messages, 'Counting Overall Inputs by Dataset Source and Restricted Inputs')
+        # get overall input counts by source
+        EBARUtils.displayMessage(messages, 'Counting Overall Inputs by Dataset Source')
         # select only those within ecoshapes
         arcpy.AddJoin_management('all_inputs_layer', 'InputDatasetID',
                                  param_geodatabase + '/InputDataset', 'InputDatasetID', 'KEEP_COMMON')
@@ -740,10 +745,10 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
         arcpy.Statistics_analysis('all_inputs_layer', temp_overall_countby_source, [['InputDatasetID', 'COUNT']],
                                   [table_name_prefix + 'DatasetSource.DatasetSourceName'])
-        temp_overall_restricted = 'TempOverallRestricted' + str(start_time.year) + str(start_time.month) + \
-            str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
-        arcpy.Statistics_analysis('all_inputs_layer', temp_overall_restricted, [['InputDatasetID', 'COUNT']],
-                                  [table_name_prefix + 'InputDataset.Restrictions'])
+        #temp_overall_restricted = 'TempOverallRestricted' + str(start_time.year) + str(start_time.month) + \
+        #    str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
+        #arcpy.Statistics_analysis('all_inputs_layer', temp_overall_restricted, [['InputDatasetID', 'COUNT']],
+        #                          [table_name_prefix + 'InputDataset.Restrictions'])
 
         # create RangeMapInput records from Non-restricted for overlay display in EBAR Reviewer
         EBARUtils.displayMessage(messages, 'Creating Range Map Input records for overlay display in EBAR Reviewer')
@@ -849,20 +854,21 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                         summary += str(search_row[field_names[1]]) + ' ' + search_row[field_names[0]]
                     if len(summary) > 0:
                         del search_row
-                # restricted count
-                # kludge because arc ends up with different field names under Enterprise gdb after joining
-                field_names = [f.name for f in arcpy.ListFields(temp_overall_restricted) if f.aliasName in
-                               ['Restrictions', 'FREQUENCY', 'frequency']]
-                with arcpy.da.SearchCursor(temp_overall_restricted, field_names) as search_cursor:
-                    restricted = 0
-                    for search_row in EBARUtils.searchCursor(search_cursor):
-                        if search_row[field_names[0]] in ['R', 'E']:
-                            restricted += search_row[field_names[1]]
-                    if restricted > 0:
-                        del search_row
-                        summary = 'Input Records (' + str(restricted) + ' RESTRICTED) - ' + summary
-                    else:
-                        summary = 'Input Records - ' + summary
+                ## restricted count
+                ## kludge because arc ends up with different field names under Enterprise gdb after joining
+                #field_names = [f.name for f in arcpy.ListFields(temp_overall_restricted) if f.aliasName in
+                #               ['Restrictions', 'FREQUENCY', 'frequency']]
+                #with arcpy.da.SearchCursor(temp_overall_restricted, field_names) as search_cursor:
+                #    restricted = 0
+                #    for search_row in EBARUtils.searchCursor(search_cursor):
+                #        if search_row[field_names[0]] in ['R', 'E']:
+                #            restricted += search_row[field_names[1]]
+                #    if restricted > 0:
+                #        del search_row
+                #        summary = 'Input Records (' + str(restricted) + ' RESTRICTED) - ' + summary
+                #    else:
+                #        summary = 'Input Records - ' + summary
+                summary = 'Input Records - ' + summary
                 ## expert reviews
                 #if ecoshape_reviews > 0:
                 #    if len(summary) > 0:
@@ -889,12 +895,12 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             arcpy.Delete_management(temp_unique_synonyms)
         if arcpy.Exists(temp_overall_countby_source):
             arcpy.Delete_management(temp_overall_countby_source)
-        if arcpy.Exists(temp_overall_restricted):
-            arcpy.Delete_management(temp_overall_restricted)
+        #if arcpy.Exists(temp_overall_restricted):
+        #    arcpy.Delete_management(temp_overall_restricted)
         if arcpy.Exists(temp_ecoshape_countby_source):
             arcpy.Delete_management(temp_ecoshape_countby_source)
-        if arcpy.Exists(temp_ecoshape_restricted):
-            arcpy.Delete_management(temp_ecoshape_restricted)
+        #if arcpy.Exists(temp_ecoshape_restricted):
+        #    arcpy.Delete_management(temp_ecoshape_restricted)
         if arcpy.Exists(temp_ecoshape_countby_dataset):
             arcpy.Delete_management(temp_ecoshape_countby_dataset)
         if arcpy.Exists(temp_ecoshape_max_polygon):
