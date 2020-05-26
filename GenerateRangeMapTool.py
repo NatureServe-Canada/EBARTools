@@ -921,10 +921,10 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             arcpy.Delete_management(temp_point_buffer)
         if arcpy.Exists(temp_restrictions):
             arcpy.Delete_management(temp_restrictions)
-        ## trouble deleting on server only due to locks; could be layer?
-        #if param_geodatabase[-4:].lower() == '.gdb':
-        #    if arcpy.Exists(temp_all_inputs):
-        #        arcpy.Delete_management(temp_all_inputs)
+        # trouble deleting on server only due to locks; could be layer?
+        if param_geodatabase[-4:].lower() == '.gdb':
+            if arcpy.Exists(temp_all_inputs):
+                arcpy.Delete_management(temp_all_inputs)
 
         # end time
         end_time = datetime.datetime.now()
