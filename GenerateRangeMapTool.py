@@ -752,8 +752,16 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
 
         # create RangeMapInput records from Non-restricted for overlay display in EBAR Reviewer
         EBARUtils.displayMessage(messages, 'Creating Range Map Input records for overlay display in EBAR Reviewer')
+        temp_restrictions = 'TempRestrictions' + str(start_time.year) + str(start_time.month) + \
+            str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
+        arcpy.TableToTable_conversion(param_geodatabase + '/RestrictedJurisdictionSpecies', param_geodatabase,
+                                      temp_restrictions, 'SpeciesID IN (' + species_ids + ')')
+        arcpy.AddJoin_management('all_inputs_layer', table_name_prefix + 'DatasetSource.CDCJurisdictionID',
+                                 param_geodatabase + '/' + temp_restrictions, 'CDCJurisdictionID', 'KEEP_ALL')
         arcpy.SelectLayerByAttribute_management('all_inputs_layer', 'SUBSET_SELECTION',
-                                                table_name_prefix + "InputDataset.Restrictions = 'N'")
+                                                '(' + table_name_prefix + "InputDataset.Restrictions = 'N') OR" +
+                                                '(' + table_name_prefix + "InputDataset.Restrictions = 'R' AND " +
+                                                table_name_prefix + temp_restrictions + '.SpeciesID IS NULL)')
         arcpy.AddJoin_management('all_inputs_layer', 'SpeciesID',
                                  param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', 'SpeciesID', 'KEEP_COMMON')
         arcpy.AddJoin_management('all_inputs_layer', 'SynonymID',
@@ -763,10 +771,10 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                             table_name_prefix + temp_all_inputs + '.RangeMapID',
                                                             'RangeMapID', 'LONG'))
         field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer', table_name_prefix + \
-                                                                temp_all_inputs + '.OriginalGeometryType',
+                                                            temp_all_inputs + '.OriginalGeometryType',
                                                             'OriginalGeometryType', 'TEXT'))
         field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer', table_name_prefix + \
-                                                                'BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME',
+                                                            'BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME',
                                                             'NationalScientificName', 'TEXT'))
         field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
                                                             table_name_prefix + 'Synonym.SynonymName',
@@ -911,10 +919,12 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             arcpy.Delete_management(temp_line_buffer)
         if arcpy.Exists(temp_point_buffer):
             arcpy.Delete_management(temp_point_buffer)
-        # trouble deleting on server only due to locks; could be layer?
-        if param_geodatabase[-4:].lower() == '.gdb':
-            if arcpy.Exists(temp_all_inputs):
-                arcpy.Delete_management(temp_all_inputs)
+        if arcpy.Exists(temp_restrictions):
+            arcpy.Delete_management(temp_restrictions)
+        ## trouble deleting on server only due to locks; could be layer?
+        #if param_geodatabase[-4:].lower() == '.gdb':
+        #    if arcpy.Exists(temp_all_inputs):
+        #        arcpy.Delete_management(temp_all_inputs)
 
         # end time
         end_time = datetime.datetime.now()
