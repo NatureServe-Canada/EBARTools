@@ -761,6 +761,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         arcpy.SelectLayerByAttribute_management('all_inputs_layer', 'SUBSET_SELECTION',
                                                 '(' + table_name_prefix + "InputDataset.Restrictions = 'N') OR" +
                                                 '(' + table_name_prefix + "InputDataset.Restrictions = 'R' AND " +
+                                                table_name_prefix + "DatasetSource.CDCJurisdictionID IS NOT NULL AND " +
                                                 table_name_prefix + temp_restrictions + '.SpeciesID IS NULL)')
         arcpy.AddJoin_management('all_inputs_layer', 'SpeciesID',
                                  param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', 'SpeciesID', 'KEEP_COMMON')
