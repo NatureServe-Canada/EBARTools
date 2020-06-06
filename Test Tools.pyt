@@ -15,6 +15,7 @@ import arcpy
 import pdfkit
 import datetime
 import zipfile
+#import shutil
 import os
 
 
@@ -123,10 +124,14 @@ class TestZip(object):
         param_feature_class = parameters[0].valueAsText
         param_output_folder = parameters[1].valueAsText
         param_output_text = parameters[2].valueAsText
+        if arcpy.Exists('C:/GIS/EBAR/test1.gdb'):
+            arcpy.Delete_management('C:/GIS/EBAR/test1.gdb')
         arcpy.CreateFileGDB_management('C:/GIS/EBAR', 'test1.gdb')
         arcpy.CopyFeatures_management(param_feature_class, 'C:/GIS/EBAR/test1.gdb/test1')
-        zip1 = zipfile.ZipFile(param_output_folder + '/test1.zip', 'w')
-        #zip1.write('C:/GIS/EBAR/test1.gdb')
+        #arcpy.Copy_management('C:/GIS/EBAR/test1.gdb', 'C:/GIS/EBAR/testout.gdb')
+        os.chdir('C:/GIS/EBAR')
+        #shutil.make_archive(param_output_folder + '/testout', 'zip', 'C:/GIS/EBAR/test1.gdb', 'C:/GIS/EBAR/test1.gdb')
+        zip1 = zipfile.ZipFile('C:/GIS/EBAR/testout.zip', 'w')
         for root, dirs, files in os.walk('C:/GIS/EBAR/test1.gdb'):
             for file in files:
                 #zip1.write(os.path.join(root, file))
