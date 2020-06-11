@@ -160,8 +160,12 @@ class GenerateRangeMapTool:
                     if (row['RangeVersion'] == param_version and row['RangeStage'] == param_stage):
                         # range map to be geneated already exists
                         range_map_id = row['RangeMapID']
+                        # remove from list of range maps to be used later for applying reviews
                         prev_range_map.remove(range_map_id)
-                        prev_range_map_ids = ','.join(map(str, prev_range_map)) 
+                    if row['RangeVersion'] != param_version:
+                        # also remove from list of range maps to be used later for applying reviews
+                        prev_range_map.remove(row['RangeMapID'])
+            prev_range_map_ids = ','.join(map(str, prev_range_map)) 
 
         if range_map_id:
             arcpy.SelectLayerByAttribute_management('range_map_view', 'NEW_SELECTION',
