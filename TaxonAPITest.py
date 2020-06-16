@@ -22,8 +22,7 @@ print('')
 print('Species Search (nation=CA)')
 print('--------------------------')
 url = 'https://explorer.natureserve.org/api/data/search'
-headers = {'Accept': 'application/json',
-           'Content-Type': 'application/json; charset=UTF-8'}
+headers = {'Accept': 'application/json', 'Content-Type': 'application/json; charset=UTF-8'}
 params = {'criteriaType': 'combined',
           #'textCriteria': [{'paramType': 'quickSearch',
           #                  'searchToken': 'IICOL7C012'}]}
