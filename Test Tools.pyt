@@ -12,6 +12,7 @@
 
 # import python packages
 import arcpy
+import PublishRangeMapTool
 import pdfkit
 import datetime
 import zipfile
@@ -26,7 +27,110 @@ class Toolbox(object):
         self.alias = ''
 
         # List of tool classes associated with this toolbox
-        self.tools = [TestPDF, TestZip]
+        self.tools = [PublishRangeMap, TestPDF, TestZip]
+
+
+class PublishRangeMap(object):
+    def __init__(self):
+        """Define the tool (tool name is the name of the class)."""
+        self.label = 'PublishRangeMap'
+        self.description = 'Create JPG, PDF and Spatial Data (Zip) for a Range Map'
+        self.canRunInBackground = True
+
+    def getParameterInfo(self):
+        ## Species
+        #param_species = arcpy.Parameter(
+        #    displayName='Species Scientific Name',
+        #    name='species',
+        #    datatype='GPString',
+        #    parameterType='Required',
+        #    direction='Input')
+
+        ## Secondary Species
+        #param_secondary = arcpy.Parameter(
+        #    displayName='Secondary Species',
+        #    name='secondary_species',
+        #    datatype='GPString',
+        #    parameterType='Optional',
+        #    direction='Input',
+        #    multiValue=True)
+
+        ## Range Version
+        #param_version = arcpy.Parameter(
+        #    displayName='Range Version',
+        #    name='range_version',
+        #    datatype='GPString',
+        #    parameterType='Required',
+        #    direction='Input')
+        #param_version.value = '1.0'
+
+        ## Range Stage
+        #param_stage = arcpy.Parameter(
+        #    displayName='Range Stage',
+        #    name='range_stage',
+        #    datatype='GPString',
+        #    parameterType='Required',
+        #    direction='Input')
+        #param_stage.value = 'Expert Reviewed'
+
+        # Range Map ID
+        param_range_map_id = arcpy.Parameter(
+            displayName='Range Map ID',
+            name='range_map_id',
+            datatype='GPString',
+            parameterType='Required',
+            direction='Input')
+        param_stage.value = '199'
+
+        # Include PDF
+        param_pdf = arcpy.Parameter(
+            displayName='Include PDF',
+            name='include_pdf',
+            datatype='GPBoolean',
+            parameterType='Required',
+            direction='Input')
+        param_pdf.value = True
+
+        # Include JPG
+        param_jpg = arcpy.Parameter(
+            displayName='Include JPG',
+            name='include_jpg',
+            datatype='GPBoolean',
+            parameterType='Required',
+            direction='Input')
+        param_jpg.value = True
+
+        # Include Spatial
+        param_spatial = arcpy.Parameter(
+            displayName='Include Spatial Data (ZIP)',
+            name='include_spatial',
+            datatype='GPBoolean',
+            parameterType='Required',
+            direction='Input')
+        param_spatial.value = True
+
+        params = [param_range_map_id, param_pdf, param_jpg, param_spatial]
+        return params
+
+    def isLicensed(self):
+        """Set whether tool is licensed to execute."""
+        return True
+
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal validation is performed.  This method is 
+        called whenever a parameter has been changed."""
+        return
+
+    def updateMessages(self, parameters):
+        """Modify the messages created by internal validation for each tool parameter.  This method is called "
+        "after internal validation."""
+        return
+
+    def execute(self, parameters, messages):
+        """The source code of the tool."""
+        prm = PublishRangeMapTool.PublishRangeMapTool()
+        prm.RunPublishRangeMapTool(parameters, messages)
+        return
 
 
 class TestPDF(object):
