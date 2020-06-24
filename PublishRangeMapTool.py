@@ -40,7 +40,8 @@ class PublishRangeMapTool:
         temp_folder = 'C:/GIS/EBAR/pub/temp'
         download_folder = 'C:/GIS/EBAR/pub/download'
         ebar_feature_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/EBAR/FeatureServer'
-        nse_taxon_search_url = 'https://explorer.natureserve.org/api/data/search'
+        nse_species_search_url = 'https://explorer.natureserve.org/api/data/search'
+        nse_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/ELEMENT_GLOBAL.2.'
 
         # make variables for parms
         EBARUtils.displayMessage(messages, 'Processing parameters')
@@ -90,11 +91,27 @@ class PublishRangeMapTool:
             # get biotics data from database
             national_engl_name = None
             element_code = None
-            with arcpy.da.SearchCursor(ebar_feature_service + '/4', ['NATIONAL_ENGL_NAME', 'ELEMENT_CODE'],
+            with arcpy.da.SearchCursor(ebar_feature_service + '/4', 
+                                       ['NATIONAL_SCIENTIFIC_NAME', 'NATIONAL_ENGL_NAME', 'NATIONAL_FR_NAME',
+                                        'ELEMENT_NATIONAL_ID', 'ELEMENT_GLOBAL_ID', 'ELEMENT_CODE'],
                                        'SpeciesID = ' + str(species_id)) as cursor:
                 for row in EBARUtils.searchCursor(cursor):
-                    national_engl_name = row['NATIONAL_ENGL_NAME']
+                    metadata_body = metadata_body.replace('[BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME]',
+                                                          row['NATIONAL_SCIENTIFIC_NAME'])
+                    metadata_body = metadata_body.replace('[BIOTICS_ELEMENT_NATIONAL.NATIONAL_ENGL_NAME]',
+                                                          row['NATIONAL_ENGL_NAME'])
+                    french_name = ''
+                    if row['NATIONAL_FR_NAME']:
+                        french_name = row['NATIONAL_FR_NAME']
+                    metadata_body = metadata_body.replace('[BIOTICS_ELEMENT_NATIONAL.NATIONAL_FR_NAME]',
+                                                          french_name)
+                    metadata_body = metadata_body.replace('[BIOTICS_ELEMENT_NATIONAL.ELEMENT_NATIONAL_ID]',
+                                                          str(row['ELEMENT_NATIONAL_ID']))
+                    element_global_id = str(row['ELEMENT_GLOBAL_ID'])
+                    metadata_body = metadata_body.replace('[BIOTICS_ELEMENT_NATIONAL.ELEMENT_GLOBAL_ID]',
+                                                          element_global_id)
                     element_code = row['ELEMENT_CODE']
+                    metadata_body = metadata_body.replace('[BIOTICS_ELEMENT_NATIONAL.ELEMENT_CODE]', element_code)
                 del row
 
             # get species data from database
@@ -102,27 +119,76 @@ class PublishRangeMapTool:
             with arcpy.da.SearchCursor(ebar_feature_service + '/19', ['KBATrigger'],
                                        'SpeciesID = ' + str(species_id)) as cursor:
                 for row in EBARUtils.searchCursor(cursor):
-                    kba_trigger = row['KBATrigger']
+                    metadata_body = metadata_body.replace('[Species.KBATrigger]', row['KBATrigger'])
                 del row
 
-            # get attributes from NSE
+            # get attributes from NSE Species Search API
+            #headers = {'Accept': 'application/json', 'Content-Type': 'application/json; charset=UTF-8'}
+            #params = {'criteriaType': 'combined',
+            #          'textCriteria': [{'paramType': 'textSearch',
+            #                            'searchToken': element_code,
+            #                            'matchAgainst': 'code',
+            #                            'operator': 'equals'}]}
+            #payload = json.dumps(params)
+            #r = requests.post(nse_species_search_url, data=payload, headers=headers)
+            #content = json.loads(r.content)
+            #results = content['results']
+
+            # get attributes from NSE Taxon API
             EBARUtils.displayMessage(messages, 'Getting attributes from NatureServe Explorer')
-            rounded_nrank = None
-            headers = {'Accept': 'application/json', 'Content-Type': 'application/json; charset=UTF-8'}
-            params = {'criteriaType': 'combined',
-                      'textCriteria': [{'paramType': 'textSearch',
-                                        'searchToken': element_code,
-                                        'matchAgainst': 'code',
-                                        'operator': 'equals'}]}
-            payload = json.dumps(params)
-            r = requests.post(nse_taxon_search_url, data=payload, headers=headers)
-            content = json.loads(r.content)
-            results = content['results']
-            for k in results[0]:
-                if k == 'nations':
-                    for knation in results[0][k]:
-                        if knation['nationCode'] == 'CA':
-                            rounded_nrank = knation['roundedNRank']
+            result = requests.get(nse_taxon_search_url + element_global_id)
+            results = json.loads(result.content)
+            metadata_body = metadata_body.replace('[NSE.grank]', results['grank'])
+            metadata_body = metadata_body.replace('[NSE.grankReviewDate]', results['grankReviewDate'])
+            ca_rank = ''
+            us_rank = ''
+            mx_rank = ''
+            subnational_ranks = ''
+            for key in results:
+                if key == 'elementNationals':
+                    for en in results[key]:
+                        if en['nation']['isoCode'] == 'CA':
+                            reviewed = ''
+                            if en['nrankReviewYear']:
+                                reviewed = ' (reviewed ' + str(en['nrankReviewYear']) + ')'
+                            ca_rank = en['nrank'] + reviewed
+                        if en['nation']['isoCode'] == 'US':
+                            reviewed = ''
+                            if en['nrankReviewYear']:
+                                reviewed = ' (reviewed ' + str(en['nrankReviewYear']) + ')'
+                            us_rank = en['nrank'] + reviewed
+                        if en['nation']['isoCode'] == 'MX':
+                            reviewed = ''
+                            if en['nrankReviewYear']:
+                                reviewed = ' (reviewed ' + str(en['nrankReviewYear']) + ')'
+                            mx_rank = en['nrank'] + reviewed
+                        if en['nation']['isoCode'] in ('CA', 'US', 'MX'):
+                            for esn in en['elementSubnationals']:
+                                if len(subnational_ranks) > 0:
+                                    subnational_ranks += ', ' 
+                                subnational_ranks += esn['subnation']['subnationCode'] + '=' + esn['srank']
+            metadata_body = metadata_body.replace('[NSE.CARank]', ca_rank)
+            metadata_body = metadata_body.replace('[NSE.USRank]', us_rank)
+            metadata_body = metadata_body.replace('[NSE.MXRank]', mx_rank)
+            metadata_body = metadata_body.replace('[NSE.subnationalRanks]', subnational_ranks)
+            sara_status = ''
+            if results['speciesGlobal']['saraStatus']:
+                sara_status = results['speciesGlobal']['saraStatus']
+                if results['speciesGlobal']['saraStatusDate']:
+                    sara_status += ' (' + results['speciesGlobal']['saraStatusDate'] + ')'
+            metadata_body = metadata_body.replace('[NSE.saraStatus]', sara_status)
+            cosewic_status = ''
+            if results['speciesGlobal']['interpretedCosewic']:
+                cosewic_status = results['speciesGlobal']['interpretedCosewic']
+                if results['speciesGlobal']['cosewicDate']:
+                    cosewic_status += ' (' + results['speciesGlobal']['cosewicDate'] + ')'
+            metadata_body = metadata_body.replace('[NSE.cosewicStatus]', cosewic_status)
+            esa_status = ''
+            if results['speciesGlobal']['interpretedUsesa']:
+                esa_status = results['speciesGlobal']['interpretedUsesa']
+                if results['speciesGlobal']['usesaDate']:
+                    esa_status += ' (' + results['speciesGlobal']['usesaDate'] + ')'
+            metadata_body = metadata_body.replace('[NSE.esaStatus]', esa_status)
 
         ## generate jpg
         #if param_pdf == 'true' or param_jpg == 'true':

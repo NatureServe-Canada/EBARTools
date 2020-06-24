@@ -5,7 +5,7 @@ import json
 
 print('Get Taxon')
 print('---------')
-r = requests.get('https://explorer.natureserve.org/api/data/taxon/ELEMENT_GLOBAL.2.827469')
+r = requests.get('https://explorer.natureserve.org/api/data/taxon/ELEMENT_GLOBAL.2.112976')
 parsed = json.loads(r.content)
 for k in parsed:
     print(k + ': ' + str(parsed[k]))
@@ -26,8 +26,12 @@ headers = {'Accept': 'application/json', 'Content-Type': 'application/json; char
 params = {'criteriaType': 'combined',
           #'textCriteria': [{'paramType': 'quickSearch',
           #                  'searchToken': 'IICOL7C012'}]}
+          #'textCriteria': [{'paramType': 'textSearch',
+          #                  'searchToken': 'ABNCA03012',
+          #                  'matchAgainst': 'code',
+          #                  'operator': 'equals'}]}
           'textCriteria': [{'paramType': 'textSearch',
-                            'searchToken': 'ABNCA03012',
+                            'searchToken': 'IILEYGA040',
                             'matchAgainst': 'code',
                             'operator': 'equals'}]}
           #'locationCriteria': [{'paramType': 'nation',
