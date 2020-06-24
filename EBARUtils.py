@@ -70,6 +70,72 @@ eo_rank_dict = {'Excellent estimated viability/ecological integrity': 'A',
                 'Not ranked': 'NR'}
 
 
+scope_dict = {'G': 'Global',
+              'N': 'National',
+              'A': 'North American',
+              None: 'Global'}
+
+
+metadata_body = '''
+              <img src="[logo_image]" width="450">
+              <br>
+              <header>
+                <h1>Ecosystem-based Automated Range (EBAR) Map Metadata</h1>
+              </header>
+              <hr style="height:5px;color:#5c9400;background-color:#5c9400">
+              <br><br>
+              <img src="[species_header_image]" width="1200">
+              <br>
+              <header>
+                <h2>National Scientific Name: [BIOTICS_ELEMENT_ NATIONAL.NATIONAL_SCIENTIFIC_NAME]</h2>
+                <h2>National English Name: [BIOTICS_ELEMENT_ NATIONAL.NATIONAL_ENGL_NAME]</h2>
+                <h2>National French Name: [BIOTICS_ELEMENT_ NATIONAL.NATIONAL_FR_NAME]</h2>
+                <h2>Element National ID: [BIOTICS_ELEMENT_NATIONAL.ELEMENT_NATIONAL_ID]</h2>
+                <h2>Element Global ID: [BIOTICS_ELEMENT_NATIONAL.ELEMENT_GLOBAL_ID]</h2>
+                <h2>Element Code: [BIOTICS_ELEMENT_NATIONAL.ELEMENT_CODE]</h2>
+              </header>
+              <br><br>
+              <img src="[rank_status_header_image]" width="1200">
+              <br>
+              <header>
+                <h2>Global Rank: [NSE.roundedGRank] (reviewed [NSE.grankReviewDate])</h2>
+                <h2>National Rank (Canada): [NSE.roundedNRank] (reviewed [NSE.nrankReviewYear])</h2>
+                <h2>National Rank (United States): [NSE.roundedNRank] (reviewed [NSE.nrankReviewYear])</h2>
+                <h2>National Rank (Mexico): [NSE.roundedNRank] (reviewed [NSE.nrankReviewYear])</h2>
+                <h2>Canadian SARA Status: [NSE.saraStatus] ([NSE.saraStatusDate])</h2>
+                <h2>Canadian COSEWIC Status: [NSE.interpretedCosewic] ([NSE.cosewicDate])</h2>
+                <h2>US ESA Status: [NSE.interpretedUsesa] ([NSE.usesaDate])</h2>
+                <h2>Subnational Ranks: [NSE.subnationCode]=[NSE.roundedSRank]</h2>
+              </header>
+              <br><br>
+              <img src="[range_map_header_image]" width="1200">
+              <br>
+              <header>
+                <h2>Version: [RangeMap.RangeVersion]</h2>
+                <h2>[RangeMap.RangeMapNotes]</h2>
+                <h2>[RangeMap.RangeMetadata]</h2>
+              </header>
+              <br><br>
+              <img src="[reviews_header_image]" width="1200">
+              <br>
+              <header>
+                <h2>Number of Reviewers: [Reviews.Count]</h2>
+                <h2>Average Star Rating: [Reviews.AverageStarRating]</h2>
+              </header>
+              <br><br>
+              <img src="[credits_header_image]" width="1200">
+              <br>
+              <header>
+                <h2>Suggested Citation: Ecosystem-based Automated Range Mapping (EBAR) Project, ''' + \
+                    '''© NatureServe Canada 2020 under CC BY 4.0</h2>
+                <h2>Input References:</h2>
+                <h2>[InputReferences]</h2>
+                <h2>Reviewers by Taxa:</h2>
+                <h2>[ReviewersByTaxa]</h2>
+              </header>
+'''
+
+
 def displayMessage(messages, msg):
     """Output message to arcpy message object or to Python standard output."""
     if messages:
