@@ -37,6 +37,7 @@ class PublishRangeMapTool:
         #arcpy.gp.overwriteOutput = True
         arcgis_pro_project = 'C:/GIS/EBAR/EBAR.aprx'
         resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
+        reviewers_by_taxa_file = 'C:/GIS/EBAR/EBARTools/resources/ReviewersByTaxa.txt'
         temp_folder = 'C:/GIS/EBAR/pub/temp'
         download_folder = 'C:/GIS/EBAR/pub/download'
         ebar_feature_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/EBAR/FeatureServer'
@@ -71,16 +72,16 @@ class PublishRangeMapTool:
             species_id = None
             with arcpy.da.SearchCursor(ebar_feature_service + '/11',
                                        ['SpeciesID', 'RangeVersion', 'RangeStage', 'RangeDate', 'RangeMapScope',
-                                        'RangeMapNotes', 'RangeMetadata'],
+                                        'RangeMapNotes', 'RangeMetadata', 'RangeMapComments'],
                                        'RangeMapID = ' + str(param_range_map_id)) as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     species_id = row['SpeciesID']
-                    version = row['RangeVersion'] + ', ' + row['RangeStage'] + ', ' + \
-                        EBARUtils.scope_dict[row['RangeMapScope']] + ' scope, ' + \
-                        row['RangeDate'].strftime('%B %d, %Y')
-                    metadata_body = metadata_body.replace('[RangeMap.RangeVersion]', version)
+                    metadata_body = metadata_body.replace('[RangeMap.RangeDate]', row['RangeDate'].strftime('%B %d, %Y'))
+                    metadata_body = metadata_body.replace('[RangeMap.RangeVersion]', row['RangeVersion'])
+                    metadata_body = metadata_body.replace('[RangeMap.RangeStage]', row['RangeStage'])
+                    metadata_body = metadata_body.replace('[RangeMap.RangeMapScope]', row['RangeMapScope'])
                     metadata_body = metadata_body.replace('[RangeMap.RangeMapNotes]', row['RangeMapNotes'])
-                    metadata_body = metadata_body.replace('[RangeMap.RangeMetadata]', row['RangeMetadata'])
+                    metadata_body = metadata_body.replace('[RangeMap.RangeMapComments]', row['RangeMapComments'])
                 if species_id:
                     del row
                 else:
@@ -122,6 +123,20 @@ class PublishRangeMapTool:
                     metadata_body = metadata_body.replace('[Species.KBATrigger]', row['KBATrigger'])
                 del row
 
+            # summarize completed reviews for this version of the range map
+            with arcpy.da.SearchCursor(ebar_feature_service + '/19', ['KBATrigger'],
+                                       'SpeciesID = ' + str(species_id)) as cursor:
+                for row in EBARUtils.searchCursor(cursor):
+                    metadata_body = metadata_body.replace('[Species.KBATrigger]', row['KBATrigger'])
+                del row
+
+            # summarize input references
+
+            # insert fixed list of reviewers by taxa
+            reviewers = open(reviewers_by_taxa_file)
+            metadata_body = metadata_body.replace('[ReviewersByTaxa]', reviewers.read())
+            reviewers.close()
+
             # get attributes from NSE Species Search API
             #headers = {'Accept': 'application/json', 'Content-Type': 'application/json; charset=UTF-8'}
             #params = {'criteriaType': 'combined',
@@ -140,10 +155,12 @@ class PublishRangeMapTool:
             results = json.loads(result.content)
             metadata_body = metadata_body.replace('[NSE.grank]', results['grank'])
             metadata_body = metadata_body.replace('[NSE.grankReviewDate]', results['grankReviewDate'])
-            ca_rank = ''
-            us_rank = ''
-            mx_rank = ''
-            subnational_ranks = ''
+            ca_rank = 'None'
+            us_rank = 'None'
+            mx_rank = 'None'
+            ca_subnational_list = []
+            us_subnational_list = []
+            mx_subnational_list = []
             for key in results:
                 if key == 'elementNationals':
                     for en in results[key]:
@@ -152,38 +169,53 @@ class PublishRangeMapTool:
                             if en['nrankReviewYear']:
                                 reviewed = ' (reviewed ' + str(en['nrankReviewYear']) + ')'
                             ca_rank = en['nrank'] + reviewed
+                            for esn in en['elementSubnationals']:
+                                ca_subnational_list.append(esn['subnation']['subnationCode'] + '=' + esn['srank'])
                         if en['nation']['isoCode'] == 'US':
                             reviewed = ''
                             if en['nrankReviewYear']:
                                 reviewed = ' (reviewed ' + str(en['nrankReviewYear']) + ')'
                             us_rank = en['nrank'] + reviewed
+                            for esn in en['elementSubnationals']:
+                                us_subnational_list.append(esn['subnation']['subnationCode'] + '=' + esn['srank'])
                         if en['nation']['isoCode'] == 'MX':
                             reviewed = ''
                             if en['nrankReviewYear']:
                                 reviewed = ' (reviewed ' + str(en['nrankReviewYear']) + ')'
                             mx_rank = en['nrank'] + reviewed
-                        if en['nation']['isoCode'] in ('CA', 'US', 'MX'):
                             for esn in en['elementSubnationals']:
-                                if len(subnational_ranks) > 0:
-                                    subnational_ranks += ', ' 
-                                subnational_ranks += esn['subnation']['subnationCode'] + '=' + esn['srank']
+                                mx_subnational_list.append(esn['subnation']['subnationCode'] + '=' + esn['srank'])
             metadata_body = metadata_body.replace('[NSE.CARank]', ca_rank)
             metadata_body = metadata_body.replace('[NSE.USRank]', us_rank)
             metadata_body = metadata_body.replace('[NSE.MXRank]', mx_rank)
-            metadata_body = metadata_body.replace('[NSE.subnationalRanks]', subnational_ranks)
-            sara_status = ''
+            ca_subnational_ranks = 'None'
+            if len(ca_subnational_list) > 0:
+                ca_subnational_list.sort()
+                ca_subnational_ranks = ', '.join(ca_subnational_list)
+            metadata_body = metadata_body.replace('[NSE.CASubnationalRanks]', ca_subnational_ranks)
+            us_subnational_ranks = 'None'
+            if len(us_subnational_list) > 0:
+                us_subnational_list.sort()
+                us_subnational_ranks = ', '.join(us_subnational_list)
+            metadata_body = metadata_body.replace('[NSE.USSubnationalRanks]', us_subnational_ranks)
+            mx_subnational_ranks = 'None'
+            if len(mx_subnational_list) > 0:
+                mx_subnational_list.sort()
+                mx_subnational_ranks = ', '.join(mx_subnational_list)
+            metadata_body = metadata_body.replace('[NSE.MXSubnationalRanks]', mx_subnational_ranks)
+            sara_status = 'None'
             if results['speciesGlobal']['saraStatus']:
                 sara_status = results['speciesGlobal']['saraStatus']
                 if results['speciesGlobal']['saraStatusDate']:
                     sara_status += ' (' + results['speciesGlobal']['saraStatusDate'] + ')'
             metadata_body = metadata_body.replace('[NSE.saraStatus]', sara_status)
-            cosewic_status = ''
+            cosewic_status = 'None'
             if results['speciesGlobal']['interpretedCosewic']:
                 cosewic_status = results['speciesGlobal']['interpretedCosewic']
                 if results['speciesGlobal']['cosewicDate']:
                     cosewic_status += ' (' + results['speciesGlobal']['cosewicDate'] + ')'
             metadata_body = metadata_body.replace('[NSE.cosewicStatus]', cosewic_status)
-            esa_status = ''
+            esa_status = 'None'
             if results['speciesGlobal']['interpretedUsesa']:
                 esa_status = results['speciesGlobal']['interpretedUsesa']
                 if results['speciesGlobal']['usesaDate']:
@@ -192,7 +224,7 @@ class PublishRangeMapTool:
 
         ## generate jpg
         #if param_pdf == 'true' or param_jpg == 'true':
-        #    EBARUtils.displayMessage(messages, 'Generating JPG')
+        #    EBARUtils.displayMessage(messages, 'Generating JPG map')
         #    aprx = arcpy.mp.ArcGISProject(arcgis_pro_project)
         #    map = aprx.listMaps('Range Map Landscape Topographic')[0]
         #    polygon_layer = map.listLayers('EcoshapeRangeMap')[0]
@@ -224,6 +256,12 @@ class PublishRangeMapTool:
               <style>
                 body {
                   font-family:"Trebuchet MS","Lucida Grande","Lucida Sans Unicode","Lucida Sans",Tahoma,sans-serif;
+                }
+                td {
+                  padding: 5px;
+                }
+                h3 {
+                  line-height: 50%
                 }
               </style>
               <img src="''' + download_folder + '/EBAR' + str(param_range_map_id) + '.jpg' + '''" width="1500">

@@ -77,62 +77,71 @@ scope_dict = {'G': 'Global',
 
 
 metadata_body = '''
-              <img src="[logo_image]" width="450">
+              <img src="[logo_image]" width="400">
               <br>
               <header>
                 <h1>Ecosystem-based Automated Range (EBAR) Map Metadata</h1>
               </header>
               <hr style="height:5px;color:#5c9400;background-color:#5c9400">
-              <br><br>
-              <img src="[species_header_image]" width="1200">
+              <br>
+              <img src="[species_header_image]" width="1000">
               <br>
               <header>
-                <h2>National Scientific Name: [BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME]</h2>
-                <h2>National English Name: [BIOTICS_ELEMENT_NATIONAL.NATIONAL_ENGL_NAME]</h2>
-                <h2>National French Name: [BIOTICS_ELEMENT_NATIONAL.NATIONAL_FR_NAME]</h2>
-                <h2>Element National ID: [BIOTICS_ELEMENT_NATIONAL.ELEMENT_NATIONAL_ID]</h2>
-                <h2>Element Global ID: [BIOTICS_ELEMENT_NATIONAL.ELEMENT_GLOBAL_ID]</h2>
-                <h2>Element Code: [BIOTICS_ELEMENT_NATIONAL.ELEMENT_CODE]</h2>
-                <h2>KBA Trigger: [Species.KBATrigger]</h2>
+                <table>
+                  <tr><td><h3>National Scientific Name:</h3></td><td><h3>[BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME]</h3></td></tr>
+                  <tr><td><h3>National English Name:</h3></td><td><h3>[BIOTICS_ELEMENT_NATIONAL.NATIONAL_ENGL_NAME]</h3></td></tr>
+                  <tr><td><h3>National French Name:</h3></td><td><h3>[BIOTICS_ELEMENT_NATIONAL.NATIONAL_FR_NAME]</h3></td></tr>
+                  <tr><td><h3>Element Code:</h3></td><td><h3>[BIOTICS_ELEMENT_NATIONAL.ELEMENT_CODE]</h3></td></tr>
+                  <tr><td><h3>Element National ID:</h3></td><td><h3>[BIOTICS_ELEMENT_NATIONAL.ELEMENT_NATIONAL_ID]</h3></td></tr>
+                  <tr><td><h3>Element Global ID:</h3></td><td><h3>[BIOTICS_ELEMENT_NATIONAL.ELEMENT_GLOBAL_ID]</h3></td></tr>
+                </table>
               </header>
-              <br><br>
-              <img src="[rank_status_header_image]" width="1200">
+              <br>
+              <img src="[rank_status_header_image]" width="1000">
               <br>
               <header>
-                <h2>Global Rank: [NSE.grank] (reviewed [NSE.grankReviewDate])</h2>
-                <h2>National Rank (Canada): [NSE.CARank]</h2>
-                <h2>National Rank (United States): [NSE.USRank]</h2>
-                <h2>National Rank (Mexico): [NSE.MXRank]</h2>
-                <h2>Canadian SARA Status: [NSE.saraStatus]</h2>
-                <h2>Canadian COSEWIC Status: [NSE.cosewicStatus]</h2>
-                <h2>US ESA Status: [NSE.esaStatus]</h2>
-                <h2>Subnational Ranks: [NSE.subnationalRanks]</h2>
+                <table>
+                  <tr><td><h3>Global Rank:</h3></td><td><h3>[NSE.grank] (reviewed [NSE.grankReviewDate])</h3></td></tr>
+                  <tr><td><h3>National Rank (Canada):</h3></td><td><h3>[NSE.CARank]</h3></td>
+                      <td><h3>Subnational Ranks: [NSE.CASubnationalRanks]</h3></td></tr>
+                  <tr><td><h3>National Rank (United States):</h3></td><td><h3>[NSE.USRank]</h3></td>
+                      <td><h3>Subnational Ranks: [NSE.USSubnationalRanks]</h3></td></tr>
+                  <tr><td><h3>National Rank (Mexico):</h3></td><td><h3>[NSE.MXRank]</h3></td>
+                      <td><h3>Subnational Ranks: [NSE.MXSubnationalRanks]</h3></td></tr>
+                  <tr><td><h3>Canadian SARA Status:</h3></td><td><h3>[NSE.saraStatus]</h3></td></tr>
+                  <tr><td><h3>Canadian COSEWIC Status:</h3></td><td><h3>[NSE.cosewicStatus]</h3></td></tr>
+                  <tr><td><h3>US ESA Status:</h3></td><td><h3>[NSE.esaStatus]</h3></td></tr>
+                </table>
               </header>
-              <br><br>
-              <img src="[range_map_header_image]" width="1200">
+              <br>
+              <img src="[range_map_header_image]" width="1000">
               <br>
               <header>
-                <h2>Version: [RangeMap.RangeVersion]</h2>
-                <h2>[RangeMap.RangeMapNotes]</h2>
-                <h2>[RangeMap.RangeMetadata]</h2>
+                <table>
+                  <tr><td><h3>Date:</h3></td><td><h3>[RangeMap.RangeDate]</h3></td></tr>
+                  <tr><td><h3>Version:</h3></td><td><h3>[RangeMap.RangeVersion]</h3></td></tr>
+                  <tr><td><h3>Stage:</h3></td><td><h3>[RangeMap.RangeStage]</h3></td></tr>
+                  <tr><td><h3>Scope:</h3></td><td><h3>[RangeMap.RangeMapScope]</h3></td></tr>
+                  <tr><td><h3>Notes:</h3></td><td><h3>[RangeMap.RangeMapNotes]</h3></td></tr>
+                  <tr><td><h3></h3></td><td><h3>[RangeMap.RangeMetadata]</h3></td></tr>
+                  <tr><td><h3>Comments:</h3></td><td><h3>[RangeMap.RangeMapComments]</h3></td></tr>
               </header>
-              <br><br>
-              <img src="[reviews_header_image]" width="1200">
+              <br>
+              <img src="[reviews_header_image]" width="1000">
               <br>
               <header>
-                <h2>Number of Reviewers: [Reviews.Count]</h2>
-                <h2>Average Star Rating: [Reviews.AverageStarRating]</h2>
+                <h3>Number of Reviews: [Reviews.Count]</h3>
+                <h3>Average Star Rating: [Reviews.AverageStarRating]</h3>
               </header>
-              <br><br>
-              <img src="[credits_header_image]" width="1200">
+              <br>
+              <img src="[credits_header_image]" width="1000">
               <br>
               <header>
-                <h2>Suggested Citation: Ecosystem-based Automated Range Mapping (EBAR) Project, ''' + \
-                    '''© NatureServe Canada 2020 under CC BY 4.0</h2>
-                <h2>Input References:</h2>
-                <h2>[InputReferences]</h2>
-                <h2>Reviewers by Taxa:</h2>
-                <h2>[ReviewersByTaxa]</h2>
+                <h3>Suggested Citation: Ecosystem-based Automated Range Map (EBAR) Project, ''' + \
+                    '''© NatureServe Canada 2020 under CC BY 4.0</h3>
+                <h3>Input References:</h3>
+                <h3>[InputReferences]</h3>
+                <h3>Reviewers by Taxa: [ReviewersByTaxa]</h3>
               </header>
 '''
 
