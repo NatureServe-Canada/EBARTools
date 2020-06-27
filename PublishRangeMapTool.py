@@ -35,7 +35,7 @@ class PublishRangeMapTool:
 
         # settings
         #arcpy.gp.overwriteOutput = True
-        arcgis_pro_project = 'C:/GIS/EBAR/EBAR.aprx'
+        arcgis_pro_project = 'C:/GIS/EBAR/EBARTools/resources/EBARLayouts.aprx'
         resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
         reviewers_by_taxa_file = 'C:/GIS/EBAR/EBARTools/resources/ReviewersByTaxa.txt'
         temp_folder = 'C:/GIS/EBAR/pub/temp'
@@ -79,9 +79,10 @@ class PublishRangeMapTool:
                     metadata_body = metadata_body.replace('[RangeMap.RangeDate]', row['RangeDate'].strftime('%B %d, %Y'))
                     metadata_body = metadata_body.replace('[RangeMap.RangeVersion]', row['RangeVersion'])
                     metadata_body = metadata_body.replace('[RangeMap.RangeStage]', row['RangeStage'])
-                    metadata_body = metadata_body.replace('[RangeMap.RangeMapScope]', row['RangeMapScope'])
+                    metadata_body = metadata_body.replace('[RangeMap.RangeMapScope]', EBARUtils.scope_dict[row['RangeMapScope']])
                     metadata_body = metadata_body.replace('[RangeMap.RangeMapNotes]', row['RangeMapNotes'])
-                    metadata_body = metadata_body.replace('[RangeMap.RangeMapComments]', row['RangeMapComments'])
+                    metadata_body = metadata_body.replace('[RangeMap.RangeMetadata]', row['RangeMetadata'])
+                    metadata_body = metadata_body.replace('[RangeMap.RangeMapComments]', str(row['RangeMapComments']))
                 if species_id:
                     del row
                 else:
@@ -94,7 +95,8 @@ class PublishRangeMapTool:
             element_code = None
             with arcpy.da.SearchCursor(ebar_feature_service + '/4', 
                                        ['NATIONAL_SCIENTIFIC_NAME', 'NATIONAL_ENGL_NAME', 'NATIONAL_FR_NAME',
-                                        'ELEMENT_NATIONAL_ID', 'ELEMENT_GLOBAL_ID', 'ELEMENT_CODE'],
+                                        'ELEMENT_NATIONAL_ID', 'ELEMENT_GLOBAL_ID', 'ELEMENT_CODE',
+                                        'G_JURIS_ENDEM_DESC'],
                                        'SpeciesID = ' + str(species_id)) as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     metadata_body = metadata_body.replace('[BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME]',
@@ -113,15 +115,19 @@ class PublishRangeMapTool:
                                                           element_global_id)
                     element_code = row['ELEMENT_CODE']
                     metadata_body = metadata_body.replace('[BIOTICS_ELEMENT_NATIONAL.ELEMENT_CODE]', element_code)
+                    endemism = 'None'
+                    if row['G_JURIS_ENDEM_DESC']:
+                        endemism = row['G_JURIS_ENDEM_DESC']
+                    metadata_body = metadata_body.replace('[BIOTICS_ELEMENT_NATIONAL.G_JURIS_ENDEM_DESC]', endemism)
                 del row
 
-            # get species data from database
-            kba_trigger = None
-            with arcpy.da.SearchCursor(ebar_feature_service + '/19', ['KBATrigger'],
-                                       'SpeciesID = ' + str(species_id)) as cursor:
-                for row in EBARUtils.searchCursor(cursor):
-                    metadata_body = metadata_body.replace('[Species.KBATrigger]', row['KBATrigger'])
-                del row
+            ## get species data from database
+            #kba_trigger = None
+            #with arcpy.da.SearchCursor(ebar_feature_service + '/19', ['KBATrigger'],
+            #                           'SpeciesID = ' + str(species_id)) as cursor:
+            #    for row in EBARUtils.searchCursor(cursor):
+            #        metadata_body = metadata_body.replace('[Species.KBATrigger]', row['KBATrigger'])
+            #    del row
 
             # summarize completed reviews for this version of the range map
             with arcpy.da.SearchCursor(ebar_feature_service + '/19', ['KBATrigger'],
@@ -154,7 +160,8 @@ class PublishRangeMapTool:
             result = requests.get(nse_taxon_search_url + element_global_id)
             results = json.loads(result.content)
             metadata_body = metadata_body.replace('[NSE.grank]', results['grank'])
-            metadata_body = metadata_body.replace('[NSE.grankReviewDate]', results['grankReviewDate'])
+            metadata_body = metadata_body.replace('[NSE.grankReviewDate]',
+                                                  EBARUtils.extractDate(results['grankReviewDate']).strftime('%B %d, %Y'))
             ca_rank = 'None'
             us_rank = 'None'
             mx_rank = 'None'
@@ -261,7 +268,7 @@ class PublishRangeMapTool:
                   padding: 5px;
                 }
                 h3 {
-                  line-height: 50%
+                  line-height: 55%
                 }
               </style>
               <img src="''' + download_folder + '/EBAR' + str(param_range_map_id) + '.jpg' + '''" width="1500">

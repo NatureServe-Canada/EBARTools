@@ -73,19 +73,17 @@ eo_rank_dict = {'Excellent estimated viability/ecological integrity': 'A',
 scope_dict = {'G': 'Global',
               'N': 'National',
               'A': 'North American',
-              None: 'Global'}
+              None: 'None'}
 
 
 metadata_body = '''
-              <img src="[logo_image]" width="400">
+              <img src="[logo_image]" width="280">
               <br>
               <header>
-                <h1>Ecosystem-based Automated Range (EBAR) Map Metadata</h1>
+                <h1>Ecosystem-based Automated Range Map (EBAR) Metadata</h1>
               </header>
               <hr style="height:5px;color:#5c9400;background-color:#5c9400">
-              <br>
-              <img src="[species_header_image]" width="1000">
-              <br>
+              <br><img src="[species_header_image]" width="195"><br><br>
               <header>
                 <table>
                   <tr><td><h3>National Scientific Name:</h3></td><td><h3>[BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME]</h3></td></tr>
@@ -94,11 +92,10 @@ metadata_body = '''
                   <tr><td><h3>Element Code:</h3></td><td><h3>[BIOTICS_ELEMENT_NATIONAL.ELEMENT_CODE]</h3></td></tr>
                   <tr><td><h3>Element National ID:</h3></td><td><h3>[BIOTICS_ELEMENT_NATIONAL.ELEMENT_NATIONAL_ID]</h3></td></tr>
                   <tr><td><h3>Element Global ID:</h3></td><td><h3>[BIOTICS_ELEMENT_NATIONAL.ELEMENT_GLOBAL_ID]</h3></td></tr>
+                  <tr><td><h3>Endemism:</h3></td><td><h3>[BIOTICS_ELEMENT_NATIONAL.G_JURIS_ENDEM_DESC]</h3></td></tr>
                 </table>
               </header>
-              <br>
-              <img src="[rank_status_header_image]" width="1000">
-              <br>
+              <br><img src="[rank_status_header_image]" width="195"><br><br>
               <header>
                 <table>
                   <tr><td><h3>Global Rank:</h3></td><td><h3>[NSE.grank] (reviewed [NSE.grankReviewDate])</h3></td></tr>
@@ -113,9 +110,7 @@ metadata_body = '''
                   <tr><td><h3>US ESA Status:</h3></td><td><h3>[NSE.esaStatus]</h3></td></tr>
                 </table>
               </header>
-              <br>
-              <img src="[range_map_header_image]" width="1000">
-              <br>
+              <br><img src="[range_map_header_image]" width="195"><br><br>
               <header>
                 <table>
                   <tr><td><h3>Date:</h3></td><td><h3>[RangeMap.RangeDate]</h3></td></tr>
@@ -125,23 +120,27 @@ metadata_body = '''
                   <tr><td><h3>Notes:</h3></td><td><h3>[RangeMap.RangeMapNotes]</h3></td></tr>
                   <tr><td><h3></h3></td><td><h3>[RangeMap.RangeMetadata]</h3></td></tr>
                   <tr><td><h3>Comments:</h3></td><td><h3>[RangeMap.RangeMapComments]</h3></td></tr>
+                </table>
               </header>
-              <br>
-              <img src="[reviews_header_image]" width="1000">
-              <br>
+              <br><img src="[reviews_header_image]" width="195"><br><br>
               <header>
-                <h3>Number of Reviews: [Reviews.Count]</h3>
-                <h3>Average Star Rating: [Reviews.AverageStarRating]</h3>
+                <table>
+                  <tr><td><h3>Number of Reviews:</h3></td><td><h3>[Reviews.Count]</h3></td></tr>
+                  <tr><td><h3>Average Star Rating:</h3></td><td><h3>[Reviews.AverageStarRating]</h3></td></tr>
+                </table>
               </header>
-              <br>
-              <img src="[credits_header_image]" width="1000">
-              <br>
+              <br><img src="[credits_header_image]" width="195"><br><br>
               <header>
-                <h3>Suggested Citation: Ecosystem-based Automated Range Map (EBAR) Project, ''' + \
-                    '''© NatureServe Canada 2020 under CC BY 4.0</h3>
-                <h3>Input References:</h3>
-                <h3>[InputReferences]</h3>
-                <h3>Reviewers by Taxa: [ReviewersByTaxa]</h3>
+                <table>
+                  <tr><td><h3>Suggested Citation:</h3></td><td><h3>NatureServe Canada. 2020. Ecosystem-based ''' + \
+                      '''Automated Range (EBAR). Ottawa, Canada. Retrieved from [insert url] on [insert data]</h3></td></tr>
+                  <tr><td><h3>License:</h3></td><td><h3>Ecosystem-based Automated Range Map (EBAR) Project, ''' + \
+                      '''© NatureServe Canada 2020 under CC BY 4.0 (<a href="https://creativecommons.org/licenses/by/4.0/">creativecommons.org/licenses/by/4.0/</a>)</h3></td></tr>
+                  <tr><td><h3>Additional Information:</h3></td><td><h3><a href="https://www.natureserve.org/natureserve-network/canada/biodiversity-data/ebar-range-mapping">www.natureserve.org/natureserve-network/canada/biodiversity-data/ebar-range-mapping</a></h3></td></tr>
+                  <tr><td><h3>Contact:</h3></td><td><h3><a href="mailto:ebar-kba@natureserve.ca">ebar-kba@natureserve.ca</a></h3></td></tr>
+                  <tr><td><h3>Input References:</h3></td><td><h3>[InputReferences]</h3></td></tr>
+                  <tr><td><h3>Reviewers by Taxa:</h3></td><td><h3>[ReviewersByTaxa]</h3></td></tr>
+                </table>
               </header>
 '''
 
