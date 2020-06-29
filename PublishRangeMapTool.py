@@ -57,27 +57,27 @@ class PublishRangeMapTool:
         param_spatial = parameters[3].valueAsText
         EBARUtils.displayMessage(messages, 'Include Spatial: ' + param_spatial)
 
-        ## generate jpg
-        #if param_pdf == 'true' or param_jpg == 'true':
-        #    EBARUtils.displayMessage(messages, 'Generating JPG map')
-        #    aprx = arcpy.mp.ArcGISProject(arcgis_pro_project)
-        #    map = aprx.listMaps('Range Map Landscape Topographic')[0]
-        #    polygon_layer = map.listLayers('EcoshapeRangeMap')[0]
-        #    polygon_layer.definitionQuery = 'rangemapid = ' + str(param_range_map_id)
-        #    table_layer = map.listTables('RangeMap')[0]
-        #    table_layer.definitionQuery = 'rangemapid = ' + str(param_range_map_id)
-        #    layout = aprx.listLayouts('Range Map Landscape Topographic')[0]
-        #    map_frame = layout.listElements('MAPFRAME_ELEMENT')[0]
-        #    extent = map_frame.getLayerExtent(polygon_layer, False, True)
-        #    x_buffer = (extent.XMax - extent.XMin) / 20.0
-        #    y_buffer = (extent.YMax - extent.YMin) / 20.0
-        #    buffered_extent = arcpy.Extent(extent.XMin - x_buffer,
-        #                                   extent.YMin - y_buffer,
-        #                                   extent.XMax + x_buffer,
-        #                                   extent.YMax + y_buffer)
-        #    map_frame.camera.setExtent(buffered_extent)
-        #    layout.exportToJPEG(download_folder + '/EBAR' + str(param_range_map_id) + '.jpg', 300,
-        #                        clip_to_elements=True)
+        # generate jpg
+        if param_pdf == 'true' or param_jpg == 'true':
+            EBARUtils.displayMessage(messages, 'Generating JPG map')
+            aprx = arcpy.mp.ArcGISProject(arcgis_pro_project)
+            map = aprx.listMaps('Range Map Landscape Topographic')[0]
+            polygon_layer = map.listLayers('EcoshapeRangeMap')[0]
+            polygon_layer.definitionQuery = 'rangemapid = ' + str(param_range_map_id)
+            table_layer = map.listTables('RangeMap')[0]
+            table_layer.definitionQuery = 'rangemapid = ' + str(param_range_map_id)
+            layout = aprx.listLayouts('Range Map Landscape Topographic')[0]
+            map_frame = layout.listElements('MAPFRAME_ELEMENT')[0]
+            extent = map_frame.getLayerExtent(polygon_layer, False, True)
+            x_buffer = (extent.XMax - extent.XMin) / 20.0
+            y_buffer = (extent.YMax - extent.YMin) / 20.0
+            buffered_extent = arcpy.Extent(extent.XMin - x_buffer,
+                                           extent.YMin - y_buffer,
+                                           extent.XMax + x_buffer,
+                                           extent.YMax + y_buffer)
+            map_frame.camera.setExtent(buffered_extent)
+            layout.exportToJPEG(download_folder + '/EBAR' + str(param_range_map_id) + '.jpg', 300,
+                                clip_to_elements=True)
 
         if param_pdf == 'true' or param_spatial == 'true':
             # replace metadata html tags with real data
@@ -144,19 +144,21 @@ class PublishRangeMapTool:
                                                           element_global_id)
                     element_code = row['ELEMENT_CODE']
                     pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.ELEMENT_CODE]', element_code)
-                    endemism = 'None'
-                    if row['G_JURIS_ENDEM_DESC']:
-                        endemism = row['G_JURIS_ENDEM_DESC']
-                    pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.G_JURIS_ENDEM_DESC]', endemism)
+                    #endemism = 'None'
+                    #if row['G_JURIS_ENDEM_DESC']:
+                    #    endemism = row['G_JURIS_ENDEM_DESC']
+                    #pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.G_JURIS_ENDEM_DESC]', endemism)
                 del row
 
-            ## get species data from database
-            #kba_trigger = None
-            #with arcpy.da.SearchCursor(ebar_feature_service + '/19', ['KBATrigger'],
-            #                           'SpeciesID = ' + str(species_id)) as cursor:
-            #    for row in EBARUtils.searchCursor(cursor):
-            #        pdf_html = pdf_html.replace('[Species.KBATrigger]', row['KBATrigger'])
-            #    del row
+            # get species data from database
+            endemism_type = 'None'
+            with arcpy.da.SearchCursor(ebar_feature_service + '/19', ['Endemism_Type'],
+                                       'SpeciesID = ' + str(species_id)) as cursor:
+                for row in EBARUtils.searchCursor(cursor):
+                    if row['Endemism_Type']:
+                        endemism_type = row['Endemism_Type']
+                del row
+            pdf_html = pdf_html.replace('[Species.Endemism_Type]', endemism_type)
 
             # summarize input references
             input_references = ''
@@ -300,7 +302,7 @@ if __name__ == '__main__':
     prm = PublishRangeMapTool()
     # hard code parameters for debugging
     param_range_map_id = arcpy.Parameter()
-    param_range_map_id.value = '199'
+    param_range_map_id.value = '615'
     param_pdf = arcpy.Parameter()
     param_pdf.value = 'true'
     param_jpg = arcpy.Parameter()

@@ -900,6 +900,13 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                 #    else:
                 #        summary = 'Input Records - ' + summary
                 summary = 'Input Records - ' + summary
+                # expert reviews
+                summary += '; Expert Reviews - ' + str(completed_expert_reviews)
+                if completed_expert_reviews - null_rating_reviews > 0:
+                    summary += ' (average star rating = ' + str(star_rating_sum /
+                                                                (completed_expert_reviews - null_rating_reviews)) + ')'
+                if ecoshape_reviews > 0:
+                    summary += '; Ecoshape Reviews Applied - ' + str(ecoshape_reviews)
                 ## expert reviews
                 #if ecoshape_reviews > 0:
                 #    if len(summary) > 0:
@@ -914,13 +921,6 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                 ## excluded input records
                 #if excluded_input_records > 0:
                 #    notes += '; Excluded Input Records - ' + str(excluded_input_records)
-                # expert reviews
-                notes += '; Expert Reviews - ' + str(completed_expert_reviews)
-                if completed_expert_reviews - null_rating_reviews > 0:
-                    notes += ' (average star rating = ' + str(star_rating_sum /
-                                                            (completed_expert_reviews - null_rating_reviews)) + ')'
-                if ecoshape_reviews > 0:
-                    notes += '; Ecoshape Reviews Applied - ' + str(ecoshape_reviews)
                 update_cursor.updateRow([summary, datetime.datetime.now(), notes, scope])
 
         # generate TOC entry and actual map!!!

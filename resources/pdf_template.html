@@ -5,7 +5,7 @@
 	<style>
 		body {font-family:"Trebuchet MS","Lucida Grande","Lucida Sans Unicode","Lucida Sans",Tahoma,sans-serif;}
 		table, th, td {font-size: 16pt; text-align: left; vertical-align: top; padding-top: 5px; padding-bottom: 5px;}
-		td {padding-right: 15px;}
+		td {padding-right: 15px; vertical-align: bottom;}
 	</style>
 	<img src="[map_image]" width="1500">
 	<br>
@@ -23,36 +23,37 @@
 			<th>Element National ID:</th><td>[BIOTICS_ELEMENT_NATIONAL.ELEMENT_NATIONAL_ID]</td></tr>
 		<tr><th>National French Name:</th><td>[BIOTICS_ELEMENT_NATIONAL.NATIONAL_FR_NAME]</td>
 			<th>Element Global ID:</th><td>[BIOTICS_ELEMENT_NATIONAL.ELEMENT_GLOBAL_ID]</td></tr>
-		<tr><td></td><td></td><th>Endemism:</th><td>[BIOTICS_ELEMENT_NATIONAL.G_JURIS_ENDEM_DESC]</td></tr>
+		<tr><td></td><td></td><th>Endemism Type:</th><td>[Species.Endemism_Type]</td></tr>
 	</table>
 	<br><img src="[rank_status_header_image]" width="195"><br><br>
 	<table>
 		<tr><th>Global Rank:</th><td>[NSE.grank] (reviewed [NSE.grankReviewDate])</td></tr>
 		<tr><th>National Rank (Canada):</th><td>[NSE.CARank]</td>
-			<th>Subnational Ranks:</th><td>[NSE.CASubnationalRanks]</td></tr>
+			<th>Subnational Ranks (Canada):</th><td>[NSE.CASubnationalRanks]</td></tr>
 		<tr><th>National Rank (United States):</th><td>[NSE.USRank]</td>
-			<th>Subnational Ranks:</th><td>[NSE.USSubnationalRanks]</td></tr>
+			<th>Subnational Ranks (United States):</th><td>[NSE.USSubnationalRanks]</td></tr>
 		<tr><th>National Rank (Mexico):</th><td>[NSE.MXRank]</td>
-			<th>Subnational Ranks:</th><td>[NSE.MXSubnationalRanks]</td></tr>
+			<th>Subnational Ranks (Mexico):</th><td>[NSE.MXSubnationalRanks]</td></tr>
 		<tr><th>Canadian SARA Status:</th><td>[NSE.saraStatus]</td>
 			<th>Canadian COSEWIC Status:</th><td>[NSE.cosewicStatus]</td></tr>
 		<tr><th>US ESA Status:</th><td>[NSE.esaStatus]</td></tr>
 	</table>
 	<br><img src="[range_map_header_image]" width="195"><br><br>
 	<table>
-		<tr><th>Date:</th><td>[RangeMap.RangeDate]</td>
+		<tr><th>Date Published:</th><td>[RangeMap.RangeDate]</td>
 			<th>Stage:</th><td>[RangeMap.RangeStage]</td></tr>
 		<tr><th>Version:</th><td>[RangeMap.RangeVersion]</td>
 			<th>Scope:</th><td>[RangeMap.RangeMapScope]</td></tr>
-		<tr><th>Notes:</th><td colspan="3">[RangeMap.RangeMapNotes]</td></tr>
-		<tr><td></td><td colspan="3">[RangeMap.RangeMetadata]</td></tr>
+		<tr><th>Metadata:</th><td colspan="3">[RangeMap.RangeMapNotes]</td></tr>
+		<tr><th></th><td colspan="3">[RangeMap.RangeMetadata]</td></tr>
 		<tr><th>Comments:</th><td colspan="3">[RangeMap.RangeMapComments]</td></tr>
+		<tr><th>Map Projection:</th><td colspan="3">North America Albers Equal Area Conic (WKID 4269)</td></tr>
 	</table>
 	<br><img src="[credits_header_image]" width="195"><br><br>
 	<table>
 		<tr><th>Suggested Citation:</th><td>NatureServe Canada, 2020. Ecosystem-based Automated Range (EBAR). Ottawa, Canada. Retrieved from [insert url] on [insert data]</td></tr>
 		<tr><th>License:</th><td>Ecosystem-based Automated Range (EBAR) Project, Copyright NatureServe Canada 2020 under CC BY 4.0 (<a href="https://creativecommons.org/licenses/by/4.0/">creativecommons.org/licenses/by/4.0/</a>)</td></tr>
-		<tr><th>Additional Information:</th><td><a href="https://www.natureserve.org/natureserve-network/canada/biodiversity-data/ebar-range-mapping">www.natureserve.org/natureserve-network/canada/biodiversity-data/ebar-range-mapping</a></td></tr>
+		<tr><th>Project Website:</th><td><a href="https://www.natureserve.org/natureserve-network/canada/biodiversity-data/ebar-range-mapping">www.natureserve.org/natureserve-network/canada/biodiversity-data/ebar-range-mapping</a></td></tr>
 		<tr><th>Contact:</th><td><a href="mailto:ebar-kba@natureserve.ca">ebar-kba@natureserve.ca</a></td></tr>
 		<tr><th>Input References:</th><td>[InputReferences]</td></tr>
 		<tr><th>Reviewers by Taxa:</th><td>[ReviewersByTaxa]</td></tr>
