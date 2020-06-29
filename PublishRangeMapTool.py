@@ -35,13 +35,14 @@ class PublishRangeMapTool:
 
         # settings
         #arcpy.gp.overwriteOutput = True
-        arcgis_pro_project = 'C:/GIS/EBAR/EBARTools/resources/EBARLayouts.aprx'
+        arcgis_pro_project = 'C:/GIS/EBAR/EBARTools/resources/EBARMapLayouts.aprx'
         pdf_template_file = 'C:/GIS/EBAR/EBARTools/resources/pdf_template.html'
         resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
         reviewers_by_taxa_file = 'C:/GIS/EBAR/EBARTools/resources/ReviewersByTaxa.txt'
         temp_folder = 'C:/GIS/EBAR/pub/temp'
         download_folder = 'C:/GIS/EBAR/pub/download'
         ebar_feature_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/EBAR/FeatureServer'
+        ebar_summary_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/Summary/FeatureServer'
         nse_species_search_url = 'https://explorer.natureserve.org/api/data/search'
         nse_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/ELEMENT_GLOBAL.2.'
 
@@ -149,22 +150,26 @@ class PublishRangeMapTool:
                     pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.G_JURIS_ENDEM_DESC]', endemism)
                 del row
 
-            # get species data from database
-            kba_trigger = None
-            with arcpy.da.SearchCursor(ebar_feature_service + '/19', ['KBATrigger'],
-                                       'SpeciesID = ' + str(species_id)) as cursor:
-                for row in EBARUtils.searchCursor(cursor):
-                    pdf_html = pdf_html.replace('[Species.KBATrigger]', row['KBATrigger'])
-                del row
-
-            # summarize completed reviews for this version of the range map
-            with arcpy.da.SearchCursor(ebar_feature_service + '/19', ['KBATrigger'],
-                                       'SpeciesID = ' + str(species_id)) as cursor:
-                for row in EBARUtils.searchCursor(cursor):
-                    pdf_html = pdf_html.replace('[Species.KBATrigger]', row['KBATrigger'])
-                del row
+            ## get species data from database
+            #kba_trigger = None
+            #with arcpy.da.SearchCursor(ebar_feature_service + '/19', ['KBATrigger'],
+            #                           'SpeciesID = ' + str(species_id)) as cursor:
+            #    for row in EBARUtils.searchCursor(cursor):
+            #        pdf_html = pdf_html.replace('[Species.KBATrigger]', row['KBATrigger'])
+            #    del row
 
             # summarize input references
+            input_references = ''
+            with arcpy.da.SearchCursor(ebar_summary_service + '/7', ['DatasetSourceName', 'DatasetSourceCitation'],
+                                       'RangeMapID = ' + str(param_range_map_id)) as cursor:
+                row = None
+                for row in EBARUtils.searchCursor(cursor):
+                    if len (input_references) > 0:
+                        input_references += '<br>'
+                    input_references += row['DatasetSourceName'] + ' - ' + row['DatasetSourceCitation']
+                if row:
+                    del row
+            pdf_html = pdf_html.replace('[InputReferences]', input_references)
 
             # insert fixed list of reviewers by taxa
             reviewers = open(reviewers_by_taxa_file)
