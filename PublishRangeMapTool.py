@@ -164,7 +164,7 @@ class PublishRangeMapTool:
                     pdf_html = pdf_html.replace('[Species.KBATrigger]', row['KBATrigger'])
                 del row
 
-            ## summarize input references
+            # summarize input references
 
             # insert fixed list of reviewers by taxa
             reviewers = open(reviewers_by_taxa_file)

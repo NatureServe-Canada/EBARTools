@@ -158,7 +158,7 @@ class GenerateRangeMapTool:
                 row = None
                 for row in EBARUtils.searchCursor(cursor):
                     if (row['RangeVersion'] == param_version and row['RangeStage'] == param_stage):
-                        # range map to be geneated already exists
+                        # range map to be generated already exists
                         range_map_id = row['RangeMapID']
                         # remove from list of range maps to be used later for applying reviews
                         prev_range_map.remove(range_map_id)
@@ -850,6 +850,24 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                 if search_row:
                     del search_row
 
+        # count expert reviews and calcuate average star rating
+        EBARUtils.displayMessage(messages, 'Summarizing Expert Reviews')
+        completed_expert_reviews = 0
+        null_rating_reviews = 0
+        star_rating_sum = 0
+        with arcpy.da.SearchCursor(param_geodatabase + '/Review', ['OverallStarRating'],
+                                   'RangeMapID IN (' + prev_range_map_ids +
+                                   ') AND DateCompleted IS NOT NULL') as cursor:
+            row = None
+            for row in EBARUtils.searchCursor(cursor):
+                completed_expert_reviews += 1
+                if row['OverallStarRating']:
+                    star_rating_sum += row['OverallStarRating']
+                else:
+                    null_rating_reviews += 1
+            if row:
+                del row
+
         # update RangeMap metadata
         EBARUtils.displayMessage(messages, 'Updating Range Map record with Overall Summary')
         with arcpy.da.UpdateCursor('range_map_view', ['RangeMetadata', 'RangeDate', 'RangeMapNotes', 'RangeMapScope'],
@@ -896,9 +914,13 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                 ## excluded input records
                 #if excluded_input_records > 0:
                 #    notes += '; Excluded Input Records - ' + str(excluded_input_records)
-                # expert ecoshape reviews
+                # expert reviews
+                notes += '; Expert Reviews - ' + str(completed_expert_reviews)
+                if completed_expert_reviews - null_rating_reviews > 0:
+                    notes += ' (average star rating = ' + str(star_rating_sum /
+                                                            (completed_expert_reviews - null_rating_reviews)) + ')'
                 if ecoshape_reviews > 0:
-                    notes += '; Expert Ecoshape Reviews - ' + str(ecoshape_reviews)
+                    notes += '; Ecoshape Reviews Applied - ' + str(ecoshape_reviews)
                 update_cursor.updateRow([summary, datetime.datetime.now(), notes, scope])
 
         # generate TOC entry and actual map!!!
