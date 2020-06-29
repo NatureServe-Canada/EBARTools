@@ -1,0 +1,66 @@
+<html>
+	<head>
+		<meta name="pdfkit-orientation" content="Landscape"/>
+	</head>
+	<style>
+		body {font-family:"Trebuchet MS","Lucida Grande","Lucida Sans Unicode","Lucida Sans",Tahoma,sans-serif;}
+		table, th, td {font-size: 16pt; text-align: left; vertical-align: top; padding-top: 5px; padding-bottom: 5px;}
+		td {padding-right: 15px;}
+		th {width: 300px}
+	</style>
+	<img src="[map_image]" width="1500">
+	<br>
+	<img src="[logo_image]" width="280">
+	<br>
+	<header>
+		<h1>Ecosystem-based Automated Range (EBAR) Metadata</h1>
+	</header>
+	<hr style="height:5px;color:#5c9400;background-color:#5c9400">
+	<br><img src="[species_header_image]" width="195"><br><br>
+	<table>
+		<tr><th>National Scientific Name:</th><td>[BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME]</td>
+			<th>Element Code:</th><td>[BIOTICS_ELEMENT_NATIONAL.ELEMENT_CODE]</td></tr>
+		<tr><th>National English Name:</th><td>[BIOTICS_ELEMENT_NATIONAL.NATIONAL_ENGL_NAME]</td>
+			<th>Element National ID:</th><td>[BIOTICS_ELEMENT_NATIONAL.ELEMENT_NATIONAL_ID]</td></tr>
+		<tr><th>National French Name:</th><td>[BIOTICS_ELEMENT_NATIONAL.NATIONAL_FR_NAME]</td>
+			<th>Element Global ID:</th><td>[BIOTICS_ELEMENT_NATIONAL.ELEMENT_GLOBAL_ID]</td></tr>
+		<tr><td></td><td></td><th>Endemism:</th><td>[BIOTICS_ELEMENT_NATIONAL.G_JURIS_ENDEM_DESC]</td></tr>
+	</table>
+	<br><img src="[rank_status_header_image]" width="195"><br><br>
+	<table>
+		<tr><th>Global Rank:</th><td>[NSE.grank] (reviewed [NSE.grankReviewDate])</td></tr>
+		<tr><th>National Rank (Canada):</th><td>[NSE.CARank]</td>
+			<th>Subnational Ranks:</th><td>[NSE.CASubnationalRanks]</td></tr>
+		<tr><th>National Rank (United States):</th><td>[NSE.USRank]</td>
+			<th>Subnational Ranks:</th><td>[NSE.USSubnationalRanks]</td></tr>
+		<tr><th>National Rank (Mexico):</th><td>[NSE.MXRank]</td>
+			<th>Subnational Ranks:</th><td>[NSE.MXSubnationalRanks]</td></tr>
+		<tr><th>Canadian SARA Status:</th><td>[NSE.saraStatus]</td>
+			<th>Canadian COSEWIC Status:</th><td>[NSE.cosewicStatus]</td></tr>
+		<tr><th>US ESA Status:</th><td>[NSE.esaStatus]</td></tr>
+	</table>
+	<br><img src="[range_map_header_image]" width="195"><br><br>
+	<table>
+		<tr><th>Date:</th><td>[RangeMap.RangeDate]</td>
+			<th style="width:100px">Stage:</th><td>[RangeMap.RangeStage]</td></tr>
+		<tr><th>Version:</th><td>[RangeMap.RangeVersion]</td>
+			<th>Scope:</th><td>[RangeMap.RangeMapScope]</td></tr>
+		<tr><th>Notes:</th><td colspan="3">[RangeMap.RangeMapNotes]</td></tr>
+		<tr><td></td><td colspan="3">[RangeMap.RangeMetadata]</td></tr>
+		<tr><th>Comments:</th><td colspan="3">[RangeMap.RangeMapComments]</td></tr>
+	</table>
+	<br><img src="[reviews_header_image]" width="195"><br><br>
+	<table>
+		<tr><th>Number of Reviews:</th><td>[Reviews.Count]</td></tr>
+		<tr><th>Average Star Rating:</th><td>[Reviews.AverageStarRating]</td></tr>
+	</table>
+	<br><img src="[credits_header_image]" width="195"><br><br>
+	<table>
+		<tr><th>Suggested Citation:</th><td>NatureServe Canada, 2020. Ecosystem-based Automated Range (EBAR). Ottawa, Canada. Retrieved from [insert url] on [insert data]</td></tr>
+		<tr><th>License:</th><td>Ecosystem-based Automated Range (EBAR) Project, Copyright NatureServe Canada 2020 under CC BY 4.0 (<a href="https://creativecommons.org/licenses/by/4.0/">creativecommons.org/licenses/by/4.0/</a>)</td></tr>
+		<tr><th>Additional Information:</th><td><a href="https://www.natureserve.org/natureserve-network/canada/biodiversity-data/ebar-range-mapping">www.natureserve.org/natureserve-network/canada/biodiversity-data/ebar-range-mapping</a></td></tr>
+		<tr><th>Contact:</th><td><a href="mailto:ebar-kba@natureserve.ca">ebar-kba@natureserve.ca</a></td></tr>
+		<tr><th>Input References:</th><td>[InputReferences]</td></tr>
+		<tr><th>Reviewers by Taxa:</th><td>[ReviewersByTaxa]</td></tr>
+	</table>
+</html>

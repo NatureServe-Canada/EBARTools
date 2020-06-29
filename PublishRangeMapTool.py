@@ -36,6 +36,7 @@ class PublishRangeMapTool:
         # settings
         #arcpy.gp.overwriteOutput = True
         arcgis_pro_project = 'C:/GIS/EBAR/EBARTools/resources/EBARLayouts.aprx'
+        pdf_template_file = 'C:/GIS/EBAR/EBARTools/resources/pdf_template.html'
         resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
         reviewers_by_taxa_file = 'C:/GIS/EBAR/EBARTools/resources/ReviewersByTaxa.txt'
         temp_folder = 'C:/GIS/EBAR/pub/temp'
@@ -55,34 +56,61 @@ class PublishRangeMapTool:
         param_spatial = parameters[3].valueAsText
         EBARUtils.displayMessage(messages, 'Include Spatial: ' + param_spatial)
 
+        ## generate jpg
+        #if param_pdf == 'true' or param_jpg == 'true':
+        #    EBARUtils.displayMessage(messages, 'Generating JPG map')
+        #    aprx = arcpy.mp.ArcGISProject(arcgis_pro_project)
+        #    map = aprx.listMaps('Range Map Landscape Topographic')[0]
+        #    polygon_layer = map.listLayers('EcoshapeRangeMap')[0]
+        #    polygon_layer.definitionQuery = 'rangemapid = ' + str(param_range_map_id)
+        #    table_layer = map.listTables('RangeMap')[0]
+        #    table_layer.definitionQuery = 'rangemapid = ' + str(param_range_map_id)
+        #    layout = aprx.listLayouts('Range Map Landscape Topographic')[0]
+        #    map_frame = layout.listElements('MAPFRAME_ELEMENT')[0]
+        #    extent = map_frame.getLayerExtent(polygon_layer, False, True)
+        #    x_buffer = (extent.XMax - extent.XMin) / 20.0
+        #    y_buffer = (extent.YMax - extent.YMin) / 20.0
+        #    buffered_extent = arcpy.Extent(extent.XMin - x_buffer,
+        #                                   extent.YMin - y_buffer,
+        #                                   extent.XMax + x_buffer,
+        #                                   extent.YMax + y_buffer)
+        #    map_frame.camera.setExtent(buffered_extent)
+        #    layout.exportToJPEG(download_folder + '/EBAR' + str(param_range_map_id) + '.jpg', 300,
+        #                        clip_to_elements=True)
+
         if param_pdf == 'true' or param_spatial == 'true':
             # replace metadata html tags with real data
             EBARUtils.displayMessage(messages, 'Filling metadata template')
-            metadata_body = EBARUtils.metadata_body
-            metadata_body = metadata_body.replace('[logo_image]', resources_folder + '/nscanada_inline_copy.png')
-            metadata_body = metadata_body.replace('[species_header_image]', resources_folder + '/species_header.png')
-            metadata_body = metadata_body.replace('[rank_status_header_image]', resources_folder +
+            pdf_template = open(pdf_template_file)
+            pdf_html = pdf_template.read()
+            pdf_template.close()
+
+            # map file and headers 
+            pdf_html = pdf_html.replace('[map_image]', download_folder + '/EBAR' + str(param_range_map_id) + '.jpg')
+            pdf_html = pdf_html.replace('[logo_image]', resources_folder + '/nscanada_inline_copy.png')
+            pdf_html = pdf_html.replace('[species_header_image]', resources_folder + '/species_header.png')
+            pdf_html = pdf_html.replace('[rank_status_header_image]', resources_folder +
                                                   '/rank_status_header.png')
-            metadata_body = metadata_body.replace('[range_map_header_image]', resources_folder +
+            pdf_html = pdf_html.replace('[range_map_header_image]', resources_folder +
                                                   '/range_map_header.png')
-            metadata_body = metadata_body.replace('[reviews_header_image]', resources_folder + '/reviews_header.png')
-            metadata_body = metadata_body.replace('[credits_header_image]', resources_folder + '/credits_header.png')
+            pdf_html = pdf_html.replace('[reviews_header_image]', resources_folder + '/reviews_header.png')
+            pdf_html = pdf_html.replace('[credits_header_image]', resources_folder + '/credits_header.png')
 
             # get range map data from database
             species_id = None
             with arcpy.da.SearchCursor(ebar_feature_service + '/11',
                                        ['SpeciesID', 'RangeVersion', 'RangeStage', 'RangeDate', 'RangeMapScope',
                                         'RangeMapNotes', 'RangeMetadata', 'RangeMapComments'],
-                                       'RangeMapID = ' + str(param_range_map_id)) as cursor:
+                                        'RangeMapID = ' + str(param_range_map_id)) as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     species_id = row['SpeciesID']
-                    metadata_body = metadata_body.replace('[RangeMap.RangeDate]', row['RangeDate'].strftime('%B %d, %Y'))
-                    metadata_body = metadata_body.replace('[RangeMap.RangeVersion]', row['RangeVersion'])
-                    metadata_body = metadata_body.replace('[RangeMap.RangeStage]', row['RangeStage'])
-                    metadata_body = metadata_body.replace('[RangeMap.RangeMapScope]', EBARUtils.scope_dict[row['RangeMapScope']])
-                    metadata_body = metadata_body.replace('[RangeMap.RangeMapNotes]', row['RangeMapNotes'])
-                    metadata_body = metadata_body.replace('[RangeMap.RangeMetadata]', row['RangeMetadata'])
-                    metadata_body = metadata_body.replace('[RangeMap.RangeMapComments]', str(row['RangeMapComments']))
+                    pdf_html = pdf_html.replace('[RangeMap.RangeDate]', row['RangeDate'].strftime('%B %d, %Y'))
+                    pdf_html = pdf_html.replace('[RangeMap.RangeVersion]', row['RangeVersion'])
+                    pdf_html = pdf_html.replace('[RangeMap.RangeStage]', row['RangeStage'])
+                    pdf_html = pdf_html.replace('[RangeMap.RangeMapScope]', EBARUtils.scope_dict[row['RangeMapScope']])
+                    pdf_html = pdf_html.replace('[RangeMap.RangeMapNotes]', row['RangeMapNotes'])
+                    pdf_html = pdf_html.replace('[RangeMap.RangeMetadata]', row['RangeMetadata'])
+                    pdf_html = pdf_html.replace('[RangeMap.RangeMapComments]', str(row['RangeMapComments']))
                 if species_id:
                     del row
                 else:
@@ -99,48 +127,48 @@ class PublishRangeMapTool:
                                         'G_JURIS_ENDEM_DESC'],
                                        'SpeciesID = ' + str(species_id)) as cursor:
                 for row in EBARUtils.searchCursor(cursor):
-                    metadata_body = metadata_body.replace('[BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME]',
+                    pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME]',
                                                           row['NATIONAL_SCIENTIFIC_NAME'])
-                    metadata_body = metadata_body.replace('[BIOTICS_ELEMENT_NATIONAL.NATIONAL_ENGL_NAME]',
+                    pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.NATIONAL_ENGL_NAME]',
                                                           row['NATIONAL_ENGL_NAME'])
                     french_name = ''
                     if row['NATIONAL_FR_NAME']:
                         french_name = row['NATIONAL_FR_NAME']
-                    metadata_body = metadata_body.replace('[BIOTICS_ELEMENT_NATIONAL.NATIONAL_FR_NAME]',
+                    pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.NATIONAL_FR_NAME]',
                                                           french_name)
-                    metadata_body = metadata_body.replace('[BIOTICS_ELEMENT_NATIONAL.ELEMENT_NATIONAL_ID]',
+                    pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.ELEMENT_NATIONAL_ID]',
                                                           str(row['ELEMENT_NATIONAL_ID']))
                     element_global_id = str(row['ELEMENT_GLOBAL_ID'])
-                    metadata_body = metadata_body.replace('[BIOTICS_ELEMENT_NATIONAL.ELEMENT_GLOBAL_ID]',
+                    pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.ELEMENT_GLOBAL_ID]',
                                                           element_global_id)
                     element_code = row['ELEMENT_CODE']
-                    metadata_body = metadata_body.replace('[BIOTICS_ELEMENT_NATIONAL.ELEMENT_CODE]', element_code)
+                    pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.ELEMENT_CODE]', element_code)
                     endemism = 'None'
                     if row['G_JURIS_ENDEM_DESC']:
                         endemism = row['G_JURIS_ENDEM_DESC']
-                    metadata_body = metadata_body.replace('[BIOTICS_ELEMENT_NATIONAL.G_JURIS_ENDEM_DESC]', endemism)
+                    pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.G_JURIS_ENDEM_DESC]', endemism)
                 del row
 
-            ## get species data from database
-            #kba_trigger = None
-            #with arcpy.da.SearchCursor(ebar_feature_service + '/19', ['KBATrigger'],
-            #                           'SpeciesID = ' + str(species_id)) as cursor:
-            #    for row in EBARUtils.searchCursor(cursor):
-            #        metadata_body = metadata_body.replace('[Species.KBATrigger]', row['KBATrigger'])
-            #    del row
+            # get species data from database
+            kba_trigger = None
+            with arcpy.da.SearchCursor(ebar_feature_service + '/19', ['KBATrigger'],
+                                       'SpeciesID = ' + str(species_id)) as cursor:
+                for row in EBARUtils.searchCursor(cursor):
+                    pdf_html = pdf_html.replace('[Species.KBATrigger]', row['KBATrigger'])
+                del row
 
             # summarize completed reviews for this version of the range map
             with arcpy.da.SearchCursor(ebar_feature_service + '/19', ['KBATrigger'],
                                        'SpeciesID = ' + str(species_id)) as cursor:
                 for row in EBARUtils.searchCursor(cursor):
-                    metadata_body = metadata_body.replace('[Species.KBATrigger]', row['KBATrigger'])
+                    pdf_html = pdf_html.replace('[Species.KBATrigger]', row['KBATrigger'])
                 del row
 
-            # summarize input references
+            ## summarize input references
 
             # insert fixed list of reviewers by taxa
             reviewers = open(reviewers_by_taxa_file)
-            metadata_body = metadata_body.replace('[ReviewersByTaxa]', reviewers.read())
+            pdf_html = pdf_html.replace('[ReviewersByTaxa]', reviewers.read())
             reviewers.close()
 
             # get attributes from NSE Species Search API
@@ -159,8 +187,8 @@ class PublishRangeMapTool:
             EBARUtils.displayMessage(messages, 'Getting attributes from NatureServe Explorer')
             result = requests.get(nse_taxon_search_url + element_global_id)
             results = json.loads(result.content)
-            metadata_body = metadata_body.replace('[NSE.grank]', results['grank'])
-            metadata_body = metadata_body.replace('[NSE.grankReviewDate]',
+            pdf_html = pdf_html.replace('[NSE.grank]', results['grank'])
+            pdf_html = pdf_html.replace('[NSE.grankReviewDate]',
                                                   EBARUtils.extractDate(results['grankReviewDate']).strftime('%B %d, %Y'))
             ca_rank = 'None'
             us_rank = 'None'
@@ -192,92 +220,46 @@ class PublishRangeMapTool:
                             mx_rank = en['nrank'] + reviewed
                             for esn in en['elementSubnationals']:
                                 mx_subnational_list.append(esn['subnation']['subnationCode'] + '=' + esn['srank'])
-            metadata_body = metadata_body.replace('[NSE.CARank]', ca_rank)
-            metadata_body = metadata_body.replace('[NSE.USRank]', us_rank)
-            metadata_body = metadata_body.replace('[NSE.MXRank]', mx_rank)
+            pdf_html = pdf_html.replace('[NSE.CARank]', ca_rank)
+            pdf_html = pdf_html.replace('[NSE.USRank]', us_rank)
+            pdf_html = pdf_html.replace('[NSE.MXRank]', mx_rank)
             ca_subnational_ranks = 'None'
             if len(ca_subnational_list) > 0:
                 ca_subnational_list.sort()
                 ca_subnational_ranks = ', '.join(ca_subnational_list)
-            metadata_body = metadata_body.replace('[NSE.CASubnationalRanks]', ca_subnational_ranks)
+            pdf_html = pdf_html.replace('[NSE.CASubnationalRanks]', ca_subnational_ranks)
             us_subnational_ranks = 'None'
             if len(us_subnational_list) > 0:
                 us_subnational_list.sort()
                 us_subnational_ranks = ', '.join(us_subnational_list)
-            metadata_body = metadata_body.replace('[NSE.USSubnationalRanks]', us_subnational_ranks)
+            pdf_html = pdf_html.replace('[NSE.USSubnationalRanks]', us_subnational_ranks)
             mx_subnational_ranks = 'None'
             if len(mx_subnational_list) > 0:
                 mx_subnational_list.sort()
                 mx_subnational_ranks = ', '.join(mx_subnational_list)
-            metadata_body = metadata_body.replace('[NSE.MXSubnationalRanks]', mx_subnational_ranks)
+            pdf_html = pdf_html.replace('[NSE.MXSubnationalRanks]', mx_subnational_ranks)
             sara_status = 'None'
             if results['speciesGlobal']['saraStatus']:
                 sara_status = results['speciesGlobal']['saraStatus']
                 if results['speciesGlobal']['saraStatusDate']:
                     sara_status += ' (' + results['speciesGlobal']['saraStatusDate'] + ')'
-            metadata_body = metadata_body.replace('[NSE.saraStatus]', sara_status)
+            pdf_html = pdf_html.replace('[NSE.saraStatus]', sara_status)
             cosewic_status = 'None'
             if results['speciesGlobal']['interpretedCosewic']:
                 cosewic_status = results['speciesGlobal']['interpretedCosewic']
                 if results['speciesGlobal']['cosewicDate']:
                     cosewic_status += ' (' + results['speciesGlobal']['cosewicDate'] + ')'
-            metadata_body = metadata_body.replace('[NSE.cosewicStatus]', cosewic_status)
+            pdf_html = pdf_html.replace('[NSE.cosewicStatus]', cosewic_status)
             esa_status = 'None'
             if results['speciesGlobal']['interpretedUsesa']:
                 esa_status = results['speciesGlobal']['interpretedUsesa']
                 if results['speciesGlobal']['usesaDate']:
                     esa_status += ' (' + results['speciesGlobal']['usesaDate'] + ')'
-            metadata_body = metadata_body.replace('[NSE.esaStatus]', esa_status)
-
-        ## generate jpg
-        #if param_pdf == 'true' or param_jpg == 'true':
-        #    EBARUtils.displayMessage(messages, 'Generating JPG map')
-        #    aprx = arcpy.mp.ArcGISProject(arcgis_pro_project)
-        #    map = aprx.listMaps('Range Map Landscape Topographic')[0]
-        #    polygon_layer = map.listLayers('EcoshapeRangeMap')[0]
-        #    polygon_layer.definitionQuery = 'rangemapid = ' + str(param_range_map_id)
-        #    table_layer = map.listTables('RangeMap')[0]
-        #    table_layer.definitionQuery = 'rangemapid = ' + str(param_range_map_id)
-        #    layout = aprx.listLayouts('Range Map Landscape Topographic')[0]
-        #    map_frame = layout.listElements('MAPFRAME_ELEMENT')[0]
-        #    extent = map_frame.getLayerExtent(polygon_layer, False, True)
-        #    x_buffer = (extent.XMax - extent.XMin) / 20.0
-        #    y_buffer = (extent.YMax - extent.YMin) / 20.0
-        #    buffered_extent = arcpy.Extent(extent.XMin - x_buffer,
-        #                                   extent.YMin - y_buffer,
-        #                                   extent.XMax + x_buffer,
-        #                                   extent.YMax + y_buffer)
-        #    map_frame.camera.setExtent(buffered_extent)
-        #    layout.exportToJPEG(download_folder + '/EBAR' + str(param_range_map_id) + '.jpg', 300,
-        #                        clip_to_elements=True)
+            pdf_html = pdf_html.replace('[NSE.esaStatus]', esa_status)
 
         # generate pdf
         if param_pdf == 'true':
             EBARUtils.displayMessage(messages, 'Generating PDF')
-            # combine map and metadata html
-            body = '''
-            <html>
-              <head>
-                <meta name="pdfkit-orientation" content="Landscape"/>
-              </head>
-              <style>
-                body {
-                  font-family:"Trebuchet MS","Lucida Grande","Lucida Sans Unicode","Lucida Sans",Tahoma,sans-serif;
-                }
-                td {
-                  padding: 5px;
-                }
-                h3 {
-                  line-height: 55%
-                }
-              </style>
-              <img src="''' + download_folder + '/EBAR' + str(param_range_map_id) + '.jpg' + '''" width="1500">
-              <br>
-              ''' + metadata_body + '''
-            </html>
-            '''
-
-            # send to pdf
             pdf_options = {
                 'quiet': '',
                 'page-size': 'Letter',
@@ -295,7 +277,7 @@ class PublishRangeMapTool:
                 ],
                 'no-outline': None
             }
-            pdfkit.from_string(body, download_folder + '/EBAR' + str(param_range_map_id) + '.pdf', pdf_options)
+            pdfkit.from_string(pdf_html, download_folder + '/EBAR' + str(param_range_map_id) + '.pdf', pdf_options)
 
         # generate zip
         if param_spatial == 'true':
