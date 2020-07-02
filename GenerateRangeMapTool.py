@@ -591,7 +591,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         # apply Reviews and summaries to RangeMapEcoshape records
         EBARUtils.displayMessage(messages,
                                  'Applying Reviews and summaries to Range Map Ecoshape records')
-        ecoshape_reviews = 0
+        #ecoshape_reviews = 0
         if len(prev_range_map_ids) > 0:
             arcpy.MakeTableView_management(param_geodatabase + '/EcoshapeReview', 'ecoshape_review_view')
             arcpy.AddJoin_management('ecoshape_review_view', 'ReviewID', param_geodatabase + '/Review', 'ReviewID')
@@ -612,7 +612,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                'EcoshapeReview.EcoshapeID = ' + \
                                                str(update_row['EcoshapeID'])) as search_cursor:
                         for search_row in EBARUtils.searchCursor(search_cursor):
-                            ecoshape_reviews += 1
+                            #ecoshape_reviews += 1
                             remove = True
                 if remove:
                     del search_row
@@ -665,7 +665,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                    str(update_row['EcoshapeID'])) as search_cursor:
                             search_row = None
                             for search_row in EBARUtils.searchCursor(search_cursor):
-                                ecoshape_reviews += 1
+                                #ecoshape_reviews += 1
                                 presence = search_row[table_name_prefix + 'EcoshapeReview.Markup']
                                 migrant_status = search_row[table_name_prefix + 'EcoshapeReview.MigrantStatus']
                             if search_row:
@@ -696,7 +696,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     if not add:
                         del update_row
                     else:
-                        ecoshape_reviews += 1
+                        #ecoshape_reviews += 1
                         with arcpy.da.InsertCursor(param_geodatabase + '/RangeMapEcoshape',
                                                    ['RangeMapID', 'EcoshapeID', 'Presence',
                                                     'RangeMapEcoshapeNotes', 'MigrantStatus']) as insert_cursor:
@@ -873,6 +873,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         with arcpy.da.UpdateCursor('range_map_view', ['RangeMetadata', 'RangeDate', 'RangeMapNotes', 'RangeMapScope'],
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
             for update_row in update_cursor:
+                # Metadata
                 # input records
                 # kludge because arc ends up with different field names under Enterprise gdb after joining
                 field_names = [f.name for f in arcpy.ListFields(temp_overall_countby_source) if f.aliasName in
@@ -885,6 +886,21 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                         summary += str(search_row[field_names[1]]) + ' ' + search_row[field_names[0]]
                     if len(summary) > 0:
                         del search_row
+                summary = 'Input Records - ' + summary
+                # expert reviews
+                summary += '; Expert Reviews - ' + str(completed_expert_reviews)
+                if completed_expert_reviews - null_rating_reviews > 0:
+                    summary += ' (average star rating = ' + str(star_rating_sum /
+                                                                (completed_expert_reviews - null_rating_reviews)) + ')'
+                ## expert reviews
+                #if ecoshape_reviews > 0:
+                #    summary += '; Ecoshape Reviews Applied - ' + str(ecoshape_reviews)
+                #if ecoshape_reviews > 0:
+                #    if len(summary) > 0:
+                #        summary += '; '
+                #    summary += 'Expert Ecoshape Reviews - ' + str(ecoshape_reviews)
+
+                # Notes
                 ## restricted count
                 ## kludge because arc ends up with different field names under Enterprise gdb after joining
                 #field_names = [f.name for f in arcpy.ListFields(temp_overall_restricted) if f.aliasName in
@@ -899,19 +915,6 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                 #        summary = 'Input Records (' + str(restricted) + ' RESTRICTED) - ' + summary
                 #    else:
                 #        summary = 'Input Records - ' + summary
-                summary = 'Input Records - ' + summary
-                # expert reviews
-                summary += '; Expert Reviews - ' + str(completed_expert_reviews)
-                if completed_expert_reviews - null_rating_reviews > 0:
-                    summary += ' (average star rating = ' + str(star_rating_sum /
-                                                                (completed_expert_reviews - null_rating_reviews)) + ')'
-                if ecoshape_reviews > 0:
-                    summary += '; Ecoshape Reviews Applied - ' + str(ecoshape_reviews)
-                ## expert reviews
-                #if ecoshape_reviews > 0:
-                #    if len(summary) > 0:
-                #        summary += '; '
-                #    summary += 'Expert Ecoshape Reviews - ' + str(ecoshape_reviews)
                 notes = 'Primary Species Name - ' + param_species
                 if len(secondary_names) > 0:
                     notes += '; Synonyms - ' + secondary_names
