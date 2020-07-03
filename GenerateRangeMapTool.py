@@ -92,6 +92,7 @@ class GenerateRangeMapTool:
         species_ids = str(species_id)
         secondary_ids = []
         secondary_names = ''
+        synonyms_used = ''
         #additional_input_records = 0
         #excluded_input_records = 0
         if param_secondary:
@@ -111,7 +112,9 @@ class GenerateRangeMapTool:
                 secondary_ids.append(secondary_id)
                 if len(secondary_names) > 0:
                     secondary_names += ', '
-                secondary_names += secondary + '' + short_citation
+                    synonyms_used += ', '
+                secondary_names += secondary + short_citation
+                synonyms_used += secondary
 
         # check for range map record and add if necessary
         EBARUtils.displayMessage(messages, 'Checking for existing Range Map')
@@ -259,12 +262,12 @@ class GenerateRangeMapTool:
             # create RangeMap record
             with arcpy.da.InsertCursor('range_map_view',
                                        ['SpeciesID', 'RangeVersion', 'RangeStage', 'RangeDate', 'RangeMapNotes',
-                                        'IncludeInEBARReviewer', 'RangeMapScope']) as cursor:
+                                        'IncludeInEBARReviewer', 'RangeMapScope', 'SynonymsUsed']) as cursor:
                 notes = 'Primary Species Name - ' + param_species
                 if len(secondary_names) > 0:
                     notes += '; Synonyms - ' + secondary_names
                 range_map_id = cursor.insertRow([species_id, param_version, param_stage, datetime.datetime.now(),
-                                                 notes, 0, scope])
+                                                 notes, 0, scope, synonyms_used])
             EBARUtils.setNewID(param_geodatabase + '/RangeMap', 'RangeMapID', 'OBJECTID = ' + str(range_map_id))
             EBARUtils.displayMessage(messages, 'Range Map record created')
 
@@ -841,7 +844,9 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                 for search_row in EBARUtils.searchCursor(search_cursor):
                     if len(secondary_names) > 0:
                         secondary_names += ', '
+                        synonyms_used += ', '
                     secondary_names += search_row['SynonymName']
+                    synonyms_used += search_row['SynonymName']
                     if search_row['SHORT_CITATION_AUTHOR']:
                         secondary_names += ' (' + search_row['SHORT_CITATION_AUTHOR']
                         if search_row['SHORT_CITATION_YEAR']:
@@ -855,22 +860,24 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         completed_expert_reviews = 0
         null_rating_reviews = 0
         star_rating_sum = 0
-        with arcpy.da.SearchCursor(param_geodatabase + '/Review', ['OverallStarRating'],
-                                   'RangeMapID IN (' + prev_range_map_ids +
-                                   ') AND DateCompleted IS NOT NULL') as cursor:
-            row = None
-            for row in EBARUtils.searchCursor(cursor):
-                completed_expert_reviews += 1
-                if row['OverallStarRating']:
-                    star_rating_sum += row['OverallStarRating']
-                else:
-                    null_rating_reviews += 1
-            if row:
-                del row
+        if len(prev_range_map_ids) > 0:
+            with arcpy.da.SearchCursor(param_geodatabase + '/Review', ['OverallStarRating'],
+                                       'RangeMapID IN (' + prev_range_map_ids +
+                                       ') AND DateCompleted IS NOT NULL') as cursor:
+                row = None
+                for row in EBARUtils.searchCursor(cursor):
+                    completed_expert_reviews += 1
+                    if row['OverallStarRating']:
+                        star_rating_sum += row['OverallStarRating']
+                    else:
+                        null_rating_reviews += 1
+                if row:
+                    del row
 
         # update RangeMap metadata
         EBARUtils.displayMessage(messages, 'Updating Range Map record with Overall Summary')
-        with arcpy.da.UpdateCursor('range_map_view', ['RangeMetadata', 'RangeDate', 'RangeMapNotes', 'RangeMapScope'],
+        with arcpy.da.UpdateCursor('range_map_view',
+                                   ['RangeMetadata', 'RangeDate', 'RangeMapNotes', 'RangeMapScope', 'SynonymsUsed'],
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
             for update_row in update_cursor:
                 # Metadata
@@ -924,7 +931,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                 ## excluded input records
                 #if excluded_input_records > 0:
                 #    notes += '; Excluded Input Records - ' + str(excluded_input_records)
-                update_cursor.updateRow([summary, datetime.datetime.now(), notes, scope])
+                update_cursor.updateRow([summary, datetime.datetime.now(), notes, scope, synonyms_used])
 
         # generate TOC entry and actual map!!!
 
