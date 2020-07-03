@@ -57,28 +57,6 @@ class PublishRangeMapTool:
         param_spatial = parameters[3].valueAsText
         EBARUtils.displayMessage(messages, 'Include Spatial: ' + param_spatial)
 
-        # generate jpg
-        if param_pdf == 'true' or param_jpg == 'true':
-            ebarutils.displaymessage(messages, 'Generating JPG map')
-            aprx = arcpy.mp.arcgisproject(arcgis_pro_project)
-            map = aprx.listmaps('range map landscape topographic')[0]
-            polygon_layer = map.listlayers('ecoshaperangemap')[0]
-            polygon_layer.definitionquery = 'rangemapid = ' + str(param_range_map_id)
-            table_layer = map.listtables('rangemap')[0]
-            table_layer.definitionquery = 'rangemapid = ' + str(param_range_map_id)
-            layout = aprx.listlayouts('range map landscape topographic')[0]
-            map_frame = layout.listelements('mapframe_element')[0]
-            extent = map_frame.getlayerextent(polygon_layer, false, true)
-            x_buffer = (extent.xmax - extent.xmin) / 20.0
-            y_buffer = (extent.ymax - extent.ymin) / 20.0
-            buffered_extent = arcpy.extent(extent.xmin - x_buffer,
-                                           extent.ymin - y_buffer,
-                                           extent.xmax + x_buffer,
-                                           extent.ymax + y_buffer)
-            map_frame.camera.setextent(buffered_extent)
-            layout.exporttojpeg(download_folder + '/ebar' + str(param_range_map_id) + '.jpg', 300,
-                                clip_to_elements=true)
-
         if param_pdf == 'true' or param_spatial == 'true':
             # replace metadata html tags with real data
             EBARUtils.displayMessage(messages, 'Filling metadata template')
@@ -100,6 +78,7 @@ class PublishRangeMapTool:
             # get range map data from database
             EBARUtils.displayMessage(messages, 'Getting RangeMap data from database')
             species_id = None
+            range_map_scope = None
             with arcpy.da.SearchCursor(ebar_feature_service + '/11',
                                        ['SpeciesID', 'RangeVersion', 'RangeStage', 'RangeDate', 'RangeMapScope',
                                         'RangeMapNotes', 'RangeMetadata', 'RangeMapComments'],
@@ -109,7 +88,8 @@ class PublishRangeMapTool:
                     pdf_html = pdf_html.replace('[RangeMap.RangeDate]', row['RangeDate'].strftime('%B %d, %Y'))
                     pdf_html = pdf_html.replace('[RangeMap.RangeVersion]', row['RangeVersion'])
                     pdf_html = pdf_html.replace('[RangeMap.RangeStage]', row['RangeStage'])
-                    pdf_html = pdf_html.replace('[RangeMap.RangeMapScope]', EBARUtils.scope_dict[row['RangeMapScope']])
+                    range_map_scope = EBARUtils.scope_dict[row['RangeMapScope']]
+                    pdf_html = pdf_html.replace('[RangeMap.RangeMapScope]', range_map_scope)
                     pdf_html = pdf_html.replace('[RangeMap.RangeMapNotes]', row['RangeMapNotes'])
                     pdf_html = pdf_html.replace('[RangeMap.RangeMetadata]', row['RangeMetadata'])
                     pdf_html = pdf_html.replace('[RangeMap.RangeMapComments]', str(row['RangeMapComments']))
@@ -122,7 +102,7 @@ class PublishRangeMapTool:
 
             # get biotics data from database
             EBARUtils.displayMessage(messages, 'Getting Biotics data from database')
-            national_engl_name = None
+            element_global_id = None
             element_code = None
             with arcpy.da.SearchCursor(ebar_feature_service + '/4', 
                                        ['NATIONAL_SCIENTIFIC_NAME', 'NATIONAL_ENGL_NAME', 'NATIONAL_FR_NAME',
@@ -270,6 +250,30 @@ class PublishRangeMapTool:
                     esa_status += ' (' + results['speciesGlobal']['usesaDate'] + ')'
             pdf_html = pdf_html.replace('[NSE.esaStatus]', esa_status)
 
+        # generate jpg
+        if param_pdf == 'true' or param_jpg == 'true':
+            EBARUtils.displayMessage(messages, 'Generating JPG map')
+            aprx = arcpy.mp.ArcGISProject(arcgis_pro_project)
+            map = aprx.listMaps('range map landscape topographic')[0]
+            polygon_layer = map.listLayers('ecoshaperangemap')[0]
+            polygon_layer.definitionQuery = 'rangemapid = ' + str(param_range_map_id)
+            table_layer = map.listTables('rangemap')[0]
+            table_layer.definitionQuery = 'rangemapid = ' + str(param_range_map_id)
+            layout = aprx.listLayouts('range map landscape topographic')[0]
+            map_frame = layout.listElements('mapframe_element')[0]
+            extent = map_frame.getLayerExtent(polygon_layer, False, True)
+            x_buffer = (extent.XMax - extent.XMin) / 20.0
+            y_buffer = (extent.YMax - extent.YMin) / 20.0
+            buffered_extent = arcpy.Extent(extent.XMin - x_buffer,
+                                           extent.YMin - y_buffer,
+                                           extent.XMax + x_buffer,
+                                           extent.YMax + y_buffer)
+            map_frame.camera.setExtent(buffered_extent)
+            if range_map_scope == 'National':
+                element_global_id += 'N'
+            layout.exportToJPEG(download_folder + '/EBAR' + element_global_id + '.jpg', 300,
+                                clip_to_elements=True)
+
         # generate pdf
         if param_pdf == 'true':
             EBARUtils.displayMessage(messages, 'Generating PDF')
@@ -290,7 +294,7 @@ class PublishRangeMapTool:
                 ],
                 'no-outline': None
             }
-            pdfkit.from_string(pdf_html, download_folder + '/EBAR' + str(param_range_map_id) + '.pdf', pdf_options)
+            pdfkit.from_string(pdf_html, download_folder + '/EBAR' + element_global_id + '.pdf', pdf_options)
 
         # generate zip
         if param_spatial == 'true':
