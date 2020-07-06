@@ -597,6 +597,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         #ecoshape_reviews = 0
         if len(prev_range_map_ids) > 0:
             arcpy.MakeTableView_management(param_geodatabase + '/EcoshapeReview', 'ecoshape_review_view')
+            arcpy.AddJoin_management('ecoshape_review_view', 'EcoshapeID', param_geodatabase + '/Ecoshape', 'EcoshapeID')
             arcpy.AddJoin_management('ecoshape_review_view', 'ReviewID', param_geodatabase + '/Review', 'ReviewID')
         # loop existing range map ecoshapes
         with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape',
@@ -678,14 +679,17 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                 del update_row
         # loop review records and check for need to add
         if len(prev_range_map_ids) > 0:
+            condition = table_name_prefix + 'Review.RangeMapID IN (' + \
+                prev_range_map_ids + ') AND ' + table_name_prefix + \
+                'EcoshapeReview.UseForMapGen = 1 AND ' + table_name_prefix + \
+                "EcoshapeReview.Markup IN ('P', 'X', 'H')"
+            if scope == 'N':
+                condition += ' AND ' + table_name_prefix + 'Ecoshape.JurisdictionID IN ' + national_jur_ids
             with arcpy.da.SearchCursor('ecoshape_review_view',
                                        [table_name_prefix + 'EcoshapeReview.EcoshapeID',
                                         table_name_prefix + 'EcoshapeReview.Markup',
                                         table_name_prefix + 'EcoshapeReview.MigrantStatus'],
-                                        table_name_prefix + 'Review.RangeMapID IN (' + \
-                                        prev_range_map_ids + ') AND ' + table_name_prefix + \
-                                        'EcoshapeReview.UseForMapGen = 1 AND ' + table_name_prefix + \
-                                        "EcoshapeReview.Markup IN ('P', 'X', 'H')") as search_cursor:
+                                       condition) as search_cursor:
                 search_row = None
                 for search_row in EBARUtils.searchCursor(search_cursor):
                     # check for ecoshape
