@@ -64,8 +64,7 @@ class PublishRangeMapTool:
             pdf_html = pdf_template.read()
             pdf_template.close()
 
-            # map file and headers 
-            pdf_html = pdf_html.replace('[map_image]', download_folder + '/EBAR' + str(param_range_map_id) + '.jpg')
+            # headers 
             pdf_html = pdf_html.replace('[logo_image]', resources_folder + '/nscanada_inline_copy.png')
             pdf_html = pdf_html.replace('[species_header_image]', resources_folder + '/species_header.png')
             pdf_html = pdf_html.replace('[rank_status_header_image]', resources_folder +
@@ -250,7 +249,7 @@ class PublishRangeMapTool:
                     esa_status += ' (' + results['speciesGlobal']['usesaDate'] + ')'
             pdf_html = pdf_html.replace('[NSE.esaStatus]', esa_status)
 
-        # generate jpg
+        # generate jpg and insert into map
         if param_pdf == 'true' or param_jpg == 'true':
             EBARUtils.displayMessage(messages, 'Generating JPG map')
             aprx = arcpy.mp.ArcGISProject(arcgis_pro_project)
@@ -273,6 +272,7 @@ class PublishRangeMapTool:
                 element_global_id += 'N'
             layout.exportToJPEG(download_folder + '/EBAR' + element_global_id + '.jpg', 300,
                                 clip_to_elements=True)
+            pdf_html = pdf_html.replace('[map_image]', download_folder + '/EBAR' + element_global_id + '.jpg')
 
         # generate pdf
         if param_pdf == 'true':
@@ -312,7 +312,7 @@ if __name__ == '__main__':
     prm = PublishRangeMapTool()
     # hard code parameters for debugging
     param_range_map_id = arcpy.Parameter()
-    param_range_map_id.value = '615'
+    param_range_map_id.value = '648'
     param_pdf = arcpy.Parameter()
     param_pdf.value = 'true'
     param_jpg = arcpy.Parameter()
