@@ -21,6 +21,8 @@ import datetime
 import pdfkit
 import requests
 import json
+import os
+import shutil
 
 
 class PublishRangeMapTool:
@@ -35,11 +37,11 @@ class PublishRangeMapTool:
 
         # settings
         #arcpy.gp.overwriteOutput = True
-        arcgis_pro_project = 'C:/GIS/EBAR/EBARTools/resources/EBARMapLayouts.aprx'
-        pdf_template_file = 'C:/GIS/EBAR/EBARTools/resources/pdf_template.html'
         resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
-        reviewers_by_taxa_file = 'C:/GIS/EBAR/EBARTools/resources/ReviewersByTaxa.txt'
-        temp_folder = 'C:/GIS/EBAR/pub/temp'
+        arcgis_pro_project = resources_folder + '/EBARMapLayouts.aprx'
+        pdf_template_file = resources_folder + '/pdf_template.html'
+        reviewers_by_taxa_file = resources_folder + '/ReviewersByTaxa.txt'
+        temp_folder = 'C:/GIS/EBAR/pub'
         download_folder = 'C:/GIS/EBAR/pub/download'
         ebar_feature_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/EBAR/FeatureServer'
         ebar_summary_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/Summary/FeatureServer'
@@ -110,9 +112,9 @@ class PublishRangeMapTool:
                                        'SpeciesID = ' + str(species_id)) as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME]',
-                                                          row['NATIONAL_SCIENTIFIC_NAME'])
+                                                row['NATIONAL_SCIENTIFIC_NAME'])
                     pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.NATIONAL_ENGL_NAME]',
-                                                          row['NATIONAL_ENGL_NAME'])
+                                                row['NATIONAL_ENGL_NAME'])
                     french_name = ''
                     if row['NATIONAL_FR_NAME']:
                         french_name = row['NATIONAL_FR_NAME']
@@ -122,7 +124,7 @@ class PublishRangeMapTool:
                                                           str(row['ELEMENT_NATIONAL_ID']))
                     element_global_id = str(row['ELEMENT_GLOBAL_ID'])
                     pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.ELEMENT_GLOBAL_ID]',
-                                                          element_global_id)
+                                                element_global_id)
                     element_code = row['ELEMENT_CODE']
                     pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.ELEMENT_CODE]', element_code)
                     #endemism = 'None'
@@ -249,30 +251,30 @@ class PublishRangeMapTool:
                     esa_status += ' (' + results['speciesGlobal']['usesaDate'] + ')'
             pdf_html = pdf_html.replace('[NSE.esaStatus]', esa_status)
 
-        # generate jpg and insert into pdf template
-        if param_pdf == 'true' or param_jpg == 'true':
-            EBARUtils.displayMessage(messages, 'Generating JPG map')
-            aprx = arcpy.mp.ArcGISProject(arcgis_pro_project)
-            map = aprx.listMaps('range map landscape topographic')[0]
-            polygon_layer = map.listLayers('ecoshaperangemap')[0]
-            polygon_layer.definitionQuery = 'rangemapid = ' + str(param_range_map_id)
-            table_layer = map.listTables('rangemap')[0]
-            table_layer.definitionQuery = 'rangemapid = ' + str(param_range_map_id)
-            layout = aprx.listLayouts('range map landscape topographic')[0]
-            map_frame = layout.listElements('mapframe_element')[0]
-            extent = map_frame.getLayerExtent(polygon_layer, False, True)
-            x_buffer = (extent.XMax - extent.XMin) / 20.0
-            y_buffer = (extent.YMax - extent.YMin) / 20.0
-            buffered_extent = arcpy.Extent(extent.XMin - x_buffer,
-                                           extent.YMin - y_buffer,
-                                           extent.XMax + x_buffer,
-                                           extent.YMax + y_buffer)
-            map_frame.camera.setExtent(buffered_extent)
-            if range_map_scope == 'National':
-                element_global_id += 'N'
-            layout.exportToJPEG(download_folder + '/EBAR' + element_global_id + '.jpg', 300,
-                                clip_to_elements=True)
-            pdf_html = pdf_html.replace('[map_image]', download_folder + '/EBAR' + element_global_id + '.jpg')
+        ## generate jpg and insert into pdf template
+        #if param_pdf == 'true' or param_jpg == 'true':
+        #    EBARUtils.displayMessage(messages, 'Generating JPG map')
+        #    aprx = arcpy.mp.ArcGISProject(arcgis_pro_project)
+        #    map = aprx.listMaps('range map landscape topographic')[0]
+        #    polygon_layer = map.listLayers('ecoshaperangemap')[0]
+        #    polygon_layer.definitionQuery = 'rangemapid = ' + str(param_range_map_id)
+        #    table_layer = map.listTables('rangemap')[0]
+        #    table_layer.definitionQuery = 'rangemapid = ' + str(param_range_map_id)
+        #    layout = aprx.listLayouts('range map landscape topographic')[0]
+        #    map_frame = layout.listElements('mapframe_element')[0]
+        #    extent = map_frame.getLayerExtent(polygon_layer, False, True)
+        #    x_buffer = (extent.XMax - extent.XMin) / 20.0
+        #    y_buffer = (extent.YMax - extent.YMin) / 20.0
+        #    buffered_extent = arcpy.Extent(extent.XMin - x_buffer,
+        #                                   extent.YMin - y_buffer,
+        #                                   extent.XMax + x_buffer,
+        #                                   extent.YMax + y_buffer)
+        #    map_frame.camera.setExtent(buffered_extent)
+        #    if range_map_scope == 'National':
+        #        element_global_id += 'N'
+        #    layout.exportToJPEG(download_folder + '/EBAR' + element_global_id + '.jpg', 300,
+        #                        clip_to_elements=True)
+        pdf_html = pdf_html.replace('[map_image]', download_folder + '/EBAR' + element_global_id + '.jpg')
 
         # generate pdf
         if param_pdf == 'true':
@@ -299,6 +301,90 @@ class PublishRangeMapTool:
         # generate zip
         if param_spatial == 'true':
             EBARUtils.displayMessage(messages, 'Generating Spatial Data (ZIP)')
+
+            # make folder
+            zip_folder = temp_folder + '/EBAR' + element_global_id
+            if os.path.exists(zip_folder):
+                shutil.rmtree(zip_folder)
+            os.mkdir(zip_folder)
+            # copy in static resources and pdf
+            shutil.copyfile(resources_folder + '/Jurisdiction.csv', zip_folder + '/Jurisdiction.csv')
+            shutil.copyfile(download_folder + '/EBAR' + element_global_id + '.pdf',
+                            zip_folder + '/EBAR' + element_global_id + '.pdf')
+
+            # range map, with biotics/species additions
+            arcpy.MakeTableView_management(ebar_feature_service + '/11', 'range_map_view',
+                                           'RangeMapID = ' + param_range_map_id)
+            arcpy.AddJoin_management('range_map_view', 'SpeciesID', ebar_feature_service + '/4', 'SpeciesID',
+                                     'KEEP_COMMON')
+            arcpy.AddJoin_management('range_map_view', 'SpeciesID', ebar_feature_service + '/19', 'SpeciesID',
+                                     'KEEP_COMMON')
+            # map fields
+            field_mappings = arcpy.FieldMappings()
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view', 'L11RangeMap.RangeMapID', 'RangeMapID',
+                                                                'LONG'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view', 'L11RangeMap.RangeVersion',
+                                                                'RangeVersion', 'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view', 'L11RangeMap.RangeStage', 'RangeStage',
+                                                                'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view', 'L11RangeMap.RangeDate', 'RangeDate',
+                                                                'DATE'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view', 'L11RangeMap.RangeMapScope',
+                                                                'RangeMapScope', 'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view', 'L11RangeMap.RangeMetadata',
+                                                                'RangeMetadata', 'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view', 'L11RangeMap.RangeMapNotes',
+                                                                'RangeMapNotes', 'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view', 'L11RangeMap.RangeMapComments',
+                                                                'RangeMapComments', 'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view', 'L11RangeMap.SynonymsUsed',
+                                                                'SynonymsUsed', 'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view', 'L11RangeMap.SynonymsUsed',
+                                                                'SynonymsUsed', 'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view',
+                                                                'L4BIOTICS_ELEMENT_NATIONAL.ELEMENT_NATIONAL_ID',
+                                                                'ELEMENT_NATIONAL_ID', 'LONG'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view',
+                                                                'L4BIOTICS_ELEMENT_NATIONAL.ELEMENT_GLOBAL_ID',
+                                                                'ELEMENT_GLOBAL_ID', 'LONG'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view',
+                                                                'L4BIOTICS_ELEMENT_NATIONAL.ELEMENT_CODE',
+                                                                'ELEMENT_CODE', 'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view',
+                                                                'L4BIOTICS_ELEMENT_NATIONAL.CATEGORY', 'CATEGORY',
+                                                                'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view',
+                                                                'L4BIOTICS_ELEMENT_NATIONAL.TAX_GROUP', 'TAX_GROUP',
+                                                                'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view',
+                                                                'L4BIOTICS_ELEMENT_NATIONAL.FAMILY_COM', 'FAMILY_COM',
+                                                                'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view',
+                                                                'L4BIOTICS_ELEMENT_NATIONAL.GENUS', 'GENUS', 'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view',
+                                                                'L4BIOTICS_ELEMENT_NATIONAL.PHYLUM', 'PHYLUM', 'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view',
+                                                                'L4BIOTICS_ELEMENT_NATIONAL.CA_NNAME_LEVEL',
+                                                                'CA_NNAME_LEVEL', 'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view',
+                                                                'L4BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME',
+                                                                'NATIONAL_SCIENTIFIC_NAME', 'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view',
+                                                                'L4BIOTICS_ELEMENT_NATIONAL.NATIONAL_ENGL_NAME',
+                                                                'NATIONAL_ENGL_NAME', 'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view',
+                                                                'L4BIOTICS_ELEMENT_NATIONAL.NATIONAL_FR_NAME',
+                                                                'NATIONAL_FR_NAME', 'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view',
+                                                                'L4BIOTICS_ELEMENT_NATIONAL.COSEWIC_NAME',
+                                                                'COSEWIC_NAME', 'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view', 'L19Species.ENDEMISM_TYPE',
+                                                                'ENDEMISM_TYPE', 'TEXT'))
+            arcpy.TableToTable_conversion('range_map_view', zip_folder, 'EBAR' + element_global_id + 'RangeMap.csv',
+                                          field_mapping=field_mappings)
+
+
+            #arcpy.MakeFeatureLayer_management()
 
         # cleanup
         if param_jpg != 'true':
