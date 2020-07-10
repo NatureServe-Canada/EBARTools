@@ -249,7 +249,7 @@ class PublishRangeMapTool:
                     esa_status += ' (' + results['speciesGlobal']['usesaDate'] + ')'
             pdf_html = pdf_html.replace('[NSE.esaStatus]', esa_status)
 
-        # generate jpg and insert into map
+        # generate jpg and insert into pdf template
         if param_pdf == 'true' or param_jpg == 'true':
             EBARUtils.displayMessage(messages, 'Generating JPG map')
             aprx = arcpy.mp.ArcGISProject(arcgis_pro_project)
