@@ -54,7 +54,7 @@ class AddSynonymsTool:
                 element_national_id = int(float(file_line['ELEMENT_NATIONAL_ID']))
                 if element_national_id not in element_species_dict:
                     EBARUtils.displayMessage(messages,
-                                             'WARNING: ' + element_national_id + ' does not have Species record')
+                                             'WARNING: ' + str(element_national_id) + ' does not have Species record')
                 else:
                     # add
                     short_citation_author = None
@@ -63,12 +63,19 @@ class AddSynonymsTool:
                     short_citation_year = None
                     if len(file_line['SHORT_CITATION_YEAR']) > 0:
                         short_citation_year = file_line['SHORT_CITATION_YEAR']
+                    # use workspace editing because sometimes (unsure why) it generates "workspace already in
+                    # transaction mode" errors
+                    edit = arcpy.da.Editor(param_geodatabase)
+                    edit.startEditing(False, False)
+                    edit.startOperation()
                     insert_cursor = arcpy.da.InsertCursor(param_geodatabase + '/Synonym',
                                                           ['SpeciesID', 'SynonymName', 'SHORT_CITATION_AUTHOR',
                                                            'SHORT_CITATION_YEAR'])
                     insert_cursor.insertRow([element_species_dict[element_national_id], scientific_name,
                                              short_citation_author, short_citation_year])
                     del insert_cursor
+                    edit.stopOperation()
+                    edit.stopEditing(True)
                     EBARUtils.setNewID(param_geodatabase + '/Synonym', 'SynonymID',
                                        "SynonymName = '" + scientific_name + "'")
                     added += 1
