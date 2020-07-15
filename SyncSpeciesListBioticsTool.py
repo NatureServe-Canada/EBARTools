@@ -112,11 +112,11 @@ class SyncSpeciesListBioticsTool:
             element_national_id = int(float(file_line['ELEMENT_NATIONAL_ID']))
             if element_national_id in element_species_dict:
                 # update
-                # use workspace editing because sometimes (unsure why) it generates "workspace already in
-                # transaction mode" errors
-                edit = arcpy.da.Editor(param_geodatabase)
-                edit.startEditing(False, False)
-                edit.startOperation()
+                ## use workspace editing because sometimes (unsure why) it generates "workspace already in
+                ## transaction mode" errors
+                #edit = arcpy.da.Editor(param_geodatabase)
+                #edit.startEditing(False, False)
+                #edit.startOperation()
                 with arcpy.da.UpdateCursor(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', biotics_fields,
                                            'ELEMENT_NATIONAL_ID = ' + str(element_national_id)) as update_cursor:
                     update_row = None
@@ -130,28 +130,28 @@ class SyncSpeciesListBioticsTool:
                         update_cursor.updateRow(update_values)
                     if update_row:
                         del update_row
-                edit.stopOperation()
-                edit.stopEditing(True)
+                #edit.stopOperation()
+                #edit.stopEditing(True)
             else:
                 # create new Species and BIOTICS_ELEMENT_NATIONAL records
                 # start with a dummy species id so setNewID can work!
-                # use workspace editing because sometimes (unsure why) it generates "workspace already in
-                # transaction mode" errors
-                edit = arcpy.da.Editor(param_geodatabase)
-                edit.startEditing(False, False)
-                edit.startOperation()
+                ## use workspace editing because sometimes (unsure why) it generates "workspace already in
+                ## transaction mode" errors
+                #edit = arcpy.da.Editor(param_geodatabase)
+                #edit.startEditing(False, False)
+                #edit.startOperation()
                 with arcpy.da.InsertCursor(param_geodatabase + '/Species',
                                            ['SpeciesID', 'ActiveEBAR']) as insert_cursor:
                     insert_cursor.insertRow([999999, 1])
-                edit.stopOperation()
-                edit.stopEditing(True)
+                #edit.stopOperation()
+                #edit.stopEditing(True)
                 species_id = EBARUtils.setNewID(param_geodatabase + '/Species', 'SpeciesID', 'SpeciesID = 999999')
                 biotics_fields.append('SpeciesID')
                 # use workspace editing because sometimes (unsure why) it generates "workspace already in
                 # transaction mode" errors
-                edit = arcpy.da.Editor(param_geodatabase)
-                edit.startEditing(False, False)
-                edit.startOperation()
+                #edit = arcpy.da.Editor(param_geodatabase)
+                #edit.startEditing(False, False)
+                #edit.startOperation()
                 with arcpy.da.InsertCursor(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
                                            biotics_fields) as insert_cursor:
                     insert_values = []
@@ -163,8 +163,8 @@ class SyncSpeciesListBioticsTool:
                         else:
                             insert_values.append(None)
                     insert_cursor.insertRow(insert_values)
-                edit.stopOperation()
-                edit.stopEditing(True)
+                #edit.stopOperation()
+                #edit.stopEditing(True)
                 biotics_fields.remove('SpeciesID')
                 added += 1
             count += 1
