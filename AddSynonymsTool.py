@@ -74,10 +74,10 @@ class AddSynonymsTool:
                     insert_cursor.insertRow([element_species_dict[element_national_id], scientific_name,
                                              short_citation_author, short_citation_year])
                     del insert_cursor
-                    #edit.stopOperation()
-                    #edit.stopEditing(True)
                     EBARUtils.setNewID(param_geodatabase + '/Synonym', 'SynonymID',
                                        "SynonymName = '" + scientific_name + "'")
+                    #edit.stopOperation()
+                    #edit.stopEditing(True)
                     added += 1
             count += 1
 

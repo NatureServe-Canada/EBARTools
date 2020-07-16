@@ -143,15 +143,8 @@ class SyncSpeciesListBioticsTool:
                 with arcpy.da.InsertCursor(param_geodatabase + '/Species',
                                            ['SpeciesID', 'ActiveEBAR']) as insert_cursor:
                     insert_cursor.insertRow([999999, 1])
-                #edit.stopOperation()
-                #edit.stopEditing(True)
                 species_id = EBARUtils.setNewID(param_geodatabase + '/Species', 'SpeciesID', 'SpeciesID = 999999')
                 biotics_fields.append('SpeciesID')
-                # use workspace editing because sometimes (unsure why) it generates "workspace already in
-                # transaction mode" errors
-                #edit = arcpy.da.Editor(param_geodatabase)
-                #edit.startEditing(False, False)
-                #edit.startOperation()
                 with arcpy.da.InsertCursor(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
                                            biotics_fields) as insert_cursor:
                     insert_values = []
@@ -162,6 +155,7 @@ class SyncSpeciesListBioticsTool:
                             insert_values.append(file_line[field])
                         else:
                             insert_values.append(None)
+                    EBARUtils.displayMessage(messages, 'BIOTICS insert values: ' + str(insert_values))
                     insert_cursor.insertRow(insert_values)
                 #edit.stopOperation()
                 #edit.stopEditing(True)
