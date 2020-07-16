@@ -254,29 +254,29 @@ class PublishRangeMapTool:
                     esa_status += ' (' + results['speciesGlobal']['usesaDate'] + ')'
             pdf_html = pdf_html.replace('[NSE.esaStatus]', esa_status)
 
-        ## generate jpg and insert into pdf template
-        #if param_pdf == 'true' or param_jpg == 'true':
-        #    EBARUtils.displayMessage(messages, 'Generating JPG map')
-        #    aprx = arcpy.mp.ArcGISProject(arcgis_pro_project)
-        #    map = aprx.listMaps('range map landscape topographic')[0]
-        #    polygon_layer = map.listLayers('ecoshaperangemap')[0]
-        #    polygon_layer.definitionQuery = 'rangemapid = ' + str(param_range_map_id)
-        #    table_layer = map.listTables('rangemap')[0]
-        #    table_layer.definitionQuery = 'rangemapid = ' + str(param_range_map_id)
-        #    layout = aprx.listLayouts('range map landscape topographic')[0]
-        #    map_frame = layout.listElements('mapframe_element')[0]
-        #    extent = map_frame.getLayerExtent(polygon_layer, False, True)
-        #    x_buffer = (extent.XMax - extent.XMin) / 20.0
-        #    y_buffer = (extent.YMax - extent.YMin) / 20.0
-        #    buffered_extent = arcpy.Extent(extent.XMin - x_buffer,
-        #                                   extent.YMin - y_buffer,
-        #                                   extent.XMax + x_buffer,
-        #                                   extent.YMax + y_buffer)
-        #    map_frame.camera.setExtent(buffered_extent)
-        #    if range_map_scope == 'National':
-        #        element_global_id += 'N'
-        #    layout.exportToJPEG(download_folder + '/EBAR' + element_global_id + '.jpg', 300,
-        #                        clip_to_elements=True)
+        # generate jpg and insert into pdf template
+        if param_pdf == 'true' or param_jpg == 'true':
+            EBARUtils.displayMessage(messages, 'Generating JPG map')
+            aprx = arcpy.mp.ArcGISProject(arcgis_pro_project)
+            map = aprx.listMaps('range map landscape topographic')[0]
+            polygon_layer = map.listLayers('ecoshaperangemap')[0]
+            polygon_layer.definitionQuery = 'rangemapid = ' + str(param_range_map_id)
+            table_layer = map.listTables('rangemap')[0]
+            table_layer.definitionQuery = 'rangemapid = ' + str(param_range_map_id)
+            layout = aprx.listLayouts('range map landscape topographic')[0]
+            map_frame = layout.listElements('mapframe_element')[0]
+            extent = map_frame.getLayerExtent(polygon_layer, False, True)
+            x_buffer = (extent.XMax - extent.XMin) / 20.0
+            y_buffer = (extent.YMax - extent.YMin) / 20.0
+            buffered_extent = arcpy.Extent(extent.XMin - x_buffer,
+                                           extent.YMin - y_buffer,
+                                           extent.XMax + x_buffer,
+                                           extent.YMax + y_buffer)
+            map_frame.camera.setExtent(buffered_extent)
+            if range_map_scope == 'National':
+                element_global_id += 'N'
+            layout.exportToJPEG(download_folder + '/EBAR' + element_global_id + '.jpg', 300,
+                                clip_to_elements=True)
         pdf_html = pdf_html.replace('[map_image]', download_folder + '/EBAR' + element_global_id + '.jpg')
 
         # generate pdf
@@ -520,6 +520,7 @@ class PublishRangeMapTool:
             range_map_ecoshape_table = map.listTables('EBARTemplateRangeMapEcoshape')[0]
             range_map_ecoshape_table.name = 'EBAR' + element_global_id + 'RangeMapEcoshape'
             aprx.save()
+            #del aprx
 
             # copy ArcGIS Pro template
             EBARUtils.displayMessage(messages, 'Copying ArcMap template')
@@ -538,7 +539,7 @@ class PublishRangeMapTool:
                     if file[-5:] != '.lock':
                         #zipf.write(os.path.join(root, file))
                         zipf.write('EBAR' + element_global_id + '/' + file)
-            shutil.rmtree(zip_folder)
+            #shutil.rmtree(zip_folder)
 
 
         # cleanup
