@@ -20,7 +20,7 @@ import EBARUtils
 
 
 class SyncSpeciesListBioticsTool:
-    """Synchronize the BIOTIOCS_NATIONAL_ELMENT and Species tables with Biotics"""
+    """Synchronize the BIOTICS_NATIONAL_ELEMENT and Species tables with Biotics"""
     def __init__(self):
         pass
 
