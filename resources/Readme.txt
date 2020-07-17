@@ -1,0 +1,87 @@
+NatureServe Canada
+Ecosystem-based Automated Range (EBAR) ZIP package for selected species
+
+This ZIP package should contain the following files:
+- EBARxxxxx.pdf (map and metadata for EBAR for selected species)
+- EBARMethods.pdf (background information on range map production, ecoshape sources and related topics)
+- Ecoshape.* (files comprising polygons shapefile of original ecoshapes for EBAR for selected species)
+- EcoshapeOverview.* (files comprising polygons shapefile of generalized ecoshapes for EBAR for selected species)
+- RangeMap.csv (table of species and range attributes for EBAR for selected species)
+- RangeMapEcoshape.csv (table of per-ecoshape attributes for EBAR for selected species)
+- Jurisdiction.csv (table of jurisdictions)
+- EXARxxxxx.aprx (ArcGIS Pro project file referencing the data files above, with appropriate joins)
+- EBARxxxxxEcoshape.lyrx (ArcGIS Pro layer file, with suggested symbology and appropriate joins, referencing the original ecoshapes)
+- EBARxxxxxEcoshapeOverview.lyrx (ArcGIS Pro layer file, with suggested symbology and appropriate joins, referencing the generalized ecoshapes)
+- EBARxxxxx.mxd (ArcMap project file referencing the data files above)
+- EBARxxxxxEcoshape.lyrx (ArcMap layer file, with suggested symbology and appropriate joins, referencing the original ecoshapes)
+- EBARxxxxxEcoshapeOverview.lyrx (ArcMap layer file, with suggested symbology and appropriate joins, referencing the generalized ecoshapes)
+[where xxxxx is the ELEMENT_GLOBAL_ID of the selected species]
+
+The included data files are related as follows:
+RangeMap <-1---M-> RangeMapEcoshape
+Ecoshape/EcoshapeOverview <-1---M-> RangeMapEcoshape
+Jurisdiction <-1---M-> Ecoshape/EcoshapeOverview
+
+RangeMap fields:
+objectid - ArcGIS unique identifier
+RangeMapID - EBAR unique identifier
+RangeVersion - EBAR version number
+RangeStage - EBAR stage within the version (e.g. Auto-generated, Expert reviewed)
+RangeDate - date generated
+RangeMapScope - geographic scope (e.g. N=National, A=North American, G=Global)
+RangeMetadata - numbers of input records by sourceand count of expert reviews
+RangeMapNotes - details on the species name(s)
+RangeMapComments - additional notes
+SynonymsUsed - a list of the synonyms, if any, for the primary species
+ELEMENT_NATIONAL_ID - NatureServe Biotics national unique identifier
+ELEMENT_GLOBAL_ID - NatureServe Biotics global unique identifier
+ELEMENT_CODE - NatureServe Biotics element identifier
+CATEGORY - 
+TAX_GROUP - 
+FAMILY_COM - 
+GENUS - 
+PHYLUM - 
+CA_NNAME_LEVEL - 
+NATIONAL_SCIENTIFIC_NAME - 
+NATIONAL_ENGL_NAME - 
+NATIONAL_FR_NAME - 
+COSEWIC_NAME - 
+ENDEMISM_TYPE - 
+GRANK - 
+NRANK_CA - 
+SRANKS_CA - 
+NRANK_US - 
+SRANKS_US - 
+NRANK_MX - 
+SRANKS_MX - 
+SARA_STATUS - 
+COSEWIC_STATUS - 
+ESA_STATUS - 
+
+RangeMapEcoshape fields:
+objectid - ArcGIS unique identifier
+RangeMapID - EBAR foreign key relating to the appropriate RangeMap record
+EcoshapeID - EBAR foreign key relating to the appropriate Ecoshape/EcoshapeOverview record
+Presence - the category of species presence in the Ecoshape (P=Present, X=Presence Expected, H=Historical, see metadata PDF for definitions)
+RangeMapEcoshapeNotes - numbers of input records by source
+
+Jurisdiction fields:
+objectid - ArcGIS unique identifier
+JurisID - EBAR unique identifier
+JurisAbbrev - two-letter code for the jurisdiction
+JurisName - full name for the jurisdiction
+
+Ecoshape/EcoshapeOverview fields:
+FID - ArcGIS unique identifier
+EcoshapeID - EBAR unique identifier
+JurisID - EBAR foreign key relating to the appropriate Jurisdiction record
+EcoName - name of the ecoshape
+ParentEco - English name of the parent ecoregion
+ParentEcoF - French name of the parent ecoregion
+Ecozone - English name of the ecozone 
+EcozoneFR - French name of the ecozone
+MosaicVer - version of the ecoshape mosaic
+TerrArea - terrestrial area in square metres derived from Commission for Ecological Cooperation "Major Lakes and Reservoirs of North America"
+TotalArea - total area in square metres
+
+© NatureServe Canada 2020 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)

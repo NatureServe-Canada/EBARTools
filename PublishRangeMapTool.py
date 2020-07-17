@@ -541,7 +541,6 @@ class PublishRangeMapTool:
                         zipf.write('EBAR' + element_global_id + '/' + file)
             #shutil.rmtree(zip_folder)
 
-
         # cleanup
         if param_jpg != 'true':
             pass
@@ -554,7 +553,7 @@ if __name__ == '__main__':
     prm = PublishRangeMapTool()
     # hard code parameters for debugging
     param_range_map_id = arcpy.Parameter()
-    param_range_map_id.value = '648'
+    param_range_map_id.value = '613'
     param_pdf = arcpy.Parameter()
     param_pdf.value = 'true'
     param_jpg = arcpy.Parameter()
