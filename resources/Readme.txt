@@ -83,3 +83,6 @@ EcozoneFR - French name of the ecozone
 MosaicVer - version of the ecoshape mosaic
 TerrArea - terrestrial area in square metres derived from Commission for Ecological Cooperation "Major Lakes and Reservoirs of North America"
 TotalArea - total area in square metres
+
+Multiple species citation: NatureServe Canada. 2020. Ecosystem-based Automated Range (EBAR). Ottawa, Canada. Retrieved on [insert date] from [insert url]
+Single species citation: NatureServe Canada. 2020. [insert species name] Ecosystem-based Automated Range (EBAR). Ottawa, Canada. Retrieved on [insert date] from [insert url]

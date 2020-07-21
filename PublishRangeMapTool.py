@@ -312,7 +312,7 @@ class PublishRangeMapTool:
                 time.sleep(1)
             os.mkdir(zip_folder)
             shutil.copyfile(resources_folder + '/Readme.txt', zip_folder + '/Readme.txt')
-            shutil.copyfile(resources_folder + '/EBAR_Methods_v2.pdf', zip_folder + '/EBAR_Methods_v2.pdf')
+            shutil.copyfile(resources_folder + '/EBARMethods.pdf', zip_folder + '/EBARMethods.pdf')
             shutil.copyfile(resources_folder + '/Jurisdiction.csv', zip_folder + '/Jurisdiction.csv')
             shutil.copyfile(download_folder + '/EBAR' + element_global_id + '.pdf',
                             zip_folder + '/EBAR' + element_global_id + '.pdf')
@@ -465,8 +465,7 @@ class PublishRangeMapTool:
                                                                 'TotalArea', 'DOUBLE'))
             arcpy.FeatureClassToFeatureClass_conversion('ecoshape_layer', zip_folder, 'Ecoshape.shp',
                                                         field_mapping=field_mappings)
-
-            # export range map ecoshapes
+            # export range map overview ecoshapes
             EBARUtils.displayMessage(messages, 'Exporting EcoshapeOverview polygons to shapefile')
             arcpy.MakeFeatureLayer_management(ebar_feature_service + '/22', 'ecoshape_overview_layer')
             arcpy.AddJoin_management('ecoshape_overview_layer', 'EcoshapeID', 'range_map_ecoshape_view', 'EcoshapeID')
@@ -504,17 +503,72 @@ class PublishRangeMapTool:
             arcpy.FeatureClassToFeatureClass_conversion('ecoshape_overview_layer', zip_folder, 'EcoshapeOverview.shp',
                                                         field_mapping=field_mappings)
 
+            # embed metadata
+            EBARUtils.displayMessage(messages, 'Embedding metadata')
+            # common
+            new_md = arcpy.metadata.Metadata()
+            new_md.tags = 'Species Range, NatureServe Canada, Ecosystem-based Automated Range'
+            new_md.description = 'See EBAR' + element_global_id + '.pdf for map and additional metadata, and ' + \
+                'EBARMethods.pdf for additional details.'
+            new_md.credits = '© NatureServe Canada ' + str(datetime.datetime.now().year)
+            new_md.accessConstraints = 'Publicly shareable under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)'
+            # ecoshape
+            ecoshape_md = arcpy.metadata.Metadata(zip_folder + '/Ecoshape.shp')
+            new_md.title = 'EBAR Ecoshape.shp'
+            new_md.summary = 'Polygons shapefile of original ecoshapes for EBAR for selected species'
+            ecoshape_md.copy(new_md)
+            ecoshape_md.save()
+            # ecoshape overview
+            ecoshape_overview_md = arcpy.metadata.Metadata(zip_folder + '/EcoshapeOverview.shp')
+            new_md.title = 'EBAR EcoshapeOverview.shp'
+            new_md.summary = 'Polygons shapefile of generalized ecoshapes for EBAR for selected species'
+            ecoshape_overview_md.copy(new_md)
+            ecoshape_overview_md.save()
+            # range map
+            range_map_md = arcpy.metadata.Metadata(zip_folder + '/RangeMap.csv')
+            new_md.title = 'EBAR RangeMap.csv'
+            new_md.summary = 'Table of species and range attributes for EBAR for selected species'
+            range_map_md.copy(new_md)
+            range_map_md.save()
+            # range map ecoshape
+            range_map_ecoshape_md = arcpy.metadata.Metadata(zip_folder + '/RangeMapEcoshape.csv')
+            new_md.title = 'EBAR RangeMapEcoshape.csv'
+            new_md.summary = 'Table of per-ecoshape attributes for EBAR for selected species'
+            range_map_ecoshape_md.copy(new_md)
+            range_map_ecoshape_md.save()
+            # jurisdiction
+            jurisdiction_md = arcpy.metadata.Metadata(zip_folder + '/Jurisdiction.csv')
+            new_md.title = 'EBAR Jurisdiction.csv'
+            new_md.summary = 'Table of Jurisdictions'
+            jurisdiction_md.copy(new_md)
+            jurisdiction_md.save()
+
             # update ArcGIS Pro template
             EBARUtils.displayMessage(messages, 'Updating ArcGIS Pro template')
             shutil.copyfile(resources_folder + '/EBARTemplate.aprx',
                             zip_folder + '/EBAR' + element_global_id + '.aprx')
             aprx = arcpy.mp.ArcGISProject(zip_folder + '/EBAR' + element_global_id + '.aprx')
+            aprx.homeFolder = zip_folder
+            #arcpy.CreateFileGDB_management(zip_folder + '/EBAR' + element_global_id + '.gdb')
+            #aprx.defaultGeodatabase = zip_folder + '/EBAR' + element_global_id + '.gdb'
+            #arcpy.Create
+            #aprx.defaultToolbox = zip_folder + '/EBAR' + element_global_id + '.tbx'
             map = aprx.listMaps('EBARTemplate')[0]
             map.name = 'EBAR' + element_global_id
             ecoshape_overview_layer =  map.listLayers('EBARTemplateEcoshapeOverview')[0]
+            ecoshape_overview_layer_md = ecoshape_overview_layer.metadata
+            new_md.title = 'EBAR EcoshapeOverview.shp'
+            new_md.summary = 'Polygons shapefile of generalized ecoshapes for EBAR for selected species'
+            ecoshape_overview_layer_md.copy(new_md)
+            ecoshape_overview_layer_md.save()
             ecoshape_overview_layer.name = 'EBAR' + element_global_id + 'EcoshapeOverview'
             ecoshape_overview_layer.saveACopy(zip_folder + '/EBAR' + element_global_id + 'EcoshapeOverview.lyrx')
             ecoshape_layer =  map.listLayers('EBARTemplateEcoshape')[0]
+            ecoshape_layer_md = ecoshape_overview_layer.metadata
+            new_md.title = 'EBAR Ecoshape.shp'
+            new_md.summary = 'Polygons shapefile of original ecoshapes for EBAR for selected species'
+            ecoshape_layer_md.copy(new_md)
+            ecoshape_layer_md.save()
             ecoshape_layer.name = 'EBAR' + element_global_id + 'Ecoshape'
             ecoshape_layer.saveACopy(zip_folder + '/EBAR' + element_global_id + 'Ecoshape.lyrx')
             range_map_table = map.listTables('EBARTemplateRangeMap')[0]
@@ -522,7 +576,6 @@ class PublishRangeMapTool:
             range_map_ecoshape_table = map.listTables('EBARTemplateRangeMapEcoshape')[0]
             range_map_ecoshape_table.name = 'EBAR' + element_global_id + 'RangeMapEcoshape'
             aprx.save()
-            #del aprx
 
             # copy ArcGIS Pro template
             EBARUtils.displayMessage(messages, 'Copying ArcMap template')
@@ -555,7 +608,9 @@ if __name__ == '__main__':
     prm = PublishRangeMapTool()
     # hard code parameters for debugging
     param_range_map_id = arcpy.Parameter()
-    param_range_map_id.value = '613'
+    #param_range_map_id.value = '613'
+    param_range_map_id.value = '616'
+    #param_range_map_id.value = '135'
     param_pdf = arcpy.Parameter()
     param_pdf.value = 'true'
     param_jpg = arcpy.Parameter()
