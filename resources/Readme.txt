@@ -1,5 +1,5 @@
-NatureServe Canada
 Ecosystem-based Automated Range (EBAR) ZIP package for selected species
+© NatureServe Canada 2020 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 This ZIP package should contain the following files:
 - EBARxxxxx.pdf (map and metadata for EBAR for selected species)
@@ -36,27 +36,27 @@ SynonymsUsed - a list of the synonyms, if any, for the primary species
 ELEMENT_NATIONAL_ID - NatureServe Biotics national unique identifier
 ELEMENT_GLOBAL_ID - NatureServe Biotics global unique identifier
 ELEMENT_CODE - NatureServe Biotics element identifier
-CATEGORY - 
-TAX_GROUP - 
-FAMILY_COM - 
-GENUS - 
-PHYLUM - 
-CA_NNAME_LEVEL - 
-NATIONAL_SCIENTIFIC_NAME - 
-NATIONAL_ENGL_NAME - 
-NATIONAL_FR_NAME - 
-COSEWIC_NAME - 
-ENDEMISM_TYPE - 
-GRANK - 
-NRANK_CA - 
-SRANKS_CA - 
-NRANK_US - 
-SRANKS_US - 
-NRANK_MX - 
-SRANKS_MX - 
-SARA_STATUS - 
-COSEWIC_STATUS - 
-ESA_STATUS - 
+CATEGORY - NatureServe Biotics species category
+TAX_GROUP - NatureServe Biotics species taxa group
+FAMILY_COM - NatureServe Biotics species family common name
+GENUS - NatureServe Biotics species genus
+PHYLUM - NatureServe Biotics phylum
+CA_NNAME_LEVEL - NatureServe Biotics species Canadian name level
+NATIONAL_SCIENTIFIC_NAME - NatureServe Biotics Canadian species scientific name
+NATIONAL_ENGL_NAME - NatureServe Biotics Canadian species English name
+NATIONAL_FR_NAME - NatureServe Biotics Canadian species French name
+COSEWIC_NAME - NatureServe Biotics COSEWIC species name
+ENDEMISM_TYPE - NatureServe Biotics species endemism type
+GRANK - NatureServe Biotics species global rank
+NRANK_CA - NatureServe Biotics species Canadian national rank
+SRANKS_CA - NatureServe Biotics species Canadian subnational ranks
+NRANK_US - NatureServe Biotics species United States national rank
+SRANKS_US - NatureServe Biotics species United States subnational ranks
+NRANK_MX - NatureServe Biotics species Mexico national rank
+SRANKS_MX - NatureServe Biotics species Mexico subnational ranks
+SARA_STATUS - NatureServe Biotics species Canadian Species at Risk Act status
+COSEWIC_STATUS - NatureServe Biotics species Committee on the Status of Endangered Wildlife in Canada status
+ESA_STATUS - NatureServe Biotics species US Endangered Species Act status
 
 RangeMapEcoshape fields:
 objectid - ArcGIS unique identifier
@@ -83,5 +83,3 @@ EcozoneFR - French name of the ecozone
 MosaicVer - version of the ecoshape mosaic
 TerrArea - terrestrial area in square metres derived from Commission for Ecological Cooperation "Major Lakes and Reservoirs of North America"
 TotalArea - total area in square metres
-
-© NatureServe Canada 2020 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)

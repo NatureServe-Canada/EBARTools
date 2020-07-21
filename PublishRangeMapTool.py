@@ -303,7 +303,7 @@ class PublishRangeMapTool:
 
         # generate zip
         if param_spatial == 'true':
-            # make folder, copy in static resources and pdf
+            # make folder, copy in static resources and EBAR pdf
             EBARUtils.displayMessage(messages, 'Creating ZIP folder and copying files')
             zip_folder = temp_folder + '/EBAR' + element_global_id
             if os.path.exists(zip_folder):
@@ -311,6 +311,8 @@ class PublishRangeMapTool:
                 # pause before trying to make the dir
                 time.sleep(1)
             os.mkdir(zip_folder)
+            shutil.copyfile(resources_folder + '/Readme.txt', zip_folder + '/Readme.txt')
+            shutil.copyfile(resources_folder + '/EBAR_Methods_v2.pdf', zip_folder + '/EBAR_Methods_v2.pdf')
             shutil.copyfile(resources_folder + '/Jurisdiction.csv', zip_folder + '/Jurisdiction.csv')
             shutil.copyfile(download_folder + '/EBAR' + element_global_id + '.pdf',
                             zip_folder + '/EBAR' + element_global_id + '.pdf')
