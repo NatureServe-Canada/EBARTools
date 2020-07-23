@@ -127,8 +127,8 @@ class PublishRangeMapTool:
                     element_global_id = str(row['ELEMENT_GLOBAL_ID'])
                     pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.ELEMENT_GLOBAL_ID]',
                                                 element_global_id)
-                    pdf_html = pdf_html.replace('[NSE2.0_URL]',
-                                                'https://explorer.natureserve.org/Taxon/ELEMENT_GLOBAL.2.' + element_global_id)
+                    nse_url = 'https://explorer.natureserve.org/Taxon/ELEMENT_GLOBAL.2.' + element_global_id
+                    pdf_html = pdf_html.replace('[NSE2.0_URL]', nse_url)
                     element_code = row['ELEMENT_CODE']
                     pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.ELEMENT_CODE]', element_code)
                     #endemism = 'None'
@@ -511,9 +511,10 @@ class PublishRangeMapTool:
             new_md = arcpy.metadata.Metadata()
             new_md.tags = 'Species Range, NatureServe Canada, Ecosystem-based Automated Range'
             new_md.description = 'See EBAR' + element_global_id + '.pdf for map and additional metadata, and ' + \
-                'EBARMethods.pdf for additional details.'
+                'EBARMethods.pdf for additional details. <a href="' + nse_url + '">Go to ' + \
+                'NatureServer Explorer</a> for information about the species.'
             new_md.credits = '© NatureServe Canada ' + str(datetime.datetime.now().year)
-            new_md.accessConstraints = 'Publicly shareable under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)'
+            new_md.accessConstraints = 'Publicly shareable under CC BY 4.0 (<a href="https://creativecommons.org/licenses/by/4.0/">https://creativecommons.org/licenses/by/4.0/</a>)'
             # ecoshape
             ecoshape_md = arcpy.metadata.Metadata(zip_folder + '/Ecoshape.shp')
             new_md.title = 'EBAR Ecoshape.shp'
@@ -610,8 +611,8 @@ if __name__ == '__main__':
     prm = PublishRangeMapTool()
     # hard code parameters for debugging
     param_range_map_id = arcpy.Parameter()
-    #param_range_map_id.value = '613'
-    param_range_map_id.value = '616'
+    param_range_map_id.value = '613'
+    #param_range_map_id.value = '616'
     #param_range_map_id.value = '135'
     param_pdf = arcpy.Parameter()
     param_pdf.value = 'true'
