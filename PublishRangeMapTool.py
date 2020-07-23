@@ -42,7 +42,7 @@ class PublishRangeMapTool:
         resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
         arcgis_pro_project = resources_folder + '/EBARMapLayouts.aprx'
         pdf_template_file = resources_folder + '/pdf_template.html'
-        reviewers_by_taxa_file = resources_folder + '/ReviewersByTaxa.txt'
+        reviewers_by_taxa_file = 'C:/Users/rgree/OneDrive/EBAR/EBAR Maps/ReviewersByTaxa.txt'
         temp_folder = 'C:/GIS/EBAR/pub'
         download_folder = 'C:/GIS/EBAR/pub/download'
         ebar_feature_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/EBAR/FeatureServer'
