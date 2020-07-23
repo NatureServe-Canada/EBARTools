@@ -552,10 +552,10 @@ class PublishRangeMapTool:
                             zip_folder + '/EBAR' + element_global_id + '.aprx')
             aprx = arcpy.mp.ArcGISProject(zip_folder + '/EBAR' + element_global_id + '.aprx')
             aprx.homeFolder = zip_folder
-            #arcpy.CreateFileGDB_management(zip_folder + '/EBAR' + element_global_id + '.gdb')
-            #aprx.defaultGeodatabase = zip_folder + '/EBAR' + element_global_id + '.gdb'
-            #arcpy.Create
-            #aprx.defaultToolbox = zip_folder + '/EBAR' + element_global_id + '.tbx'
+            #arcpy.CreateFileGDB_management(zip_folder, 'default.gdb')
+            #aprx.defaultGeodatabase = zip_folder + '/default.gdb'
+            #shutil.copyfile(resources_folder + '/default.tbx', zip_folder + '/default.tbx')
+            #aprx.defaultToolbox = zip_folder + '/default.tbx'
             map = aprx.listMaps('EBARTemplate')[0]
             map.name = 'EBAR' + element_global_id
             ecoshape_overview_layer =  map.listLayers('EBARTemplateEcoshapeOverview')[0]
