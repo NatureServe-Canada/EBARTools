@@ -127,6 +127,8 @@ class PublishRangeMapTool:
                     element_global_id = str(row['ELEMENT_GLOBAL_ID'])
                     pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.ELEMENT_GLOBAL_ID]',
                                                 element_global_id)
+                    pdf_html = pdf_html.replace('[NSE2.0_URL]',
+                                                'https://explorer.natureserve.org/Taxon/ELEMENT_GLOBAL.2.' + element_global_id)
                     element_code = row['ELEMENT_CODE']
                     pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.ELEMENT_CODE]', element_code)
                     #endemism = 'None'
