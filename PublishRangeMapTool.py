@@ -260,12 +260,12 @@ class PublishRangeMapTool:
         if param_pdf == 'true' or param_jpg == 'true':
             EBARUtils.displayMessage(messages, 'Generating JPG map')
             aprx = arcpy.mp.ArcGISProject(arcgis_pro_project)
-            map = aprx.listMaps('range map landscape topographic')[0]
+            map = aprx.listMaps('range map landscape terrain')[0]
             polygon_layer = map.listLayers('ecoshaperangemap')[0]
             polygon_layer.definitionQuery = 'rangemapid = ' + str(param_range_map_id)
             table_layer = map.listTables('rangemap')[0]
             table_layer.definitionQuery = 'rangemapid = ' + str(param_range_map_id)
-            layout = aprx.listLayouts('range map landscape topographic')[0]
+            layout = aprx.listLayouts('range map landscape terrain')[0]
             map_frame = layout.listElements('mapframe_element')[0]
             extent = map_frame.getLayerExtent(polygon_layer, False, True)
             x_buffer = (extent.XMax - extent.XMin) / 20.0
@@ -611,8 +611,8 @@ if __name__ == '__main__':
     prm = PublishRangeMapTool()
     # hard code parameters for debugging
     param_range_map_id = arcpy.Parameter()
-    param_range_map_id.value = '613'
-    #param_range_map_id.value = '616'
+    #param_range_map_id.value = '613'
+    param_range_map_id.value = '616'
     #param_range_map_id.value = '135'
     param_pdf = arcpy.Parameter()
     param_pdf.value = 'true'
