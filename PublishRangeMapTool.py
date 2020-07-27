@@ -612,8 +612,8 @@ if __name__ == '__main__':
     # hard code parameters for debugging
     param_range_map_id = arcpy.Parameter()
     #param_range_map_id.value = '613'
-    param_range_map_id.value = '616'
-    #param_range_map_id.value = '135'
+    #param_range_map_id.value = '616'
+    param_range_map_id.value = '135'
     param_pdf = arcpy.Parameter()
     param_pdf.value = 'true'
     param_jpg = arcpy.Parameter()
