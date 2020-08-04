@@ -184,11 +184,18 @@ class PublishRangeMapTool:
             # get attributes from NSE Taxon API
             EBARUtils.displayMessage(messages, 'Getting attributes from NatureServe Explorer Taxon API')
             result = requests.get(nse_taxon_search_url + element_global_id)
-            results = json.loads(result.content)
+            try:
+                results = json.loads(result.content)
+            except:
+                EBARUtils.displayMessage(messages, 'WARNING: ELEMENT_GLOBAL_ID not found - ' + element_global_id)
+                return
             g_rank = results['grank']
             pdf_html = pdf_html.replace('[NSE.grank]', g_rank)
-            g_rank_review_date = EBARUtils.extractDate(results['grankReviewDate']).strftime('%B %d, %Y')
-            pdf_html = pdf_html.replace('[NSE.grankReviewDate]', g_rank_review_date)
+            reviewed = ''
+            if results['grankReviewDate']:
+                reviewed = ' (reviewed ' + EBARUtils.extractDate(results['grankReviewDate']).strftime('%B %d, %Y') + \
+                    ')'
+            pdf_html = pdf_html.replace('[NSE.grankReviewDate]', reviewed)
             ca_rank = 'None'
             us_rank = 'None'
             mx_rank = 'None'
@@ -321,71 +328,71 @@ class PublishRangeMapTool:
 
             # export range map, with biotics/species additions
             EBARUtils.displayMessage(messages, 'Exporting RangeMap to CSV')
-            arcpy.MakeTableView_management(ebar_feature_service + '/11', 'range_map_view',
+            arcpy.MakeTableView_management(ebar_feature_service + '/11', 'range_map_view' + param_range_map_id,
                                            'RangeMapID = ' + param_range_map_id)
-            arcpy.AddJoin_management('range_map_view', 'SpeciesID', ebar_feature_service + '/4', 'SpeciesID',
+            arcpy.AddJoin_management('range_map_view' + param_range_map_id, 'SpeciesID', ebar_feature_service + '/4', 'SpeciesID',
                                      'KEEP_COMMON')
-            arcpy.AddJoin_management('range_map_view', 'SpeciesID', ebar_feature_service + '/19', 'SpeciesID',
+            arcpy.AddJoin_management('range_map_view' + param_range_map_id, 'SpeciesID', ebar_feature_service + '/19', 'SpeciesID',
                                      'KEEP_COMMON')
             field_mappings = arcpy.FieldMappings()
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view', 'L11RangeMap.RangeMapID', 'RangeMapID',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view' + param_range_map_id, 'L11RangeMap.RangeMapID', 'RangeMapID',
                                                                 'LONG'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view', 'L11RangeMap.RangeVersion',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view' + param_range_map_id, 'L11RangeMap.RangeVersion',
                                                                 'RangeVersion', 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view', 'L11RangeMap.RangeStage', 'RangeStage',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view' + param_range_map_id, 'L11RangeMap.RangeStage', 'RangeStage',
                                                                 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view', 'L11RangeMap.RangeDate', 'RangeDate',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view' + param_range_map_id, 'L11RangeMap.RangeDate', 'RangeDate',
                                                                 'DATE'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view', 'L11RangeMap.RangeMapScope',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view' + param_range_map_id, 'L11RangeMap.RangeMapScope',
                                                                 'RangeMapScope', 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view', 'L11RangeMap.RangeMetadata',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view' + param_range_map_id, 'L11RangeMap.RangeMetadata',
                                                                 'RangeMetadata', 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view', 'L11RangeMap.RangeMapNotes',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view' + param_range_map_id, 'L11RangeMap.RangeMapNotes',
                                                                 'RangeMapNotes', 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view', 'L11RangeMap.RangeMapComments',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view' + param_range_map_id, 'L11RangeMap.RangeMapComments',
                                                                 'RangeMapComments', 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view', 'L11RangeMap.SynonymsUsed',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view' + param_range_map_id, 'L11RangeMap.SynonymsUsed',
                                                                 'SynonymsUsed', 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view' + param_range_map_id,
                                                                 'L4BIOTICS_ELEMENT_NATIONAL.ELEMENT_NATIONAL_ID',
                                                                 'ELEMENT_NATIONAL_ID', 'LONG'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view' + param_range_map_id,
                                                                 'L4BIOTICS_ELEMENT_NATIONAL.ELEMENT_GLOBAL_ID',
                                                                 'ELEMENT_GLOBAL_ID', 'LONG'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view' + param_range_map_id,
                                                                 'L4BIOTICS_ELEMENT_NATIONAL.ELEMENT_CODE',
                                                                 'ELEMENT_CODE', 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view' + param_range_map_id,
                                                                 'L4BIOTICS_ELEMENT_NATIONAL.CATEGORY', 'CATEGORY',
                                                                 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view' + param_range_map_id,
                                                                 'L4BIOTICS_ELEMENT_NATIONAL.TAX_GROUP', 'TAX_GROUP',
                                                                 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view' + param_range_map_id,
                                                                 'L4BIOTICS_ELEMENT_NATIONAL.FAMILY_COM', 'FAMILY_COM',
                                                                 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view' + param_range_map_id,
                                                                 'L4BIOTICS_ELEMENT_NATIONAL.GENUS', 'GENUS', 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view' + param_range_map_id,
                                                                 'L4BIOTICS_ELEMENT_NATIONAL.PHYLUM', 'PHYLUM', 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view' + param_range_map_id,
                                                                 'L4BIOTICS_ELEMENT_NATIONAL.CA_NNAME_LEVEL',
                                                                 'CA_NNAME_LEVEL', 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view' + param_range_map_id,
                                                                 'L4BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME',
                                                                 'NATIONAL_SCIENTIFIC_NAME', 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view' + param_range_map_id,
                                                                 'L4BIOTICS_ELEMENT_NATIONAL.NATIONAL_ENGL_NAME',
                                                                 'NATIONAL_ENGL_NAME', 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view' + param_range_map_id,
                                                                 'L4BIOTICS_ELEMENT_NATIONAL.NATIONAL_FR_NAME',
                                                                 'NATIONAL_FR_NAME', 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view' + param_range_map_id,
                                                                 'L4BIOTICS_ELEMENT_NATIONAL.COSEWIC_NAME',
                                                                 'COSEWIC_NAME', 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view', 'L19Species.ENDEMISM_TYPE',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_view' + param_range_map_id, 'L19Species.ENDEMISM_TYPE',
                                                                 'ENDEMISM_TYPE', 'TEXT'))
-            arcpy.TableToTable_conversion('range_map_view', zip_folder, 'temp.csv', field_mapping=field_mappings)
+            arcpy.TableToTable_conversion('range_map_view' + param_range_map_id, zip_folder, 'temp.csv', field_mapping=field_mappings)
             # add NSE Taxon API fields
             with open(zip_folder + '/temp.csv','r') as csv_input:
                 with open(zip_folder + '/RangeMap.csv', 'w') as csv_output:
@@ -423,18 +430,18 @@ class PublishRangeMapTool:
 
             # export range map ecoshapes
             EBARUtils.displayMessage(messages, 'Exporting RangeMapEcoshape records to CSV')
-            arcpy.MakeTableView_management(ebar_feature_service + '/12', 'range_map_ecoshape_view',
+            arcpy.MakeTableView_management(ebar_feature_service + '/12', 'range_map_ecoshape_view' + param_range_map_id,
                                            'RangeMapID = ' + param_range_map_id)
             field_mappings = arcpy.FieldMappings()
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_ecoshape_view', 'RangeMapID', 'RangeMapID',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_ecoshape_view' + param_range_map_id, 'RangeMapID', 'RangeMapID',
                                                                 'LONG'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_ecoshape_view', 'EcoshapeID', 'EcoshapeID',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_ecoshape_view' + param_range_map_id, 'EcoshapeID', 'EcoshapeID',
                                                                 'LONG'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_ecoshape_view', 'Presence', 'Presence',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_ecoshape_view' + param_range_map_id, 'Presence', 'Presence',
                                                                 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_ecoshape_view', 'RangeMapEcoshapeNotes',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_ecoshape_view' + param_range_map_id, 'RangeMapEcoshapeNotes',
                                                                 'RangeMapEcoshapeNotes', 'TEXT'))
-            arcpy.TableToTable_conversion('range_map_ecoshape_view', zip_folder, 'RangeMapEcoshape.csv',
+            arcpy.TableToTable_conversion('range_map_ecoshape_view' + param_range_map_id, zip_folder, 'RangeMapEcoshape.csv',
                                           field_mapping=field_mappings)
             arcpy.Delete_management(zip_folder + '/RangeMapEcoshape.csv.xml')
             arcpy.Delete_management(zip_folder + '/schema.ini')
@@ -442,67 +449,67 @@ class PublishRangeMapTool:
 
             # export range map ecoshapes
             EBARUtils.displayMessage(messages, 'Exporting Ecoshape polygons to shapefile')
-            arcpy.MakeFeatureLayer_management(ebar_feature_service + '/3', 'ecoshape_layer')
-            arcpy.AddJoin_management('ecoshape_layer', 'EcoshapeID', 'range_map_ecoshape_view', 'EcoshapeID')
+            arcpy.MakeFeatureLayer_management(ebar_feature_service + '/3', 'ecoshape_layer' + param_range_map_id)
+            arcpy.AddJoin_management('ecoshape_layer' + param_range_map_id, 'EcoshapeID', 'range_map_ecoshape_view' + param_range_map_id, 'EcoshapeID')
             field_mappings = arcpy.FieldMappings()
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_layer', 'L3Ecoshape.EcoshapeID',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_layer' + param_range_map_id, 'L3Ecoshape.EcoshapeID',
                                                                 'EcoshapeID', 'LONG'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_layer', 'L3Ecoshape.JurisdictionID',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_layer' + param_range_map_id, 'L3Ecoshape.JurisdictionID',
                                                                 'JurisID', 'LONG'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_layer', 'L3Ecoshape.EcoshapeName',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_layer' + param_range_map_id, 'L3Ecoshape.EcoshapeName',
                                                                 'EcoName', 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_layer', 'L3Ecoshape.ParentEcoregion',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_layer' + param_range_map_id, 'L3Ecoshape.ParentEcoregion',
                                                                 'ParentEco', 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_layer', 'L3Ecoshape.ParentEcoregionFR',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_layer' + param_range_map_id, 'L3Ecoshape.ParentEcoregionFR',
                                                                 'ParentEcoF', 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_layer', 'L3Ecoshape.Ecozone',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_layer' + param_range_map_id, 'L3Ecoshape.Ecozone',
                                                                 'Ecozone', 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_layer', 'L3Ecoshape.EcozoneFR',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_layer' + param_range_map_id, 'L3Ecoshape.EcozoneFR',
                                                                 'EcozoneFR', 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_layer', 'L3Ecoshape.MosaicVersion',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_layer' + param_range_map_id, 'L3Ecoshape.MosaicVersion',
                                                                 'MosaicVer', 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_layer', 'L3Ecoshape.TerrestrialArea',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_layer' + param_range_map_id, 'L3Ecoshape.TerrestrialArea',
                                                                 'TerrArea', 'DOUBLE'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_layer', 'L3Ecoshape.TotalArea',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_layer' + param_range_map_id, 'L3Ecoshape.TotalArea',
                                                                 'TotalArea', 'DOUBLE'))
-            arcpy.FeatureClassToFeatureClass_conversion('ecoshape_layer', zip_folder, 'Ecoshape.shp',
+            arcpy.FeatureClassToFeatureClass_conversion('ecoshape_layer' + param_range_map_id, zip_folder, 'Ecoshape.shp',
                                                         field_mapping=field_mappings)
             # export range map overview ecoshapes
             EBARUtils.displayMessage(messages, 'Exporting EcoshapeOverview polygons to shapefile')
-            arcpy.MakeFeatureLayer_management(ebar_feature_service + '/22', 'ecoshape_overview_layer')
-            arcpy.AddJoin_management('ecoshape_overview_layer', 'EcoshapeID', 'range_map_ecoshape_view', 'EcoshapeID')
+            arcpy.MakeFeatureLayer_management(ebar_feature_service + '/22', 'ecoshape_overview_layer' + param_range_map_id)
+            arcpy.AddJoin_management('ecoshape_overview_layer' + param_range_map_id, 'EcoshapeID', 'range_map_ecoshape_view' + param_range_map_id, 'EcoshapeID')
             field_mappings = arcpy.FieldMappings()
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_overview_layer',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_overview_layer' + param_range_map_id,
                                                                 'L22EcoshapeOverview.EcoshapeID',
                                                                 'EcoshapeID', 'LONG'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_overview_layer',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_overview_layer' + param_range_map_id,
                                                                 'L22EcoshapeOverview.JurisdictionID',
                                                                 'JurisID', 'LONG'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_overview_layer',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_overview_layer' + param_range_map_id,
                                                                 'L22EcoshapeOverview.EcoshapeName',
                                                                 'EcoName', 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_overview_layer',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_overview_layer' + param_range_map_id,
                                                                 'L22EcoshapeOverview.ParentEcoregion',
                                                                 'ParentEco', 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_overview_layer',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_overview_layer' + param_range_map_id,
                                                                 'L22EcoshapeOverview.ParentEcoregionFR',
                                                                 'ParentEcoF', 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_overview_layer',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_overview_layer' + param_range_map_id,
                                                                 'L22EcoshapeOverview.Ecozone',
                                                                 'Ecozone', 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_overview_layer',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_overview_layer' + param_range_map_id,
                                                                 'L22EcoshapeOverview.EcozoneFR',
                                                                 'EcozoneFR', 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_overview_layer',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_overview_layer' + param_range_map_id,
                                                                 'L22EcoshapeOverview.MosaicVersion',
                                                                 'MosaicVer', 'TEXT'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_overview_layer',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_overview_layer' + param_range_map_id,
                                                                 'L22EcoshapeOverview.TerrestrialArea',
                                                                 'TerrArea', 'DOUBLE'))
-            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_overview_layer',
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('ecoshape_overview_layer' + param_range_map_id,
                                                                 'L22EcoshapeOverview.TotalArea',
                                                                 'TotalArea', 'DOUBLE'))
-            arcpy.FeatureClassToFeatureClass_conversion('ecoshape_overview_layer', zip_folder, 'EcoshapeOverview.shp',
+            arcpy.FeatureClassToFeatureClass_conversion('ecoshape_overview_layer' + param_range_map_id, zip_folder, 'EcoshapeOverview.shp',
                                                         field_mapping=field_mappings)
 
             # embed metadata
@@ -609,16 +616,18 @@ class PublishRangeMapTool:
 # controlling process
 if __name__ == '__main__':
     prm = PublishRangeMapTool()
-    # hard code parameters for debugging
-    param_range_map_id = arcpy.Parameter()
-    #param_range_map_id.value = '613'
-    #param_range_map_id.value = '616'
-    param_range_map_id.value = '135'
-    param_pdf = arcpy.Parameter()
-    param_pdf.value = 'true'
-    param_jpg = arcpy.Parameter()
-    param_jpg.value = 'true'
-    param_spatial = arcpy.Parameter()
-    param_spatial.value = 'true'
-    parameters = [param_range_map_id, param_pdf, param_jpg, param_spatial]
-    prm.RunPublishRangeMapTool(parameters, None)
+    # 617, 618, 619, 620, 621, 45, 51, 52, 50, 56, 53, 237, 234, 680, 447, 448, 449
+    # 622, 623, 624, 625, 626, 627, 628, 629, 630, 631, 632, 608, 633, 634, 635, 636, 638, 637, 639, 640, 643, 644, 645, 646, 647, 648
+    batch_ids = [124]
+    for id in batch_ids:
+        # hard code parameters for debugging
+        param_range_map_id = arcpy.Parameter()
+        param_range_map_id.value = str(id)
+        param_pdf = arcpy.Parameter()
+        param_pdf.value = 'true'
+        param_jpg = arcpy.Parameter()
+        param_jpg.value = 'true'
+        param_spatial = arcpy.Parameter()
+        param_spatial.value = 'true'
+        parameters = [param_range_map_id, param_pdf, param_jpg, param_spatial]
+        prm.RunPublishRangeMapTool(parameters, None)
