@@ -85,7 +85,7 @@ class PublishRangeMapTool:
             with arcpy.da.SearchCursor(ebar_feature_service + '/11',
                                        ['SpeciesID', 'RangeVersion', 'RangeStage', 'RangeDate', 'RangeMapScope',
                                         'RangeMapNotes', 'RangeMetadata', 'RangeMapComments'],
-                                        'RangeMapID = ' + str(param_range_map_id)) as cursor:
+                                        'RangeMapID = ' + param_range_map_id) as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     species_id = row['SpeciesID']
                     pdf_html = pdf_html.replace('[RangeMap.RangeDate]', row['RangeDate'].strftime('%B %d, %Y'))
@@ -152,7 +152,7 @@ class PublishRangeMapTool:
             EBARUtils.displayMessage(messages, 'Getting InputReferences from database')
             input_references = ''
             with arcpy.da.SearchCursor(ebar_summary_service + '/7', ['DatasetSourceName', 'DatasetSourceCitation'],
-                                       'RangeMapID = ' + str(param_range_map_id)) as cursor:
+                                       'RangeMapID = ' + param_range_map_id) as cursor:
                 row = None
                 for row in EBARUtils.searchCursor(cursor):
                     if len (input_references) > 0:
@@ -183,84 +183,116 @@ class PublishRangeMapTool:
 
             # get attributes from NSE Taxon API
             EBARUtils.displayMessage(messages, 'Getting attributes from NatureServe Explorer Taxon API')
-            result = requests.get(nse_taxon_search_url + element_global_id)
+            results = None
             try:
+                result = requests.get(nse_taxon_search_url + element_global_id)
                 results = json.loads(result.content)
             except:
-                EBARUtils.displayMessage(messages, 'WARNING: ELEMENT_GLOBAL_ID not found - ' + element_global_id)
-                return
-            g_rank = results['grank']
-            pdf_html = pdf_html.replace('[NSE.grank]', g_rank)
-            reviewed = ''
-            if results['grankReviewDate']:
-                reviewed = ' (reviewed ' + EBARUtils.extractDate(results['grankReviewDate']).strftime('%B %d, %Y') + \
-                    ')'
-            pdf_html = pdf_html.replace('[NSE.grankReviewDate]', reviewed)
+                EBARUtils.displayMessage(messages, 'WARNING: could not find ELEMENT_GLOBAL_ID ' + element_global_id +
+                                         ' or other NSE Taxon API issue for RangeMapID ' + param_range_map_id)
+            reviewed_grank = ''
             ca_rank = 'None'
             us_rank = 'None'
             mx_rank = 'None'
             ca_subnational_list = []
             us_subnational_list = []
             mx_subnational_list = []
-            for key in results:
-                if key == 'elementNationals':
-                    for en in results[key]:
-                        if en['nation']['isoCode'] == 'CA':
-                            reviewed = ''
-                            if en['nrankReviewYear']:
-                                reviewed = ' (reviewed ' + str(en['nrankReviewYear']) + ')'
-                            ca_rank = en['nrank'] + reviewed
-                            for esn in en['elementSubnationals']:
-                                ca_subnational_list.append(esn['subnation']['subnationCode'] + '=' + esn['srank'])
-                        if en['nation']['isoCode'] == 'US':
-                            reviewed = ''
-                            if en['nrankReviewYear']:
-                                reviewed = ' (reviewed ' + str(en['nrankReviewYear']) + ')'
-                            us_rank = en['nrank'] + reviewed
-                            for esn in en['elementSubnationals']:
-                                us_subnational_list.append(esn['subnation']['subnationCode'] + '=' + esn['srank'])
-                        if en['nation']['isoCode'] == 'MX':
-                            reviewed = ''
-                            if en['nrankReviewYear']:
-                                reviewed = ' (reviewed ' + str(en['nrankReviewYear']) + ')'
-                            mx_rank = en['nrank'] + reviewed
-                            for esn in en['elementSubnationals']:
-                                mx_subnational_list.append(esn['subnation']['subnationCode'] + '=' + esn['srank'])
+            ca_subnational_ranks = 'None'
+            us_subnational_ranks = 'None'
+            mx_subnational_ranks = 'None'
+            sara_status = 'None'
+            cosewic_status = 'None'
+            esa_status = 'None'
+            if results:
+                # get from Taxon API
+                g_rank = results['grank']
+                if results['grankReviewDate']:
+                    reviewed_grank = ' (reviewed ' + \
+                        EBARUtils.extractDate(results['grankReviewDate']).strftime('%B %d, %Y') + ')'
+                for key in results:
+                    if key == 'elementNationals':
+                        for en in results[key]:
+                            if en['nation']['isoCode'] == 'CA':
+                                reviewed = ''
+                                if en['nrankReviewYear']:
+                                    reviewed = ' (reviewed ' + str(en['nrankReviewYear']) + ')'
+                                ca_rank = en['nrank'] + reviewed
+                                for esn in en['elementSubnationals']:
+                                    ca_subnational_list.append(esn['subnation']['subnationCode'] + '=' + esn['srank'])
+                            if en['nation']['isoCode'] == 'US':
+                                reviewed = ''
+                                if en['nrankReviewYear']:
+                                    reviewed = ' (reviewed ' + str(en['nrankReviewYear']) + ')'
+                                us_rank = en['nrank'] + reviewed
+                                for esn in en['elementSubnationals']:
+                                    us_subnational_list.append(esn['subnation']['subnationCode'] + '=' + esn['srank'])
+                            if en['nation']['isoCode'] == 'MX':
+                                reviewed = ''
+                                if en['nrankReviewYear']:
+                                    reviewed = ' (reviewed ' + str(en['nrankReviewYear']) + ')'
+                                mx_rank = en['nrank'] + reviewed
+                                for esn in en['elementSubnationals']:
+                                    mx_subnational_list.append(esn['subnation']['subnationCode'] + '=' + esn['srank'])
+                if results['speciesGlobal']['saraStatus']:
+                    sara_status = results['speciesGlobal']['saraStatus']
+                    if results['speciesGlobal']['saraStatusDate']:
+                        sara_status += ' (' + EBARUtils.extractDate(results['speciesGlobal']
+                                                                    ['saraStatusDate']).strftime('%B %d, %Y') + ')'
+                if results['speciesGlobal']['cosewic']:
+                    if results['speciesGlobal']['cosewic']['cosewicDescEn']:
+                        cosewic_status = results['speciesGlobal']['cosewic']['cosewicDescEn']
+                        if results['speciesGlobal']['cosewicDate']:
+                            cosewic_status += ' (' + EBARUtils.extractDate(results['speciesGlobal']
+                                                                           ['cosewicDate']).strftime('%B %d, %Y') + ')'
+                if results['speciesGlobal']['interpretedUsesa']:
+                    esa_status = results['speciesGlobal']['interpretedUsesa']
+                    if results['speciesGlobal']['usesaDate']:
+                        esa_status += ' (' + EBARUtils.extractDate(results['speciesGlobal']
+                                                                   ['usesaDate']).strftime('%B %d, %Y') + ')'
+            else:
+                # get from BIOTICS table
+                us_rank = 'Not available'
+                mx_rank = 'Not available'
+                ca_subnational_ranks = 'Not available'
+                us_subnational_ranks = 'Not available'
+                mx_subnational_ranks = 'Not available'
+                esa_status = 'Not available'
+                with arcpy.da.SearchCursor(ebar_feature_service + '/4', 
+                                           ['G_RANK', 'G_RANK_REVIEW_DATE', 'N_RANK', 'N_RANK_REVIEW_DATE', 
+                                            'COSEWIC_STATUS', 'SARA_STATUS'],
+                                           'SpeciesID = ' + str(species_id)) as cursor:
+                    for row in EBARUtils.searchCursor(cursor):
+                        g_rank = row['G_RANK']
+                        if row['G_RANK_REVIEW_DATE']:
+                            reviewed_grank = ' (reviewed ' + \
+                                row['G_RANK_REVIEW_DATE'].strftime('%B %d, %Y') + ')'
+                        ca_rank = row['N_RANK']
+                        if row['N_RANK_REVIEW_DATE']:
+                            ca_rank += ' (reviewed ' + row['N_RANK_REVIEW_DATE'].strftime('%B %d, %Y') + ')'
+                        if row['COSEWIC_STATUS']:
+                            cosewic_status = row['COSEWIC_STATUS']
+                        if row['SARA_STATUS']:
+                            sara_status = row['SARA_STATUS']
+            # update template
+            pdf_html = pdf_html.replace('[NSE.grank]', g_rank)
+            pdf_html = pdf_html.replace('[NSE.grankReviewDate]', reviewed_grank)
             pdf_html = pdf_html.replace('[NSE.CARank]', ca_rank)
             pdf_html = pdf_html.replace('[NSE.USRank]', us_rank)
             pdf_html = pdf_html.replace('[NSE.MXRank]', mx_rank)
-            ca_subnational_ranks = 'None'
             if len(ca_subnational_list) > 0:
                 ca_subnational_list.sort()
                 ca_subnational_ranks = ', '.join(ca_subnational_list)
             pdf_html = pdf_html.replace('[NSE.CASubnationalRanks]', ca_subnational_ranks)
-            us_subnational_ranks = 'None'
             if len(us_subnational_list) > 0:
                 us_subnational_list.sort()
                 us_subnational_ranks = ', '.join(us_subnational_list)
             pdf_html = pdf_html.replace('[NSE.USSubnationalRanks]', us_subnational_ranks)
-            mx_subnational_ranks = 'None'
             if len(mx_subnational_list) > 0:
                 mx_subnational_list.sort()
                 mx_subnational_ranks = ', '.join(mx_subnational_list)
             pdf_html = pdf_html.replace('[NSE.MXSubnationalRanks]', mx_subnational_ranks)
-            sara_status = 'None'
-            if results['speciesGlobal']['saraStatus']:
-                sara_status = results['speciesGlobal']['saraStatus']
-                if results['speciesGlobal']['saraStatusDate']:
-                    sara_status += ' (' + results['speciesGlobal']['saraStatusDate'] + ')'
             pdf_html = pdf_html.replace('[NSE.saraStatus]', sara_status)
-            cosewic_status = 'None'
-            if results['speciesGlobal']['interpretedCosewic']:
-                cosewic_status = results['speciesGlobal']['interpretedCosewic']
-                if results['speciesGlobal']['cosewicDate']:
-                    cosewic_status += ' (' + results['speciesGlobal']['cosewicDate'] + ')'
             pdf_html = pdf_html.replace('[NSE.cosewicStatus]', cosewic_status)
-            esa_status = 'None'
-            if results['speciesGlobal']['interpretedUsesa']:
-                esa_status = results['speciesGlobal']['interpretedUsesa']
-                if results['speciesGlobal']['usesaDate']:
-                    esa_status += ' (' + results['speciesGlobal']['usesaDate'] + ')'
             pdf_html = pdf_html.replace('[NSE.esaStatus]', esa_status)
 
         # generate jpg and insert into pdf template
@@ -269,9 +301,9 @@ class PublishRangeMapTool:
             aprx = arcpy.mp.ArcGISProject(arcgis_pro_project)
             map = aprx.listMaps('range map landscape terrain')[0]
             polygon_layer = map.listLayers('ecoshaperangemap')[0]
-            polygon_layer.definitionQuery = 'rangemapid = ' + str(param_range_map_id)
+            polygon_layer.definitionQuery = 'rangemapid = ' + param_range_map_id
             table_layer = map.listTables('rangemap')[0]
-            table_layer.definitionQuery = 'rangemapid = ' + str(param_range_map_id)
+            table_layer.definitionQuery = 'rangemapid = ' + param_range_map_id
             layout = aprx.listLayouts('range map landscape terrain')[0]
             map_frame = layout.listElements('mapframe_element')[0]
             extent = map_frame.getLayerExtent(polygon_layer, False, True)
@@ -616,9 +648,12 @@ class PublishRangeMapTool:
 # controlling process
 if __name__ == '__main__':
     prm = PublishRangeMapTool()
-    # 617, 618, 619, 620, 621, 45, 51, 52, 50, 56, 53, 237, 234, 680, 447, 448, 449
+    # 124, 617, 618, 619, 620, 621, 45, 51, 52, 50, 56, 53, 237, 234, 680, 447, 448, 449
     # 622, 623, 624, 625, 626, 627, 628, 629, 630, 631, 632, 608, 633, 634, 635, 636, 638, 637, 639, 640, 643, 644, 645, 646, 647, 648
-    batch_ids = [124]
+    #
+    # 617, 619
+    # 50, 51, 52, 53, 234, 447, 448, 449, 608, 616, 633, 634, 635, 636, 644, 646, 680
+    batch_ids = [56]
     for id in batch_ids:
         # hard code parameters for debugging
         param_range_map_id = arcpy.Parameter()
