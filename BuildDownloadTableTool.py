@@ -117,10 +117,10 @@ class BuildDownloadTableTool:
 # controlling process
 if __name__ == '__main__':
     bdt = BuildDownloadTableTool()
-    # 638, 637, 641, 639, 640
-    # 625, 626, 628, 627
-    # 631, 616, 633, 447, 50, 629, 51, 622, 634, 635, 636, 608, 52, 618, 234, 449, 680, 619, 621, 620, 448
-    # 53
     # hard code parameters for debugging
+    # 638, 637, 641, 639, 640 Invertebrate Animal - Bumble Bees
+    # 625, 626, 628, 627 Invertebrate Animal - Other Moths
+    # 631, 616, 633, 447, 50, 629, 51, 622, 634, 635, 636, 608, 52, 618, 234, 449, 680, 619, 621, 620, 448 Vascular Plant - Dicots
+    # 53 Vascular Plant - Monocots
     range_map_ids = [625, 626, 628, 627]
     bdt.RunBuildDownloadTableTool(['Invertebrate Animal - Other Moths', range_map_ids], None)
