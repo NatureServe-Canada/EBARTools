@@ -96,7 +96,7 @@ class BuildDownloadTableTool:
                 <td>''' + row['NATIONAL_ENGL_NAME'] + '''</td>
                 <td>''' + french_name + '''</td>
                 <td>''' + scope + '''</td>
-                <td><a href="https://gis.natureserve.ca/download/EBAR''' + element_global_id + '''.pdf" target="_blank">Download PDF</a></td>
+                <td><a href="https://gis.natureserve.ca/download/EBAR''' + element_global_id + '''.pdf" target="_blank">View PDF</a></td>
                 <td><a href="https://gis.natureserve.ca/download/EBAR''' + element_global_id + '''.zip" target="_blank">Download GIS Data</a></td>
             </tr>'''
 
