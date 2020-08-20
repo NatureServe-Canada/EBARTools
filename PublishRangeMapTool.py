@@ -48,7 +48,8 @@ class PublishRangeMapTool:
         ebar_feature_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/EBAR/FeatureServer'
         ebar_summary_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/Summary/FeatureServer'
         nse_species_search_url = 'https://explorer.natureserve.org/api/data/search'
-        nse_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/ELEMENT_GLOBAL.2.'
+        #nse_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/ELEMENT_GLOBAL.2.'
+        nse_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/ELEMENT_GLOBAL.'
 
         # make variables for parms
         EBARUtils.displayMessage(messages, 'Processing parameters')
@@ -105,12 +106,13 @@ class PublishRangeMapTool:
 
             # get biotics data from database
             EBARUtils.displayMessage(messages, 'Getting Biotics data from database')
-            element_global_id = None
-            element_code = None
+            #element_global_id = None
+            #element_code = None
+            #global_unique_id = None
             with arcpy.da.SearchCursor(ebar_feature_service + '/4', 
                                        ['NATIONAL_SCIENTIFIC_NAME', 'NATIONAL_ENGL_NAME', 'NATIONAL_FR_NAME',
-                                        'ELEMENT_NATIONAL_ID', 'ELEMENT_GLOBAL_ID', 'ELEMENT_CODE',
-                                        'G_JURIS_ENDEM_DESC'],
+                                        'ELEMENT_NATIONAL_ID', 'ELEMENT_GLOBAL_ID', 'ELEMENT_CODE', 
+                                        'GLOBAL_UNIQUE_IDENTIFIER', 'G_JURIS_ENDEM_DESC'],
                                        'SpeciesID = ' + str(species_id)) as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME]',
@@ -127,10 +129,13 @@ class PublishRangeMapTool:
                     element_global_id = str(row['ELEMENT_GLOBAL_ID'])
                     pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.ELEMENT_GLOBAL_ID]',
                                                 element_global_id)
-                    nse_url = 'https://explorer.natureserve.org/Taxon/ELEMENT_GLOBAL.2.' + element_global_id
-                    pdf_html = pdf_html.replace('[NSE2.0_URL]', nse_url)
                     element_code = row['ELEMENT_CODE']
                     pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.ELEMENT_CODE]', element_code)
+                    global_unique_id = row['GLOBAL_UNIQUE_IDENTIFIER']
+                    global_unique_id = global_unique_id.replace('-', '.')
+                    #nse_url = 'https://explorer.natureserve.org/Taxon/ELEMENT_GLOBAL.2.' + element_global_id
+                    nse_url = 'https://explorer.natureserve.org/Taxon/ELEMENT_GLOBAL.' + global_unique_id
+                    pdf_html = pdf_html.replace('[NSE2.0_URL]', nse_url)
                     #endemism = 'None'
                     #if row['G_JURIS_ENDEM_DESC']:
                     #    endemism = row['G_JURIS_ENDEM_DESC']
@@ -185,7 +190,8 @@ class PublishRangeMapTool:
             EBARUtils.displayMessage(messages, 'Getting attributes from NatureServe Explorer Taxon API')
             results = None
             try:
-                result = requests.get(nse_taxon_search_url + element_global_id)
+                #result = requests.get(nse_taxon_search_url + '2.' + element_global_id)
+                result = requests.get(nse_taxon_search_url + global_unique_id)
                 results = json.loads(result.content)
             except:
                 EBARUtils.displayMessage(messages, 'WARNING: could not find ELEMENT_GLOBAL_ID ' + element_global_id +
