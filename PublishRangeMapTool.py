@@ -340,11 +340,8 @@ class PublishRangeMapTool:
                 'custom-header' : [
                     ('Accept-Encoding', 'gzip')
                 ],
-                'cookie': [
-                    ('cookie-name1', 'cookie-value1'),
-                    ('cookie-name2', 'cookie-value2'),
-                ],
-                'no-outline': None
+                'no-outline': None,
+                'enable-local-file-access': None
             }
             pdfkit.from_string(pdf_html, download_folder + '/EBAR' + element_global_id + '.pdf', pdf_options)
 
@@ -660,7 +657,8 @@ if __name__ == '__main__':
     # 
     # 50, 51, 52, 53, 56, 234, 447, 448, 449, 608, 616, 633, 634, 635, 636, 644, 646, 680
     # 124, 617, 618, 619, 620, 621, 622, 624, 625, 626, 627, 628, 629, 631, 637, 638, 639, 641
-    batch_ids = [617]
+    batch_ids = [50, 51, 52, 53, 56, 234, 447, 448, 449, 608, 616, 633, 634, 635, 636, 644, 646, 680,
+                 124, 617, 618, 619, 620, 621, 622, 624, 625, 626, 627, 628, 629, 631, 637, 638, 639, 641]
     for id in batch_ids:
         # hard code parameters for debugging
         param_range_map_id = arcpy.Parameter()
