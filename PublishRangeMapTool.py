@@ -641,6 +641,13 @@ class PublishRangeMapTool:
                         zipf.write('EBAR' + element_global_id + '/' + file)
             #shutil.rmtree(zip_folder)
 
+        # set publish date
+        with arcpy.da.UpdateCursor(ebar_feature_service + '/11',
+                                   ['PublishDate'], 'RangeMapID = ' + param_range_map_id) as update_cursor:
+            for update_row in EBARUtils.updateCursor(update_cursor):
+                update_cursor.updateRow([datetime.datetime.now()])
+            del update_row
+
         # cleanup
         if param_jpg != 'true':
             pass
@@ -657,7 +664,7 @@ if __name__ == '__main__':
     # 
     # 50, 51, 52, 53, 56, 234, 447, 448, 449, 608, 616, 633, 634, 635, 636, 644, 646, 680
     # 124, 617, 618, 619, 620, 621, 622, 624, 625, 626, 627, 628, 629, 631, 637, 638, 639, 640, 641
-    batch_ids = [623, 645, 135, 630, 642, 643, 648, 647, 45, 237, 632]
+    batch_ids = [645]
     for id in batch_ids:
         # hard code parameters for debugging
         param_range_map_id = arcpy.Parameter()
