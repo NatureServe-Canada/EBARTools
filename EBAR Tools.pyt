@@ -20,6 +20,7 @@ import SyncSpeciesListBioticsTool
 import AddSynonymsTool
 import ImportExternalRangeReviewTool
 import SyncSpeciesListKBATool
+import BuildDownloadTableTool
 import EBARUtils
 import datetime
 import locale
@@ -33,7 +34,8 @@ class Toolbox(object):
 
         # List of tool classes associated with this toolbox
         self.tools = [ImportTabularData, ImportSpatialData, GenerateRangeMap, ListElementNationalIDs,
-                      SyncSpeciesListBiotics, AddSynonyms, ImportExternalRangeReview, SyncSpeciesListKBA]
+                      SyncSpeciesListBiotics, AddSynonyms, ImportExternalRangeReview, SyncSpeciesListKBA,
+                      BuildDownloadTable]
 
 
 class ImportTabularData(object):
@@ -668,4 +670,37 @@ class SyncSpeciesListKBA(object):
         """The source code of the tool."""
         sslkba = SyncSpeciesListKBATool.SyncSpeciesListKBATool()
         sslkba.RunSyncSpeciesListKBATool(parameters, messages)
+        return
+
+
+class BuildDownloadTable(object):
+    def __init__(self):
+        """Define the tool (tool name is the name of the class)."""
+        self.label = 'Build Download Table'
+        self.description = 'Build html table of all Range Maps available for download'
+        self.canRunInBackground = True
+
+    def getParameterInfo(self):
+        """Define parameter definitions"""
+        params = []
+        return params
+
+    def isLicensed(self):
+        """Set whether tool is licensed to execute."""
+        return True
+
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal validation is performed.  This method is
+        called whenever a parameter has been changed."""
+        return
+
+    def updateMessages(self, parameters):
+        """Modify the messages created by internal validation for each tool parameter.  This method is called
+        after internal validation."""
+        return
+
+    def execute(self, parameters, messages):
+        """The source code of the tool."""
+        bdt = BuildDownloadTableTool.BuildDownloadTableTool()
+        bdt.RunBuildDownloadTableTool(parameters, messages)
         return

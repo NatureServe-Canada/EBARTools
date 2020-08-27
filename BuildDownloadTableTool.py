@@ -13,10 +13,9 @@
 
 
 # import Python packages
-#import sys
-#import locale
 import EBARUtils
 import arcpy
+import datetime
 
 
 class BuildDownloadTableTool:
@@ -30,7 +29,8 @@ class BuildDownloadTableTool:
         EBARUtils.displayMessage(messages, 'Start time: ' + str(start_time))
 
         # settings
-        temp_folder = 'C:/GIS/EBAR/pub'
+        output_file = 'F:/download/EBARDownloadTables.html'
+        #output_file = 'C:/GIS/EBAR/pub/TestEBARDownloadTables.html'
         ebar_feature_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/EBAR/FeatureServer'
 
         # loop all RangeMap records where IncludeInDownloadTable=1
@@ -40,7 +40,7 @@ class BuildDownloadTableTool:
         arcpy.AddJoin_management('range_map_view', 'SpeciesID', ebar_feature_service + '/4', 'SpeciesID',
                                  'KEEP_COMMON')
         category_taxa = ''
-        # use Python sorted, which precludes use of EBARUtils.SearchCursor
+        # use Python sorted (sql_clause ORDER BY doesn't work), which precludes use of EBARUtils.SearchCursor
         for row in sorted(arcpy.da.SearchCursor('range_map_view',
                           ['L4BIOTICS_ELEMENT_NATIONAL.CATEGORY',
                            'L4BIOTICS_ELEMENT_NATIONAL.TAX_GROUP',
@@ -98,7 +98,7 @@ class BuildDownloadTableTool:
                 
         # save
         EBARUtils.displayMessage(messages, 'Saving file')
-        file = open(temp_folder + '/EBARDownloadTables.html', 'w')
+        file = open(output_file, 'w')
         file.write(html)
         file.close()
 
