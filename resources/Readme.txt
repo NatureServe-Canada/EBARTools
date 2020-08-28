@@ -13,8 +13,8 @@ This ZIP package should contain the following files:
 - EBARxxxxxEcoshape.lyrx (ArcGIS Pro layer file, with suggested symbology and appropriate joins, referencing the original ecoshapes)
 - EBARxxxxxEcoshapeOverview.lyrx (ArcGIS Pro layer file, with suggested symbology and appropriate joins, referencing the generalized ecoshapes)
 - EBARxxxxx.mxd (ArcMap project file referencing the data files above)
-- EBARxxxxxEcoshape.lyrx (ArcMap layer file, with suggested symbology and appropriate joins, referencing the original ecoshapes)
-- EBARxxxxxEcoshapeOverview.lyrx (ArcMap layer file, with suggested symbology and appropriate joins, referencing the generalized ecoshapes)
+- EBARxxxxxEcoshape.lyr (ArcMap layer file, with suggested symbology and appropriate joins, referencing the original ecoshapes)
+- EBARxxxxxEcoshapeOverview.lyr (ArcMap layer file, with suggested symbology and appropriate joins, referencing the generalized ecoshapes)
 [where xxxxx is the ELEMENT_GLOBAL_ID of the selected species]
 
 The included data files are related as follows:
