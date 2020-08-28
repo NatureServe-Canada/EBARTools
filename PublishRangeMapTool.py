@@ -50,8 +50,8 @@ class PublishRangeMapTool:
         reviewers_by_taxa_link = 'https://onedrive.live.com/download?cid=AAAAAE977404FA3B&resid=AAAAAE977404FA3B' + \
             '%21442509&authkey=APQx60zQOjRu23A'
         temp_folder = 'C:/GIS/EBAR/temp'
-        #download_folder = 'C:/GIS/EBAR/pub/download'
-        download_folder = 'F:/download'
+        download_folder = 'C:/GIS/EBAR/pub/download'
+        #download_folder = 'F:/download'
         ebar_feature_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/EBAR/FeatureServer'
         ebar_summary_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/Summary/FeatureServer'
         nse_species_search_url = 'https://explorer.natureserve.org/api/data/search'
