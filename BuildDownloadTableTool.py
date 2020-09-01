@@ -71,7 +71,7 @@ class BuildDownloadTableTool:
             # table row
             scope = 'Global'
             if row[6] == 'N':
-                scope = 'National'
+                scope = 'Canadian'
             if row[6] == 'A':
                 scope = 'North American'
             element_global_id = str(row[5])

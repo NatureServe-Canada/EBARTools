@@ -324,7 +324,7 @@ class PublishRangeMapTool:
                                         extent.XMax + x_buffer,
                                         extent.YMax + y_buffer)
         map_frame.camera.setExtent(buffered_extent)
-        if range_map_scope == 'National':
+        if range_map_scope == 'Canadian':
             element_global_id += 'N'
         layout.exportToJPEG(download_folder + '/EBAR' + element_global_id + '.jpg', 300,
                             clip_to_elements=True)
@@ -690,12 +690,12 @@ if __name__ == '__main__':
     # 
     # 50, 51, 52, 53, 56, 234, 447, 448, 449, 608, 616, 633, 634, 635, 636, 644, 646, 680
     # 124, 617, 618, 619, 620, 621, 622, 624, 625, 626, 627, 628, 629, 631, 637, 638, 639, 640, 641
-    batch_ids = [73, 78, 81, 82, 93, 94, 95, 97, 99]
+    batch_ids = [645]
     for id in batch_ids:
         # hard code parameters for debugging
         param_range_map_id = arcpy.Parameter()
         param_range_map_id.value = str(id)
         param_spatial = arcpy.Parameter()
-        param_spatial.value = 'false'
+        param_spatial.value = 'true'
         parameters = [param_range_map_id, param_spatial]
         prm.RunPublishRangeMapTool(parameters, None)

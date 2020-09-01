@@ -65,7 +65,7 @@ class GenerateRangeMapTool:
         scope = None
         if param_scope:
             EBARUtils.displayMessage(messages, 'Scope: ' + param_scope)
-            if param_scope == 'National':
+            if param_scope == 'Canadian':
                 national_jur_ids = '(1,2,3,4,5,6,7,8,9,10,11,12,13)'
                 scope = 'N'
             if param_scope == 'Global':
@@ -992,7 +992,7 @@ if __name__ == '__main__':
     param_stage = arcpy.Parameter()
     param_stage.value = 'Auto-generated'
     param_scope = arcpy.Parameter()
-    #param_scope.value = 'National'
+    #param_scope.value = 'Canadian'
     param_scope.value = None
     parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope]
     grm.RunGenerateRangeMapTool(parameters, None)

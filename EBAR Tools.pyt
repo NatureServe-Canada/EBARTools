@@ -298,7 +298,7 @@ class GenerateRangeMap(object):
             datatype='GPString',
             parameterType='Optional',
             direction='Input')
-        param_scope.filter.list = ['National', 'Global', 'North American']
+        param_scope.filter.list = ['Canadian', 'Global', 'North American']
 
         params = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope]
         return params

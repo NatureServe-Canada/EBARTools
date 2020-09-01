@@ -28,8 +28,8 @@ RangeMapID - EBAR unique identifier
 RangeVersion - EBAR version number
 RangeStage - EBAR stage within the version (e.g. Auto-generated, Expert reviewed)
 RangeDate - date generated
-RangeMapScope - geographic scope (e.g. N=National, A=North American, G=Global)
-RangeMetadata - numbers of input records by sourceand count of expert reviews
+RangeMapScope - geographic scope (e.g. N=Canadian, A=North American, G=Global)
+RangeMetadata - numbers of input records by source, and count and average star rating of expert reviews
 RangeMapNotes - details on the species name(s)
 RangeMapComments - additional notes
 SynonymsUsed - a list of the synonyms, if any, for the primary species

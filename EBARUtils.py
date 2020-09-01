@@ -71,7 +71,7 @@ eo_rank_dict = {'Excellent estimated viability/ecological integrity': 'A',
 
 
 scope_dict = {'G': 'Global',
-              'N': 'National',
+              'N': 'Canadian',
               'A': 'North American',
               None: 'None'}
 
