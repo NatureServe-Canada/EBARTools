@@ -29,8 +29,8 @@ class BuildDownloadTableTool:
         EBARUtils.displayMessage(messages, 'Start time: ' + str(start_time))
 
         # settings
-        output_file = 'F:/download/EBARDownloadTables.html'
-        #output_file = 'C:/GIS/EBAR/pub/TestEBARDownloadTables.html'
+        #output_file = 'F:/download/EBARDownloadTables.html'
+        output_file = 'C:/GIS/EBAR/pub/EBARDownloadTables.html'
         ebar_feature_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/EBAR/FeatureServer'
 
         # loop all RangeMap records where IncludeInDownloadTable=1
