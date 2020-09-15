@@ -196,7 +196,7 @@ class ImportSpatialDataTool:
                     # check coordinates
                     if not row['SHAPE@']:
                         no_coords += 1
-                        ignore_ime = 1
+                        ignore_imp = 1
                     else:
                         # check for duplicates
                         # handle case where integer gets read as float with decimals

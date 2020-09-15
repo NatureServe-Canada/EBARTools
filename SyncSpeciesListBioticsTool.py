@@ -110,6 +110,7 @@ class SyncSpeciesListBioticsTool:
                           'G_JURIS_ENDEM_DESC']
         for file_line in reader:
             element_national_id = int(float(file_line['ELEMENT_NATIONAL_ID']))
+            EBARUtils.displayMessage(messages, 'ELEMENT_NATIONAL_ID: ' + str(element_national_id))
             if element_national_id in element_species_dict:
                 # update
                 ## use workspace editing because sometimes (unsure why) it generates "workspace already in
