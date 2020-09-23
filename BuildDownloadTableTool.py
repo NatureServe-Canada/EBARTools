@@ -33,8 +33,45 @@ class BuildDownloadTableTool:
         output_file = 'C:/GIS/EBAR/pub/EBARDownloadTables.html'
         ebar_feature_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/EBAR/FeatureServer'
 
+        # html header
+        html = '''
+<!doctype html>
+    <style>
+        h2 {
+            font-family: "Trebuchet MS","Lucida Grande","Lucida Sans Unicode","Lucida Sans",Tahoma,sans-serif;
+            font-size: 28px;
+            color: #365700;
+            font-weight: normal;
+        }
+        body {
+            font-family:"Calibri",Candara,Segoe,"Segoe UI",Optima,Arial,sans-serif;
+            font-size: 14px; 
+            color: #222222
+    	}
+    	table {
+			border: solid 1px #dddddd;
+            text-align: left;
+			vertical-align: top;
+            border-collapse: collapse;
+            width: 600px;
+                        
+    	}
+        th {
+            border-bottom: 3px solid #ccc;
+            padding: 7px;
+        }
+        td {
+            padding: 5px;  
+        }
+        tr:nth-child(even) {background-color: #f9f9f9;}
+        a {
+            font-weight: bold;
+            color: #5c9400;
+            text-decoration: none;
+        }
+    </style>
+	<body>'''
         # loop all RangeMap records where IncludeInDownloadTable=1
-        html = ''
         arcpy.MakeTableView_management(ebar_feature_service + '/11', 'range_map_view', 'IncludeInDownloadTable = 1')
         # join BIOTICS_ELEMENT_NATIONAL to RangeMap
         arcpy.AddJoin_management('range_map_view', 'SpeciesID', ebar_feature_service + '/4', 'SpeciesID',
@@ -53,21 +90,21 @@ class BuildDownloadTableTool:
                 if category_taxa != '':
                     # table footer for previous table
                     html += '''
-                    </tbody></table>'''
+        </tbody></table>'''
                 # table header
                 category_taxa = row[0] + ' - ' + row[1]
                 EBARUtils.displayMessage(messages, category_taxa + ' table')
                 html += '''
-                    <h2>''' + category_taxa + '''</h2>
-                    <table><tbody>
-                        <tr>
-    	                    <th>Scientific Name</th>
-                            <th>English Name</th>
-                            <th>Nom Français</th>
-                            <th>Scope</th>
-                            <th>PDF Link</th>
-                            <th>GIS Data Link</th>
-                        </tr>'''
+        <h2>''' + category_taxa + '''</h2>
+        <table><tbody>
+            <tr>
+    	        <th>Scientific Name</th>
+                <th>English Name</th>
+                <th>Nom Français</th>
+                <th>Scope</th>
+                <th>PDF Link</th>
+                <th>GIS Data Link</th>
+            </tr>'''
             # table row
             scope = 'Global'
             if row[6] == 'N':
@@ -81,20 +118,21 @@ class BuildDownloadTableTool:
             if row[4]:
                 french_name = row[4]
             html += '''
-                        <tr>
-                            <td>''' + row[2] + '''</td>
-                            <td>''' + row[3] + '''</td>
-                            <td>''' + french_name + '''</td>
-                            <td>''' + scope + '''</td>
-                            <td><a href="https://gis.natureserve.ca/download/EBAR''' + element_global_id + \
-                                '''.pdf" target="_blank">View PDF</a></td>
-                            <td><a href="https://gis.natureserve.ca/download/EBAR''' + element_global_id + \
-                                '''.zip" target="_blank">Download GIS Data</a></td>
-                        </tr>'''
+            <tr>
+                <td>''' + row[2] + '''</td>
+                <td>''' + row[3] + '''</td>
+                <td>''' + french_name + '''</td>
+                <td>''' + scope + '''</td>
+                <td><a href="https://gis.natureserve.ca/download/EBAR''' + element_global_id + \
+                    '''.pdf" target="_blank">View PDF</a></td>
+                <td><a href="https://gis.natureserve.ca/download/EBAR''' + element_global_id + \
+                    '''.zip" target="_blank">Download GIS Data</a></td>
+            </tr>'''
             EBARUtils.displayMessage(messages, element_global_id + ' EBAR')
         # table footer for final table
         html += '''
-                    </tbody></table>'''
+		</tbody></table>
+	</body>'''
                 
         # save
         EBARUtils.displayMessage(messages, 'Saving file')
