@@ -138,6 +138,23 @@ class ImportExternalRangeReviewTool:
             return
             #raise arcpy.ExecuteError
 
+        # check for existing imported review
+        # username is currently hard-coded to rgreenens, but plan is to make this a parameter
+        EBARUtils.displayMessage(messages, 'Checking for existing Review')
+        review_id = None
+        with arcpy.da.SearchCursor(param_geodatabase + '\Review', ['ReviewID'],
+                                   "Username = 'rgreenens' AND RangeMapID = " + str(range_map_id)) as cursor:
+            row = None
+            for row in EBARUtils.searchCursor(cursor):
+                review_id = row['ReviewID']
+            if row:
+                del row
+        if review_id:
+            EBARUtils.displayMessage(messages, 'ERROR: Review already exists for this Username')
+            # terminate with error
+            return
+            #raise arcpy.ExecuteError
+
         # build list of jurisdictions
         EBARUtils.displayMessage(messages, 'Building list of Jurisdictions')
         jur_name_dict = {}
