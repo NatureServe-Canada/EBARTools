@@ -34,8 +34,7 @@ class BuildDownloadTableTool:
         ebar_feature_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/EBAR/FeatureServer'
 
         # html header
-        html = '''
-<!doctype html>
+        html = '''<!doctype html>
     <style>
         h2 {
             font-family: "Trebuchet MS","Lucida Grande","Lucida Sans Unicode","Lucida Sans",Tahoma,sans-serif;
@@ -46,15 +45,14 @@ class BuildDownloadTableTool:
         body {
             font-family:"Calibri",Candara,Segoe,"Segoe UI",Optima,Arial,sans-serif;
             font-size: 14px; 
-            color: #222222
+            color: #222222;
     	}
     	table {
 			border: solid 1px #dddddd;
             text-align: left;
 			vertical-align: top;
             border-collapse: collapse;
-            width: 600px;
-                        
+            width: 560px;
     	}
         th {
             border-bottom: 3px solid #ccc;
@@ -112,7 +110,7 @@ class BuildDownloadTableTool:
             if row[6] == 'A':
                 scope = 'North American'
             element_global_id = str(row[5])
-            if scope == 'National':
+            if scope == 'Canadian':
                 element_global_id += 'N'
             french_name = ''
             if row[4]:
@@ -128,7 +126,7 @@ class BuildDownloadTableTool:
                 <td><a href="https://gis.natureserve.ca/download/EBAR''' + element_global_id + \
                     '''.zip" target="_blank">Download GIS Data</a></td>
             </tr>'''
-            EBARUtils.displayMessage(messages, element_global_id + ' EBAR')
+            EBARUtils.displayMessage(messages, element_global_id)
         # table footer for final table
         html += '''
 		</tbody></table>
