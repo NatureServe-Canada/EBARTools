@@ -396,3 +396,41 @@ def getTableNamePrefix(geodatabase):
     if desc.workspaceType == 'RemoteDatabase':
         table_name_prefix = desc.connectionProperties.database + '.' + desc.connectionProperties.user + '.'
     return table_name_prefix
+
+
+def updateArcGISProTemplate(aprx_template, zip_folder, element_global_id, new_md, range_map_id):
+    """update ArcGIS Pro template for passed element_global_id"""
+    shutil.copyfile(aprx_template, zip_folder + '/EBAR' + element_global_id + '.aprx')
+    aprx = arcpy.mp.ArcGISProject(zip_folder + '/EBAR' + element_global_id + '.aprx')
+    aprx.homeFolder = zip_folder
+    map = aprx.listMaps('EBARTemplate')[0]
+    map.name = 'EBAR' + element_global_id
+    ecoshape_overview_layer =  map.listLayers('EBARTemplateEcoshapeOverview')[0]
+    ecoshape_overview_layer_md = ecoshape_overview_layer.metadata
+    new_md.title = 'EBAR EcoshapeOverview.shp'
+    new_md.summary = 'Polygons shapefile of generalized ecoshapes for EBAR for selected species'
+    ecoshape_overview_layer_md.copy(new_md)
+    ecoshape_overview_layer_md.save()
+    ecoshape_overview_layer.name = 'EBAR' + element_global_id + 'EcoshapeOverview'
+    if range_map_id:
+        ecoshape_overview_layer.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
+    ecoshape_overview_layer.saveACopy(zip_folder + '/EBAR' + element_global_id + 'EcoshapeOverview.lyrx')
+    ecoshape_layer =  map.listLayers('EBARTemplateEcoshape')[0]
+    ecoshape_layer_md = ecoshape_overview_layer.metadata
+    new_md.title = 'EBAR Ecoshape.shp'
+    new_md.summary = 'Polygons shapefile of original ecoshapes for EBAR for selected species'
+    ecoshape_layer_md.copy(new_md)
+    ecoshape_layer_md.save()
+    ecoshape_layer.name = 'EBAR' + element_global_id + 'Ecoshape'
+    if range_map_id:
+        ecoshape_layer.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
+    ecoshape_layer.saveACopy(zip_folder + '/EBAR' + element_global_id + 'Ecoshape.lyrx')
+    range_map_table = map.listTables('EBARTemplateRangeMap')[0]
+    range_map_table.name = 'EBAR' + element_global_id + 'RangeMap'
+    if range_map_id:
+        range_map_table.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
+    range_map_ecoshape_table = map.listTables('EBARTemplateRangeMapEcoshape')[0]
+    range_map_ecoshape_table.name = 'EBAR' + element_global_id + 'RangeMapEcoshape'
+    if range_map_id:
+        range_map_ecoshape_table.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
+    aprx.save()
