@@ -290,8 +290,6 @@ class GenerateRangeMapTool:
                                  'InputPointID')
         arcpy.SelectLayerByAttribute_management('input_point_layer', 'NEW_SELECTION',
                                                 table_name_prefix + 'SecondaryInput.RangeMapID = ' + str(range_map_id))
-        #result = arcpy.GetCount_management('input_point_layer')
-        #additional_input_records += int(result[0])
         arcpy.RemoveJoin_management('input_point_layer', table_name_prefix + 'SecondaryInput')
         # add "real" points to selection based on type
         arcpy.AddJoin_management('input_point_layer', 'InputDatasetID',
@@ -308,16 +306,17 @@ class GenerateRangeMapTool:
         arcpy.SelectLayerByAttribute_management('input_point_layer', 'ADD_TO_SELECTION', where_clause)
         arcpy.RemoveJoin_management('input_point_layer', table_name_prefix + 'DatasetSource')
         arcpy.RemoveJoin_management('input_point_layer', table_name_prefix + 'InputDataset')
-        #result = arcpy.GetCount_management('input_point_layer')
-        #input_point_count = int(result[0])
         # remove excluded points from selection
         arcpy.AddJoin_management('input_point_layer', 'InputPointID', param_geodatabase + '/InputFeedback',
                                  'InputPointID')
+        #arcpy.SelectLayerByAttribute_management('input_point_layer', 'REMOVE_FROM_SELECTION',
+        #                                        table_name_prefix + 'InputFeedback.ExcludeFromRangeMaps = 1')
         arcpy.SelectLayerByAttribute_management('input_point_layer', 'REMOVE_FROM_SELECTION',
-                                                table_name_prefix + 'InputFeedback.ExcludeFromRangeMaps = 1')
+                                                table_name_prefix + 'InputFeedback.ExcludeFromRangeMapID = ' + \
+                                                    str(range_map_id))
+        arcpy.SelectLayerByAttribute_management('input_point_layer', 'REMOVE_FROM_SELECTION',
+                                                table_name_prefix + 'InputFeedback.BadData = 1')
         arcpy.RemoveJoin_management('input_point_layer', table_name_prefix + 'InputFeedback')
-        #result = arcpy.GetCount_management('input_point_layer')
-        #excluded_input_records += input_point_count - int(result[0])
         # add field for buffer
         EBARUtils.checkAddField('input_point_layer', 'buffer', 'LONG')
         code_block = '''
@@ -342,8 +341,6 @@ def GetBuffer(accuracy):
                                  'InputLineID')
         arcpy.SelectLayerByAttribute_management('input_line_layer', 'NEW_SELECTION',
                                                 table_name_prefix + 'SecondaryInput.RangeMapID = ' + str(range_map_id))
-        #result = arcpy.GetCount_management('input_line_layer')
-        #additional_input_records += int(result[0])
         arcpy.RemoveJoin_management('input_line_layer', table_name_prefix + 'SecondaryInput')
         # add "real" lines to selection based on type
         arcpy.AddJoin_management('input_line_layer', 'InputDatasetID',
@@ -360,15 +357,16 @@ def GetBuffer(accuracy):
         arcpy.SelectLayerByAttribute_management('input_line_layer', 'ADD_TO_SELECTION', where_clause)
         arcpy.RemoveJoin_management('input_line_layer', table_name_prefix + 'DatasetSource')
         arcpy.RemoveJoin_management('input_line_layer', table_name_prefix + 'InputDataset')
-        #result = arcpy.GetCount_management('input_line_layer')
-        #input_line_count = int(result[0])
         # remove excluded lines from selection
         arcpy.AddJoin_management('input_line_layer', 'InputLineID', param_geodatabase + '/InputFeedback',
                                  'InputLineID')
+        #arcpy.SelectLayerByAttribute_management('input_line_layer', 'REMOVE_FROM_SELECTION',
+        #                                        table_name_prefix + 'InputFeedback.ExcludeFromRangeMaps = 1')
         arcpy.SelectLayerByAttribute_management('input_line_layer', 'REMOVE_FROM_SELECTION',
-                                                table_name_prefix + 'InputFeedback.ExcludeFromRangeMaps = 1')
-        #result = arcpy.GetCount_management('input_line_layer')
-        #excluded_input_records += input_line_count - int(result[0])
+                                                table_name_prefix + 'InputFeedback.ExcludeFromRangeMapID = ' + \
+                                                    str(range_map_id))
+        arcpy.SelectLayerByAttribute_management('input_line_layer', 'REMOVE_FROM_SELECTION',
+                                                table_name_prefix + 'InputFeedback.BadData = 1')
         arcpy.RemoveJoin_management('input_line_layer', table_name_prefix + 'InputFeedback')
         # buffer
         temp_line_buffer = 'TempLineBuffer' + str(start_time.year) + str(start_time.month) + \
@@ -383,8 +381,6 @@ def GetBuffer(accuracy):
                                  'InputPolygonID')
         arcpy.SelectLayerByAttribute_management('input_polygon_layer', 'NEW_SELECTION',
                                                 table_name_prefix + 'SecondaryInput.RangeMapID = ' + str(range_map_id))
-        #result = arcpy.GetCount_management('input_polygon_layer')
-        #additional_input_records += int(result[0])
         arcpy.RemoveJoin_management('input_polygon_layer', table_name_prefix + 'SecondaryInput')
         # add "real" polygons to selection based on type
         arcpy.AddJoin_management('input_polygon_layer', 'InputDatasetID',
@@ -402,15 +398,16 @@ def GetBuffer(accuracy):
         arcpy.SelectLayerByAttribute_management('input_polygon_layer', 'ADD_TO_SELECTION', where_clause)
         arcpy.RemoveJoin_management('input_polygon_layer', table_name_prefix + 'DatasetSource')
         arcpy.RemoveJoin_management('input_polygon_layer', table_name_prefix + 'InputDataset')
-        #result = arcpy.GetCount_management('input_polygon_layer')
-        #input_polygon_count = int(result[0])
         # remove excluded lines from selection
         arcpy.AddJoin_management('input_polygon_layer', 'InputPolygonID', param_geodatabase + '/InputFeedback',
                                  'InputPolygonID')
+        #arcpy.SelectLayerByAttribute_management('input_polygon_layer', 'REMOVE_FROM_SELECTION',
+        #                                        table_name_prefix + 'InputFeedback.ExcludeFromRangeMaps = 1')
         arcpy.SelectLayerByAttribute_management('input_polygon_layer', 'REMOVE_FROM_SELECTION',
-                                                table_name_prefix + 'InputFeedback.ExcludeFromRangeMaps = 1')
-        #result = arcpy.GetCount_management('input_polygon_layer')
-        #excluded_input_records += input_polygon_count - int(result[0])
+                                                table_name_prefix + 'InputFeedback.ExcludeFromRangeMapID = ' + \
+                                                    str(range_map_id))
+        arcpy.SelectLayerByAttribute_management('input_polygon_layer', 'REMOVE_FROM_SELECTION',
+                                                table_name_prefix + 'InputFeedback.BadData = 1')
         arcpy.RemoveJoin_management('input_polygon_layer', table_name_prefix + 'InputFeedback')
 
         # merge buffer polygons and input polygons
@@ -982,7 +979,7 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_species = arcpy.Parameter()
-    param_species.value = 'Carex viridula'
+    param_species.value = 'Abronia latifolia'
     param_secondary = arcpy.Parameter()
     param_secondary.value = None
     #param_secondary.value = "'Dodia verticalis'"
