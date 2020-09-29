@@ -1,0 +1,30 @@
+PublishRangeMap(range_map_id, include_spatial)
+	get dynamic attributes
+	update map template
+	update html template
+	generate jpg
+	generate pdf
+	generate spatial zip
+		create zip folder
+		copy static resources
+		copy pdf
+		export RangeMap to CSV
+		export RangeMapEcoshape to CSV
+		export Ecoshape to shapefile
+		export EcoshapeOverview to shapefile
+		embed metadata
+		update ArcGIS Pro template and lyrx files
+		zip (including static ArcMap and lyr files)
+		set PublishDate
+
+PublishRangeMapsData(optional category_taxa)
+	create zip folder
+	copy static resources
+	select RangeMap records based on category_taxa (if any, join to BIOTICS_ELEMENT_NATIONAL) and IncludeInDownloadTable flag
+	export RangeMap to CSV
+	select RangeMapEcoshape records based on RangeMapID (above)
+	export RangeMapEcoshape to CSV
+	embed metadata
+	loop all RangeMapIDs
+		update ArcGIS Pro template and lyrx files
+	zip
