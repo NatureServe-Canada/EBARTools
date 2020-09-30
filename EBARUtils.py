@@ -441,13 +441,21 @@ def createReplaceFolder(folder):
     os.mkdir(folder)
 
 
-def createZip(zip_folder, zip_output_file):
-    """create zip file"""
+def createZip(zip_folder, zip_output_file, only_include_extension):
+    """create zip file, optionally with just files """
     path = pathlib.Path(zip_folder)
     os.chdir(path.parent)
     zip_folder_name = os.path.basename(zip_folder)
     zipf = zipfile.ZipFile(zip_output_file, 'w', zipfile.ZIP_DEFLATED)
     for root, dirs, files in os.walk(zip_folder):
         for file in files:
-            if file[-5:] != '.lock':
+            include = True
+            # check optional include extension
+            if only_include_extension:
+                if file[-len(only_include_extension):] != only_include_extension:
+                    include = False
+            # always exclude lock files
+            if file[-5:] == '.lock':
+                include = False
+            if include:
                 zipf.write(zip_folder_name + '/' + file)

@@ -637,14 +637,7 @@ class PublishRangeMapTool:
 
             # zip
             EBARUtils.displayMessage(messages, 'Creating ZIP')
-            EBARUtils.createZip(zip_folder, EBARUtils.download_folder + '/EBAR' + element_global_id)
-            #os.chdir(EBARUtils.temp_folder)
-            #zipf = zipfile.ZipFile(EBARUtils.download_folder + '/EBAR' + element_global_id + '.zip', 'w',
-            #                       zipfile.ZIP_DEFLATED)
-            #for root, dirs, files in os.walk(zip_folder):
-            #    for file in files:
-            #        if file[-5:] != '.lock':
-            #            zipf.write('EBAR' + element_global_id + '/' + file)
+            EBARUtils.createZip(zip_folder, EBARUtils.download_folder + '/EBAR' + element_global_id + '.zip', None)
 
         # set publish date
         with arcpy.da.UpdateCursor('range_map_view', ['PublishDate']) as update_cursor:

@@ -47,6 +47,7 @@ class PublishRangeMapSetsTool:
                                  'KEEP_COMMON')
         category_taxagroup = ''
         processed = 0
+
         # use Python sorted (sql_clause ORDER BY doesn't work), which precludes use of EBARUtils.SearchCursor
         where_clause = None
         if param_category:
@@ -70,32 +71,32 @@ class PublishRangeMapSetsTool:
                 processed += 1
                 if category_taxagroup != '':
                     # zip PDFs for previous category_taxagroup
-                    EBARUtils.displayMessage(messages, 'Creating PDFs ZIP')
+                    EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/EBAR - ' + \
+                        category_taxagroup + ' - All PDFs.zip')
                     EBARUtils.createZip(zip_folder,
                                         EBARUtils.download_folder + '/EBAR - ' + category_taxagroup + \
-                                            ' - All PDFs.zip')
+                                            ' - All PDFs.zip', '.pdf')
+
                 # make zip folder
                 category_taxagroup = row[0] + ' - ' + row[1]
-                EBARUtils.displayMessage(messages, 'Processing ' + category_taxagroup)
+                EBARUtils.displayMessage(messages, 'Category - Taxa Group: ' + category_taxagroup)
                 zip_folder = EBARUtils.temp_folder + '/EBAR - ' + category_taxagroup
                 EBARUtils.createReplaceFolder(zip_folder)
+
             # copy pdf
-            scope = 'Global'
-            if row[6] == 'N':
-                scope = 'Canadian'
-            if row[6] == 'A':
-                scope = 'North American'
             element_global_id = str(row[5])
-            if scope == 'Canadian':
+            if row[6] == 'N':
                 element_global_id += 'N'
             shutil.copyfile(EBARUtils.download_folder + '/EBAR' + element_global_id + '.pdf',
                             zip_folder + '/EBAR' + element_global_id + '.pdf')
 
         if row:
-            # zip PDFs for final category_taxagroupgroup
-            EBARUtils.displayMessage(messages, 'Creating PDFs ZIP')
+            # zip PDFs for final category_taxagroup
+            EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/EBAR - ' + \
+                category_taxagroup + ' - All PDFs.zip')
             EBARUtils.createZip(zip_folder,
-                                EBARUtils.download_folder + '/EBAR - ' + category_taxagroup + ' - All PDFs.zip')
+                                EBARUtils.download_folder + '/EBAR - ' + category_taxagroup + ' - All PDFs.zip',
+                                '.pdf')
 
         EBARUtils.displayMessage(messages, 'Processed ' + str(processed) + ' categories/taxa')
         return
