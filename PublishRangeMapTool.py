@@ -23,11 +23,8 @@ import datetime
 import pdfkit
 import requests
 import json
-import os
 import shutil
-import time
 import csv
-import zipfile
 import urllib
 
 
@@ -43,17 +40,15 @@ class PublishRangeMapTool:
 
         # settings
         #arcpy.gp.overwriteOutput = True
-        resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
-        arcgis_pro_project = resources_folder + '/EBARMapLayouts.aprx'
-        pdf_template_file = resources_folder + '/pdf_template.html'
+        #resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
+        arcgis_pro_project = EBARUtils.resources_folder + '/EBARMapLayouts.aprx'
+        pdf_template_file = EBARUtils.resources_folder + '/pdf_template.html'
         #reviewers_by_taxa_file = 'C:/Users/rgree/OneDrive/EBAR/EBAR Maps/ReviewersByTaxa.txt'
         reviewers_by_taxa_link = 'https://onedrive.live.com/download?cid=AAAAAE977404FA3B&resid=AAAAAE977404FA3B' + \
             '%21442509&authkey=APQx60zQOjRu23A'
-        temp_folder = 'C:/GIS/EBAR/temp'
-        download_folder = 'C:/GIS/EBAR/pub/download'
+        #temp_folder = 'C:/GIS/EBAR/temp'
+        #download_folder = 'C:/GIS/EBAR/pub/download'
         #download_folder = 'F:/download'
-        ebar_feature_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/EBAR/FeatureServer'
-        ebar_summary_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/Summary/FeatureServer'
         nse_species_search_url = 'https://explorer.natureserve.org/api/data/search'
         nse_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/ELEMENT_GLOBAL.'
 
@@ -71,21 +66,21 @@ class PublishRangeMapTool:
         pdf_template.close()
 
         # headers 
-        pdf_html = pdf_html.replace('[logo_image]', resources_folder + '/nscanada_inline_copy.png')
-        pdf_html = pdf_html.replace('[species_header_image]', resources_folder + '/species_header.png')
-        pdf_html = pdf_html.replace('[rank_status_header_image]', resources_folder +
+        pdf_html = pdf_html.replace('[logo_image]', EBARUtils.resources_folder + '/nscanada_inline_copy.png')
+        pdf_html = pdf_html.replace('[species_header_image]', EBARUtils.resources_folder + '/species_header.png')
+        pdf_html = pdf_html.replace('[rank_status_header_image]', EBARUtils.resources_folder +
                                                 '/rank_status_header.png')
-        pdf_html = pdf_html.replace('[range_map_header_image]', resources_folder +
+        pdf_html = pdf_html.replace('[range_map_header_image]', EBARUtils.resources_folder +
                                                 '/range_map_header.png')
-        pdf_html = pdf_html.replace('[reviews_header_image]', resources_folder + '/reviews_header.png')
-        pdf_html = pdf_html.replace('[credits_header_image]', resources_folder + '/credits_header.png')
+        pdf_html = pdf_html.replace('[reviews_header_image]', EBARUtils.resources_folder + '/reviews_header.png')
+        pdf_html = pdf_html.replace('[credits_header_image]', EBARUtils.resources_folder + '/credits_header.png')
 
         # get range map data from database
         EBARUtils.displayMessage(messages, 'Getting RangeMap data from database')
         species_id = None
         range_map_scope = None
-        arcpy.MakeTableView_management(ebar_feature_service + '/11', 'range_map_view',
-                                        'RangeMapID = ' + param_range_map_id)
+        arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/11', 'range_map_view',
+                                       'RangeMapID = ' + param_range_map_id)
         with arcpy.da.SearchCursor('range_map_view',
                                     ['SpeciesID', 'RangeVersion', 'RangeStage', 'RangeDate', 'RangeMapScope',
                                     'RangeMapNotes', 'RangeMetadata', 'RangeMapComments']) as cursor:
@@ -111,8 +106,8 @@ class PublishRangeMapTool:
         #element_global_id = None
         #element_code = None
         #global_unique_id = None
-        arcpy.MakeTableView_management(ebar_feature_service + '/4', 'biotics_view',
-                                        'SpeciesID = ' + str(species_id))
+        arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/4', 'biotics_view',
+                                       'SpeciesID = ' + str(species_id))
         with arcpy.da.SearchCursor('biotics_view', 
                                     ['NATIONAL_SCIENTIFIC_NAME', 'NATIONAL_ENGL_NAME', 'NATIONAL_FR_NAME',
                                     'ELEMENT_NATIONAL_ID', 'ELEMENT_GLOBAL_ID', 'ELEMENT_CODE', 
@@ -148,8 +143,8 @@ class PublishRangeMapTool:
         # get species data from database
         EBARUtils.displayMessage(messages, 'Getting Species data from database')
         endemism_type = 'None'
-        arcpy.MakeTableView_management(ebar_feature_service + '/19', 'species_view',
-                                        'SpeciesID = ' + str(species_id))
+        arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/19', 'species_view',
+                                       'SpeciesID = ' + str(species_id))
         with arcpy.da.SearchCursor('species_view', ['Endemism_Type']) as cursor:
             for row in EBARUtils.searchCursor(cursor):
                 if row['Endemism_Type']:
@@ -160,8 +155,8 @@ class PublishRangeMapTool:
         # get input references
         EBARUtils.displayMessage(messages, 'Getting InputReferences from database')
         input_references = ''
-        arcpy.MakeTableView_management(ebar_summary_service + '/7', 'citation_view',
-                                        'RangeMapID = ' + param_range_map_id)
+        arcpy.MakeTableView_management(EBARUtils.ebar_summary_service + '/7', 'citation_view',
+                                       'RangeMapID = ' + param_range_map_id)
         with arcpy.da.SearchCursor('citation_view', ['DatasetSourceName', 'DatasetSourceCitation']) as cursor:
             row = None
             for row in EBARUtils.searchCursor(cursor):
@@ -326,9 +321,9 @@ class PublishRangeMapTool:
         map_frame.camera.setExtent(buffered_extent)
         if range_map_scope == 'Canadian':
             element_global_id += 'N'
-        layout.exportToJPEG(download_folder + '/EBAR' + element_global_id + '.jpg', 300,
+        layout.exportToJPEG(EBARUtils.download_folder + '/EBAR' + element_global_id + '.jpg', 300,
                             clip_to_elements=True)
-        pdf_html = pdf_html.replace('[map_image]', download_folder + '/EBAR' + element_global_id + '.jpg')
+        pdf_html = pdf_html.replace('[map_image]', EBARUtils.download_folder + '/EBAR' + element_global_id + '.jpg')
 
         # generate pdf
         EBARUtils.displayMessage(messages, 'Generating PDF')
@@ -346,34 +341,27 @@ class PublishRangeMapTool:
             'no-outline': None,
             'enable-local-file-access': None
         }
-        pdfkit.from_string(pdf_html, download_folder + '/EBAR' + element_global_id + '.pdf', pdf_options)
+        pdfkit.from_string(pdf_html, EBARUtils.download_folder + '/EBAR' + element_global_id + '.pdf', pdf_options)
 
         # generate zip
         if param_spatial == 'true':
             # make folder, copy in static resources and EBAR pdf
             EBARUtils.displayMessage(messages, 'Creating ZIP folder and copying files')
-            zip_folder = temp_folder + '/EBAR' + element_global_id
-            if os.path.exists(zip_folder):
-                shutil.rmtree(zip_folder)
-                # pause before trying to make the dir
-                time.sleep(1)
-            os.mkdir(zip_folder)
-            shutil.copyfile(resources_folder + '/Readme.txt', zip_folder + '/Readme.txt')
-            shutil.copyfile(resources_folder + '/EBARMethods.pdf', zip_folder + '/EBARMethods.pdf')
-            shutil.copyfile(resources_folder + '/Jurisdiction.csv', zip_folder + '/Jurisdiction.csv')
-            shutil.copyfile(download_folder + '/EBAR' + element_global_id + '.pdf',
+            EBARUtils.createReplaceFolder(EBARUtils.temp_folder + '/EBAR' + element_global_id)
+            zip_folder = EBARUtils.temp_folder + '/EBAR' + element_global_id
+            EBARUtils.createReplaceFolder(zip_folder)
+            shutil.copyfile(EBARUtils.resources_folder + '/Readme.txt', zip_folder + '/Readme.txt')
+            shutil.copyfile(EBARUtils.resources_folder + '/EBARMethods.pdf', zip_folder + '/EBARMethods.pdf')
+            shutil.copyfile(EBARUtils.resources_folder + '/Jurisdiction.csv', zip_folder + '/Jurisdiction.csv')
+            shutil.copyfile(EBARUtils.download_folder + '/EBAR' + element_global_id + '.pdf',
                             zip_folder + '/EBAR' + element_global_id + '.pdf')
 
             # export range map, with biotics/species additions
             EBARUtils.displayMessage(messages, 'Exporting RangeMap to CSV')
-            arcpy.MakeTableView_management(ebar_feature_service + '/11', 'range_map_view' + param_range_map_id,
-                                           'RangeMapID = ' + param_range_map_id)
-            #arcpy.AddJoin_management('range_map_view' + param_range_map_id, 'SpeciesID', ebar_feature_service + '/4',
-            #                         'SpeciesID', 'KEEP_COMMON')
+            arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/11',
+                                           'range_map_view' + param_range_map_id, 'RangeMapID = ' + param_range_map_id)
             arcpy.AddJoin_management('range_map_view' + param_range_map_id, 'SpeciesID', 'biotics_view', 'SpeciesID',
                                      'KEEP_COMMON')
-            #arcpy.AddJoin_management('range_map_view' + param_range_map_id, 'SpeciesID', ebar_feature_service + '/19',
-            #                         'SpeciesID', 'KEEP_COMMON')
             arcpy.AddJoin_management('range_map_view' + param_range_map_id, 'SpeciesID', 'species_view', 'SpeciesID',
                                      'KEEP_COMMON')
             field_mappings = arcpy.FieldMappings()
@@ -474,7 +462,8 @@ class PublishRangeMapTool:
 
             # export range map ecoshapes
             EBARUtils.displayMessage(messages, 'Exporting RangeMapEcoshape records to CSV')
-            arcpy.MakeTableView_management(ebar_feature_service + '/12', 'range_map_ecoshape_view' + param_range_map_id,
+            arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/12',
+                                           'range_map_ecoshape_view' + param_range_map_id,
                                            'RangeMapID = ' + param_range_map_id)
             field_mappings = arcpy.FieldMappings()
             field_mappings.addFieldMap(EBARUtils.createFieldMap('range_map_ecoshape_view' + param_range_map_id,
@@ -494,7 +483,8 @@ class PublishRangeMapTool:
 
             # export range map ecoshapes
             EBARUtils.displayMessage(messages, 'Exporting Ecoshape polygons to shapefile')
-            arcpy.MakeFeatureLayer_management(ebar_feature_service + '/3', 'ecoshape_layer' + param_range_map_id)
+            arcpy.MakeFeatureLayer_management(EBARUtils.ebar_feature_service + '/3',
+                                              'ecoshape_layer' + param_range_map_id)
             arcpy.AddJoin_management('ecoshape_layer' + param_range_map_id, 'EcoshapeID',
                                      'range_map_ecoshape_view' + param_range_map_id, 'EcoshapeID')
             field_mappings = arcpy.FieldMappings()
@@ -522,7 +512,7 @@ class PublishRangeMapTool:
                                                         'Ecoshape.shp', field_mapping=field_mappings)
             # export range map overview ecoshapes
             EBARUtils.displayMessage(messages, 'Exporting EcoshapeOverview polygons to shapefile')
-            arcpy.MakeFeatureLayer_management(ebar_feature_service + '/22',
+            arcpy.MakeFeatureLayer_management(EBARUtils.ebar_feature_service + '/22',
                                               'ecoshape_overview_layer' + param_range_map_id)
             arcpy.AddJoin_management('ecoshape_overview_layer' + param_range_map_id, 'EcoshapeID',
                                      'range_map_ecoshape_view' + param_range_map_id, 'EcoshapeID')
@@ -604,13 +594,13 @@ class PublishRangeMapTool:
 
             # update ArcGIS Pro template
             EBARUtils.displayMessage(messages, 'Updating ArcGIS Pro template')
-            shutil.copyfile(resources_folder + '/EBARTemplate.aprx',
+            shutil.copyfile(EBARUtils.resources_folder + '/EBARTemplate.aprx',
                             zip_folder + '/EBAR' + element_global_id + '.aprx')
             aprx = arcpy.mp.ArcGISProject(zip_folder + '/EBAR' + element_global_id + '.aprx')
             aprx.homeFolder = zip_folder
             #arcpy.CreateFileGDB_management(zip_folder, 'default.gdb')
             #aprx.defaultGeodatabase = zip_folder + '/default.gdb'
-            #shutil.copyfile(resources_folder + '/default.tbx', zip_folder + '/default.tbx')
+            #shutil.copyfile(EBARUtils.resources_folder + '/default.tbx', zip_folder + '/default.tbx')
             #aprx.defaultToolbox = zip_folder + '/default.tbx'
             map = aprx.listMaps('EBARTemplate')[0]
             map.name = 'EBAR' + element_global_id
@@ -638,22 +628,23 @@ class PublishRangeMapTool:
 
             # copy ArcGIS Pro template
             EBARUtils.displayMessage(messages, 'Copying ArcMap template')
-            shutil.copyfile(resources_folder + '/EBAR.mxd', zip_folder + '/EBAR' + element_global_id + '.mxd')
-            shutil.copyfile(resources_folder + '/EcoshapeOverview.lyr',
+            shutil.copyfile(EBARUtils.resources_folder + '/EBAR.mxd',
+                            zip_folder + '/EBAR' + element_global_id + '.mxd')
+            shutil.copyfile(EBARUtils.resources_folder + '/EcoshapeOverview.lyr',
                             zip_folder + '/EBAR' + element_global_id + 'EcoshapeOverview.lyr')
-            shutil.copyfile(resources_folder + '/Ecoshape.lyr',
+            shutil.copyfile(EBARUtils.resources_folder + '/Ecoshape.lyr',
                             zip_folder + '/EBAR' + element_global_id + 'Ecoshape.lyr')
 
             # zip
             EBARUtils.displayMessage(messages, 'Creating ZIP')
-            os.chdir(temp_folder)
-            zipf = zipfile.ZipFile(download_folder + '/EBAR' + element_global_id + '.zip', 'w', zipfile.ZIP_DEFLATED)
-            for root, dirs, files in os.walk(zip_folder):
-                for file in files:
-                    if file[-5:] != '.lock':
-                        #zipf.write(os.path.join(root, file))
-                        zipf.write('EBAR' + element_global_id + '/' + file)
-            #shutil.rmtree(zip_folder)
+            EBARUtils.createZip(zip_folder, EBARUtils.download_folder + '/EBAR' + element_global_id)
+            #os.chdir(EBARUtils.temp_folder)
+            #zipf = zipfile.ZipFile(EBARUtils.download_folder + '/EBAR' + element_global_id + '.zip', 'w',
+            #                       zipfile.ZIP_DEFLATED)
+            #for root, dirs, files in os.walk(zip_folder):
+            #    for file in files:
+            #        if file[-5:] != '.lock':
+            #            zipf.write('EBAR' + element_global_id + '/' + file)
 
         # set publish date
         with arcpy.da.UpdateCursor('range_map_view', ['PublishDate']) as update_cursor:
@@ -689,7 +680,7 @@ if __name__ == '__main__':
     # Batch 2a = 124, 617, 45, 56, 237, 623, 624, 630, 632, 643, 644, 646, 647, 648, 670, 671
     # Batch 2b = 685, 1086, 687, 688, 689, 683, 705, 706, 707, 708, 709, 710, 716, 717, 718, 719, 720, 721, 722, 723, 1087, 714, 713, 711, 728, 1089, 737, 1090, 740, 820, 821, 822, 747, 823
     # Batch 2c = 749, 824
-    batch_ids = [749, 824]
+    batch_ids = [824]
     for id in batch_ids:
         # hard code parameters for debugging
         param_range_map_id = arcpy.Parameter()

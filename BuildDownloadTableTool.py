@@ -31,7 +31,6 @@ class BuildDownloadTableTool:
         # settings
         #output_file = 'F:/download/EBARDownloadTables.html'
         output_file = 'C:/GIS/EBAR/pub/EBARDownloadTables.html'
-        ebar_feature_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/EBAR/FeatureServer'
 
         # html header
         html = '''<!doctype html>
@@ -70,11 +69,12 @@ class BuildDownloadTableTool:
     </style>
 	<body>'''
         # loop all RangeMap records where IncludeInDownloadTable=1
-        arcpy.MakeTableView_management(ebar_feature_service + '/11', 'range_map_view', 'IncludeInDownloadTable = 1')
+        arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/11', 'range_map_view',
+                                       'IncludeInDownloadTable = 1')
         # join BIOTICS_ELEMENT_NATIONAL to RangeMap
-        arcpy.AddJoin_management('range_map_view', 'SpeciesID', ebar_feature_service + '/4', 'SpeciesID',
+        arcpy.AddJoin_management('range_map_view', 'SpeciesID', EBARUtils.ebar_feature_service + '/4', 'SpeciesID',
                                  'KEEP_COMMON')
-        category_taxa = ''
+        category_taxagroup = ''
         # use Python sorted (sql_clause ORDER BY doesn't work), which precludes use of EBARUtils.SearchCursor
         for row in sorted(arcpy.da.SearchCursor('range_map_view',
                           ['L4BIOTICS_ELEMENT_NATIONAL.CATEGORY',
@@ -84,16 +84,16 @@ class BuildDownloadTableTool:
                            'L4BIOTICS_ELEMENT_NATIONAL.NATIONAL_FR_NAME',
                            'L4BIOTICS_ELEMENT_NATIONAL.ELEMENT_GLOBAL_ID',
                            'L11RangeMap.RangeMapScope'])):
-            if row[0] + ' - ' + row[1] != category_taxa:
-                if category_taxa != '':
+            if row[0] + ' - ' + row[1] != category_taxagroup:
+                if category_taxagroup != '':
                     # table footer for previous table
                     html += '''
         </tbody></table>'''
                 # table header
-                category_taxa = row[0] + ' - ' + row[1]
-                EBARUtils.displayMessage(messages, category_taxa + ' table')
+                category_taxagroup = row[0] + ' - ' + row[1]
+                EBARUtils.displayMessage(messages, category_taxagroup + ' table')
                 html += '''
-        <h2>''' + category_taxa + '''</h2>
+        <h2>''' + category_taxagroup + '''</h2>
         <table><tbody>
             <tr>
     	        <th>Scientific Name</th>

@@ -12,6 +12,23 @@ import collections
 import arcpy
 import math
 import datetime
+import os
+import pathlib
+import shutil
+import time
+import zipfile
+
+
+# various shared folders
+resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
+temp_folder = 'C:/GIS/EBAR/temp'
+download_folder = 'C:/GIS/EBAR/pub/download'
+#download_folder = 'F:/download'
+
+
+# various services
+ebar_feature_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/EBAR/FeatureServer'
+ebar_summary_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/Summary/FeatureServer'
 
 
 # lowest accuracy data added to database (metres, based on diagonal of 0.2 degrees square at equator)
@@ -227,27 +244,6 @@ def readElementSpecies(geodatabase):
     return element_species_dict
 
 
-#def checkAddSpecies(species_dict, geodatabase, scientific_name):
-#    """If Scientific Name already in Species table, return id and true; otherwise, add and return id and false"""
-#    ret_val = None
-
-#    # capitalize first letter only
-#    cap_name = scientific_name.capitalize()
-
-#    # existing
-#    if cap_name in species_dict:
-#        return species_dict[cap_name], True
-
-#    # new
-#    with arcpy.da.InsertCursor(geodatabase + '/Species', ['ScientificName']) as cursor:
-#        species_id = cursor.insertRow([cap_name])
-
-#    # id of new
-#    setNewID(geodatabase + '/Species', 'SpeciesID', 'OBJECTID = ' + str(species_id))
-#    species_dict[cap_name] = species_id
-#    return species_id, False
-
-
 def checkSpecies(scientific_name, geodatabase):
     """if exists return SpeciesID"""
     species_id = None
@@ -434,3 +430,24 @@ def updateArcGISProTemplate(aprx_template, zip_folder, element_global_id, new_md
     if range_map_id:
         range_map_ecoshape_table.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
     aprx.save()
+
+
+def createReplaceFolder(folder):
+    """create the passed folder, first removing it if it already exists"""
+    if os.path.exists(folder):
+        shutil.rmtree(folder)
+        # pause before trying to make the dir
+        time.sleep(1)
+    os.mkdir(folder)
+
+
+def createZip(zip_folder, zip_output_file):
+    """create zip file"""
+    path = pathlib.Path(zip_folder)
+    os.chdir(path.parent)
+    zip_folder_name = os.path.basename(zip_folder)
+    zipf = zipfile.ZipFile(zip_output_file, 'w', zipfile.ZIP_DEFLATED)
+    for root, dirs, files in os.walk(zip_folder):
+        for file in files:
+            if file[-5:] != '.lock':
+                zipf.write(zip_folder_name + '/' + file)
