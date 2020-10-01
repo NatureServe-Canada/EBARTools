@@ -17,6 +17,7 @@ import pathlib
 import shutil
 import time
 import zipfile
+import csv
 
 
 # various shared folders
@@ -459,3 +460,149 @@ def createZip(zip_folder, zip_output_file, only_include_extension):
                 include = False
             if include:
                 zipf.write(zip_folder_name + '/' + file)
+
+
+def ExportRangeMapToCSV(range_map_view, where_clause, attribute_dict, output_folder, output_csv):
+    """create csv for range map, with appropriate joined data"""
+    arcpy.MakeTableView_management(ebar_feature_service + '/11', range_map_view, where_clause)
+    arcpy.AddJoin_management(range_map_view, 'SpeciesID', 'biotics_view', 'SpeciesID', 'KEEP_COMMON')
+    arcpy.AddJoin_management(range_map_view, 'SpeciesID', 'species_view', 'SpeciesID', 'KEEP_COMMON')
+    field_mappings = arcpy.FieldMappings()
+    field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.RangeMapID', 'RangeMapID', 'LONG'))
+    field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.RangeVersion', 'RangeVersion', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.RangeStage', 'RangeStage', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.RangeDate', 'RangeDate', 'DATE'))
+    field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.RangeMapScope', 'RangeMapScope', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.RangeMetadata', 'RangeMetadata', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.RangeMapNotes', 'RangeMapNotes', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.RangeMapComments', 'RangeMapComments',
+                                              'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.SynonymsUsed', 'SynonymsUsed', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.ELEMENT_NATIONAL_ID',
+                                              'ELEMENT_NATIONAL_ID', 'LONG'))
+    field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.ELEMENT_GLOBAL_ID',
+                                              'ELEMENT_GLOBAL_ID', 'LONG'))
+    field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.ELEMENT_CODE',
+                                              'ELEMENT_CODE', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.CATEGORY',
+                                              'CATEGORY', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.TAX_GROUP',
+                                              'TAX_GROUP', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.FAMILY_COM',
+                                              'FAMILY_COM', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.GENUS',
+                                              'GENUS', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.PHYLUM',
+                                              'PHYLUM', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.CA_NNAME_LEVEL',
+                                              'CA_NNAME_LEVEL', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME',
+                                              'NATIONAL_SCIENTIFIC_NAME', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.NATIONAL_ENGL_NAME',
+                                              'NATIONAL_ENGL_NAME', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.NATIONAL_FR_NAME',
+                                              'NATIONAL_FR_NAME', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.COSEWIC_NAME',
+                                              'COSEWIC_NAME', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(range_map_view, 'L19Species.ENDEMISM_TYPE', 'ENDEMISM_TYPE', 'TEXT'))
+    arcpy.TableToTable_conversion(range_map_view, output_folder, 'temp.csv', field_mapping=field_mappings)
+
+    # add NSE Taxon API fields
+    with open(output_folder + '/temp.csv','r') as csv_input:
+        with open(output_folder + '/' + output_csv, 'w') as csv_output:
+            writer = csv.writer(csv_output, lineterminator='\n')
+            reader = csv.reader(csv_input)
+            all = []
+            row = next(reader)
+            row[0] = 'objectid'
+            row.append('GRANK')
+            row.append('NRANK_CA')
+            row.append('SRANKS_CA')
+            row.append('NRANK_US')
+            row.append('SRANKS_US')
+            row.append('NRANK_MX')
+            row.append('SRANKS_MX')
+            row.append('SARA_STATUS')
+            row.append('COSEWIC_STATUS')
+            row.append('ESA_STATUS')
+            all.append(row)
+            for row in reader:
+                row[0] = row[1]
+                row.append(attribute_dict['g_rank'])
+                row.append(attribute_dict['ca_rank'])
+                row.append(attribute_dict['ca_subnational_ranks'])
+                row.append(attribute_dict['us_rank'])
+                row.append(attribute_dict['us_subnational_ranks'])
+                row.append(attribute_dict['mx_rank'])
+                row.append(attribute_dict['mx_subnational_ranks'])
+                row.append(attribute_dict['sara_status'])
+                row.append(attribute_dict['cosewic_status'])
+                row.append(attribute_dict['esa_status'])
+                all.append(row)
+            writer.writerows(all)
+    arcpy.Delete_management(output_folder + '/temp.csv')
+
+
+def ExportRangeMapEcoshapesToCSV(range_map_ecoshape_view, where_clause, output_folder, output_csv):
+    """create csv for range map ecoshape"""
+    arcpy.MakeTableView_management(ebar_feature_service + '/12', range_map_ecoshape_view, where_clause)
+    field_mappings = arcpy.FieldMappings()
+    field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'RangeMapID', 'RangeMapID', 'LONG'))
+    field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'EcoshapeID', 'EcoshapeID', 'LONG'))
+    field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'Presence', 'Presence', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'RangeMapEcoshapeNotes',
+                                              'RangeMapEcoshapeNotes', 'TEXT'))
+    arcpy.TableToTable_conversion(range_map_ecoshape_view, output_folder, 'RangeMapEcoshape.csv',
+                                  field_mapping=field_mappings)
+    arcpy.Delete_management(output_folder + '/RangeMapEcoshape.csv.xml')
+    arcpy.Delete_management(output_folder + '/schema.ini')
+    arcpy.Delete_management(output_folder + '/info')
+
+
+def ExportEcoshapesToShapefile(ecoshape_layer, range_map_ecoshape_view, output_folder, output_shapefile):
+    """create shapefile for ecoshapes"""
+    arcpy.MakeFeatureLayer_management(ebar_feature_service + '/3', ecoshape_layer)
+    arcpy.AddJoin_management(ecoshape_layer, 'EcoshapeID', range_map_ecoshape_view, 'EcoshapeID')
+    field_mappings = arcpy.FieldMappings()
+    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, 'L3Ecoshape.EcoshapeID', 'EcoshapeID', 'LONG'))
+    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, 'L3Ecoshape.JurisdictionID', 'JurisID', 'LONG'))
+    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, 'L3Ecoshape.EcoshapeName', 'EcoName', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, 'L3Ecoshape.ParentEcoregion', 'ParentEco', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, 'L3Ecoshape.ParentEcoregionFR', 'ParentEcoF', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, 'L3Ecoshape.Ecozone', 'Ecozone', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, 'L3Ecoshape.EcozoneFR', 'EcozoneFR', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, 'L3Ecoshape.MosaicVersion', 'MosaicVer', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, 'L3Ecoshape.TerrestrialArea', 'TerrArea', 'DOUBLE'))
+    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, 'L3Ecoshape.TotalArea', 'TotalArea', 'DOUBLE'))
+    arcpy.FeatureClassToFeatureClass_conversion(ecoshape_layer, output_folder, output_shapefile,
+                                                field_mapping=field_mappings)
+
+
+def ExportEcoshapeOverviewsToShapefile(ecoshape_overview_layer, range_map_ecoshape_view, output_folder,
+                                               output_shapefile):
+    """create shapefile for overview ecoshapes"""
+    arcpy.MakeFeatureLayer_management(ebar_feature_service + '/22', ecoshape_overview_layer)
+    arcpy.AddJoin_management(ecoshape_overview_layer, 'EcoshapeID', range_map_ecoshape_view, 'EcoshapeID')
+    field_mappings = arcpy.FieldMappings()
+    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, 'L22EcoshapeOverview.EcoshapeID',
+                                              'EcoshapeID', 'LONG'))
+    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, 'L22EcoshapeOverview.JurisdictionID',
+                                              'JurisID', 'LONG'))
+    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, 'L22EcoshapeOverview.EcoshapeName',
+                                              'EcoName', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, 'L22EcoshapeOverview.ParentEcoregion',
+                                              'ParentEco', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, 'L22EcoshapeOverview.ParentEcoregionFR',
+                                              'ParentEcoF', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, 'L22EcoshapeOverview.Ecozone',
+                                              'Ecozone', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, 'L22EcoshapeOverview.EcozoneFR',
+                                              'EcozoneFR', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, 'L22EcoshapeOverview.MosaicVersion',
+                                              'MosaicVer', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, 'L22EcoshapeOverview.TerrestrialArea',
+                                              'TerrArea', 'DOUBLE'))
+    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, 'L22EcoshapeOverview.TotalArea',
+                                              'TotalArea', 'DOUBLE'))
+    arcpy.FeatureClassToFeatureClass_conversion(ecoshape_overview_layer, output_folder, output_shapefile,
+                                                field_mapping=field_mappings)
