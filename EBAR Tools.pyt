@@ -21,7 +21,7 @@ import AddSynonymsTool
 import ImportExternalRangeReviewTool
 import SyncSpeciesListKBATool
 import BuildEBARDownloadTableTool
-import BuildCategoryTaxaDownloadTableTool
+import BuildBulkDownloadTableTool
 import EBARUtils
 import datetime
 import locale
@@ -36,7 +36,7 @@ class Toolbox(object):
         # List of tool classes associated with this toolbox
         self.tools = [ImportTabularData, ImportSpatialData, GenerateRangeMap, ListElementNationalIDs,
                       SyncSpeciesListBiotics, AddSynonyms, ImportExternalRangeReview, SyncSpeciesListKBA,
-                      BuildEBARDownloadTable, BuildCategoryTaxaDownloadTable]
+                      BuildEBARDownloadTable, BuildBulkDownloadTable]
 
 
 class ImportTabularData(object):
@@ -707,11 +707,11 @@ class BuildEBARDownloadTable(object):
         return
 
 
-class BuildCategoryTaxaGroupDownloadTable(object):
+class BuildBulkDownloadTable(object):
     def __init__(self):
         """Define the tool (tool name is the name of the class)."""
-        self.label = 'Build EBAR Download Table'
-        self.description = 'Build html table of all Range Maps available for download'
+        self.label = 'Build Bulk Download Table'
+        self.description = 'Build html table of all Category - Taxa Groups available for bulk download'
         self.canRunInBackground = True
 
     def getParameterInfo(self):
@@ -735,8 +735,8 @@ class BuildCategoryTaxaGroupDownloadTable(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        bctgdt = BuildCategoryTaxaGroupDownloadTableTool.BuildCategoryTaxaGroupDownloadTableTool()
-        bctgdt.runBuildCategoryTaxaGroupDownloadTableTool(parameters, messages)
+        bbdt = BuildBulkDownloadTableTool.BuildBulkDownloadTableTool()
+        bbdt.runBuildBulkDownloadTableTool(parameters, messages)
         return
 
 

@@ -4,7 +4,7 @@
 # Credits: Randal Greene, Christine Terwissen
 # © NatureServe Canada 2020 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
-# Program: BuildCategoryTaxaDownloadTableTool.py
+# Program: BuildBulkDownloadTableTool.py
 # ArcGIS Python tool for building html table of category/taxa download links
 
 # Notes:
@@ -18,12 +18,12 @@ import arcpy
 import datetime
 
 
-class BuildCategoryTaxaGroupDownloadTableTool:
+class BuildBulkDownloadTableTool:
     """Create html table per taxa / category group downloads"""
     def __init__(self):
         pass
 
-    def runBuildCategoryTaxaGroupDownloadTableTool(self, parameters, messages):
+    def runBuildBulkDownloadTableTool(self, parameters, messages):
         # start time
         start_time = datetime.datetime.now()
         EBARUtils.displayMessage(messages, 'Start time: ' + str(start_time))
@@ -114,5 +114,5 @@ class BuildCategoryTaxaGroupDownloadTableTool:
 
 # controlling process
 if __name__ == '__main__':
-    bctgdt = BuildCategoryTaxaGroupDownloadTableTool()
-    bctgdt.runBuildCategoryTaxaGroupDownloadTableTool(None, None)
+    bbdt = BuildBulkDownloadTableTool()
+    bbdt.runBuildBulkDownloadTableTool(None, None)
