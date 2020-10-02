@@ -399,41 +399,6 @@ def getTableNamePrefix(geodatabase):
     return table_name_prefix
 
 
-def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_id):
-    """update ArcGIS Pro template for passed element_global_id"""
-    shutil.copyfile(resources_folder + '/EBARTemplate.aprx', zip_folder + '/EBAR' + element_global_id + '.aprx')
-    aprx = arcpy.mp.ArcGISProject(zip_folder + '/EBAR' + element_global_id + '.aprx')
-    aprx.homeFolder = zip_folder
-    map = aprx.listMaps('EBARTemplate')[0]
-    map.name = 'EBAR' + element_global_id
-    ecoshape_overview_layer =  map.listLayers('EBARTemplateEcoshapeOverview')[0]
-    ecoshape_overview_layer_md = ecoshape_overview_layer.metadata
-    metadata.title = 'EBAR EcoshapeOverview.shp'
-    metadata.summary = 'Polygons shapefile of generalized ecoshapes for EBAR for selected species'
-    ecoshape_overview_layer_md.copy(metadata)
-    ecoshape_overview_layer_md.save()
-    ecoshape_overview_layer.name = 'EBAR' + element_global_id + 'EcoshapeOverview'
-    ecoshape_overview_layer.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
-    ecoshape_overview_layer.saveACopy(zip_folder + '/EBAR' + element_global_id + 'EcoshapeOverview.lyrx')
-    ecoshape_layer =  map.listLayers('EBARTemplateEcoshape')[0]
-    ecoshape_layer_md = ecoshape_overview_layer.metadata
-    metadata.title = 'EBAR Ecoshape.shp'
-    metadata.summary = 'Polygons shapefile of original ecoshapes for EBAR for selected species'
-    ecoshape_layer_md.copy(metadata)
-    ecoshape_layer_md.save()
-    ecoshape_layer.name = 'EBAR' + element_global_id + 'Ecoshape'
-    ecoshape_layer.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
-    ecoshape_layer.saveACopy(zip_folder + '/EBAR' + element_global_id + 'Ecoshape.lyrx')
-    range_map_table = map.listTables('EBARTemplateRangeMap')[0]
-    range_map_table.name = 'EBAR' + element_global_id + 'RangeMap'
-    range_map_table.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
-    range_map_ecoshape_table = map.listTables('EBARTemplateRangeMapEcoshape')[0]
-    range_map_ecoshape_table.name = 'EBAR' + element_global_id + 'RangeMapEcoshape'
-    range_map_ecoshape_table.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
-    aprx.save()
-    map.exportToMAPX(zip_folder + '/EBAR' + element_global_id + '.mapx')
-
-
 def createReplaceFolder(folder):
     """create the passed folder, first removing it if it already exists"""
     if os.path.exists(folder):
@@ -747,3 +712,54 @@ def getTaxonAttributes(global_unique_id, element_global_id, range_map_id, messag
                     attributes_dict['sara_status'] = row['SARA_STATUS']
 
     return attributes_dict
+
+
+def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_id):
+    """update ArcGIS Pro template for passed element_global_id"""
+    # copy template and set project and map properties
+    shutil.copyfile(resources_folder + '/EBARTemplate.aprx', zip_folder + '/EBAR' + element_global_id + '.aprx')
+    aprx = arcpy.mp.ArcGISProject(zip_folder + '/EBAR' + element_global_id + '.aprx')
+    aprx.homeFolder = zip_folder
+    #aprx.updateConnectionProperties(zip_folder, '.')
+    map = aprx.listMaps('EBARTemplate')[0]
+    map.name = 'EBAR' + element_global_id
+    # set layer metadata and properties, saving each to a layer file
+    ecoshape_overview_layer =  map.listLayers('EBARTemplateEcoshapeOverview')[0]
+    ecoshape_overview_layer_md = ecoshape_overview_layer.metadata
+    metadata.title = 'EBAR EcoshapeOverview.shp'
+    metadata.summary = 'Polygons shapefile of generalized ecoshapes for EBAR for selected species'
+    ecoshape_overview_layer_md.copy(metadata)
+    ecoshape_overview_layer_md.save()
+    ecoshape_overview_layer.name = 'EBAR' + element_global_id + 'EcoshapeOverview'
+    ecoshape_overview_layer.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
+    ecoshape_overview_layer.saveACopy(zip_folder + '/EBAR' + element_global_id + 'EcoshapeOverview.lyrx')
+    ecoshape_layer =  map.listLayers('EBARTemplateEcoshape')[0]
+    ecoshape_layer_md = ecoshape_overview_layer.metadata
+    metadata.title = 'EBAR Ecoshape.shp'
+    metadata.summary = 'Polygons shapefile of original ecoshapes for EBAR for selected species'
+    ecoshape_layer_md.copy(metadata)
+    ecoshape_layer_md.save()
+    ecoshape_layer.name = 'EBAR' + element_global_id + 'Ecoshape'
+    ecoshape_layer.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
+    ecoshape_layer.saveACopy(zip_folder + '/EBAR' + element_global_id + 'Ecoshape.lyrx')
+    range_map_table = map.listTables('EBARTemplateRangeMap')[0]
+    range_map_table.name = 'EBAR' + element_global_id + 'RangeMap'
+    range_map_table.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
+    range_map_ecoshape_table = map.listTables('EBARTemplateRangeMapEcoshape')[0]
+    range_map_ecoshape_table.name = 'EBAR' + element_global_id + 'RangeMapEcoshape'
+    range_map_ecoshape_table.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
+    # save project
+    aprx.save()
+    # also save map file
+    mapx_path = zip_folder + '/EBAR' + element_global_id + '.mapx'
+    map.exportToMAPX(mapx_path)
+    # kludge to get around embedding of path, which is inconsistent with interactive save to map file
+    mapx_file = open(mapx_path)
+    mapx_text = mapx_file.read()
+    mapx_file.close()
+    os.remove(mapx_path)
+    conn_string = aprx.homeFolder[2:].replace('\\', '\\\\')
+    mapx_text = mapx_text.replace(conn_string, '.')
+    mapx_file = open(mapx_path, 'w')
+    mapx_file.write(mapx_text)
+    mapx_file.close()

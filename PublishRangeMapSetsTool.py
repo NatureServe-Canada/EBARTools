@@ -13,13 +13,9 @@
 
 
 # import Python packages
-#import sys
-#import locale
 import EBARUtils
 import shutil
 import arcpy
-import arcpy.mp
-import arcpy.metadata
 
 
 class PublishRangeMapSetsTool:
@@ -80,8 +76,10 @@ class PublishRangeMapSetsTool:
         # make variables for parms
         EBARUtils.displayMessage(messages, 'Processing parameters')
         param_category = parameters[0].valueAsText
-        EBARUtils.displayMessage(messages, 'Category: ' + param_category)
-        param_taxagroup = parameters[1].valueAsText
+        if param_category:
+            EBARUtils.displayMessage(messages, 'Category: ' + param_category)
+        if param_param_taxagroup:
+            param_taxagroup = parameters[1].valueAsText
         EBARUtils.displayMessage(messages, 'Taxa Group: ' + param_taxagroup)
 
         # generate metadata
@@ -175,9 +173,10 @@ class PublishRangeMapSetsTool:
 if __name__ == '__main__':
     prms = PublishRangeMapSetsTool()
     param_category = arcpy.Parameter()
-    param_category.value = 'Invertebrate Animal'
+    #param_category.value = 'Invertebrate Animal'
+    param_category.value = None
     param_taxagroup = arcpy.Parameter()
-    param_taxagroup.value = 'Bumble Bees'
-    #param_taxagroup.value = None
+    #param_taxagroup.value = 'Mayflies'
+    param_taxagroup.value = None
     parameters = [param_category, param_taxagroup]
     prms.runPublishRangeMapSetsTool(parameters, None)
