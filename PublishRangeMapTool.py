@@ -121,7 +121,6 @@ class PublishRangeMapTool:
                 pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.ELEMENT_CODE]', element_code)
                 global_unique_id = row['GLOBAL_UNIQUE_IDENTIFIER']
                 global_unique_id = global_unique_id.replace('-', '.')
-                #nsx_url = 'https://explorer.natureserve.org/Taxon/ELEMENT_GLOBAL.2.' + element_global_id
                 nsx_url = 'https://explorer.natureserve.org/Taxon/ELEMENT_GLOBAL.' + global_unique_id
                 pdf_html = pdf_html.replace('[NSE2.0_URL]', nsx_url)
                 #endemism = 'None'

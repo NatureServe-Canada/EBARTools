@@ -10,6 +10,7 @@ This ZIP package should contain the following files:
 - RangeMapEcoshape.csv (table of per-ecoshape attributes for EBAR for selected species)
 - Jurisdiction.csv (table of jurisdictions)
 - EXARxxxxx.aprx (ArcGIS Pro project file referencing the data files above, with appropriate joins)
+- EXARxxxxx.mapx (ArcGIS Pro map file referencing the data files above, with appropriate joins)
 - EBARxxxxxEcoshape.lyrx (ArcGIS Pro layer file, with suggested symbology and appropriate joins, referencing the original ecoshapes)
 - EBARxxxxxEcoshapeOverview.lyrx (ArcGIS Pro layer file, with suggested symbology and appropriate joins, referencing the generalized ecoshapes)
 - EBARxxxxx.mxd (ArcMap project file referencing the data files above)

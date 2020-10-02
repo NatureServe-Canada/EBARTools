@@ -27,7 +27,7 @@ class PublishRangeMapSetsTool:
     def __init__(self):
         pass
 
-    def ProcessCategoryTaxaGroup(self, messages, category_taxagroup, range_map_ids, attributes_dict, zip_folder,
+    def processCategoryTaxaGroup(self, messages, category_taxagroup, range_map_ids, attributes_dict, zip_folder,
                                  metadata):
         # export range map, with biotics/species additions
         EBARUtils.displayMessage(messages, 'Exporting RangeMap records to CSV')
@@ -51,6 +51,12 @@ class PublishRangeMapSetsTool:
                                                      'range_map_ecoshape_view' + category_taxagroup, zip_folder, 
                                                      'EcoshapeOverview.shp', metadata)
 
+        # copy ArcMap template
+        EBARUtils.displayMessage(messages, 'Copying ArcMap template')
+        shutil.copyfile(EBARUtils.resources_folder + '/EBAR.mxd', zip_folder + '/EBAR ' + category_taxagroup + '.mxd')
+        shutil.copyfile(EBARUtils.resources_folder + '/EcoshapeOverview.lyr', zip_folder + '/EcoshapeOverview.lyr')
+        shutil.copyfile(EBARUtils.resources_folder + '/Ecoshape.lyr', zip_folder + '/Ecoshape.lyr')
+
         # create zips
         EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/EBAR - ' + \
             category_taxagroup + ' - All PDFs.zip')
@@ -63,7 +69,7 @@ class PublishRangeMapSetsTool:
                             EBARUtils.download_folder + '/EBAR - ' + category_taxagroup + ' - All Data.zip',
                             None)
 
-    def RunPublishRangeMapSetsTool(self, parameters, messages):
+    def runPublishRangeMapSetsTool(self, parameters, messages):
         # start time
         start_time = datetime.datetime.now()
         EBARUtils.displayMessage(messages, 'Start time: ' + str(start_time))
@@ -82,7 +88,8 @@ class PublishRangeMapSetsTool:
         EBARUtils.displayMessage(messages, 'Generating metadata')
         md = arcpy.metadata.Metadata()
         md.tags = 'Species Range, NatureServe Canada, Ecosystem-based Automated Range'
-        md.description = 'See EBARxxxxx.pdf for per-species map and additional metadata, and ' + \
+        md.description = 'See EBARxxxxx.pdf for per-species map and additional metadata, RangeMap.csv ' + \
+            'for species attributes for each ELEMENT_GLOBAL_ID (xxxxx), and ' + \
             'EBARMethods.pdf for additional details. <a href="https://explorer.natureserve.org/">Go to ' + \
             'NatureServe Explorer</a> for information about the species.'
         md.credits = '© NatureServe Canada ' + str(datetime.datetime.now().year)
@@ -121,7 +128,7 @@ class PublishRangeMapSetsTool:
                 # new category_taxagroup
                 if category_taxagroup != '':
                     # previous category_taxagroup
-                    self.ProcessCategoryTaxaGroup(messages, category_taxagroup, range_map_ids, attributes_dict,
+                    self.processCategoryTaxaGroup(messages, category_taxagroup, range_map_ids, attributes_dict,
                                                   zip_folder, md)
                 processed += 1
                 range_map_ids = []
@@ -152,9 +159,13 @@ class PublishRangeMapSetsTool:
             attributes_dict[str(row[8])] = EBARUtils.getTaxonAttributes(global_unique_id, element_global_id, row[8],
                                                                         messages)
 
+            # update ArcGIS Pro template
+            EBARUtils.displayMessage(messages, 'Updating ArcGIS Pro template')
+            EBARUtils.updateArcGISProTemplate(zip_folder, element_global_id, md, row[8])
+
         if row:
             # final category_taxagroup
-            self.ProcessCategoryTaxaGroup(messages, category_taxagroup, range_map_ids, attributes_dict, zip_folder, md)
+            self.processCategoryTaxaGroup(messages, category_taxagroup, range_map_ids, attributes_dict, zip_folder, md)
 
         EBARUtils.displayMessage(messages, 'Processed ' + str(processed) + ' categories/taxa')
         return
@@ -169,4 +180,4 @@ if __name__ == '__main__':
     param_taxagroup.value = 'Bumble Bees'
     #param_taxagroup.value = None
     parameters = [param_category, param_taxagroup]
-    prms.RunPublishRangeMapSetsTool(parameters, None)
+    prms.runPublishRangeMapSetsTool(parameters, None)

@@ -413,8 +413,7 @@ def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_i
     ecoshape_overview_layer_md.copy(metadata)
     ecoshape_overview_layer_md.save()
     ecoshape_overview_layer.name = 'EBAR' + element_global_id + 'EcoshapeOverview'
-    if range_map_id:
-        ecoshape_overview_layer.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
+    ecoshape_overview_layer.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
     ecoshape_overview_layer.saveACopy(zip_folder + '/EBAR' + element_global_id + 'EcoshapeOverview.lyrx')
     ecoshape_layer =  map.listLayers('EBARTemplateEcoshape')[0]
     ecoshape_layer_md = ecoshape_overview_layer.metadata
@@ -423,18 +422,16 @@ def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_i
     ecoshape_layer_md.copy(metadata)
     ecoshape_layer_md.save()
     ecoshape_layer.name = 'EBAR' + element_global_id + 'Ecoshape'
-    if range_map_id:
-        ecoshape_layer.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
+    ecoshape_layer.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
     ecoshape_layer.saveACopy(zip_folder + '/EBAR' + element_global_id + 'Ecoshape.lyrx')
     range_map_table = map.listTables('EBARTemplateRangeMap')[0]
     range_map_table.name = 'EBAR' + element_global_id + 'RangeMap'
-    if range_map_id:
-        range_map_table.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
+    range_map_table.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
     range_map_ecoshape_table = map.listTables('EBARTemplateRangeMapEcoshape')[0]
     range_map_ecoshape_table.name = 'EBAR' + element_global_id + 'RangeMapEcoshape'
-    if range_map_id:
-        range_map_ecoshape_table.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
+    range_map_ecoshape_table.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
     aprx.save()
+    map.exportToMAPX(zip_folder + '/EBAR' + element_global_id + '.mapx')
 
 
 def createReplaceFolder(folder):
