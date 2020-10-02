@@ -27,6 +27,41 @@ class PublishRangeMapSetsTool:
     def __init__(self):
         pass
 
+    def ProcessCategoryTaxaGroup(self, messages, category_taxagroup, range_map_ids, attributes_dict, zip_folder):
+        # export range map, with biotics/species additions
+        EBARUtils.displayMessage(messages, 'Exporting RangeMap records to CSV')
+        EBARUtils.ExportRangeMapToCSV('range_map_view' + category_taxagroup, range_map_ids, attributes_dict, zip_folder,
+                                      'RangeMap.csv')
+
+        # export range map ecoshapes
+        EBARUtils.displayMessage(messages, 'Exporting RangeMapEcoshape records to CSV')
+        EBARUtils.ExportRangeMapEcoshapesToCSV('range_map_ecoshape_view' + category_taxagroup, range_map_ids,
+                                               zip_folder, 'RangeMapEcoshape.csv')
+
+        # export ecoshapes
+        EBARUtils.displayMessage(messages, 'Exporting Ecoshape polygons to shapefile')
+        EBARUtils.ExportEcoshapesToShapefile('ecoshape_layer' + category_taxagroup,
+                                             'range_map_ecoshape_view' + category_taxagroup, zip_folder, 
+                                             'Ecoshape.shp', )
+
+        # export overview ecoshapes
+        EBARUtils.displayMessage(messages, 'Exporting EcoshapeOverview polygons to shapefile')
+        EBARUtils.ExportEcoshapeOverviewsToShapefile('ecoshape_overview_layer' + category_taxagroup,
+                                                     'range_map_ecoshape_view' + category_taxagroup, zip_folder, 
+                                                     'EcoshapeOverview.shp', )
+
+        # create zips
+        EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/EBAR - ' + \
+            category_taxagroup + ' - All PDFs.zip')
+        EBARUtils.createZip(zip_folder,
+                            EBARUtils.download_folder + '/EBAR - ' + category_taxagroup + ' - All PDFs.zip',
+                            '.pdf')
+        EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/EBAR - ' + \
+            category_taxagroup + ' - All Data.zip')
+        EBARUtils.createZip(zip_folder,
+                            EBARUtils.download_folder + '/EBAR - ' + category_taxagroup + ' - All Data.zip',
+                            None)
+
     def RunPublishRangeMapSetsTool(self, parameters, messages):
         # start time
         start_time = datetime.datetime.now()
@@ -38,10 +73,13 @@ class PublishRangeMapSetsTool:
         # make variables for parms
         EBARUtils.displayMessage(messages, 'Processing parameters')
         param_category = parameters[0].valueAsText
+        EBARUtils.displayMessage(messages, 'Category: ' + param_category)
         param_taxagroup = parameters[1].valueAsText
+        EBARUtils.displayMessage(messages, 'Taxa Group: ' + param_taxagroup)
 
         # loop all RangeMap records where IncludeInDownloadTable=1
-        arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/11', 'range_map_view', 'IncludeInDownloadTable = 1')
+        arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/11', 'range_map_view',
+                                       'IncludeInDownloadTable = 1')
         # join BIOTICS_ELEMENT_NATIONAL to RangeMap
         arcpy.AddJoin_management('range_map_view', 'SpeciesID', EBARUtils.ebar_feature_service + '/4', 'SpeciesID',
                                  'KEEP_COMMON')
@@ -65,22 +103,17 @@ class PublishRangeMapSetsTool:
                            'L4BIOTICS_ELEMENT_NATIONAL.NATIONAL_ENGL_NAME',
                            'L4BIOTICS_ELEMENT_NATIONAL.NATIONAL_FR_NAME',
                            'L4BIOTICS_ELEMENT_NATIONAL.ELEMENT_GLOBAL_ID',
-                           'L11RangeMap.RangeMapScope'], where_clause)):
+                           'L4BIOTICS_ELEMENT_NATIONAL.GLOBAL_UNIQUE_IDENTIFIER',
+                           'L11RangeMap.RangeMapScope',
+                           'L11RangeMap.RangeMapID'], where_clause)):
             if row[0] + ' - ' + row[1] != category_taxagroup:
                 # new category_taxagroup
-                processed += 1
                 if category_taxagroup != '':
-                    # zips for previous category_taxagroup
-                    EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/EBAR - ' + \
-                        category_taxagroup + ' - All PDFs.zip')
-                    EBARUtils.createZip(zip_folder,
-                                        EBARUtils.download_folder + '/EBAR - ' + category_taxagroup + \
-                                            ' - All PDFs.zip', '.pdf')
-                    EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/EBAR - ' + \
-                        category_taxagroup + ' - All Data.zip')
-                    EBARUtils.createZip(zip_folder,
-                                        EBARUtils.download_folder + '/EBAR - ' + category_taxagroup + ' - All Data.zip',
-                                        None)
+                    # previous category_taxagroup
+                    self.ProcessCategoryTaxaGroup(messages, category_taxagroup, range_map_ids, attributes_dict, zip_folder)
+                processed += 1
+                range_map_ids = []
+                attributes_dict = {}
 
                 # make zip folder
                 category_taxagroup = row[0] + ' - ' + row[1]
@@ -94,24 +127,22 @@ class PublishRangeMapSetsTool:
                 shutil.copyfile(EBARUtils.resources_folder + '/Jurisdiction.csv', zip_folder + '/Jurisdiction.csv')
 
             # copy pdf
+            EBARUtils.displayMessage(messages, 'Range Map ID: ' + str(row[8]))
             element_global_id = str(row[5])
-            if row[6] == 'N':
+            if row[7] == 'N':
                 element_global_id += 'N'
             shutil.copyfile(EBARUtils.download_folder + '/EBAR' + element_global_id + '.pdf',
                             zip_folder + '/EBAR' + element_global_id + '.pdf')
 
+            # set range map attributes
+            range_map_ids.append(str(row[8]))
+            global_unique_id = row[6].replace('-', '.')
+            attributes_dict[str(row[8])] = EBARUtils.getTaxonAttributes(global_unique_id, element_global_id, row[8],
+                                                                        messages)
+
         if row:
-            # zips for final category_taxagroup
-            EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/EBAR - ' + \
-                category_taxagroup + ' - All PDFs.zip')
-            EBARUtils.createZip(zip_folder,
-                                EBARUtils.download_folder + '/EBAR - ' + category_taxagroup + ' - All PDFs.zip',
-                                '.pdf')
-            EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/EBAR - ' + \
-                category_taxagroup + ' - All Data.zip')
-            EBARUtils.createZip(zip_folder,
-                                EBARUtils.download_folder + '/EBAR - ' + category_taxagroup + ' - All Data.zip',
-                                None)
+            # final category_taxagroup
+            self.ProcessCategoryTaxaGroup(messages, category_taxagroup, range_map_ids, attributes_dict, zip_folder)
 
         EBARUtils.displayMessage(messages, 'Processed ' + str(processed) + ' categories/taxa')
         return

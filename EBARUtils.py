@@ -18,13 +18,17 @@ import shutil
 import time
 import zipfile
 import csv
+import requests
+import json
 
 
-# various shared folders
+# shared folders and addresses
 resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
 temp_folder = 'C:/GIS/EBAR/temp'
 download_folder = 'C:/GIS/EBAR/pub/download'
 #download_folder = 'F:/download'
+#nsX_species_search_url = 'https://explorer.natureserve.org/api/data/search'
+nsx_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/ELEMENT_GLOBAL.'
 
 
 # various services
@@ -395,18 +399,18 @@ def getTableNamePrefix(geodatabase):
     return table_name_prefix
 
 
-def updateArcGISProTemplate(aprx_template, zip_folder, element_global_id, new_md, range_map_id):
+def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_id):
     """update ArcGIS Pro template for passed element_global_id"""
-    shutil.copyfile(aprx_template, zip_folder + '/EBAR' + element_global_id + '.aprx')
+    shutil.copyfile(resources_folder + '/EBARTemplate.aprx', zip_folder + '/EBAR' + element_global_id + '.aprx')
     aprx = arcpy.mp.ArcGISProject(zip_folder + '/EBAR' + element_global_id + '.aprx')
     aprx.homeFolder = zip_folder
     map = aprx.listMaps('EBARTemplate')[0]
     map.name = 'EBAR' + element_global_id
     ecoshape_overview_layer =  map.listLayers('EBARTemplateEcoshapeOverview')[0]
     ecoshape_overview_layer_md = ecoshape_overview_layer.metadata
-    new_md.title = 'EBAR EcoshapeOverview.shp'
-    new_md.summary = 'Polygons shapefile of generalized ecoshapes for EBAR for selected species'
-    ecoshape_overview_layer_md.copy(new_md)
+    metadata.title = 'EBAR EcoshapeOverview.shp'
+    metadata.summary = 'Polygons shapefile of generalized ecoshapes for EBAR for selected species'
+    ecoshape_overview_layer_md.copy(metadata)
     ecoshape_overview_layer_md.save()
     ecoshape_overview_layer.name = 'EBAR' + element_global_id + 'EcoshapeOverview'
     if range_map_id:
@@ -414,9 +418,9 @@ def updateArcGISProTemplate(aprx_template, zip_folder, element_global_id, new_md
     ecoshape_overview_layer.saveACopy(zip_folder + '/EBAR' + element_global_id + 'EcoshapeOverview.lyrx')
     ecoshape_layer =  map.listLayers('EBARTemplateEcoshape')[0]
     ecoshape_layer_md = ecoshape_overview_layer.metadata
-    new_md.title = 'EBAR Ecoshape.shp'
-    new_md.summary = 'Polygons shapefile of original ecoshapes for EBAR for selected species'
-    ecoshape_layer_md.copy(new_md)
+    metadata.title = 'EBAR Ecoshape.shp'
+    metadata.summary = 'Polygons shapefile of original ecoshapes for EBAR for selected species'
+    ecoshape_layer_md.copy(metadata)
     ecoshape_layer_md.save()
     ecoshape_layer.name = 'EBAR' + element_global_id + 'Ecoshape'
     if range_map_id:
@@ -462,11 +466,12 @@ def createZip(zip_folder, zip_output_file, only_include_extension):
                 zipf.write(zip_folder_name + '/' + file)
 
 
-def ExportRangeMapToCSV(range_map_view, where_clause, attribute_dict, output_folder, output_csv):
+def ExportRangeMapToCSV(range_map_view, range_map_ids, attributes_dict, output_folder, output_csv, metadata):
     """create csv for range map, with appropriate joined data"""
+    where_clause = 'RangeMapID IN (' + ','.join(range_map_ids) + ')'
     arcpy.MakeTableView_management(ebar_feature_service + '/11', range_map_view, where_clause)
-    arcpy.AddJoin_management(range_map_view, 'SpeciesID', 'biotics_view', 'SpeciesID', 'KEEP_COMMON')
-    arcpy.AddJoin_management(range_map_view, 'SpeciesID', 'species_view', 'SpeciesID', 'KEEP_COMMON')
+    arcpy.AddJoin_management(range_map_view, 'SpeciesID', ebar_feature_service + '/4', 'SpeciesID', 'KEEP_COMMON')
+    arcpy.AddJoin_management(range_map_view, 'SpeciesID', ebar_feature_service + '/19', 'SpeciesID', 'KEEP_COMMON')
     field_mappings = arcpy.FieldMappings()
     field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.RangeMapID', 'RangeMapID', 'LONG'))
     field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.RangeVersion', 'RangeVersion', 'TEXT'))
@@ -507,7 +512,7 @@ def ExportRangeMapToCSV(range_map_view, where_clause, attribute_dict, output_fol
     field_mappings.addFieldMap(createFieldMap(range_map_view, 'L19Species.ENDEMISM_TYPE', 'ENDEMISM_TYPE', 'TEXT'))
     arcpy.TableToTable_conversion(range_map_view, output_folder, 'temp.csv', field_mapping=field_mappings)
 
-    # add NSE Taxon API fields
+    # add taxon attributes
     with open(output_folder + '/temp.csv','r') as csv_input:
         with open(output_folder + '/' + output_csv, 'w') as csv_output:
             writer = csv.writer(csv_output, lineterminator='\n')
@@ -527,24 +532,31 @@ def ExportRangeMapToCSV(range_map_view, where_clause, attribute_dict, output_fol
             row.append('ESA_STATUS')
             all.append(row)
             for row in reader:
+                # row[1] is the RangeMapID
                 row[0] = row[1]
-                row.append(attribute_dict['g_rank'])
-                row.append(attribute_dict['ca_rank'])
-                row.append(attribute_dict['ca_subnational_ranks'])
-                row.append(attribute_dict['us_rank'])
-                row.append(attribute_dict['us_subnational_ranks'])
-                row.append(attribute_dict['mx_rank'])
-                row.append(attribute_dict['mx_subnational_ranks'])
-                row.append(attribute_dict['sara_status'])
-                row.append(attribute_dict['cosewic_status'])
-                row.append(attribute_dict['esa_status'])
+                row.append(attributes_dict[row[1]]['g_rank'])
+                row.append(attributes_dict[row[1]]['ca_rank'])
+                row.append(attributes_dict[row[1]]['ca_subnational_ranks'])
+                row.append(attributes_dict[row[1]]['us_rank'])
+                row.append(attributes_dict[row[1]]['us_subnational_ranks'])
+                row.append(attributes_dict[row[1]]['mx_rank'])
+                row.append(attributes_dict[row[1]]['mx_subnational_ranks'])
+                row.append(attributes_dict[row[1]]['sara_status'])
+                row.append(attributes_dict[row[1]]['cosewic_status'])
+                row.append(attributes_dict[row[1]]['esa_status'])
                 all.append(row)
             writer.writerows(all)
     arcpy.Delete_management(output_folder + '/temp.csv')
+    range_map_md = arcpy.metadata.Metadata(output_folder + '/' + output_csv)
+    metadata.title = 'EBAR RangeMap.csv'
+    metadata.summary = 'Table of species and range attributes for EBAR for selected species'
+    range_map_md.copy(metadata)
+    range_map_md.save()
 
 
-def ExportRangeMapEcoshapesToCSV(range_map_ecoshape_view, where_clause, output_folder, output_csv):
+def ExportRangeMapEcoshapesToCSV(range_map_ecoshape_view, range_map_ids, output_folder, output_csv, metadata):
     """create csv for range map ecoshape"""
+    where_clause = 'RangeMapID IN (' + ','.join(range_map_ids) + ')'
     arcpy.MakeTableView_management(ebar_feature_service + '/12', range_map_ecoshape_view, where_clause)
     field_mappings = arcpy.FieldMappings()
     field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'RangeMapID', 'RangeMapID', 'LONG'))
@@ -557,9 +569,14 @@ def ExportRangeMapEcoshapesToCSV(range_map_ecoshape_view, where_clause, output_f
     arcpy.Delete_management(output_folder + '/RangeMapEcoshape.csv.xml')
     arcpy.Delete_management(output_folder + '/schema.ini')
     arcpy.Delete_management(output_folder + '/info')
+    range_map_ecoshape_md = arcpy.metadata.Metadata(output_folder + '/RangeMapEcoshape.csv')
+    metadata.title = 'EBAR RangeMapEcoshape.csv'
+    metadata.summary = 'Table of per-ecoshape attributes for EBAR for selected species'
+    range_map_ecoshape_md.copy(metadata)
+    range_map_ecoshape_md.save()
 
 
-def ExportEcoshapesToShapefile(ecoshape_layer, range_map_ecoshape_view, output_folder, output_shapefile):
+def ExportEcoshapesToShapefile(ecoshape_layer, range_map_ecoshape_view, output_folder, output_shapefile, metadata):
     """create shapefile for ecoshapes"""
     arcpy.MakeFeatureLayer_management(ebar_feature_service + '/3', ecoshape_layer)
     arcpy.AddJoin_management(ecoshape_layer, 'EcoshapeID', range_map_ecoshape_view, 'EcoshapeID')
@@ -576,10 +593,15 @@ def ExportEcoshapesToShapefile(ecoshape_layer, range_map_ecoshape_view, output_f
     field_mappings.addFieldMap(createFieldMap(ecoshape_layer, 'L3Ecoshape.TotalArea', 'TotalArea', 'DOUBLE'))
     arcpy.FeatureClassToFeatureClass_conversion(ecoshape_layer, output_folder, output_shapefile,
                                                 field_mapping=field_mappings)
+    ecoshape_md = arcpy.metadata.Metadata(output_folder + '/' + output_shapefile)
+    metadata.title = 'EBAR Ecoshape.shp'
+    metadata.summary = 'Polygons shapefile of original ecoshapes for EBAR for selected species'
+    ecoshape_md.copy(metadata)
+    ecoshape_md.save()
 
 
 def ExportEcoshapeOverviewsToShapefile(ecoshape_overview_layer, range_map_ecoshape_view, output_folder,
-                                               output_shapefile):
+                                       output_shapefile, metadata):
     """create shapefile for overview ecoshapes"""
     arcpy.MakeFeatureLayer_management(ebar_feature_service + '/22', ecoshape_overview_layer)
     arcpy.AddJoin_management(ecoshape_overview_layer, 'EcoshapeID', range_map_ecoshape_view, 'EcoshapeID')
@@ -606,3 +628,125 @@ def ExportEcoshapeOverviewsToShapefile(ecoshape_overview_layer, range_map_ecosha
                                               'TotalArea', 'DOUBLE'))
     arcpy.FeatureClassToFeatureClass_conversion(ecoshape_overview_layer, output_folder, output_shapefile,
                                                 field_mapping=field_mappings)
+    ecoshape_overview_md = arcpy.metadata.Metadata(output_folder + '/' + output_shapefile)
+    metadata.title = 'EBAR EcoshapeOverview.shp'
+    metadata.summary = 'Polygons shapefile of generalized ecoshapes for EBAR for selected species'
+    ecoshape_overview_md.copy(metadata)
+    ecoshape_overview_md.save()
+
+
+def getTaxonAttributes(global_unique_id, element_global_id, range_map_id, messages):
+    """retrieve latest taxon attribues from NatureServe Explorer if possible, otherwise use EBAR-KBA database"""
+    # default return values
+    attributes_dict = {}
+    attributes_dict['reviewed_grank'] = ''
+    attributes_dict['ca_rank'] = 'None'
+    attributes_dict['us_rank'] = 'None'
+    attributes_dict['mx_rank'] = 'None'
+    attributes_dict['ca_subnational_list'] = []
+    attributes_dict['us_subnational_list'] = []
+    attributes_dict['mx_subnational_list'] = []
+    attributes_dict['ca_subnational_ranks'] = 'None'
+    attributes_dict['us_subnational_ranks'] = 'None'
+    attributes_dict['mx_subnational_ranks'] = 'None'
+    attributes_dict['sara_status'] = 'None'
+    attributes_dict['cosewic_status'] = 'None'
+    attributes_dict['esa_status'] = 'None'
+
+    # get attributes from NSE Species Search API
+    #displayMessage(messages, 'Getting attributes from NatureServe Explorer Species Search API')
+    #headers = {'Accept': 'application/json', 'Content-Type': 'application/json; charset=UTF-8'}
+    #params = {'criteriaType': 'combined',
+    #          'textCriteria': [{'paramType': 'textSearch',
+    #                            'searchToken': element_code,
+    #                            'matchAgainst': 'code',
+    #                            'operator': 'equals'}]}
+    #payload = json.dumps(params)
+    #r = requests.post(nsx_species_search_url, data=payload, headers=headers)
+    #content = json.loads(r.content)
+    #results = content['results']
+
+    # try NSX
+    results = None
+    try:
+        result = requests.get(nsx_taxon_search_url + global_unique_id)
+        results = json.loads(result.content)
+    except:
+        displayMessage(messages, 'WARNING: could not find ELEMENT_GLOBAL_ID ' + element_global_id + \
+            ' or other NSX Taxon API issue for RangeMapID ' + str(range_map_id))
+    if results:
+        # get from NSX Taxon API
+        attributes_dict['g_rank'] = results['grank']
+        if results['grankReviewDate']:
+            attributes_dict['reviewed_grank'] = ' (reviewed ' + \
+                extractDate(results['grankReviewDate']).strftime('%B %d, %Y') + ')'
+        for key in results:
+            if key == 'elementNationals':
+                for en in results[key]:
+                    if en['nation']['isoCode'] == 'CA':
+                        reviewed = ''
+                        if en['nrankReviewYear']:
+                            reviewed = ' (reviewed ' + str(en['nrankReviewYear']) + ')'
+                        attributes_dict['ca_rank'] = en['nrank'] + reviewed
+                        for esn in en['elementSubnationals']:
+                            attributes_dict['ca_subnational_list'].append(esn['subnation']['subnationCode'] + \
+                                '=' + esn['srank'])
+                    if en['nation']['isoCode'] == 'US':
+                        reviewed = ''
+                        if en['nrankReviewYear']:
+                            reviewed = ' (reviewed ' + str(en['nrankReviewYear']) + ')'
+                        attributes_dict['us_rank'] = en['nrank'] + reviewed
+                        for esn in en['elementSubnationals']:
+                            attributes_dict['us_subnational_list'].append(esn['subnation']['subnationCode'] + \
+                                '=' + esn['srank'])
+                    if en['nation']['isoCode'] == 'MX':
+                        reviewed = ''
+                        if en['nrankReviewYear']:
+                            reviewed = ' (reviewed ' + str(en['nrankReviewYear']) + ')'
+                        attributes_dict['mx_rank'] = en['nrank'] + reviewed
+                        for esn in en['elementSubnationals']:
+                            attributes_dict['mx_subnational_list'].append(esn['subnation']['subnationCode'] + \
+                                '=' + esn['srank'])
+        if results['speciesGlobal']['saraStatus']:
+            attributes_dict['sara_status'] = results['speciesGlobal']['saraStatus']
+            if results['speciesGlobal']['saraStatusDate']:
+                attributes_dict['sara_status'] += ' (' + \
+                    extractDate(results['speciesGlobal']['saraStatusDate']).strftime('%B %d, %Y') + ')'
+        if results['speciesGlobal']['cosewic']:
+            if results['speciesGlobal']['cosewic']['cosewicDescEn']:
+                attributes_dict['cosewic_status'] = results['speciesGlobal']['cosewic']['cosewicDescEn']
+                if results['speciesGlobal']['cosewicDate']:
+                    attributes_dict['cosewic_status'] += ' (' + \
+                        extractDate(results['speciesGlobal']['cosewicDate']).strftime('%B %d, %Y') + ')'
+        if results['speciesGlobal']['interpretedUsesa']:
+            attributes_dict['esa_status'] = results['speciesGlobal']['interpretedUsesa']
+            if results['speciesGlobal']['usesaDate']:
+                attributes_dict['esa_status'] += ' (' + \
+                    extractDate(results['speciesGlobal']['usesaDate']).strftime('%B %d, %Y') + ')'
+
+    else:
+        # get from BIOTICS table
+        attributes_dict['us_rank'] = 'Not available'
+        attributes_dict['mx_rank'] = 'Not available'
+        attributes_dict['ca_subnational_ranks'] = 'Not available'
+        attributes_dict['us_subnational_ranks'] = 'Not available'
+        attributes_dict['mx_subnational_ranks'] = 'Not available'
+        attributes_dict['esa_status'] = 'Not available'
+        with arcpy.da.SearchCursor('biotics_view', 
+                                   ['G_RANK', 'G_RANK_REVIEW_DATE', 'N_RANK', 'N_RANK_REVIEW_DATE', 
+                                   'COSEWIC_STATUS', 'SARA_STATUS']) as cursor:
+            for row in EBARUtils.searchCursor(cursor):
+                attributes_dict['g_rank'] = row['G_RANK']
+                if row['G_RANK_REVIEW_DATE']:
+                    attributes_dict['reviewed_grank'] = ' (reviewed ' + \
+                        row['G_RANK_REVIEW_DATE'].strftime('%B %d, %Y') + ')'
+                attributes_dict['ca_rank'] = row['N_RANK']
+                if row['N_RANK_REVIEW_DATE']:
+                    attributes_dict['ca_rank'] += ' (reviewed ' + \
+                        row['N_RANK_REVIEW_DATE'].strftime('%B %d, %Y') + ')'
+                if row['COSEWIC_STATUS']:
+                    attributes_dict['cosewic_status'] = row['COSEWIC_STATUS']
+                if row['SARA_STATUS']:
+                    attributes_dict['sara_status'] = row['SARA_STATUS']
+
+    return attributes_dict

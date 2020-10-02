@@ -21,8 +21,8 @@ import arcpy.mp
 import arcpy.metadata
 import datetime
 import pdfkit
-import requests
-import json
+#import requests
+#import json
 import shutil
 import urllib
 
@@ -39,17 +39,11 @@ class PublishRangeMapTool:
 
         # settings
         #arcpy.gp.overwriteOutput = True
-        #resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
         arcgis_pro_project = EBARUtils.resources_folder + '/EBARMapLayouts.aprx'
         pdf_template_file = EBARUtils.resources_folder + '/pdf_template.html'
         #reviewers_by_taxa_file = 'C:/Users/rgree/OneDrive/EBAR/EBAR Maps/ReviewersByTaxa.txt'
         reviewers_by_taxa_link = 'https://onedrive.live.com/download?cid=AAAAAE977404FA3B&resid=AAAAAE977404FA3B' + \
             '%21442509&authkey=APQx60zQOjRu23A'
-        #temp_folder = 'C:/GIS/EBAR/temp'
-        #download_folder = 'C:/GIS/EBAR/pub/download'
-        #download_folder = 'F:/download'
-        nse_species_search_url = 'https://explorer.natureserve.org/api/data/search'
-        nse_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/ELEMENT_GLOBAL.'
 
         # make variables for parms
         EBARUtils.displayMessage(messages, 'Processing parameters')
@@ -102,13 +96,10 @@ class PublishRangeMapTool:
 
         # get biotics data from database
         EBARUtils.displayMessage(messages, 'Getting Biotics data from database')
-        #element_global_id = None
-        #element_code = None
-        #global_unique_id = None
         arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/4', 'biotics_view',
                                        'SpeciesID = ' + str(species_id))
         with arcpy.da.SearchCursor('biotics_view', 
-                                    ['NATIONAL_SCIENTIFIC_NAME', 'NATIONAL_ENGL_NAME', 'NATIONAL_FR_NAME',
+                                   ['NATIONAL_SCIENTIFIC_NAME', 'NATIONAL_ENGL_NAME', 'NATIONAL_FR_NAME',
                                     'ELEMENT_NATIONAL_ID', 'ELEMENT_GLOBAL_ID', 'ELEMENT_CODE', 
                                     'GLOBAL_UNIQUE_IDENTIFIER', 'G_JURIS_ENDEM_DESC']) as cursor:
             for row in EBARUtils.searchCursor(cursor):
@@ -130,9 +121,9 @@ class PublishRangeMapTool:
                 pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.ELEMENT_CODE]', element_code)
                 global_unique_id = row['GLOBAL_UNIQUE_IDENTIFIER']
                 global_unique_id = global_unique_id.replace('-', '.')
-                #nse_url = 'https://explorer.natureserve.org/Taxon/ELEMENT_GLOBAL.2.' + element_global_id
-                nse_url = 'https://explorer.natureserve.org/Taxon/ELEMENT_GLOBAL.' + global_unique_id
-                pdf_html = pdf_html.replace('[NSE2.0_URL]', nse_url)
+                #nsx_url = 'https://explorer.natureserve.org/Taxon/ELEMENT_GLOBAL.2.' + element_global_id
+                nsx_url = 'https://explorer.natureserve.org/Taxon/ELEMENT_GLOBAL.' + global_unique_id
+                pdf_html = pdf_html.replace('[NSE2.0_URL]', nsx_url)
                 #endemism = 'None'
                 #if row['G_JURIS_ENDEM_DESC']:
                 #    endemism = row['G_JURIS_ENDEM_DESC']
@@ -174,136 +165,31 @@ class PublishRangeMapTool:
         #reviewers.close()
         pdf_html = pdf_html.replace('[ReviewersByTaxa]', reviewers)
 
-        # get attributes from NSE Species Search API
-        #EBARUtils.displayMessage(messages, 'Getting attributes from NatureServe Explorer Species Search API')
-        #headers = {'Accept': 'application/json', 'Content-Type': 'application/json; charset=UTF-8'}
-        #params = {'criteriaType': 'combined',
-        #          'textCriteria': [{'paramType': 'textSearch',
-        #                            'searchToken': element_code,
-        #                            'matchAgainst': 'code',
-        #                            'operator': 'equals'}]}
-        #payload = json.dumps(params)
-        #r = requests.post(nse_species_search_url, data=payload, headers=headers)
-        #content = json.loads(r.content)
-        #results = content['results']
+        # get taxon attributes
+        EBARUtils.displayMessage(messages, 'Getting taxon attributes')
+        attributes = EBARUtils.getTaxonAttributes(global_unique_id, element_global_id, param_range_map_id, messages)
 
-        # get attributes from NSE Taxon API
-        EBARUtils.displayMessage(messages, 'Getting attributes from NatureServe Explorer Taxon API')
-        results = None
-        try:
-            result = requests.get(nse_taxon_search_url + global_unique_id)
-            results = json.loads(result.content)
-        except:
-            EBARUtils.displayMessage(messages, 'WARNING: could not find ELEMENT_GLOBAL_ID ' + element_global_id +
-                                        ' or other NSE Taxon API issue for RangeMapID ' + param_range_map_id)
-        attribute_dict = {}
-        attribute_dict['reviewed_grank'] = ''
-        attribute_dict['ca_rank'] = 'None'
-        attribute_dict['us_rank'] = 'None'
-        attribute_dict['mx_rank'] = 'None'
-        attribute_dict['ca_subnational_list'] = []
-        attribute_dict['us_subnational_list'] = []
-        attribute_dict['mx_subnational_list'] = []
-        attribute_dict['ca_subnational_ranks'] = 'None'
-        attribute_dict['us_subnational_ranks'] = 'None'
-        attribute_dict['mx_subnational_ranks'] = 'None'
-        attribute_dict['sara_status'] = 'None'
-        attribute_dict['cosewic_status'] = 'None'
-        attribute_dict['esa_status'] = 'None'
-        if results:
-            # get from Taxon API
-            attribute_dict['g_rank'] = results['grank']
-            if results['grankReviewDate']:
-                attribute_dict['reviewed_grank'] = ' (reviewed ' + \
-                    EBARUtils.extractDate(results['grankReviewDate']).strftime('%B %d, %Y') + ')'
-            for key in results:
-                if key == 'elementNationals':
-                    for en in results[key]:
-                        if en['nation']['isoCode'] == 'CA':
-                            reviewed = ''
-                            if en['nrankReviewYear']:
-                                reviewed = ' (reviewed ' + str(en['nrankReviewYear']) + ')'
-                            attribute_dict['ca_rank'] = en['nrank'] + reviewed
-                            for esn in en['elementSubnationals']:
-                                attribute_dict['ca_subnational_list'].append(esn['subnation']['subnationCode'] + \
-                                    '=' + esn['srank'])
-                        if en['nation']['isoCode'] == 'US':
-                            reviewed = ''
-                            if en['nrankReviewYear']:
-                                reviewed = ' (reviewed ' + str(en['nrankReviewYear']) + ')'
-                            attribute_dict['us_rank'] = en['nrank'] + reviewed
-                            for esn in en['elementSubnationals']:
-                                attribute_dict['us_subnational_list'].append(esn['subnation']['subnationCode'] + \
-                                    '=' + esn['srank'])
-                        if en['nation']['isoCode'] == 'MX':
-                            reviewed = ''
-                            if en['nrankReviewYear']:
-                                reviewed = ' (reviewed ' + str(en['nrankReviewYear']) + ')'
-                            attribute_dict['mx_rank'] = en['nrank'] + reviewed
-                            for esn in en['elementSubnationals']:
-                                attribute_dict['mx_subnational_list'].append(esn['subnation']['subnationCode'] + \
-                                    '=' + esn['srank'])
-            if results['speciesGlobal']['saraStatus']:
-                attribute_dict['sara_status'] = results['speciesGlobal']['saraStatus']
-                if results['speciesGlobal']['saraStatusDate']:
-                    attribute_dict['sara_status'] += ' (' + \
-                        EBARUtils.extractDate(results['speciesGlobal']['saraStatusDate']).strftime('%B %d, %Y') + ')'
-            if results['speciesGlobal']['cosewic']:
-                if results['speciesGlobal']['cosewic']['cosewicDescEn']:
-                    attribute_dict['cosewic_status'] = results['speciesGlobal']['cosewic']['cosewicDescEn']
-                    if results['speciesGlobal']['cosewicDate']:
-                        attribute_dict['cosewic_status'] += ' (' + \
-                            EBARUtils.extractDate(results['speciesGlobal']['cosewicDate']).strftime('%B %d, %Y') + ')'
-            if results['speciesGlobal']['interpretedUsesa']:
-                attribute_dict['esa_status'] = results['speciesGlobal']['interpretedUsesa']
-                if results['speciesGlobal']['usesaDate']:
-                    attribute_dict['esa_status'] += ' (' + \
-                        EBARUtils.extractDate(results['speciesGlobal']['usesaDate']).strftime('%B %d, %Y') + ')'
-        else:
-            # get from BIOTICS table
-            attribute_dict['us_rank'] = 'Not available'
-            attribute_dict['mx_rank'] = 'Not available'
-            attribute_dict['ca_subnational_ranks'] = 'Not available'
-            attribute_dict['us_subnational_ranks'] = 'Not available'
-            attribute_dict['mx_subnational_ranks'] = 'Not available'
-            attribute_dict['esa_status'] = 'Not available'
-            with arcpy.da.SearchCursor('biotics_view', 
-                                        ['G_RANK', 'G_RANK_REVIEW_DATE', 'N_RANK', 'N_RANK_REVIEW_DATE', 
-                                        'COSEWIC_STATUS', 'SARA_STATUS']) as cursor:
-                for row in EBARUtils.searchCursor(cursor):
-                    attribute_dict['g_rank'] = row['G_RANK']
-                    if row['G_RANK_REVIEW_DATE']:
-                        attribute_dict['reviewed_grank'] = ' (reviewed ' + \
-                            row['G_RANK_REVIEW_DATE'].strftime('%B %d, %Y') + ')'
-                    attribute_dict['ca_rank'] = row['N_RANK']
-                    if row['N_RANK_REVIEW_DATE']:
-                        attribute_dict['ca_rank'] += ' (reviewed ' + \
-                            row['N_RANK_REVIEW_DATE'].strftime('%B %d, %Y') + ')'
-                    if row['COSEWIC_STATUS']:
-                        attribute_dict['cosewic_status'] = row['COSEWIC_STATUS']
-                    if row['SARA_STATUS']:
-                        attribute_dict['sara_status'] = row['SARA_STATUS']
         # update template
-        pdf_html = pdf_html.replace('[NSE.grank]', attribute_dict['g_rank'])
-        pdf_html = pdf_html.replace('[NSE.grankReviewDate]', attribute_dict['reviewed_grank'])
-        pdf_html = pdf_html.replace('[NSE.CARank]', attribute_dict['ca_rank'])
-        pdf_html = pdf_html.replace('[NSE.USRank]', attribute_dict['us_rank'])
-        pdf_html = pdf_html.replace('[NSE.MXRank]', attribute_dict['mx_rank'])
-        if len(attribute_dict['ca_subnational_list']) > 0:
-            attribute_dict['ca_subnational_list'].sort()
-            attribute_dict['ca_subnational_ranks'] = ', '.join(attribute_dict['ca_subnational_list'])
-        pdf_html = pdf_html.replace('[NSE.CASubnationalRanks]', attribute_dict['ca_subnational_ranks'])
-        if len(attribute_dict['us_subnational_list']) > 0:
-            attribute_dict['us_subnational_list'].sort()
-            attribute_dict['us_subnational_ranks'] = ', '.join(attribute_dict['us_subnational_list'])
-        pdf_html = pdf_html.replace('[NSE.USSubnationalRanks]', attribute_dict['us_subnational_ranks'])
-        if len(attribute_dict['mx_subnational_list']) > 0:
-            attribute_dict['mx_subnational_list'].sort()
-            attribute_dict['mx_subnational_ranks'] = ', '.join(attribute_dict['mx_subnational_list'])
-        pdf_html = pdf_html.replace('[NSE.MXSubnationalRanks]', attribute_dict['mx_subnational_ranks'])
-        pdf_html = pdf_html.replace('[NSE.saraStatus]', attribute_dict['sara_status'])
-        pdf_html = pdf_html.replace('[NSE.cosewicStatus]', attribute_dict['cosewic_status'])
-        pdf_html = pdf_html.replace('[NSE.esaStatus]', attribute_dict['esa_status'])
+        pdf_html = pdf_html.replace('[NSE.grank]', attributes['g_rank'])
+        pdf_html = pdf_html.replace('[NSE.grankReviewDate]', attributes['reviewed_grank'])
+        pdf_html = pdf_html.replace('[NSE.CARank]', attributes['ca_rank'])
+        pdf_html = pdf_html.replace('[NSE.USRank]', attributes['us_rank'])
+        pdf_html = pdf_html.replace('[NSE.MXRank]', attributes['mx_rank'])
+        if len(attributes['ca_subnational_list']) > 0:
+            attributes['ca_subnational_list'].sort()
+            attributes['ca_subnational_ranks'] = ', '.join(attributes['ca_subnational_list'])
+        pdf_html = pdf_html.replace('[NSE.CASubnationalRanks]', attributes['ca_subnational_ranks'])
+        if len(attributes['us_subnational_list']) > 0:
+            attributes['us_subnational_list'].sort()
+            attributes['us_subnational_ranks'] = ', '.join(attributes['us_subnational_list'])
+        pdf_html = pdf_html.replace('[NSE.USSubnationalRanks]', attributes['us_subnational_ranks'])
+        if len(attributes['mx_subnational_list']) > 0:
+            attributes['mx_subnational_list'].sort()
+            attributes['mx_subnational_ranks'] = ', '.join(attributes['mx_subnational_list'])
+        pdf_html = pdf_html.replace('[NSE.MXSubnationalRanks]', attributes['mx_subnational_ranks'])
+        pdf_html = pdf_html.replace('[NSE.saraStatus]', attributes['sara_status'])
+        pdf_html = pdf_html.replace('[NSE.cosewicStatus]', attributes['cosewic_status'])
+        pdf_html = pdf_html.replace('[NSE.esaStatus]', attributes['esa_status'])
 
         # generate jpg and insert into pdf template
         EBARUtils.displayMessage(messages, 'Generating JPG map')
@@ -349,6 +235,17 @@ class PublishRangeMapTool:
 
         # generate zip
         if param_spatial == 'true':
+            # generate metadata
+            EBARUtils.displayMessage(messages, 'Generating metadata')
+            md = arcpy.metadata.Metadata()
+            md.tags = 'Species Range, NatureServe Canada, Ecosystem-based Automated Range'
+            md.description = 'See EBAR' + element_global_id + '.pdf for map and additional metadata, and ' + \
+                'EBARMethods.pdf for additional details. <a href="' + nsx_url + '">Go to ' + \
+                'NatureServe Explorer</a> for information about the species.'
+            md.credits = '© NatureServe Canada ' + str(datetime.datetime.now().year)
+            md.accessConstraints = 'Publicly shareable under CC BY 4.0 (<a href=' + \
+                '"https://creativecommons.org/licenses/by/4.0/">https://creativecommons.org/licenses/by/4.0/</a>)'
+
             # make folder, copy in static resources and EBAR pdf
             EBARUtils.displayMessage(messages, 'Creating ZIP folder and copying files')
             EBARUtils.createReplaceFolder(EBARUtils.temp_folder + '/EBAR' + element_global_id)
@@ -356,110 +253,42 @@ class PublishRangeMapTool:
             EBARUtils.createReplaceFolder(zip_folder)
             shutil.copyfile(EBARUtils.resources_folder + '/Readme.txt', zip_folder + '/Readme.txt')
             shutil.copyfile(EBARUtils.resources_folder + '/EBARMethods.pdf', zip_folder + '/EBARMethods.pdf')
-            shutil.copyfile(EBARUtils.resources_folder + '/Jurisdiction.csv', zip_folder + '/Jurisdiction.csv')
             shutil.copyfile(EBARUtils.download_folder + '/EBAR' + element_global_id + '.pdf',
                             zip_folder + '/EBAR' + element_global_id + '.pdf')
+            shutil.copyfile(EBARUtils.resources_folder + '/Jurisdiction.csv', zip_folder + '/Jurisdiction.csv')
+            jurisdiction_md = arcpy.metadata.Metadata(zip_folder + '/Jurisdiction.csv')
+            md.title = 'EBAR Jurisdiction.csv'
+            md.summary = 'Table of Jurisdictions'
+            jurisdiction_md.copy(md)
+            jurisdiction_md.save()
 
             # export range map, with biotics/species additions
             EBARUtils.displayMessage(messages, 'Exporting RangeMap to CSV')
-            EBARUtils.ExportRangeMapToCSV('range_map_view' + param_range_map_id, 'RangeMapID = ' + param_range_map_id,
-                                           attribute_dict, zip_folder, '/RangeMap.csv')
+            EBARUtils.ExportRangeMapToCSV('range_map_view' + param_range_map_id, [param_range_map_id],
+                                          {param_range_map_id: attributes}, zip_folder, 'RangeMap.csv', md)
 
             # export range map ecoshapes
             EBARUtils.displayMessage(messages, 'Exporting RangeMapEcoshape records to CSV')
             EBARUtils.ExportRangeMapEcoshapesToCSV('range_map_ecoshape_view' + param_range_map_id,
-                                                   'RangeMapID = ' + param_range_map_id,
-                                                   zip_folder, '/RangeMapEcoshape.csv')
+                                                   [param_range_map_id], zip_folder, 'RangeMapEcoshape.csv', md)
 
             # export ecoshapes
             EBARUtils.displayMessage(messages, 'Exporting Ecoshape polygons to shapefile')
             EBARUtils.ExportEcoshapesToShapefile('ecoshape_layer' + param_range_map_id,
                                                  'range_map_ecoshape_view' + param_range_map_id, zip_folder, 
-                                                 'Ecoshape.shp', )
+                                                 'Ecoshape.shp', md)
 
             # export overview ecoshapes
             EBARUtils.displayMessage(messages, 'Exporting EcoshapeOverview polygons to shapefile')
             EBARUtils.ExportEcoshapeOverviewsToShapefile('ecoshape_overview_layer' + param_range_map_id,
                                                          'range_map_ecoshape_view' + param_range_map_id, zip_folder, 
-                                                         'EcoshapeOverview.shp', )
-
-            # embed metadata
-            EBARUtils.displayMessage(messages, 'Embedding metadata')
-            # common
-            new_md = arcpy.metadata.Metadata()
-            new_md.tags = 'Species Range, NatureServe Canada, Ecosystem-based Automated Range'
-            new_md.description = 'See EBAR' + element_global_id + '.pdf for map and additional metadata, and ' + \
-                'EBARMethods.pdf for additional details. <a href="' + nse_url + '">Go to ' + \
-                'NatureServer Explorer</a> for information about the species.'
-            new_md.credits = '© NatureServe Canada ' + str(datetime.datetime.now().year)
-            new_md.accessConstraints = 'Publicly shareable under CC BY 4.0 (<a href=' + \
-                '"https://creativecommons.org/licenses/by/4.0/">https://creativecommons.org/licenses/by/4.0/</a>)'
-            # ecoshape
-            ecoshape_md = arcpy.metadata.Metadata(zip_folder + '/Ecoshape.shp')
-            new_md.title = 'EBAR Ecoshape.shp'
-            new_md.summary = 'Polygons shapefile of original ecoshapes for EBAR for selected species'
-            ecoshape_md.copy(new_md)
-            ecoshape_md.save()
-            # ecoshape overview
-            ecoshape_overview_md = arcpy.metadata.Metadata(zip_folder + '/EcoshapeOverview.shp')
-            new_md.title = 'EBAR EcoshapeOverview.shp'
-            new_md.summary = 'Polygons shapefile of generalized ecoshapes for EBAR for selected species'
-            ecoshape_overview_md.copy(new_md)
-            ecoshape_overview_md.save()
-            # range map
-            range_map_md = arcpy.metadata.Metadata(zip_folder + '/RangeMap.csv')
-            new_md.title = 'EBAR RangeMap.csv'
-            new_md.summary = 'Table of species and range attributes for EBAR for selected species'
-            range_map_md.copy(new_md)
-            range_map_md.save()
-            # range map ecoshape
-            range_map_ecoshape_md = arcpy.metadata.Metadata(zip_folder + '/RangeMapEcoshape.csv')
-            new_md.title = 'EBAR RangeMapEcoshape.csv'
-            new_md.summary = 'Table of per-ecoshape attributes for EBAR for selected species'
-            range_map_ecoshape_md.copy(new_md)
-            range_map_ecoshape_md.save()
-            # jurisdiction
-            jurisdiction_md = arcpy.metadata.Metadata(zip_folder + '/Jurisdiction.csv')
-            new_md.title = 'EBAR Jurisdiction.csv'
-            new_md.summary = 'Table of Jurisdictions'
-            jurisdiction_md.copy(new_md)
-            jurisdiction_md.save()
+                                                         'EcoshapeOverview.shp', md)
 
             # update ArcGIS Pro template
             EBARUtils.displayMessage(messages, 'Updating ArcGIS Pro template')
-            shutil.copyfile(EBARUtils.resources_folder + '/EBARTemplate.aprx',
-                            zip_folder + '/EBAR' + element_global_id + '.aprx')
-            aprx = arcpy.mp.ArcGISProject(zip_folder + '/EBAR' + element_global_id + '.aprx')
-            aprx.homeFolder = zip_folder
-            #arcpy.CreateFileGDB_management(zip_folder, 'default.gdb')
-            #aprx.defaultGeodatabase = zip_folder + '/default.gdb'
-            #shutil.copyfile(EBARUtils.resources_folder + '/default.tbx', zip_folder + '/default.tbx')
-            #aprx.defaultToolbox = zip_folder + '/default.tbx'
-            map = aprx.listMaps('EBARTemplate')[0]
-            map.name = 'EBAR' + element_global_id
-            ecoshape_overview_layer =  map.listLayers('EBARTemplateEcoshapeOverview')[0]
-            ecoshape_overview_layer_md = ecoshape_overview_layer.metadata
-            new_md.title = 'EBAR EcoshapeOverview.shp'
-            new_md.summary = 'Polygons shapefile of generalized ecoshapes for EBAR for selected species'
-            ecoshape_overview_layer_md.copy(new_md)
-            ecoshape_overview_layer_md.save()
-            ecoshape_overview_layer.name = 'EBAR' + element_global_id + 'EcoshapeOverview'
-            ecoshape_overview_layer.saveACopy(zip_folder + '/EBAR' + element_global_id + 'EcoshapeOverview.lyrx')
-            ecoshape_layer =  map.listLayers('EBARTemplateEcoshape')[0]
-            ecoshape_layer_md = ecoshape_overview_layer.metadata
-            new_md.title = 'EBAR Ecoshape.shp'
-            new_md.summary = 'Polygons shapefile of original ecoshapes for EBAR for selected species'
-            ecoshape_layer_md.copy(new_md)
-            ecoshape_layer_md.save()
-            ecoshape_layer.name = 'EBAR' + element_global_id + 'Ecoshape'
-            ecoshape_layer.saveACopy(zip_folder + '/EBAR' + element_global_id + 'Ecoshape.lyrx')
-            range_map_table = map.listTables('EBARTemplateRangeMap')[0]
-            range_map_table.name = 'EBAR' + element_global_id + 'RangeMap'
-            range_map_ecoshape_table = map.listTables('EBARTemplateRangeMapEcoshape')[0]
-            range_map_ecoshape_table.name = 'EBAR' + element_global_id + 'RangeMapEcoshape'
-            aprx.save()
+            EBARUtils.updateArcGISProTemplate(zip_folder, element_global_id, md, param_range_map_id)
 
-            # copy ArcGIS Pro template
+            # copy ArcMap template
             EBARUtils.displayMessage(messages, 'Copying ArcMap template')
             shutil.copyfile(EBARUtils.resources_folder + '/EBAR.mxd',
                             zip_folder + '/EBAR' + element_global_id + '.mxd')
@@ -506,7 +335,7 @@ if __name__ == '__main__':
     # Batch 2a = 124, 617, 45, 56, 237, 623, 624, 630, 632, 643, 644, 646, 647, 648, 670, 671
     # Batch 2b = 685, 1086, 687, 688, 689, 683, 705, 706, 707, 708, 709, 710, 716, 717, 718, 719, 720, 721, 722, 723, 1087, 714, 713, 711, 728, 1089, 737, 1090, 740, 820, 821, 822, 747, 823
     # Batch 2c = 749, 824
-    batch_ids = [824]
+    batch_ids = [638]
     for id in batch_ids:
         # hard code parameters for debugging
         param_range_map_id = arcpy.Parameter()
