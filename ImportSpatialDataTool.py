@@ -26,7 +26,7 @@ class ImportSpatialDataTool:
     def __init__(self):
         pass
 
-    def RunImportSpatialDataTool(self, parameters, messages):
+    def runImportSpatialDataTool(self, parameters, messages):
         # check out any needed extension licenses
         #arcpy.CheckOutExtension('Spatial')
 
@@ -441,4 +441,4 @@ if __name__ == '__main__':
     param_restrictions.value = 'Restricted EBAR'
     parameters = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_source,
                   param_date_received, param_restrictions]
-    isd.RunImportSpatialDataTool(parameters, None)
+    isd.runImportSpatialDataTool(parameters, None)

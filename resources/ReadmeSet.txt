@@ -17,7 +17,7 @@ This ZIP package should contain the following files:
 - EBARxxxxxEcoshape.lyr (ArcMap layer file, with suggested symbology and appropriate joins, referencing the original ecoshapes)
 - EBARxxxxxEcoshapeOverview.lyr (ArcMap layer file, with suggested symbology and appropriate joins, referencing the generalized ecoshapes)
 [where xxxxx is the ELEMENT_GLOBAL_ID of the selected species, see RangeMap.csv for additional species attributes such as the scientific name]
-[NOTE: ArcMap project and layer files will need to have a definition query applied to each layer - "RangeMapID = yyy", where yyy is an appropriate from RangeMap.csv]
+[NOTE: ArcMap project and layer files will need to have a definition query applied to each layer - "RangeMapID = yyy", where yyy is an appropriate RangeMapID value from RangeMap.csv]
 
 The included data files are related as follows:
 RangeMap <-1---M-> RangeMapEcoshape

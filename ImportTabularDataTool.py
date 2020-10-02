@@ -30,7 +30,7 @@ class ImportTabularDataTool:
     def __init__(self):
         pass
 
-    def RunImportTabularDataTool(self, parameters, messages):
+    def runImportTabularDataTool(self, parameters, messages):
         ## debugging/testing
         #print(locale.getpreferredencoding())
         #print(str(EBARUtils.estimateAccuracy(48.0, 0.0003)))
@@ -403,4 +403,4 @@ if __name__ == '__main__':
     param_restrictions.value = 'Non-restricted'
     parameters = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_source,
                   param_date_received, param_restrictions]
-    itd.RunImportTabularDataTool(parameters, None)
+    itd.runImportTabularDataTool(parameters, None)

@@ -25,7 +25,7 @@ class GenerateRangeMapTool:
     def __init__(self):
         pass
 
-    def RunGenerateRangeMapTool(self, parameters, messages):
+    def runGenerateRangeMapTool(self, parameters, messages):
         # debugging/testing
         #print(locale.getpreferredencoding())
         #return
@@ -992,4 +992,4 @@ if __name__ == '__main__':
     #param_scope.value = 'Canadian'
     param_scope.value = None
     parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope]
-    grm.RunGenerateRangeMapTool(parameters, None)
+    grm.runGenerateRangeMapTool(parameters, None)

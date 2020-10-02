@@ -20,8 +20,8 @@ import SyncSpeciesListBioticsTool
 import AddSynonymsTool
 import ImportExternalRangeReviewTool
 import SyncSpeciesListKBATool
-import BuildDownloadTableTool
-import PublishRangeMapTool
+import BuildEBARDownloadTableTool
+import BuildCategoryTaxaDownloadTableTool
 import EBARUtils
 import datetime
 import locale
@@ -36,7 +36,7 @@ class Toolbox(object):
         # List of tool classes associated with this toolbox
         self.tools = [ImportTabularData, ImportSpatialData, GenerateRangeMap, ListElementNationalIDs,
                       SyncSpeciesListBiotics, AddSynonyms, ImportExternalRangeReview, SyncSpeciesListKBA,
-                      BuildDownloadTable, PublishRangeMap]
+                      BuildEBARDownloadTable, BuildCategoryTaxaDownloadTable]
 
 
 class ImportTabularData(object):
@@ -132,7 +132,7 @@ class ImportTabularData(object):
     def execute(self, parameters, messages):
         """The source code of the tool."""
         itd = ImportTabularDataTool.ImportTabularDataTool()
-        itd.RunImportTabularDataTool(parameters, messages)
+        itd.runImportTabularDataTool(parameters, messages)
         return
 
 
@@ -232,7 +232,7 @@ class ImportSpatialData(object):
     def execute(self, parameters, messages):
         """The source code of the tool."""
         isd = ImportSpatialDataTool.ImportSpatialDataTool()
-        isd.RunImportSpatialDataTool(parameters, messages)
+        isd.runImportSpatialDataTool(parameters, messages)
         return
 
 
@@ -344,7 +344,7 @@ class GenerateRangeMap(object):
     def execute(self, parameters, messages):
         """The source code of the tool."""
         grm = GenerateRangeMapTool.GenerateRangeMapTool()
-        grm.RunGenerateRangeMapTool(parameters, messages)
+        grm.runGenerateRangeMapTool(parameters, messages)
         return
 
 
@@ -395,7 +395,7 @@ class ListElementNationalIDs(object):
     def execute(self, parameters, messages):
         """The source code of the tool."""
         leni = ListElementNationalIDsTool.ListElementNationalIDsTool()
-        leni.RunListElementNationalIDsTool(parameters, messages)
+        leni.runListElementNationalIDsTool(parameters, messages)
         return
 
 
@@ -446,7 +446,7 @@ class SyncSpeciesListBiotics(object):
     def execute(self, parameters, messages):
         """The source code of the tool."""
         ssl = SyncSpeciesListBioticsTool.SyncSpeciesListBioticsTool()
-        ssl.RunSyncSpeciesListBioticsTool(parameters, messages)
+        ssl.runSyncSpeciesListBioticsTool(parameters, messages)
         return
 
 
@@ -497,7 +497,7 @@ class AddSynonyms(object):
     def execute(self, parameters, messages):
         """The source code of the tool."""
         ast = AddSynonymsTool.AddSynonymsTool()
-        ast.RunAddSynonymsTool(parameters, messages)
+        ast.runAddSynonymsTool(parameters, messages)
         return
 
 
@@ -619,7 +619,7 @@ class ImportExternalRangeReview(object):
     def execute(self, parameters, messages):
         """The source code of the tool."""
         ierr = ImportExternalRangeReviewTool.ImportExternalRangeReviewTool()
-        ierr.RunImportExternalRangeReviewTool(parameters, messages)
+        ierr.runImportExternalRangeReviewTool(parameters, messages)
         return
 
 
@@ -670,14 +670,14 @@ class SyncSpeciesListKBA(object):
     def execute(self, parameters, messages):
         """The source code of the tool."""
         sslkba = SyncSpeciesListKBATool.SyncSpeciesListKBATool()
-        sslkba.RunSyncSpeciesListKBATool(parameters, messages)
+        sslkba.runSyncSpeciesListKBATool(parameters, messages)
         return
 
 
-class BuildDownloadTable(object):
+class BuildEBARDownloadTable(object):
     def __init__(self):
         """Define the tool (tool name is the name of the class)."""
-        self.label = 'Build Download Table'
+        self.label = 'Build EBAR Download Table'
         self.description = 'Build html table of all Range Maps available for download'
         self.canRunInBackground = True
 
@@ -702,34 +702,21 @@ class BuildDownloadTable(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        bdt = BuildDownloadTableTool.BuildDownloadTableTool()
-        bdt.RunBuildDownloadTableTool(parameters, messages)
+        bedt = BuildEBARDownloadTableTool.BuildDownloadTableTool()
+        bedt.runBuildEBARDownloadTableTool(parameters, messages)
         return
 
 
-class PublishRangeMap(object):
+class BuildCategoryTaxaGroupDownloadTable(object):
     def __init__(self):
         """Define the tool (tool name is the name of the class)."""
-        self.label = 'Publish Range Map'
-        self.description = 'Publish one Range Map as JPG, PDF and GIS Data Zip'
+        self.label = 'Build EBAR Download Table'
+        self.description = 'Build html table of all Range Maps available for download'
         self.canRunInBackground = True
 
     def getParameterInfo(self):
         """Define parameter definitions"""
-        param_range_map_id = arcpy.Parameter(
-            displayName='Range Map ID',
-            name='range_map_id',
-            datatype='GPString',
-            parameterType='Required',
-            direction='Input')
-        param_spatial = arcpy.Parameter(
-            displayName='Output GIS Data Zip',
-            name='spatial',
-            datatype='GPBoolean',
-            parameterType='Required',
-            direction='Input')
-        param_spatial.value = 'true'
-        params = [param_range_map_id, param_spatial]
+        params = []
         return params
 
     def isLicensed(self):
@@ -748,6 +735,52 @@ class PublishRangeMap(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        prm = PublishRangeMapTool.PublishRangeMapTool()
-        prm.RunPublishRangeMapTool(parameters, messages)
+        bctgdt = BuildCategoryTaxaGroupDownloadTableTool.BuildCategoryTaxaGroupDownloadTableTool()
+        bctgdt.runBuildCategoryTaxaGroupDownloadTableTool(parameters, messages)
         return
+
+
+#class PublishRangeMap(object):
+#    def __init__(self):
+#        """Define the tool (tool name is the name of the class)."""
+#        self.label = 'Publish Range Map'
+#        self.description = 'Publish one Range Map as JPG, PDF and GIS Data Zip'
+#        self.canRunInBackground = True
+
+#    def getParameterInfo(self):
+#        """Define parameter definitions"""
+#        param_range_map_id = arcpy.Parameter(
+#            displayName='Range Map ID',
+#            name='range_map_id',
+#            datatype='GPString',
+#            parameterType='Required',
+#            direction='Input')
+#        param_spatial = arcpy.Parameter(
+#            displayName='Output GIS Data Zip',
+#            name='spatial',
+#            datatype='GPBoolean',
+#            parameterType='Required',
+#            direction='Input')
+#        param_spatial.value = 'true'
+#        params = [param_range_map_id, param_spatial]
+#        return params
+
+#    def isLicensed(self):
+#        """Set whether tool is licensed to execute."""
+#        return True
+
+#    def updateParameters(self, parameters):
+#        """Modify the values and properties of parameters before internal validation is performed.  This method is
+#        called whenever a parameter has been changed."""
+#        return
+
+#    def updateMessages(self, parameters):
+#        """Modify the messages created by internal validation for each tool parameter.  This method is called
+#        after internal validation."""
+#        return
+
+#    def execute(self, parameters, messages):
+#        """The source code of the tool."""
+#        prm = PublishRangeMapTool.PublishRangeMapTool()
+#        prm.runPublishRangeMapTool(parameters, messages)
+#        return

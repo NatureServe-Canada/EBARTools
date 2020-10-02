@@ -25,7 +25,7 @@ class ImportExternalRangeReviewTool:
     def __init__(self):
         pass
 
-    def RunImportExternalRangeReviewTool(self, parameters, messages):
+    def runImportExternalRangeReviewTool(self, parameters, messages):
         # debugging/testing
         #print(locale.getpreferredencoding())
         #return
@@ -326,4 +326,4 @@ if __name__ == '__main__':
     param_jurisdictions_covered.value = None
     parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage,
                   param_external_range_table, param_presence_field, param_review_label, param_jurisdictions_covered]
-    ierr.RunImportExternalRangeReviewTool(parameters, None)
+    ierr.runImportExternalRangeReviewTool(parameters, None)

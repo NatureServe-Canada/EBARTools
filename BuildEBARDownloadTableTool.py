@@ -4,7 +4,7 @@
 # Credits: Randal Greene, Christine Terwissen
 # © NatureServe Canada 2020 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
-# Program: BuildDownloadTableTool.py
+# Program: BuildEBARDownloadTableTool.py
 # ArcGIS Python tool for building html table of range map download links
 
 # Notes:
@@ -18,19 +18,18 @@ import arcpy
 import datetime
 
 
-class BuildDownloadTableTool:
-    """Create JPG, PDF and Spatial Data (Zip) for a Range Map"""
+class BuildEBARDownloadTableTool:
+    """Build html table of all Range Maps available for download"""
     def __init__(self):
         pass
 
-    def RunBuildDownloadTableTool(self, parameters, messages):
+    def runBuildEBARDownloadTableTool(self, parameters, messages):
         # start time
         start_time = datetime.datetime.now()
         EBARUtils.displayMessage(messages, 'Start time: ' + str(start_time))
 
         # settings
-        #output_file = 'F:/download/EBARDownloadTables.html'
-        output_file = 'C:/GIS/EBAR/pub/EBARDownloadTables.html'
+        output_file = EBARUtils.download_folder + '/EBARDownloadTables.html'
 
         # html header
         html = '''<!doctype html>
@@ -74,7 +73,7 @@ class BuildDownloadTableTool:
         # join BIOTICS_ELEMENT_NATIONAL to RangeMap
         arcpy.AddJoin_management('range_map_view', 'SpeciesID', EBARUtils.ebar_feature_service + '/4', 'SpeciesID',
                                  'KEEP_COMMON')
-        category_taxagroup = ''
+        category_taxa = ''
         # use Python sorted (sql_clause ORDER BY doesn't work), which precludes use of EBARUtils.SearchCursor
         for row in sorted(arcpy.da.SearchCursor('range_map_view',
                           ['L4BIOTICS_ELEMENT_NATIONAL.CATEGORY',
@@ -84,16 +83,16 @@ class BuildDownloadTableTool:
                            'L4BIOTICS_ELEMENT_NATIONAL.NATIONAL_FR_NAME',
                            'L4BIOTICS_ELEMENT_NATIONAL.ELEMENT_GLOBAL_ID',
                            'L11RangeMap.RangeMapScope'])):
-            if row[0] + ' - ' + row[1] != category_taxagroup:
-                if category_taxagroup != '':
+            if row[0] + ' - ' + row[1] != category_taxa:
+                if category_taxa != '':
                     # table footer for previous table
                     html += '''
         </tbody></table>'''
                 # table header
-                category_taxagroup = row[0] + ' - ' + row[1]
-                EBARUtils.displayMessage(messages, category_taxagroup + ' table')
+                category_taxa = row[0] + ' - ' + row[1]
+                EBARUtils.displayMessage(messages, category_taxa + ' table')
                 html += '''
-        <h2>''' + category_taxagroup + '''</h2>
+        <h2>''' + category_taxa + '''</h2>
         <table><tbody>
             <tr>
     	        <th>Scientific Name</th>
@@ -141,5 +140,5 @@ class BuildDownloadTableTool:
 
 # controlling process
 if __name__ == '__main__':
-    bdt = BuildDownloadTableTool()
-    bdt.RunBuildDownloadTableTool(None, None)
+    bedt = BuildEBARDownloadTableTool()
+    bedt.runBuildEBARDownloadTableTool(None, None)

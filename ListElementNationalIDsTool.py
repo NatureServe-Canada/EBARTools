@@ -22,7 +22,7 @@ class ListElementNationalIDsTool:
     def __init__(self):
         pass
 
-    def RunListElementNationalIDsTool(self, parameters, messages):
+    def runListElementNationalIDsTool(self, parameters, messages):
         # make variables for parms
         param_geodatabase = parameters[0].valueAsText
         #param_folder = parameters[1].valueAsText
@@ -66,4 +66,4 @@ if __name__ == '__main__':
     #param_folder = arcpy.Parameter()
     #param_folder.value='C:/GIS/EBAR'
     parameters = [param_geodatabase]
-    leni.RunListElementNationalIDsTool(parameters, None)
+    leni.runListElementNationalIDsTool(parameters, None)

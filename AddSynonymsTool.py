@@ -24,7 +24,7 @@ class AddSynonymsTool:
     def __init__(self):
         pass
 
-    def RunAddSynonymsTool(self, parameters, messages):
+    def runAddSynonymsTool(self, parameters, messages):
         # make variables for parms
         param_geodatabase = parameters[0].valueAsText
         param_csv = parameters[1].valueAsText
@@ -100,5 +100,5 @@ if __name__ == '__main__':
     param_csv.value='C:/Users/rgree/OneDrive/EBAR/Data Mining/Species Prioritization/Biotics Sync/' + \
                     'BioticsSynonymExample8.csv'
     parameters = [param_geodatabase, param_csv]
-    ast.RunAddSynonymsTool(parameters, None)
+    ast.runAddSynonymsTool(parameters, None)
 

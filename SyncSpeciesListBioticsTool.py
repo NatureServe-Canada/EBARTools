@@ -24,7 +24,7 @@ class SyncSpeciesListBioticsTool:
     def __init__(self):
         pass
 
-    def RunSyncSpeciesListBioticsTool(self, parameters, messages):
+    def runSyncSpeciesListBioticsTool(self, parameters, messages):
         # make variables for parms
         param_geodatabase = parameters[0].valueAsText
         param_csv = parameters[1].valueAsText
@@ -180,4 +180,4 @@ if __name__ == '__main__':
     param_csv.value='C:/Users/rgree/OneDrive/EBAR/Data Mining/Species Prioritization/Biotics Sync/' + \
                     'BioticsSpeciesExample2.csv'
     parameters = [param_geodatabase, param_csv]
-    ssl.RunSyncSpeciesListBioticsTool(parameters, None)
+    ssl.runSyncSpeciesListBioticsTool(parameters, None)

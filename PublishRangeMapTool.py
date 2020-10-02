@@ -32,7 +32,7 @@ class PublishRangeMapTool:
     def __init__(self):
         pass
 
-    def RunPublishRangeMapTool(self, parameters, messages):
+    def runPublishRangeMapTool(self, parameters, messages):
         # start time
         start_time = datetime.datetime.now()
         EBARUtils.displayMessage(messages, 'Start time: ' + str(start_time))
@@ -342,4 +342,4 @@ if __name__ == '__main__':
         param_spatial = arcpy.Parameter()
         param_spatial.value = 'true'
         parameters = [param_range_map_id, param_spatial]
-        prm.RunPublishRangeMapTool(parameters, None)
+        prm.runPublishRangeMapTool(parameters, None)

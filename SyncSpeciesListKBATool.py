@@ -27,7 +27,7 @@ class SyncSpeciesListKBATool:
     def __init__(self):
         pass
 
-    def RunSyncSpeciesListKBATool(self, parameters, messages):
+    def runSyncSpeciesListKBATool(self, parameters, messages):
 
         # Make variables for parameters
         param_geodatabase = parameters[0].valueAsText
@@ -277,4 +277,4 @@ if __name__ == '__main__':
     param_csv.value = 'C:\\GIS_Processing\\KBA\\Scripts\\GITHUB\\EBARTools\\SpeciesElementsExample.csv'
     parameters = [param_geodatabase, param_csv]
 
-    sslkba.RunSyncSpeciesListKBATool(parameters, None)
+    sslkba.runSyncSpeciesListKBATool(parameters, None)
