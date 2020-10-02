@@ -27,28 +27,29 @@ class PublishRangeMapSetsTool:
     def __init__(self):
         pass
 
-    def ProcessCategoryTaxaGroup(self, messages, category_taxagroup, range_map_ids, attributes_dict, zip_folder):
+    def ProcessCategoryTaxaGroup(self, messages, category_taxagroup, range_map_ids, attributes_dict, zip_folder,
+                                 metadata):
         # export range map, with biotics/species additions
         EBARUtils.displayMessage(messages, 'Exporting RangeMap records to CSV')
         EBARUtils.ExportRangeMapToCSV('range_map_view' + category_taxagroup, range_map_ids, attributes_dict, zip_folder,
-                                      'RangeMap.csv')
+                                      'RangeMap.csv', metadata)
 
         # export range map ecoshapes
         EBARUtils.displayMessage(messages, 'Exporting RangeMapEcoshape records to CSV')
         EBARUtils.ExportRangeMapEcoshapesToCSV('range_map_ecoshape_view' + category_taxagroup, range_map_ids,
-                                               zip_folder, 'RangeMapEcoshape.csv')
+                                               zip_folder, 'RangeMapEcoshape.csv', metadata)
 
         # export ecoshapes
         EBARUtils.displayMessage(messages, 'Exporting Ecoshape polygons to shapefile')
         EBARUtils.ExportEcoshapesToShapefile('ecoshape_layer' + category_taxagroup,
                                              'range_map_ecoshape_view' + category_taxagroup, zip_folder, 
-                                             'Ecoshape.shp', )
+                                             'Ecoshape.shp', metadata)
 
         # export overview ecoshapes
         EBARUtils.displayMessage(messages, 'Exporting EcoshapeOverview polygons to shapefile')
         EBARUtils.ExportEcoshapeOverviewsToShapefile('ecoshape_overview_layer' + category_taxagroup,
                                                      'range_map_ecoshape_view' + category_taxagroup, zip_folder, 
-                                                     'EcoshapeOverview.shp', )
+                                                     'EcoshapeOverview.shp', metadata)
 
         # create zips
         EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/EBAR - ' + \
@@ -77,6 +78,17 @@ class PublishRangeMapSetsTool:
         param_taxagroup = parameters[1].valueAsText
         EBARUtils.displayMessage(messages, 'Taxa Group: ' + param_taxagroup)
 
+        # generate metadata
+        EBARUtils.displayMessage(messages, 'Generating metadata')
+        md = arcpy.metadata.Metadata()
+        md.tags = 'Species Range, NatureServe Canada, Ecosystem-based Automated Range'
+        md.description = 'See EBARxxxxx.pdf for per-species map and additional metadata, and ' + \
+            'EBARMethods.pdf for additional details. <a href="https://explorer.natureserve.org/">Go to ' + \
+            'NatureServe Explorer</a> for information about the species.'
+        md.credits = '© NatureServe Canada ' + str(datetime.datetime.now().year)
+        md.accessConstraints = 'Publicly shareable under CC BY 4.0 (<a href=' + \
+            '"https://creativecommons.org/licenses/by/4.0/">https://creativecommons.org/licenses/by/4.0/</a>)'
+
         # loop all RangeMap records where IncludeInDownloadTable=1
         arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/11', 'range_map_view',
                                        'IncludeInDownloadTable = 1')
@@ -85,7 +97,6 @@ class PublishRangeMapSetsTool:
                                  'KEEP_COMMON')
         category_taxagroup = ''
         processed = 0
-
         # use Python sorted (sql_clause ORDER BY doesn't work), which precludes use of EBARUtils.SearchCursor
         where_clause = None
         if param_category:
@@ -110,7 +121,8 @@ class PublishRangeMapSetsTool:
                 # new category_taxagroup
                 if category_taxagroup != '':
                     # previous category_taxagroup
-                    self.ProcessCategoryTaxaGroup(messages, category_taxagroup, range_map_ids, attributes_dict, zip_folder)
+                    self.ProcessCategoryTaxaGroup(messages, category_taxagroup, range_map_ids, attributes_dict,
+                                                  zip_folder, md)
                 processed += 1
                 range_map_ids = []
                 attributes_dict = {}
@@ -142,7 +154,7 @@ class PublishRangeMapSetsTool:
 
         if row:
             # final category_taxagroup
-            self.ProcessCategoryTaxaGroup(messages, category_taxagroup, range_map_ids, attributes_dict, zip_folder)
+            self.ProcessCategoryTaxaGroup(messages, category_taxagroup, range_map_ids, attributes_dict, zip_folder, md)
 
         EBARUtils.displayMessage(messages, 'Processed ' + str(processed) + ' categories/taxa')
         return
