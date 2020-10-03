@@ -95,9 +95,9 @@ class BuildBulkDownloadTableTool:
                 <td>''' + row[0] + '''</td>
                 <td>''' + row[1] + '''</td>
                 <td><a href="https://gis.natureserve.ca/download/EBAR - ''' + category_taxa + \
-                    '''- All PDFs.zip" target="_blank">Download PDFs</a></td>
+                    ''' - All PDFs.zip" target="_blank">Download PDFs</a></td>
                 <td><a href="https://gis.natureserve.ca/download/EBAR - ''' + category_taxa + \
-                    '''- All Data.zip" target="_blank">Download Data</a></td>
+                    ''' - All Data.zip" target="_blank">Download Data</a></td>
             </tr>'''
 
         # footer

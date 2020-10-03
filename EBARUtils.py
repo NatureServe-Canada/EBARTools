@@ -697,7 +697,7 @@ def getTaxonAttributes(global_unique_id, element_global_id, range_map_id, messag
         with arcpy.da.SearchCursor('biotics_view', 
                                    ['G_RANK', 'G_RANK_REVIEW_DATE', 'N_RANK', 'N_RANK_REVIEW_DATE', 
                                    'COSEWIC_STATUS', 'SARA_STATUS']) as cursor:
-            for row in EBARUtils.searchCursor(cursor):
+            for row in searchCursor(cursor):
                 attributes_dict['g_rank'] = row['G_RANK']
                 if row['G_RANK_REVIEW_DATE']:
                     attributes_dict['reviewed_grank'] = ' (reviewed ' + \

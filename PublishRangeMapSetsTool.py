@@ -78,9 +78,9 @@ class PublishRangeMapSetsTool:
         param_category = parameters[0].valueAsText
         if param_category:
             EBARUtils.displayMessage(messages, 'Category: ' + param_category)
-        if param_param_taxagroup:
-            param_taxagroup = parameters[1].valueAsText
-        EBARUtils.displayMessage(messages, 'Taxa Group: ' + param_taxagroup)
+        param_taxagroup = parameters[1].valueAsText
+        if param_taxagroup:
+            EBARUtils.displayMessage(messages, 'Taxa Group: ' + param_taxagroup)
 
         # generate metadata
         EBARUtils.displayMessage(messages, 'Generating metadata')
