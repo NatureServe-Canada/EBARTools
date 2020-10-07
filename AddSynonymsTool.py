@@ -63,21 +63,12 @@ class AddSynonymsTool:
                     short_citation_year = None
                     if len(file_line['SHORT_CITATION_YEAR']) > 0:
                         short_citation_year = file_line['SHORT_CITATION_YEAR']
-                    ## use workspace editing because sometimes (unsure why) it generates "workspace already in
-                    ## transaction mode" errors
-                    #edit = arcpy.da.Editor(param_geodatabase)
-                    #edit.startEditing(False, False)
-                    #edit.startOperation()
                     insert_cursor = arcpy.da.InsertCursor(param_geodatabase + '/Synonym',
                                                           ['SpeciesID', 'SynonymName', 'SHORT_CITATION_AUTHOR',
                                                            'SHORT_CITATION_YEAR'])
                     insert_cursor.insertRow([element_species_dict[element_national_id], scientific_name,
                                              short_citation_author, short_citation_year])
                     del insert_cursor
-                    EBARUtils.setNewID(param_geodatabase + '/Synonym', 'SynonymID',
-                                       "SynonymName = '" + scientific_name + "'")
-                    #edit.stopOperation()
-                    #edit.stopEditing(True)
                     added += 1
             count += 1
 
@@ -95,10 +86,11 @@ if __name__ == '__main__':
     ast = AddSynonymsTool()
     # hard code parameters for debugging
     param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
+    param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_csv = arcpy.Parameter()
-    param_csv.value='C:/Users/rgree/OneDrive/EBAR/Data Mining/Species Prioritization/Biotics Sync/' + \
-                    'BioticsSynonymExample8.csv'
+    #param_csv.value = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Species Prioritization/Biotics Sync/' + \
+    #    'BioticsSynonymExample8.csv'
+    param_csv.value = 'C:/Users/rgree/Downloads/rgreene_1602079896364.csv'
     parameters = [param_geodatabase, param_csv]
     ast.runAddSynonymsTool(parameters, None)
 

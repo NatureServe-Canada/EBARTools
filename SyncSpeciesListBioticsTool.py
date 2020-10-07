@@ -138,11 +138,10 @@ class SyncSpeciesListBioticsTool:
                     EBARUtils.displayMessage(messages, msg)
                     skipped += 1
                 else:
-                    # start with a dummy species id so setNewID can work!
                     with arcpy.da.InsertCursor(param_geodatabase + '/Species',
-                                               ['SpeciesID', 'ActiveEBAR']) as insert_cursor:
-                        insert_cursor.insertRow([999999, 1])
-                    species_id = EBARUtils.setNewID(param_geodatabase + '/Species', 'SpeciesID', 'SpeciesID = 999999')
+                                               ['ActiveEBAR']) as insert_cursor:
+                        object_id = insert_cursor.insertRow([1])
+                    species_id = EBARUtils.getUniqueID(param_geodatabase + '/Species', 'SpeciesID', object_id)
                     biotics_fields.append('SpeciesID')
                     with arcpy.da.InsertCursor(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
                                                biotics_fields) as insert_cursor:
@@ -154,7 +153,7 @@ class SyncSpeciesListBioticsTool:
                                 insert_values.append(file_line[field])
                             else:
                                 insert_values.append(None)
-                        EBARUtils.displayMessage(messages, 'BIOTICS insert values: ' + str(insert_values))
+                        #EBARUtils.displayMessage(messages, 'BIOTICS insert values: ' + str(insert_values))
                         insert_cursor.insertRow(insert_values)
                     biotics_fields.remove('SpeciesID')
                     added += 1
@@ -175,9 +174,10 @@ if __name__ == '__main__':
     ssl = SyncSpeciesListBioticsTool()
     # hard code parameters for debugging
     param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
+    param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_csv = arcpy.Parameter()
-    param_csv.value='C:/Users/rgree/OneDrive/EBAR/Data Mining/Species Prioritization/Biotics Sync/' + \
-                    'BioticsSpeciesExample2.csv'
+    #param_csv.value = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Species Prioritization/Biotics Sync/' + \
+    #    'BioticsSpeciesExample2.csv'
+    param_csv.value = 'C:/Users/rgree/Downloads/rgreene_1602079843754.csv'
     parameters = [param_geodatabase, param_csv]
     ssl.runSyncSpeciesListBioticsTool(parameters, None)

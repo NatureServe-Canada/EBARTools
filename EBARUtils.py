@@ -27,7 +27,7 @@ resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
 temp_folder = 'C:/GIS/EBAR/temp'
 download_folder = 'C:/GIS/EBAR/pub/download'
 #download_folder = 'F:/download'
-#nsX_species_search_url = 'https://explorer.natureserve.org/api/data/search'
+#nsx_species_search_url = 'https://explorer.natureserve.org/api/data/search'
 nsx_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/ELEMENT_GLOBAL.'
 
 
@@ -172,6 +172,19 @@ def setNewID(table, id_field, where_clause):
         if row:
             del row
     return new_id
+
+
+def getUniqueID(table, id_field, object_id):
+    """Retrieve the Unique ID based on the ObjectID"""
+    unique_id = None
+    with arcpy.da.SearchCursor(table, [id_field], 'OBJECTID = ' + str(object_id)) as search_cursor:
+        row = None
+        for row in searchCursor(search_cursor):
+            unique_id = row[id_field]
+        if row:
+            del row
+    return unique_id
+
 
 def checkAddInputDataset(geodatabase, dataset_name, dataset_source_id, date_received, restrictions):
     """If Dataset already exists (name, source, date), return id and true; otherwise, add and return id and false"""
