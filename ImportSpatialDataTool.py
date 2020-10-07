@@ -130,9 +130,6 @@ class ImportSpatialDataTool:
                                                                           dataset_source_id,
                                                                           param_date_received,
                                                                           param_restrictions)
-        if not dataset_exists:
-            EBARUtils.setNewID(param_geodatabase + '/InputDataset', 'InputDatasetID', 'OBJECTID = ' + \
-                               str(input_dataset_id))
 
         # read existing species into dict
         EBARUtils.displayMessage(messages, 'Reading full list of Species and Synonyms')
@@ -399,8 +396,6 @@ class ImportSpatialDataTool:
                 destination = param_geodatabase + '/InputLine'
                 id_field = 'InputLineID'
             arcpy.Append_management('import_features', destination, 'NO_TEST', field_mappings)
-            # set new id (will reset any previous IDs from same input dataset)
-            EBARUtils.setNewID(destination, id_field, 'InputDatasetID = ' + str(input_dataset_id))
 
         # temp clean-up
         # trouble deleting on server only due to locks; could be layer?

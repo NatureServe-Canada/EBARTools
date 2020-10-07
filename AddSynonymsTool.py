@@ -88,9 +88,8 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_csv = arcpy.Parameter()
-    #param_csv.value = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Species Prioritization/Biotics Sync/' + \
-    #    'BioticsSynonymExample8.csv'
-    param_csv.value = 'C:/Users/rgree/Downloads/rgreene_1602079896364.csv'
+    param_csv.value = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Species Prioritization/Biotics Sync/' + \
+        'BioticsSynonymExample8.csv'
     parameters = [param_geodatabase, param_csv]
     ast.runAddSynonymsTool(parameters, None)
 
