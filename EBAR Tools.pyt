@@ -587,8 +587,17 @@ class ImportExternalRangeReview(object):
             direction='Input',
             multiValue=True)
 
+        # Username
+        param_username = arcpy.Parameter(
+            displayName='Username',
+            name='username',
+            datatype='GPString',
+            parameterType='Required',
+            direction='Input')
+
         params = [param_geodatabase, param_species, param_secondary, param_version, param_stage,
-                  param_external_range_table, param_presence_field, param_review_label, param_jurisdictions_covered]
+                  param_external_range_table, param_presence_field, param_review_label, param_jurisdictions_covered,
+                  param_username]
         return params
 
     def isLicensed(self):
