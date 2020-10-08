@@ -266,9 +266,9 @@ class GenerateRangeMapTool:
                 notes = 'Primary Species Name - ' + param_species
                 if len(secondary_names) > 0:
                     notes += '; Synonyms - ' + secondary_names
-                range_map_id = cursor.insertRow([species_id, param_version, param_stage, datetime.datetime.now(),
-                                                 notes, 0, scope, synonyms_used])
-            EBARUtils.setNewID(param_geodatabase + '/RangeMap', 'RangeMapID', 'OBJECTID = ' + str(range_map_id))
+                object_id = cursor.insertRow([species_id, param_version, param_stage, datetime.datetime.now(),
+                                              notes, 0, scope, synonyms_used])
+            range_map_id = EBARUtils.getUniqueID(param_geodatabase + '/RangeMap', 'RangeMapID', object_id)
             EBARUtils.displayMessage(messages, 'Range Map record created')
 
         # create SecondarySpecies records
@@ -278,8 +278,6 @@ class GenerateRangeMapTool:
                 for secondary in param_secondary:
                     secondary_id, short_citation = EBARUtils.checkSpecies(secondary, param_geodatabase)
                     cursor.insertRow([range_map_id, secondary_id])
-            EBARUtils.setNewID(param_geodatabase + '/SecondarySpecies', 'SecondarySpeciesID',
-                               'RangeMapID = ' + str(range_map_id))
             EBARUtils.displayMessage(messages, 'Secondary Species records created')
 
         # select all points for species and buffer
@@ -711,13 +709,11 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                      search_row[table_name_prefix + 'EcoshapeReview.MigrantStatus']])
                 if search_row:
                     del search_row
-        EBARUtils.setNewID(param_geodatabase + '/RangeMapEcoshape', 'RangeMapEcoshapeID',
-                           'RangeMapID = ' + str(range_map_id))
 
         # create RangeMapEcoshapeInputDataset records based on summary
         EBARUtils.displayMessage(messages, 'Creating Range Map Ecoshape Input Dataset records')
         with arcpy.da.SearchCursor(param_geodatabase + '/RangeMapEcoshape', ['RangeMapEcoshapeID', 'EcoshapeID'],
-                                    'RangeMapID = ' + str(range_map_id)) as rme_cursor:
+                                   'RangeMapID = ' + str(range_map_id)) as rme_cursor:
             rme_row = None
             for rme_row in EBARUtils.searchCursor(rme_cursor):
                 with arcpy.da.SearchCursor(temp_ecoshape_countby_dataset,
@@ -730,10 +726,6 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                    ['RangeMapEcoshapeID', 'InputDatasetID',
                                                     'InputDataSummary']) as insert_cursor:
                             insert_cursor.insertRow([rme_row['RangeMapEcoshapeID'], row['InputDatasetID'], summary])
-                        EBARUtils.setNewID(param_geodatabase + '/RangeMapEcoshapeInputDataset',
-                                           'RangeMapEcoshpInputDatasetID',
-                                           'RangeMapEcoshapeID = ' + str(rme_row['RangeMapEcoshapeID']) + \
-                                           'AND InputDatasetID = ' + str(row['InputDatasetID']))
                     if row:
                         del row
             if rme_row:

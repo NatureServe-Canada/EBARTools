@@ -160,18 +160,18 @@ def _name_cursor(cursor):
             yield MutableNamedTuple(zip(cursor.fields, row))
 
 
-def setNewID(table, id_field, where_clause):
-    """Set id_field to object_id"""
-    new_id = None
-    with arcpy.da.UpdateCursor(table, ['OID@', id_field], where_clause) as cursor:
-        row = None
-        for row in updateCursor(cursor):
-            # investigate more fool-proof method of assigning ID!!!
-            new_id = row['OID@']
-            cursor.updateRow([new_id, new_id])
-        if row:
-            del row
-    return new_id
+#def setNewID(table, id_field, where_clause):
+#    """Set id_field to object_id"""
+#    new_id = None
+#    with arcpy.da.UpdateCursor(table, ['OID@', id_field], where_clause) as cursor:
+#        row = None
+#        for row in updateCursor(cursor):
+#            # investigate more fool-proof method of assigning ID!!!
+#            new_id = row['OID@']
+#            cursor.updateRow([new_id, new_id])
+#        if row:
+#            del row
+#    return new_id
 
 
 def getUniqueID(table, id_field, object_id):

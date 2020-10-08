@@ -374,9 +374,9 @@ class ImportTabularDataTool:
                             'SynonymID', 'MaxDate', 'CoordinatesObscured', 'Accuracy', 'IndividualCount']
             with arcpy.da.InsertCursor(geodatabase + '/InputPoint', point_fields) as cursor:
                 object_id = cursor.insertRow([output_point, input_dataset_id,
-                                                   str(file_line[field_dict['unique_id']]), uri, license, species_id,
-                                                   synonym_id, max_date, coordinates_obscured, accuracy,
-                                                   individual_count])
+                                              str(file_line[field_dict['unique_id']]), uri, license, species_id,
+                                              synonym_id, max_date, coordinates_obscured, accuracy,
+                                              individual_count])
             input_point_id = EBARUtils.getUniqueID(geodatabase + '/InputPoint', 'InputPointID', object_id)
             id_dict[unique_id_species] = input_point_id
             return input_point_id, 'new', max_date
