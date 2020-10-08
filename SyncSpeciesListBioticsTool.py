@@ -176,7 +176,6 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_csv = arcpy.Parameter()
-    param_csv.value = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Species Prioritization/Biotics Sync/' + \
-        'BioticsSpeciesExample2.csv'
+    param_csv.value = 'C:/GIS/EBAR/samples/BioticsSpeciesExample.csv'
     parameters = [param_geodatabase, param_csv]
     ssl.runSyncSpeciesListBioticsTool(parameters, None)
