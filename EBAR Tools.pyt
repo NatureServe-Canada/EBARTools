@@ -711,7 +711,7 @@ class BuildEBARDownloadTable(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        bedt = BuildEBARDownloadTableTool.BuildDownloadTableTool()
+        bedt = BuildEBARDownloadTableTool.BuildEBARDownloadTableTool()
         bedt.runBuildEBARDownloadTableTool(parameters, messages)
         return
 
