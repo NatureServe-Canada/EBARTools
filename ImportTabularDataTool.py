@@ -93,9 +93,6 @@ class ImportTabularDataTool:
                                                                           dataset_source_id,
                                                                           param_date_received,
                                                                           param_restrictions)
-        if not dataset_exists:
-            EBARUtils.setNewID(param_geodatabase + '/InputDataset', 'InputDatasetID', 'OBJECTID = ' + \
-                               str(input_dataset_id))
 
         # read existing species into dict
         EBARUtils.displayMessage(messages, 'Reading full list of Species and Synonyms')
@@ -376,11 +373,11 @@ class ImportTabularDataTool:
             point_fields = ['SHAPE@XY', 'InputDatasetID', 'DatasetSourceUniqueID', 'URI', 'License', 'SpeciesID',
                             'SynonymID', 'MaxDate', 'CoordinatesObscured', 'Accuracy', 'IndividualCount']
             with arcpy.da.InsertCursor(geodatabase + '/InputPoint', point_fields) as cursor:
-                input_point_id = cursor.insertRow([output_point, input_dataset_id,
+                object_id = cursor.insertRow([output_point, input_dataset_id,
                                                    str(file_line[field_dict['unique_id']]), uri, license, species_id,
                                                    synonym_id, max_date, coordinates_obscured, accuracy,
                                                    individual_count])
-            EBARUtils.setNewID(geodatabase + '/InputPoint', 'InputPointID', 'OBJECTID = ' + str(input_point_id))
+            input_point_id = EBARUtils.getUniqueID(geodatabase + '/InputPoint', 'InputPointID', object_id)
             id_dict[unique_id_species] = input_point_id
             return input_point_id, 'new', max_date
 

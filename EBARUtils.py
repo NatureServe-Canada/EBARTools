@@ -203,7 +203,8 @@ def checkAddInputDataset(geodatabase, dataset_name, dataset_source_id, date_rece
     # new
     dataset_fields = ['DatasetName', 'DatasetSourceID', 'DateReceived', 'Restrictions']
     with arcpy.da.InsertCursor(geodatabase + '/InputDataset', dataset_fields) as cursor:
-        input_dataset_id = cursor.insertRow([dataset_name, dataset_source_id, date_received, restrictions])
+        object_id = cursor.insertRow([dataset_name, dataset_source_id, date_received, restrictions])
+    input_dataset_id = getUniqueID(geodatabase + '/InputDataset', 'InputDatasetID', object_id)
     return input_dataset_id, False
 
 
