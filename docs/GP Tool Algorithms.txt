@@ -1,0 +1,124 @@
+AddSynonyms(csv)
+	read existing species and synonym names
+	loop all csv lines
+		confirm no species record with same name
+		confirm no existing synonym record with same name
+		confirm element_national_id matches an existing species record
+		add new synonym name for existing species record
+
+BuildBulkDownloadTable()
+	create html header
+	loop all RangeMap records where IncludeInDownloadTable=1, ordering by category_taxa
+		when category_taxa changes, create html table row
+	create html footer
+	save html
+	
+BuildBulkDownloadTable()
+	create html header
+	loop all RangeMap records where IncludeInDownloadTable=1, ordering by category_taxa
+		when category_taxa changes, create new html table
+		create html table row
+	create html footer
+	save html
+
+GenerateRangeMap [TO DO - requires refactoring/modularization and possible sharing of code, such as "find" RangeMap code, with other tools]
+
+ImportExternalRangeReview(species, secondary, version, stage, external_range_table, presence_field, review_label, jurisdictions_covered, username)
+	check for species
+	check for secondary species
+	check for range map record based on species/version/stage
+	check for username
+	confirm no existing review for username and range map
+	build list of jurisdictions
+	build dict of RangeMapEcoshape Presence for jurisdiction(s)
+	build dict of External Ecoshape Presence
+	create Review record
+	loop all External Ecoshape records
+		compare to RangeMapEcoshape records
+		create change and add EcoshapeReview records as required
+	loop all existing RangeMapEcoshape records
+		compare to External Ecosapes
+		create remove EcoshapeReview records as required
+
+ImportSpatialData(import_feature_class, dataset_name, dataset_source, date_received, restrictions)
+	check dataset source
+	get dataset source id, type and data-drive field mappings based on dataset_source
+	check/add InputDataset record using dataset_name, dataset_source, date_received, restrictions
+	perform preprocessing on import_feature_class
+		add fields
+		loop to check/add species and flag duplicates
+		loop to check accuracy if provided
+		loop for additional preprocessing (eo rank, dates, 
+	append to InputPolygon/Point/Line feature class
+	summarize and clean-up
+
+ImportTabularData(raw_data_file, dataset_name, dataset_source, date_received, restrictions)
+	check dataset source
+	get dataset source id on dataset_source
+	load appropriate python field mapping dictionary based on dataset_source
+	check/add InputDataset record using dataset_name, dataset_source, date_received, restrictions
+	read existing species
+	read existing dataset_source unique IDs
+	loop all raw_data_file lines
+		check/add InputPoint record for each line
+			check for species (don't import row and warn if no match)
+			perform various field-by-field checks
+			check for existing point with same unique_id within the dataset source
+				if exists, delete (in the case of downgraded research_grade records) or update
+				if doesn't exit, insert
+	summarize and clean-up
+	
+ListElementNationalIDs()
+	loop all active BIOTICS_ELEMENT_NATIONAL records
+		output element_national_id separated by comma
+		break after every 1000 records, becuase this is the maxium that could be used in the Biotics query window
+
+SyncSpeciesListBiotics(csv)
+	read existing element_national_ids and scientific_names
+	loop all csv lines
+		check for existing element_national id
+			if exists, update BIOTICS_ELEMENT_NATIONAL records
+			if doesn't exist, insert Species and BIOTICS_ELEMENT_NATIONAL records
+	summarize and clean-up
+
+SyncSpeciesListKBA(csv)
+	read existing element_national_id and species_id values
+	loop all csv lines
+		check for element_national_id and skip if no match
+		update Species record
+	summarize and clean-up
+			
+PublishRangeMap(range_map_id, include_spatial)
+	get dynamic attributes
+	update map template
+	update html template
+	generate jpg
+	generate pdf
+	generate spatial zip
+		create zip folder
+		copy static resources
+		copy pdf
+		export RangeMap to CSV
+		export RangeMapEcoshape to CSV
+		export Ecoshape to shapefile
+		export EcoshapeOverview to shapefile
+		embed metadata
+		update ArcGIS Pro template and lyrx files
+		zip (including static ArcMap and lyr files)
+		set PublishDate
+
+PublishRangeMapSets(optional category_taxa)
+	loop all category_taxa
+		create zip folder
+		copy PDFs (assume already existing in download_folder)
+		zip PDFs
+		copy static resources
+		select RangeMap records based on category_taxa (join to BIOTICS_ELEMENT_NATIONAL) and IncludeInDownloadTable flag
+		export RangeMap to CSV
+		select RangeMapEcoshape records based on RangeMapID (above)
+		export RangeMapEcoshape to CSV
+		embed metadata
+		loop all RangeMapIDs
+			update ArcGIS Pro template and lyrx files
+			update ArcMap temlate and lyr files???
+		zip spatial data

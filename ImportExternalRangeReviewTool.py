@@ -267,7 +267,7 @@ class ImportExternalRangeReviewTool:
                                                   1, external_ecoshape_dict[external_ecoshape_id], param_username])
                 add_count += 1
 
-        # loop all external
+        # loop all existing
         EBARUtils.displayMessage(messages, 'Processing existing Range Ecoshapes')
         for range_ecoshape_id in range_ecoshape_dict:
             if range_ecoshape_id not in external_ecoshape_dict:
