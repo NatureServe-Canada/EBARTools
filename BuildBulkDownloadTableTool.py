@@ -23,6 +23,24 @@ class BuildBulkDownloadTableTool:
     def __init__(self):
         pass
 
+    def processCategoryTaxaGroup(self, category, taxa, category_taxa, only_deficient_partial):
+        html = '''
+            <tr>
+                <td>''' + category + '''</td>
+                <td>''' + taxa + '''</td>
+                <td><a href="https://gis.natureserve.ca/download/EBAR - ''' + category_taxa + \
+                    ''' - All PDFs.zip" target="_blank">Download PDFs</a></td>'''
+        if only_deficient_partial:
+            html += '''
+                <td></td>'''
+        else:
+            html +='''
+                <td><a href="https://gis.natureserve.ca/download/EBAR - ''' + category_taxa + \
+                    ''' - All Data.zip" target="_blank">Download Data</a></td>'''
+        html +='''
+            </tr>'''
+        return html
+
     def runBuildBulkDownloadTableTool(self, parameters, messages):
         # start time
         start_time = datetime.datetime.now()
@@ -77,7 +95,7 @@ class BuildBulkDownloadTableTool:
             </tr>'''
         # loop all RangeMap records where IncludeInDownloadTable=1
         arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/11', 'range_map_view',
-                                       'IncludeInDownloadTable = 1')
+                                       'IncludeInDownloadTable in (1, 2, 3)')
         # join BIOTICS_ELEMENT_NATIONAL to RangeMap
         arcpy.AddJoin_management('range_map_view', 'SpeciesID', EBARUtils.ebar_feature_service + '/4', 'SpeciesID',
                                  'KEEP_COMMON')
@@ -85,21 +103,22 @@ class BuildBulkDownloadTableTool:
         # use Python sorted (sql_clause ORDER BY doesn't work), which precludes use of EBARUtils.SearchCursor
         for row in sorted(arcpy.da.SearchCursor('range_map_view',
                           ['L4BIOTICS_ELEMENT_NATIONAL.CATEGORY',
-                           'L4BIOTICS_ELEMENT_NATIONAL.TAX_GROUP'])):
+                           'L4BIOTICS_ELEMENT_NATIONAL.TAX_GROUP',
+                           'L11RangeMap.IncludeInDownloadTable'])):
             if row[0] + ' - ' + row[1] != category_taxa:
-                # table row
-                category_taxa = row[0] + ' - ' + row[1]
+                if category_taxa != '':
+                    # table row for previous group
+                    html += self.processCategoryTaxaGroup(category, taxa, category_taxa, only_deficient_partial)
+                # if all range maps in group have no spatial data then exclude spatial download
+                only_deficient_partial = True
+                category = row[0]
+                taxa = row[1]
+                category_taxa = category + ' - ' + taxa
                 EBARUtils.displayMessage(messages, category_taxa + ' links')
-                html += '''
-            <tr>
-                <td>''' + row[0] + '''</td>
-                <td>''' + row[1] + '''</td>
-                <td><a href="https://gis.natureserve.ca/download/EBAR - ''' + category_taxa + \
-                    ''' - All PDFs.zip" target="_blank">Download PDFs</a></td>
-                <td><a href="https://gis.natureserve.ca/download/EBAR - ''' + category_taxa + \
-                    ''' - All Data.zip" target="_blank">Download Data</a></td>
-            </tr>'''
-
+            if row[2] == 1:
+                only_deficient_partial = False
+        # table row for final group
+        html += self.processCategoryTaxaGroup(category, taxa, category_taxa, only_deficient_partial)
         # footer
         html += '''
 		</tbody></table>

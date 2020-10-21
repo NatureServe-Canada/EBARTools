@@ -69,7 +69,7 @@ class BuildEBARDownloadTableTool:
 	<body>'''
         # loop all RangeMap records where IncludeInDownloadTable=1
         arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/11', 'range_map_view',
-                                       'IncludeInDownloadTable = 1')
+                                       'IncludeInDownloadTable IN (1, 2, 3)')
         # join BIOTICS_ELEMENT_NATIONAL to RangeMap
         arcpy.AddJoin_management('range_map_view', 'SpeciesID', EBARUtils.ebar_feature_service + '/4', 'SpeciesID',
                                  'KEEP_COMMON')
@@ -82,7 +82,8 @@ class BuildEBARDownloadTableTool:
                            'L4BIOTICS_ELEMENT_NATIONAL.NATIONAL_ENGL_NAME',
                            'L4BIOTICS_ELEMENT_NATIONAL.NATIONAL_FR_NAME',
                            'L4BIOTICS_ELEMENT_NATIONAL.ELEMENT_GLOBAL_ID',
-                           'L11RangeMap.RangeMapScope'])):
+                           'L11RangeMap.RangeMapScope',
+                           'L11RangeMap.IncludeInDownloadTable'])):
             if row[0] + ' - ' + row[1] != category_taxa:
                 if category_taxa != '':
                     # table footer for previous table
@@ -99,10 +100,14 @@ class BuildEBARDownloadTableTool:
                 <th>English Name</th>
                 <th>Nom Français</th>
                 <th>Scope</th>
+                <th>Status</th>
                 <th>PDF Link</th>
                 <th>GIS Data Link</th>
             </tr>'''
             # table row
+            french_name = ''
+            if row[4]:
+                french_name = row[4]
             scope = 'Global'
             if row[6] == 'N':
                 scope = 'Canadian'
@@ -111,19 +116,28 @@ class BuildEBARDownloadTableTool:
             element_global_id = str(row[5])
             if scope == 'Canadian':
                 element_global_id += 'N'
-            french_name = ''
-            if row[4]:
-                french_name = row[4]
+            status = 'Expert Reviewed'
+            if row[7] == 2:
+                status = 'Data Deficient'
+            if row[7] == 3:
+                status = 'Partially Reviewed'
             html += '''
             <tr>
                 <td>''' + row[2] + '''</td>
                 <td>''' + row[3] + '''</td>
                 <td>''' + french_name + '''</td>
                 <td>''' + scope + '''</td>
+                <td>''' + status + '''</td>
                 <td><a href="https://gis.natureserve.ca/download/EBAR''' + element_global_id + \
-                    '''.pdf" target="_blank">View PDF</a></td>
+                    '''.pdf" target="_blank">View PDF</a></td>'''
+            if row[7] == 1:
+                html += '''
                 <td><a href="https://gis.natureserve.ca/download/EBAR''' + element_global_id + \
-                    '''.zip" target="_blank">Download GIS Data</a></td>
+                    '''.zip" target="_blank">Download GIS Data</a></td>'''
+            else:
+                html += '''
+                <td></td>'''
+            html += '''
             </tr>'''
             EBARUtils.displayMessage(messages, element_global_id)
         # table footer for final table

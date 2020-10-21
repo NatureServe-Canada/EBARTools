@@ -96,7 +96,7 @@ class PublishRangeMapSetsTool:
 
         # loop all RangeMap records where IncludeInDownloadTable=1
         arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/11', 'range_map_view',
-                                       'IncludeInDownloadTable = 1')
+                                       'IncludeInDownloadTable IN (1, 2, 3)')
         # join BIOTICS_ELEMENT_NATIONAL to RangeMap
         arcpy.AddJoin_management('range_map_view', 'SpeciesID', EBARUtils.ebar_feature_service + '/4', 'SpeciesID',
                                  'KEEP_COMMON')
@@ -121,7 +121,8 @@ class PublishRangeMapSetsTool:
                            'L4BIOTICS_ELEMENT_NATIONAL.ELEMENT_GLOBAL_ID',
                            'L4BIOTICS_ELEMENT_NATIONAL.GLOBAL_UNIQUE_IDENTIFIER',
                            'L11RangeMap.RangeMapScope',
-                           'L11RangeMap.RangeMapID'], where_clause)):
+                           'L11RangeMap.RangeMapID',
+                           'L11RangeMap.IncludeInDownloadTable'], where_clause)):
             if row[0] + ' - ' + row[1] != category_taxagroup:
                 # new category_taxagroup
                 if category_taxagroup != '':
@@ -155,11 +156,13 @@ class PublishRangeMapSetsTool:
             range_map_ids.append(str(row[8]))
             global_unique_id = row[6].replace('-', '.')
             attributes_dict[str(row[8])] = EBARUtils.getTaxonAttributes(global_unique_id, element_global_id, row[8],
-                                                                        messages)
+                                                                            messages)
 
-            # update ArcGIS Pro template
-            EBARUtils.displayMessage(messages, 'Updating ArcGIS Pro template')
-            EBARUtils.updateArcGISProTemplate(zip_folder, element_global_id, md, row[8])
+            # don't include spatial data for data deficient and partially reviewed
+            if row[9] == 1:
+                # update ArcGIS Pro template
+                EBARUtils.displayMessage(messages, 'Updating ArcGIS Pro template')
+                EBARUtils.updateArcGISProTemplate(zip_folder, element_global_id, md, row[8])
 
         if row:
             # final category_taxagroup
