@@ -24,46 +24,49 @@ class PublishRangeMapSetsTool:
         pass
 
     def processCategoryTaxaGroup(self, messages, category_taxagroup, range_map_ids, attributes_dict, zip_folder,
-                                 metadata):
-        # export range map, with biotics/species additions
-        EBARUtils.displayMessage(messages, 'Exporting RangeMap records to CSV')
-        EBARUtils.ExportRangeMapToCSV('range_map_view' + category_taxagroup, range_map_ids, attributes_dict, zip_folder,
-                                      'RangeMap.csv', metadata)
+                                 metadata, only_deficient_partial):
+        if not only_deficient_partial:
+            # export range map, with biotics/species additions
+            EBARUtils.displayMessage(messages, 'Exporting RangeMap records to CSV')
+            EBARUtils.ExportRangeMapToCSV('range_map_view' + category_taxagroup, range_map_ids, attributes_dict, zip_folder,
+                                          'RangeMap.csv', metadata)
 
-        # export range map ecoshapes
-        EBARUtils.displayMessage(messages, 'Exporting RangeMapEcoshape records to CSV')
-        EBARUtils.ExportRangeMapEcoshapesToCSV('range_map_ecoshape_view' + category_taxagroup, range_map_ids,
-                                               zip_folder, 'RangeMapEcoshape.csv', metadata)
+            # export range map ecoshapes
+            EBARUtils.displayMessage(messages, 'Exporting RangeMapEcoshape records to CSV')
+            EBARUtils.ExportRangeMapEcoshapesToCSV('range_map_ecoshape_view' + category_taxagroup, range_map_ids,
+                                                   zip_folder, 'RangeMapEcoshape.csv', metadata)
 
-        # export ecoshapes
-        EBARUtils.displayMessage(messages, 'Exporting Ecoshape polygons to shapefile')
-        EBARUtils.ExportEcoshapesToShapefile('ecoshape_layer' + category_taxagroup,
-                                             'range_map_ecoshape_view' + category_taxagroup, zip_folder, 
-                                             'Ecoshape.shp', metadata)
+            # export ecoshapes
+            EBARUtils.displayMessage(messages, 'Exporting Ecoshape polygons to shapefile')
+            EBARUtils.ExportEcoshapesToShapefile('ecoshape_layer' + category_taxagroup,
+                                                 'range_map_ecoshape_view' + category_taxagroup, zip_folder, 
+                                                 'Ecoshape.shp', metadata)
 
-        # export overview ecoshapes
-        EBARUtils.displayMessage(messages, 'Exporting EcoshapeOverview polygons to shapefile')
-        EBARUtils.ExportEcoshapeOverviewsToShapefile('ecoshape_overview_layer' + category_taxagroup,
-                                                     'range_map_ecoshape_view' + category_taxagroup, zip_folder, 
-                                                     'EcoshapeOverview.shp', metadata)
+            # export overview ecoshapes
+            EBARUtils.displayMessage(messages, 'Exporting EcoshapeOverview polygons to shapefile')
+            EBARUtils.ExportEcoshapeOverviewsToShapefile('ecoshape_overview_layer' + category_taxagroup,
+                                                         'range_map_ecoshape_view' + category_taxagroup, zip_folder, 
+                                                         'EcoshapeOverview.shp', metadata)
 
-        # copy ArcMap template
-        EBARUtils.displayMessage(messages, 'Copying ArcMap template')
-        shutil.copyfile(EBARUtils.resources_folder + '/EBAR.mxd', zip_folder + '/EBAR ' + category_taxagroup + '.mxd')
-        shutil.copyfile(EBARUtils.resources_folder + '/EcoshapeOverview.lyr', zip_folder + '/EcoshapeOverview.lyr')
-        shutil.copyfile(EBARUtils.resources_folder + '/Ecoshape.lyr', zip_folder + '/Ecoshape.lyr')
+            # copy ArcMap template
+            EBARUtils.displayMessage(messages, 'Copying ArcMap template')
+            shutil.copyfile(EBARUtils.resources_folder + '/EBAR.mxd', zip_folder + '/EBAR ' + category_taxagroup + '.mxd')
+            shutil.copyfile(EBARUtils.resources_folder + '/EcoshapeOverview.lyr', zip_folder + '/EcoshapeOverview.lyr')
+            shutil.copyfile(EBARUtils.resources_folder + '/Ecoshape.lyr', zip_folder + '/Ecoshape.lyr')
 
-        # create zips
+            # create spatial zip
+            EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/EBAR - ' + \
+                category_taxagroup + ' - All Data.zip')
+            EBARUtils.createZip(zip_folder,
+                                EBARUtils.download_folder + '/EBAR - ' + category_taxagroup + ' - All Data.zip',
+                                None)
+
+        # create pdf zip
         EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/EBAR - ' + \
             category_taxagroup + ' - All PDFs.zip')
         EBARUtils.createZip(zip_folder,
                             EBARUtils.download_folder + '/EBAR - ' + category_taxagroup + ' - All PDFs.zip',
                             '.pdf')
-        EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/EBAR - ' + \
-            category_taxagroup + ' - All Data.zip')
-        EBARUtils.createZip(zip_folder,
-                            EBARUtils.download_folder + '/EBAR - ' + category_taxagroup + ' - All Data.zip',
-                            None)
 
     def runPublishRangeMapSetsTool(self, parameters, messages):
         # start time
@@ -128,7 +131,9 @@ class PublishRangeMapSetsTool:
                 if category_taxagroup != '':
                     # previous category_taxagroup
                     self.processCategoryTaxaGroup(messages, category_taxagroup, range_map_ids, attributes_dict,
-                                                  zip_folder, md)
+                                                  zip_folder, md, only_deficient_partial)
+                # if all range maps in group have no spatial data then exclude spatial download
+                only_deficient_partial = True
                 processed += 1
                 range_map_ids = []
                 attributes_dict = {}
@@ -160,13 +165,15 @@ class PublishRangeMapSetsTool:
 
             # don't include spatial data for data deficient and partially reviewed
             if row[9] == 1:
+                only_deficient_partial = False
                 # update ArcGIS Pro template
                 EBARUtils.displayMessage(messages, 'Updating ArcGIS Pro template')
                 EBARUtils.updateArcGISProTemplate(zip_folder, element_global_id, md, row[8])
 
         if row:
             # final category_taxagroup
-            self.processCategoryTaxaGroup(messages, category_taxagroup, range_map_ids, attributes_dict, zip_folder, md)
+            self.processCategoryTaxaGroup(messages, category_taxagroup, range_map_ids, attributes_dict, zip_folder, md,
+                                          only_deficient_partial)
 
         EBARUtils.displayMessage(messages, 'Processed ' + str(processed) + ' categories/taxa')
         return

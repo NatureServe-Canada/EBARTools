@@ -5,7 +5,7 @@
 # © NatureServe Canada 2020 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 # Program: BuildBulkDownloadTableTool.py
-# ArcGIS Python tool for building html table of category/taxa download links
+# ArcGIS Python tool for building html table of category/taxagroup download links
 
 # Notes:
 # - Normally called from EBAR Tools.pyt, unless doing interactive debugging
@@ -19,23 +19,23 @@ import datetime
 
 
 class BuildBulkDownloadTableTool:
-    """Create html table per taxa / category group downloads"""
+    """Create html table per category/taxagroup downloads"""
     def __init__(self):
         pass
 
-    def processCategoryTaxaGroup(self, category, taxa, category_taxa, only_deficient_partial):
+    def processCategoryTaxaGroup(self, category, taxagroup, category_taxagroup, only_deficient_partial):
         html = '''
             <tr>
                 <td>''' + category + '''</td>
-                <td>''' + taxa + '''</td>
-                <td><a href="https://gis.natureserve.ca/download/EBAR - ''' + category_taxa + \
+                <td>''' + taxagroup + '''</td>
+                <td><a href="https://gis.natureserve.ca/download/EBAR - ''' + category_taxagroup + \
                     ''' - All PDFs.zip" target="_blank">Download PDFs</a></td>'''
         if only_deficient_partial:
             html += '''
                 <td></td>'''
         else:
             html +='''
-                <td><a href="https://gis.natureserve.ca/download/EBAR - ''' + category_taxa + \
+                <td><a href="https://gis.natureserve.ca/download/EBAR - ''' + category_taxagroup + \
                     ''' - All Data.zip" target="_blank">Download Data</a></td>'''
         html +='''
             </tr>'''
@@ -93,32 +93,35 @@ class BuildBulkDownloadTableTool:
                 <th>PDFs Link</th>
                 <th>GIS Data Link</th>
             </tr>'''
+
         # loop all RangeMap records where IncludeInDownloadTable=1
         arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/11', 'range_map_view',
                                        'IncludeInDownloadTable in (1, 2, 3)')
         # join BIOTICS_ELEMENT_NATIONAL to RangeMap
         arcpy.AddJoin_management('range_map_view', 'SpeciesID', EBARUtils.ebar_feature_service + '/4', 'SpeciesID',
                                  'KEEP_COMMON')
-        category_taxa = ''
+        category_taxagroup = ''
         # use Python sorted (sql_clause ORDER BY doesn't work), which precludes use of EBARUtils.SearchCursor
         for row in sorted(arcpy.da.SearchCursor('range_map_view',
                           ['L4BIOTICS_ELEMENT_NATIONAL.CATEGORY',
                            'L4BIOTICS_ELEMENT_NATIONAL.TAX_GROUP',
                            'L11RangeMap.IncludeInDownloadTable'])):
-            if row[0] + ' - ' + row[1] != category_taxa:
-                if category_taxa != '':
+            if row[0] + ' - ' + row[1] != category_taxagroup:
+                # new category_taxagroup
+                if category_taxagroup != '':
                     # table row for previous group
-                    html += self.processCategoryTaxaGroup(category, taxa, category_taxa, only_deficient_partial)
+                    html += self.processCategoryTaxaGroup(category, taxagroup, category_taxagroup, only_deficient_partial)
                 # if all range maps in group have no spatial data then exclude spatial download
                 only_deficient_partial = True
                 category = row[0]
-                taxa = row[1]
-                category_taxa = category + ' - ' + taxa
-                EBARUtils.displayMessage(messages, category_taxa + ' links')
+                taxagroup = row[1]
+                category_taxagroup = category + ' - ' + taxagroup
+                EBARUtils.displayMessage(messages, category_taxagroup + ' links')
             if row[2] == 1:
                 only_deficient_partial = False
+
         # table row for final group
-        html += self.processCategoryTaxaGroup(category, taxa, category_taxa, only_deficient_partial)
+        html += self.processCategoryTaxaGroup(category, taxagroup, category_taxagroup, only_deficient_partial)
         # footer
         html += '''
 		</tbody></table>
