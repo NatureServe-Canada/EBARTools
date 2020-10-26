@@ -192,7 +192,7 @@ class PublishRangeMapTool:
         polygon_layer.definitionQuery = 'rangemapid = ' + param_range_map_id
         table_layer = map.listTables('rangemap')[0]
         table_layer.definitionQuery = 'rangemapid = ' + param_range_map_id
-        layout = aprx.listLayouts('range map landscape terrain')[0]
+        layout = aprx.listLayouts('range map landscape terrain watermark')[0]
         map_frame = layout.listElements('mapframe_element')[0]
         extent = map_frame.getLayerExtent(polygon_layer, False, True)
         x_buffer = (extent.XMax - extent.XMin) / 20.0
@@ -328,12 +328,12 @@ if __name__ == '__main__':
     # Batch 2a = 124, 617, 45, 56, 237, 623, 624, 630, 632, 643, 644, 646, 647, 648, 670, 671
     # Batch 2b = 685, 1086, 687, 688, 689, 683, 705, 706, 707, 708, 709, 710, 716, 717, 718, 719, 720, 721, 722, 723, 1087, 714, 713, 711, 728, 1089, 737, 1090, 740, 820, 821, 822, 747, 823
     # Batch 2c = 749, 824
-    batch_ids = [749, 824]
+    batch_ids = [728]
     for id in batch_ids:
         # hard code parameters for debugging
         param_range_map_id = arcpy.Parameter()
         param_range_map_id.value = str(id)
         param_spatial = arcpy.Parameter()
-        param_spatial.value = 'true'
+        param_spatial.value = 'false'
         parameters = [param_range_map_id, param_spatial]
         prm.runPublishRangeMapTool(parameters, None)
