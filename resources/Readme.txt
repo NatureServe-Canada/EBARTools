@@ -87,7 +87,7 @@ TotalArea - total area in square metres
 
 Disclaimer:
 - Please review our methods document at https://1drv.ms/b/s!Ajv6BHSXrqqqm4xipeEOQ67IfH77IQ?e=dqM1FO before using EBAR.
-- EBAR range data are relatively coarse scale and appropriate for screening and education purposes, but are not intended for all types of applications and analyses.
+- EBAR range data are relatively coarse scale and appropriate for screening and education purposes, but are not intended for all types of applications and analysis.
 - The absence of data in any geographic areas does not necessarily mean that a species is not present.
 - An ecoshape with a presence value does not necessarily mean that a species is present throughout the entire geographic area.
 
