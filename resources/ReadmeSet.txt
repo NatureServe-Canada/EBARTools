@@ -86,5 +86,11 @@ MosaicVer - version of the ecoshape mosaic
 TerrArea - terrestrial area in square metres derived from Commission for Ecological Cooperation "Major Lakes and Reservoirs of North America"
 TotalArea - total area in square metres
 
+Disclaimer:
+- Please review our methods document at https://1drv.ms/b/s!Ajv6BHSXrqqqm4xipeEOQ67IfH77IQ?e=dqM1FO before using EBAR.
+- EBAR range data are relatively coarse scale and appropriate for screening and education purposes, but are not intended for all types of applications and analyses.
+- The absence of data in any geographic areas does not necessarily mean that a species is not present.
+- An ecoshape with a presence value does not necessarily mean that a species is present throughout the entire geographic area.
+
 Multiple species citation: NatureServe Canada. 2020. Ecosystem-based Automated Range (EBAR). Ottawa, Canada. Retrieved on [insert date] from [insert url]
 Single species citation: NatureServe Canada. 2020. [insert species name] Ecosystem-based Automated Range (EBAR). Ottawa, Canada. Retrieved on [insert date] from [insert url]
