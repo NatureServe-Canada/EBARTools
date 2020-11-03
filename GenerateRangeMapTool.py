@@ -606,6 +606,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     with arcpy.da.SearchCursor('ecoshape_review_view', [table_name_prefix + 'EcoshapeReview.OBJECTID'],
                                                table_name_prefix + 'Review.RangeMapID IN (' + \
                                                prev_range_map_ids + ') AND ' + table_name_prefix + \
+                                               'Review.UseForMapGen = 1 AND ' + table_name_prefix + \
                                                'EcoshapeReview.UseForMapGen = 1 AND ' + table_name_prefix + \
                                                "EcoshapeReview.Markup = 'R' AND "  + table_name_prefix + \
                                                'EcoshapeReview.EcoshapeID = ' + \
@@ -658,6 +659,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                     table_name_prefix + 'EcoshapeReview.MigrantStatus'],
                                                    table_name_prefix + 'Review.RangeMapID IN (' + \
                                                    prev_range_map_ids + ') AND ' + table_name_prefix + \
+                                                   'Review.UseForMapGen = 1 AND ' + table_name_prefix + \
                                                    'EcoshapeReview.UseForMapGen = 1 AND ' + table_name_prefix + \
                                                    "EcoshapeReview.Markup IN ('P', 'X', 'H') AND "  + table_name_prefix + \
                                                    'EcoshapeReview.EcoshapeID = ' + \
@@ -676,6 +678,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         if len(prev_range_map_ids) > 0:
             condition = table_name_prefix + 'Review.RangeMapID IN (' + \
                 prev_range_map_ids + ') AND ' + table_name_prefix + \
+                'Review.UseForMapGen = 1 AND ' + table_name_prefix + \
                 'EcoshapeReview.UseForMapGen = 1 AND ' + table_name_prefix + \
                 "EcoshapeReview.Markup IN ('P', 'X', 'H')"
             if scope == 'N':
@@ -856,7 +859,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         if len(prev_range_map_ids) > 0:
             with arcpy.da.SearchCursor(param_geodatabase + '/Review', ['OverallStarRating'],
                                        'RangeMapID IN (' + prev_range_map_ids +
-                                       ') AND DateCompleted IS NOT NULL') as cursor:
+                                       ') AND DateCompleted IS NOT NULL AND UseForMapGen = 1') as cursor:
                 row = None
                 for row in EBARUtils.searchCursor(cursor):
                     completed_expert_reviews += 1

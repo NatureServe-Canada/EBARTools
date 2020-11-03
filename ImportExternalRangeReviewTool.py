@@ -234,9 +234,10 @@ class ImportExternalRangeReviewTool:
         # create Review record
         EBARUtils.displayMessage(messages, 'Creating Review record')
         with arcpy.da.InsertCursor(param_geodatabase + '/Review',
-                                   ['RangeMapID', 'Username', 'DateCompleted', 'ReviewNotes']) as cursor:
+                                   ['RangeMapID', 'Username', 'DateCompleted', 'ReviewNotes',
+                                    'UseForMapGen']) as cursor:
             object_id = cursor.insertRow([range_map_id, param_username, datetime.datetime.now(),
-                                          param_review_label + ' auto-applied'])
+                                          param_review_label + ' auto-applied', 1])
         review_id = EBARUtils.getUniqueID(param_geodatabase + '/Review', 'ReviewID', object_id)
 
         # init counts
