@@ -607,11 +607,12 @@ class ImportExternalRangeReview(object):
     def updateParameters(self, parameters):
         """Modify the values and properties of parameters before internal validation is performed.  This method is 
         called whenever a parameter has been changed."""
-        # build list of jurisdictions
+        # build list of jurisdictions (exclude AC because it is used for data only, not ecoshapes)
         if parameters[0].altered and parameters[0].value:
             param_geodatabase = parameters[0].valueAsText
             jur_list = []
             with arcpy.da.SearchCursor(param_geodatabase + '/Jurisdiction', ['JurisdictionName'],
+                                       "JurisdictionAbbreviation <> 'AC'",
                                        sql_clause=(None,'ORDER BY JurisdictionName')) as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     jur_list.append(row['JurisdictionName'])
