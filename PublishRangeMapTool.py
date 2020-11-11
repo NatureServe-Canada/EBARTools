@@ -205,7 +205,7 @@ class PublishRangeMapTool:
         if range_map_scope == 'Canadian':
             element_global_id += 'N'
         layout.exportToJPEG(EBARUtils.download_folder + '/EBAR' + element_global_id + '.jpg', 300,
-                            clip_to_elements=True)
+                            clip_to_elements=False)
         pdf_html = pdf_html.replace('[map_image]', EBARUtils.download_folder + '/EBAR' + element_global_id + '.jpg')
 
         # generate pdf
@@ -329,12 +329,12 @@ if __name__ == '__main__':
     # Batch 2b = 685, 1086, 687, 688, 689, 683, 705, 706, 707, 708, 709, 710, 716, 717, 718, 719, 720, 721, 722, 723, 1087, 714, 713, 711, 728, 1089, 737, 1090, 740, 820, 821, 822, 747, 823
     # Batch 2c = 749, 824
     #batch_ids = [246, 728]
-    batch_ids = [723]
+    batch_ids = [638]
     for id in batch_ids:
         # hard code parameters for debugging
         param_range_map_id = arcpy.Parameter()
         param_range_map_id.value = str(id)
         param_spatial = arcpy.Parameter()
-        param_spatial.value = 'true'
+        param_spatial.value = 'false'
         parameters = [param_range_map_id, param_spatial]
         prm.runPublishRangeMapTool(parameters, None)
