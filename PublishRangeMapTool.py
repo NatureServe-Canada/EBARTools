@@ -329,12 +329,12 @@ if __name__ == '__main__':
     # Batch 2b = 685, 1086, 687, 688, 689, 683, 705, 706, 707, 708, 709, 710, 716, 717, 718, 719, 720, 721, 722, 723, 1087, 714, 713, 711, 728, 1089, 737, 1090, 740, 820, 821, 822, 747, 823
     # Batch 2c = 749, 824
     #batch_ids = [246, 728]
-    batch_ids = [638]
+    batch_ids = [135]
     for id in batch_ids:
         # hard code parameters for debugging
         param_range_map_id = arcpy.Parameter()
         param_range_map_id.value = str(id)
         param_spatial = arcpy.Parameter()
-        param_spatial.value = 'false'
+        param_spatial.value = 'true'
         parameters = [param_range_map_id, param_spatial]
         prm.runPublishRangeMapTool(parameters, None)
