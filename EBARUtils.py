@@ -25,8 +25,8 @@ import json
 # shared folders and addresses
 resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
 temp_folder = 'C:/GIS/EBAR/temp'
-download_folder = 'C:/GIS/EBAR/pub/download'
-#download_folder = 'F:/download'
+#download_folder = 'C:/GIS/EBAR/pub/download'
+download_folder = 'F:/download'
 #nsx_species_search_url = 'https://explorer.natureserve.org/api/data/search'
 nsx_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/ELEMENT_GLOBAL.'
 
@@ -777,3 +777,25 @@ def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_i
     mapx_file = open(mapx_path, 'w')
     mapx_file.write(mapx_text)
     mapx_file.close()
+
+
+def buildJurisdictionList(geodatabase, jurisdictions_list):
+    """Build a comma-separated list of Jurisdiction IDs from the list of Jurisdiction Names"""
+    jur_name_dict = {}
+    with arcpy.da.SearchCursor(geodatabase + '/Jurisdiction',
+                                ['JurisdictionID', 'JurisdictionName']) as cursor:
+        for row in searchCursor(cursor):
+            jur_name_dict[row['JurisdictionName']] = row['JurisdictionID']
+            if len(jurisdictions_list) == 0:
+                # if not passed in, set to all jurisdictions
+                jurisdictions_list.append(row['JurisdictionName'])
+        if len(jur_name_dict) > 0:
+            del row
+    # convert names to comma-separated list of ids
+    jur_ids_comma = '('
+    for jur_name in jurisdictions_list:
+        if len(jur_ids_comma) > 1:
+            jur_ids_comma += ','
+        jur_ids_comma += str(jur_name_dict[jur_name])
+    jur_ids_comma += ')'
+    return jur_ids_comma

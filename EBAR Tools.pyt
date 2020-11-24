@@ -22,6 +22,7 @@ import ImportExternalRangeReviewTool
 import SyncSpeciesListKBATool
 import BuildEBARDownloadTableTool
 import BuildBulkDownloadTableTool
+import ExportInputDataTool
 import EBARUtils
 import datetime
 import locale
@@ -36,7 +37,7 @@ class Toolbox(object):
         # List of tool classes associated with this toolbox
         self.tools = [ImportTabularData, ImportSpatialData, GenerateRangeMap, ListElementNationalIDs,
                       SyncSpeciesListBiotics, AddSynonyms, ImportExternalRangeReview, SyncSpeciesListKBA,
-                      BuildEBARDownloadTable, BuildBulkDownloadTable]
+                      BuildEBARDownloadTable, BuildBulkDownloadTable, ExportInputData]
 
 
 class ImportTabularData(object):
@@ -747,6 +748,94 @@ class BuildBulkDownloadTable(object):
         """The source code of the tool."""
         bbdt = BuildBulkDownloadTableTool.BuildBulkDownloadTableTool()
         bbdt.runBuildBulkDownloadTableTool(parameters, messages)
+        return
+
+
+class ExportInputData(object):
+    def __init__(self):
+        """Define the tool (tool name is the name of the class)."""
+        self.label = 'Export Input Data'
+        self.description = 'Export InputPoint/Line/Polygon records'
+        self.canRunInBackground = True
+
+    def getParameterInfo(self):
+        """Define parameter definitions"""
+        # Geodatabase
+        param_geodatabase = arcpy.Parameter(
+            displayName='Geodatabase',
+            name='geodatabase',
+            datatype='DEWorkspace',
+            parameterType='Required',
+            direction='Input')
+        param_geodatabase.filter.list = ['Local Database', 'Remote Database']
+
+        # Jurisdictions Covered
+        param_jurisdictions_covered = arcpy.Parameter(
+            displayName='Jurisdictions Covered',
+            name='jurisdictions_covered',
+            datatype='GPString',
+            parameterType='Required',
+            direction='Input',
+            multiValue=True)
+
+        # Include CDC Data
+        param_include_cdc = arcpy.Parameter(
+            displayName='Include CDC Data',
+            name='include_cdc',
+            datatype='GPBoolean',
+            parameterType='Required',
+            direction='Input')
+
+        # Include Restricted Data
+        param_include_restricted = arcpy.Parameter(
+            displayName='Include Restricted Data',
+            name='include_restricted',
+            datatype='GPBoolean',
+            parameterType='Required',
+            direction='Input')
+
+        # Output Zip File Name
+        param_output_zip = arcpy.Parameter(
+            displayName='Output Zip File Name',
+            name='output_zip',
+            datatype='GPString',
+            parameterType='Required',
+            direction='Output')
+
+        params = [param_geodatabase, param_jurisdictions_covered, param_include_cdc, param_include_restricted,
+                  param_output_zip]
+        return params
+
+    def isLicensed(self):
+        """Set whether tool is licensed to execute."""
+        return True
+
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal validation is performed.  This method is 
+        called whenever a parameter has been changed."""
+        # build list of jurisdictions (exclude AC because it is used for data only, not ecoshapes)
+        if parameters[0].altered and parameters[0].value:
+            param_geodatabase = parameters[0].valueAsText
+            jur_list = []
+            with arcpy.da.SearchCursor(param_geodatabase + '/Jurisdiction', ['JurisdictionName'],
+                                       "JurisdictionAbbreviation NOT IN ('NL', 'NS', 'NB', 'PE')",
+                                       sql_clause=(None,'ORDER BY JurisdictionName')) as cursor:
+                for row in EBARUtils.searchCursor(cursor):
+                    jur_list.append(row['JurisdictionName'])
+                if len(jur_list) > 0:
+                    del row
+            parameters[1].filter.list = jur_list
+        return
+
+    def updateMessages(self, parameters):
+        """Modify the messages created by internal validation for each tool parameter.  This method is called 
+        after internal validation."""
+        return
+
+    def execute(self, parameters, messages):
+        """The source code of the tool."""
+        ied = ExportInputDataTool.ExportInputDataTool()
+        ied.runExportInputDataTool(parameters, messages)
         return
 
 

@@ -169,25 +169,9 @@ class ImportExternalRangeReviewTool:
             return
             #raise arcpy.ExecuteError
 
-        # build list of jurisdictions
+        # build list of jurisdiction ids
         EBARUtils.displayMessage(messages, 'Building list of Jurisdictions')
-        jur_name_dict = {}
-        with arcpy.da.SearchCursor(param_geodatabase + '/Jurisdiction',
-                                   ['JurisdictionID', 'JurisdictionName']) as cursor:
-            for row in EBARUtils.searchCursor(cursor):
-                jur_name_dict[row['JurisdictionName']] = row['JurisdictionID']
-                if not param_jurisdictions_covered:
-                    # if not passed in, set to all jurisdictions
-                    param_jurisdictions_list.append(row['JurisdictionName'])
-            if len(jur_name_dict) > 0:
-                del row
-        # convert names to comma-separated list of ids
-        jur_ids_comma = '('
-        for jur_name in param_jurisdictions_list:
-            if len(jur_ids_comma) > 1:
-                jur_ids_comma += ','
-            jur_ids_comma += str(jur_name_dict[jur_name])
-        jur_ids_comma += ')'
+        jur_ids_comma = EBARUtils.buildJurisdictionList(param_geodatabase, param_jurisdictions_list)
 
         # build dict of RangeMapEcoshape Presence for jurisdiction(s)
         EBARUtils.displayMessage(messages, 'Building dictionary of RangeMapEcoshape Presence for Jurisdiction(s)')
@@ -316,8 +300,9 @@ if __name__ == '__main__':
     param_review_label.value = 'BC expert review'
     param_jurisdictions_covered = arcpy.Parameter()
     param_jurisdictions_covered.value = None
+    #param_jurisdictions_covered.value = "'British Columbia'"
     param_username = arcpy.Parameter()
-    param_username.value = 'rgreenens'
+    param_username.value = 'ryan'
     parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage,
                   param_external_range_table, param_presence_field, param_review_label, param_jurisdictions_covered,
                   param_username]
