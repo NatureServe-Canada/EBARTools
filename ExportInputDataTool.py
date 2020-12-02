@@ -44,6 +44,14 @@ class ExportInputDataTool:
         if param_output_zip[-4:] != '.zip':
             param_output_zip += '.zip'
 
+        # check for existing output
+        if arcpy.Exists(EBARUtils.download_folder + '/' + param_output_zip):
+            EBARUtils.displayMessage(messages,
+                                     'ERROR: output file already exists')
+            # terminate with error
+            return
+            #raise arcpy.ExecuteError
+
         # create output_gdb
         output_gdb = 'EBARExport' + str(start_time.year) + str(start_time.month) + str(start_time.day) + \
             str(start_time.hour) + str(start_time.minute) + str(start_time.second) + '.gdb'
@@ -56,9 +64,15 @@ class ExportInputDataTool:
         arcpy.SelectLayerByAttribute_management('jurs', 'NEW_SELECTION', 'JurisdictionID IN ' + jur_ids_comma)
 
         # process points, lines and polygons separately
-        arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputLine', 'lines')
+        EBARUtils.displayMessage(messages, 'Processing points')
+        arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputPoint', 'points')
+        self.processFeatureClass('points', 'jurs', param_include_cdc, param_include_restricted, output_gdb + '/EBARPoints')
         EBARUtils.displayMessage(messages, 'Processing lines')
+        arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputLine', 'lines')
         self.processFeatureClass('lines', 'jurs', param_include_cdc, param_include_restricted, output_gdb + '/EBARLines')
+        EBARUtils.displayMessage(messages, 'Processing polygons')
+        arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputPolygon', 'polygons')
+        self.processFeatureClass('polygons', 'jurs', param_include_cdc, param_include_restricted, output_gdb + '/EBARPolygons')
 
         # zip gdb into single file for download
         EBARUtils.displayMessage(messages, 'Zipping output')

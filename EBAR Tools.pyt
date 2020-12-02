@@ -785,6 +785,7 @@ class ExportInputData(object):
             datatype='GPBoolean',
             parameterType='Required',
             direction='Input')
+        param_include_cdc.value = 'false'
 
         # Include Restricted Data
         param_include_restricted = arcpy.Parameter(
@@ -793,6 +794,7 @@ class ExportInputData(object):
             datatype='GPBoolean',
             parameterType='Required',
             direction='Input')
+        param_include_restricted.value = 'false'
 
         # Output Zip File Name
         param_output_zip = arcpy.Parameter(
