@@ -14,6 +14,7 @@
 import EBARUtils
 import arcpy
 import datetime
+import shutil
 
 
 class ExportInputDataTool:
@@ -67,7 +68,8 @@ class ExportInputDataTool:
         EBARUtils.displayMessage(messages, 'Generating metadata')
         md = arcpy.metadata.Metadata()
         md.tags = 'Species Data, NatureServe Canada'
-        md.description = 'Export of Species data from EBAR-KBA database'
+        md.description = 'Export of Species data from EBAR-KBA database. ' + \
+            'Please see EBARExportReadme.txt for field descriptions.'
         md.credits = 'Please credit original providers as per DatasetSourceCitation field.'
         if param_include_restricted  == 'true' or param_include_cdc == 'true':
             md.accessConstraints = 'Some data has restrictions. ' + \
@@ -92,6 +94,8 @@ class ExportInputDataTool:
         # zip gdb into single file for download
         EBARUtils.displayMessage(messages, 'Zipping output')
         EBARUtils.createZip(output_gdb, EBARUtils.download_folder + '/' + param_output_zip, None)
+        EBARUtils.addToZip(EBARUtils.download_folder + '/' + param_output_zip,
+                           EBARUtils.resources_folder + '/EBARExportReadme.txt')
 
         # download message
         EBARUtils.displayMessage(messages,
@@ -115,4 +119,3 @@ class ExportInputDataTool:
         fc_md = arcpy.metadata.Metadata(output_fc)
         fc_md.copy(md)
         fc_md.save()
-

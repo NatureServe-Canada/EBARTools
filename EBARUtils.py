@@ -440,6 +440,14 @@ def createZip(zip_folder, zip_output_file, only_include_extension):
                 include = False
             if include:
                 zipf.write(zip_folder_name + '/' + file)
+    zipf.close()
+
+
+def addToZip(zip_output_file, new_file):
+    """add a file to an existing zip"""
+    zipf = zipfile.ZipFile(zip_output_file,'a')
+    zipf.write(new_file, os.path.basename(new_file))
+    zipf.close()
 
 
 def ExportRangeMapToCSV(range_map_view, range_map_ids, attributes_dict, output_folder, output_csv, metadata):
