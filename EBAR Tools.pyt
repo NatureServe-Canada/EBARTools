@@ -796,6 +796,15 @@ class ExportInputData(object):
             direction='Input')
         param_include_restricted.value = 'false'
 
+        # Include Other Dataset Types
+        param_include_other = arcpy.Parameter(
+            displayName='Include Other Dataset Types',
+            name='include_other',
+            datatype='GPBoolean',
+            parameterType='Required',
+            direction='Input')
+        param_include_other.value = 'false'
+
         # Output Zip File Name
         param_output_zip = arcpy.Parameter(
             displayName='Output Zip File Name',
@@ -805,7 +814,7 @@ class ExportInputData(object):
             direction='Output')
 
         params = [param_geodatabase, param_jurisdictions_covered, param_include_cdc, param_include_restricted,
-                  param_output_zip]
+                  param_include_other, param_output_zip]
         return params
 
     def isLicensed(self):

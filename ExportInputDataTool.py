@@ -41,7 +41,8 @@ class ExportInputDataTool:
         jur_ids_comma = EBARUtils.buildJurisdictionList(param_geodatabase, param_jurisdictions_list)
         param_include_cdc = parameters[2].valueAsText
         param_include_restricted = parameters[3].valueAsText
-        param_output_zip = parameters[4].valueAsText
+        param_include_other = parameters[4].valueAsText
+        param_output_zip = parameters[5].valueAsText
         if param_output_zip[-4:] != '.zip':
             param_output_zip += '.zip'
 
@@ -80,15 +81,15 @@ class ExportInputDataTool:
         # process points, lines and polygons separately
         EBARUtils.displayMessage(messages, 'Processing points')
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputPoint', 'points')
-        self.processFeatureClass('points', 'jurs', param_include_cdc, param_include_restricted,
+        self.processFeatureClass('points', 'jurs', param_include_cdc, param_include_restricted, param_include_other,
                                  output_gdb + '/EBARPoints', md)
         EBARUtils.displayMessage(messages, 'Processing lines')
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputLine', 'lines')
-        self.processFeatureClass('lines', 'jurs', param_include_cdc, param_include_restricted,
+        self.processFeatureClass('lines', 'jurs', param_include_cdc, param_include_restricted, param_include_other,
                                  output_gdb + '/EBARLines', md)
         EBARUtils.displayMessage(messages, 'Processing polygons')
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputPolygon', 'polygons')
-        self.processFeatureClass('polygons', 'jurs', param_include_cdc, param_include_restricted,
+        self.processFeatureClass('polygons', 'jurs', param_include_cdc, param_include_restricted, param_include_other,
                                  output_gdb + '/EBARPolygons', md)
 
         # zip gdb into single file for download
@@ -101,7 +102,7 @@ class ExportInputDataTool:
         EBARUtils.displayMessage(messages,
                                  'Please download output from https://gis.natureserve.ca/download/' + param_output_zip)
 
-    def processFeatureClass(self, fclyr, jurs, include_cdc, include_restricted, output_fc, md):
+    def processFeatureClass(self, fclyr, jurs, include_cdc, include_restricted, include_other, output_fc, md):
         # select features using non-spatial criteria
         where_clause = None
         if include_cdc == 'false':
@@ -110,6 +111,10 @@ class ExportInputDataTool:
             if not where_clause:
                where_clause = ''
                where_clause += " Restrictions != 'R'"
+        if include_other == 'false':
+            if not where_clause:
+               where_clause = ''
+               where_clause += " DatasetType NOT IN ('Other', 'Other Observations', 'Other Range', 'Area of Occupancy')"
         arcpy.SelectLayerByAttribute_management(fclyr, 'NEW_SELECTION', where_clause)
         # sub-select features using spatial criteria
         arcpy.SelectLayerByLocation_management(fclyr, 'INTERSECT', jurs, selection_type='SUBSET_SELECTION')

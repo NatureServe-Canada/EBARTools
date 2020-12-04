@@ -30,4 +30,4 @@ Restrictions - indicates whether any restrictions apply to the record
 DatasetName - label used by EBAR team to identify the dataset
 DatasetSourceName - the name of the dataset source
 DatasetSourceCitation - the citation of the dataset source, to be used for crediting the data provider
-DatasetType - one of Critical Habitat, Element Occurrences, Habitat Suitability, Range Estimate, Source Features, Species Observations
+DatasetType - one of Critical Habitat, Element Occurrences, Habitat Suitability, Range Estimate, Source Features, Species Observations, Other, Other Observations, Other Range, Area of Occupancy
