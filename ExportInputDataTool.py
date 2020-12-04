@@ -63,16 +63,31 @@ class ExportInputDataTool:
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/JurisdictionBufferFull', 'jurs')
         arcpy.SelectLayerByAttribute_management('jurs', 'NEW_SELECTION', 'JurisdictionID IN ' + jur_ids_comma)
 
+        # generate metadata
+        EBARUtils.displayMessage(messages, 'Generating metadata')
+        md = arcpy.metadata.Metadata()
+        md.tags = 'Species Data, NatureServe Canada'
+        md.description = 'Export of Species data from EBAR-KBA database'
+        md.credits = 'Please credit original providers as per DatasetSourceCitation field.'
+        if param_include_restricted  == 'true' or param_include_cdc == 'true':
+            md.accessConstraints = 'Some data has restrictions. ' + \
+                'Please check with EBAR-KBA@natureserve.ca before sharing.'
+        else:
+            md.accessConstraints = 'Please credit original providers as per DatasetSourceCitation field.'
+
         # process points, lines and polygons separately
         EBARUtils.displayMessage(messages, 'Processing points')
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputPoint', 'points')
-        self.processFeatureClass('points', 'jurs', param_include_cdc, param_include_restricted, output_gdb + '/EBARPoints')
+        self.processFeatureClass('points', 'jurs', param_include_cdc, param_include_restricted,
+                                 output_gdb + '/EBARPoints', md)
         EBARUtils.displayMessage(messages, 'Processing lines')
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputLine', 'lines')
-        self.processFeatureClass('lines', 'jurs', param_include_cdc, param_include_restricted, output_gdb + '/EBARLines')
+        self.processFeatureClass('lines', 'jurs', param_include_cdc, param_include_restricted,
+                                 output_gdb + '/EBARLines', md)
         EBARUtils.displayMessage(messages, 'Processing polygons')
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputPolygon', 'polygons')
-        self.processFeatureClass('polygons', 'jurs', param_include_cdc, param_include_restricted, output_gdb + '/EBARPolygons')
+        self.processFeatureClass('polygons', 'jurs', param_include_cdc, param_include_restricted,
+                                 output_gdb + '/EBARPolygons', md)
 
         # zip gdb into single file for download
         EBARUtils.displayMessage(messages, 'Zipping output')
@@ -82,7 +97,7 @@ class ExportInputDataTool:
         EBARUtils.displayMessage(messages,
                                  'Please download output from https://gis.natureserve.ca/download/' + param_output_zip)
 
-    def processFeatureClass(self, fclyr, jurs, include_cdc, include_restricted, output_fc):
+    def processFeatureClass(self, fclyr, jurs, include_cdc, include_restricted, output_fc, md):
         # select features using non-spatial criteria
         where_clause = None
         if include_cdc == 'false':
@@ -96,3 +111,8 @@ class ExportInputDataTool:
         arcpy.SelectLayerByLocation_management(fclyr, 'INTERSECT', jurs, selection_type='SUBSET_SELECTION')
         # export features
         arcpy.CopyFeatures_management(fclyr, output_fc)
+        # embed metadata
+        fc_md = arcpy.metadata.Metadata(output_fc)
+        fc_md.copy(md)
+        fc_md.save()
+
