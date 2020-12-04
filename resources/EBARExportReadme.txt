@@ -25,7 +25,7 @@ NATIONAL_SCIENTIFIC_NAME - Canadian scientific name for the species
 NATIONAL_ENGL_NAME - Canadian English name for the species
 NATIONAL_FR_NAME - Canadian French name for the species
 SynonymName - synonym name, if the data was originally provided using this synonym
-DateReceived - date the the dataset was obtainted from the provider
+DateReceived - date the the dataset was obtained from the provider
 Restrictions - indicates whether any restrictions apply to the record
 DatasetName - label used by EBAR team to identify the dataset
 DatasetSourceName - the name of the dataset source
