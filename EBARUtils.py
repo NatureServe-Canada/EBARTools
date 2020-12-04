@@ -208,11 +208,17 @@ def checkAddInputDataset(geodatabase, dataset_name, dataset_source_id, date_rece
     return input_dataset_id, False
 
 
-def checkAddField(table, field_name, field_type):
+def checkField(table, field_name):
     desc = arcpy.Describe(table)
     for field in desc.fields:
         if field.name == field_name:
             return True
+    return false
+
+
+def checkAddField(table, field_name, field_type):
+    if checkField(table, field_name):
+        return True
     arcpy.AddField_management(table, field_name, field_type)
     return False
 
@@ -441,7 +447,6 @@ def createZip(zip_folder, zip_output_file, only_include_extension):
             if include:
                 zipf.write(zip_folder_name + '/' + file)
     zipf.close()
-
 
 def addToZip(zip_output_file, new_file):
     """add a file to an existing zip"""

@@ -82,15 +82,15 @@ class ExportInputDataTool:
         EBARUtils.displayMessage(messages, 'Processing points')
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputPoint', 'points')
         self.processFeatureClass('points', 'jurs', param_include_cdc, param_include_restricted, param_include_other,
-                                 output_gdb + '/EBARPoints', md)
+                                 output_gdb, 'EBARPoints', md)
         EBARUtils.displayMessage(messages, 'Processing lines')
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputLine', 'lines')
         self.processFeatureClass('lines', 'jurs', param_include_cdc, param_include_restricted, param_include_other,
-                                 output_gdb + '/EBARLines', md)
+                                 output_gdb, 'EBARLines', md)
         EBARUtils.displayMessage(messages, 'Processing polygons')
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputPolygon', 'polygons')
         self.processFeatureClass('polygons', 'jurs', param_include_cdc, param_include_restricted, param_include_other,
-                                 output_gdb + '/EBARPolygons', md)
+                                 output_gdb, 'EBARPolygons', md)
 
         # zip gdb into single file for download
         EBARUtils.displayMessage(messages, 'Zipping output')
@@ -102,7 +102,7 @@ class ExportInputDataTool:
         EBARUtils.displayMessage(messages,
                                  'Please download output from https://gis.natureserve.ca/download/' + param_output_zip)
 
-    def processFeatureClass(self, fclyr, jurs, include_cdc, include_restricted, include_other, output_fc, md):
+    def processFeatureClass(self, fclyr, jurs, include_cdc, include_restricted, include_other, output_gdb, output_fc, md):
         # select features using non-spatial criteria
         where_clause = None
         if include_cdc == 'false':
@@ -114,13 +114,53 @@ class ExportInputDataTool:
         if include_other == 'false':
             if not where_clause:
                where_clause = ''
-               where_clause += " DatasetType NOT IN ('Other', 'Other Observations', 'Other Range', 'Area of Occupancy')"
+               where_clause += " DatasetType NOT IN ('Other', 'Other Observations', 'Other Range', " + \
+                   "'Area of Occupancy')"
         arcpy.SelectLayerByAttribute_management(fclyr, 'NEW_SELECTION', where_clause)
         # sub-select features using spatial criteria
         arcpy.SelectLayerByLocation_management(fclyr, 'INTERSECT', jurs, selection_type='SUBSET_SELECTION')
+        # map fields
+        field_mappings = arcpy.FieldMappings()
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'object', 'ObjectID', 'Object ID'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'shape', 'Shape', 'Geometry'))
+        if EBARUtils.checkField(fclyr, 'inputpointid'):
+            field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'inputpointid', 'InputPointID', 'Long'))
+        if EBARUtils.checkField(fclyr, 'inputlineid'):
+            field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'inputlineid', 'InputLineID', 'Long'))
+        if EBARUtils.checkField(fclyr, 'inputpolygonid'):
+            field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'inputpolygonid', 'InputPolygonID', 'Long'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'mindate', 'MinDate', 'Date'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'maxdate', 'MaxDate', 'Date'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'accuracy', 'Accuracy', 'Long'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'individualcount', 'IndividualCount', 'Long'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'datasetsourceuniqueid', 'DatasetSourceUniqueID',
+                                                            'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'uri', 'URI', 'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'license', 'License', 'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'coordinatesobscured', 'CoordinatesObscured',
+                                                            'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'representationaccuracy', 'RepresentationAccuracy',
+                                                            'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'element_national_id', 'ELEMENT_NATIONAL_ID',
+                                                            'Long'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'element_global_id', 'ELEMENT_GLOBAL_ID', 'Long'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'element_code', 'ELEMENT_CODE', 'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'national_scientific_name',
+                                                            'NATIONAL_SCIENTIFIC_NAME', 'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'national_engl_name', 'NATIONAL_ENGL_NAME', 'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'national_fr_name', 'NATIONAL_FR_NAME', 'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'synonymname', 'SynonymName', 'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'datereceived', 'DateReceived', 'Date'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'restrictions', 'Restrictions', 'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'datasetname', 'DatasetName', 'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'datasetsourcename', 'DatasetSourceName', 'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'datasetsourcecitation', 'DatasetSourceCitation',
+                                                            'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'datasettype', 'DatasetType', 'Text'))
         # export features
-        arcpy.CopyFeatures_management(fclyr, output_fc)
+        #arcpy.CopyFeatures_management(fclyr, output_gdb + '/' + output_fc)
+        arcpy.FeatureClassToFeatureClass_conversion(fclyr, output_gdb, output_fc, field_mapping=field_mappings)
         # embed metadata
-        fc_md = arcpy.metadata.Metadata(output_fc)
+        fc_md = arcpy.metadata.Metadata(output_gdb + '/' + output_fc)
         fc_md.copy(md)
         fc_md.save()
