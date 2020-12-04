@@ -121,8 +121,6 @@ class ExportInputDataTool:
         arcpy.SelectLayerByLocation_management(fclyr, 'INTERSECT', jurs, selection_type='SUBSET_SELECTION')
         # map fields
         field_mappings = arcpy.FieldMappings()
-        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'object', 'ObjectID', 'Object ID'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'shape', 'Shape', 'Geometry'))
         if EBARUtils.checkField(fclyr, 'inputpointid'):
             field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'inputpointid', 'InputPointID', 'Long'))
         if EBARUtils.checkField(fclyr, 'inputlineid'):
