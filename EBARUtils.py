@@ -213,7 +213,7 @@ def checkField(table, field_name):
     for field in desc.fields:
         if field.name == field_name:
             return True
-    return false
+    return False
 
 
 def checkAddField(table, field_name, field_type):
