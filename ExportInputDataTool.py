@@ -110,10 +110,14 @@ class ExportInputDataTool:
         if include_restricted == 'false':
             if not where_clause:
                where_clause = ''
+            else:
+                where_clause += ' AND '
             where_clause += " Restrictions != 'R'"
         if include_other == 'false':
             if not where_clause:
                where_clause = ''
+            else:
+                where_clause += ' AND '
             where_clause += " DatasetType NOT IN ('Other', 'Other Observations', 'Other Range', " + \
                 "'Area of Occupancy')"
         arcpy.SelectLayerByAttribute_management(fclyr, 'NEW_SELECTION', where_clause)
