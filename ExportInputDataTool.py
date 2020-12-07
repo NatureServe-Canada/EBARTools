@@ -110,12 +110,12 @@ class ExportInputDataTool:
         if include_restricted == 'false':
             if not where_clause:
                where_clause = ''
-               where_clause += " Restrictions != 'R'"
+            where_clause += " Restrictions != 'R'"
         if include_other == 'false':
             if not where_clause:
                where_clause = ''
-               where_clause += " DatasetType NOT IN ('Other', 'Other Observations', 'Other Range', " + \
-                   "'Area of Occupancy')"
+            where_clause += " DatasetType NOT IN ('Other', 'Other Observations', 'Other Range', " + \
+                "'Area of Occupancy')"
         arcpy.SelectLayerByAttribute_management(fclyr, 'NEW_SELECTION', where_clause)
         # sub-select features using spatial criteria
         arcpy.SelectLayerByLocation_management(fclyr, 'INTERSECT', jurs, selection_type='SUBSET_SELECTION')
