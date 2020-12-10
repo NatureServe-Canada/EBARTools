@@ -87,10 +87,14 @@ class ExportInputDataTool:
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputLine', 'lines')
         self.processFeatureClass('lines', 'jurs', param_include_cdc, param_include_restricted, param_include_other,
                                  output_gdb, 'EBARLines', md)
-        EBARUtils.displayMessage(messages, 'Processing polygons')
-        arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputPolygon', 'polygons')
-        self.processFeatureClass('polygons', 'jurs', param_include_cdc, param_include_restricted, param_include_other,
+        EBARUtils.displayMessage(messages, 'Processing EBAR polygons')
+        arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputPolygon', 'ebar_polygons')
+        self.processFeatureClass('ebar_polygons', 'jurs', param_include_cdc, param_include_restricted, param_include_other,
                                  output_gdb, 'EBARPolygons', md)
+        EBARUtils.displayMessage(messages, 'Processing Other polygons')
+        arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputPolygon', 'other_polygons')
+        self.processFeatureClass('other_polygons', 'jurs', param_include_cdc, param_include_restricted,
+                                 param_include_other, output_gdb, 'OtherPolygons', md)
 
         # zip gdb into single file for download
         EBARUtils.displayMessage(messages, 'Zipping output')
@@ -113,7 +117,15 @@ class ExportInputDataTool:
             else:
                 where_clause += ' AND '
             where_clause += " Restrictions != 'R'"
-        if include_other == 'false':
+        if fclyr == 'ebar_polygons':
+            if not where_clause:
+               where_clause = ''
+            else:
+                where_clause += ' AND '
+            # these types go to other polygons
+            where_clause += " DatasetType NOT IN ('Critical Habitat', 'Range Estimate', 'Habitat Suitability', " + \
+                "'Other', 'Other Observations', 'Other Range')"
+        elif include_other == 'false':
             if not where_clause:
                where_clause = ''
             else:
