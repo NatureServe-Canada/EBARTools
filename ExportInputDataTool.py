@@ -116,22 +116,24 @@ class ExportInputDataTool:
                where_clause = ''
             else:
                 where_clause += ' AND '
-            where_clause += " Restrictions != 'R'"
+            where_clause += "Restrictions != 'R'"
         if fclyr == 'ebar_polygons':
             if not where_clause:
                where_clause = ''
             else:
                 where_clause += ' AND '
             # these types go to other polygons
-            where_clause += " DatasetType NOT IN ('Critical Habitat', 'Range Estimate', 'Habitat Suitability', " + \
-                "'Other', 'Other Observations', 'Other Range')"
-        elif include_other == 'false':
+            where_clause += "DatasetType NOT IN ('Critical Habitat', 'Range Estimate', 'Habitat Suitability', " + \
+                "'Area of Occupancy', 'Other', 'Other Observations', 'Other Range')"
+        if fclyr == 'other_polygons':
             if not where_clause:
                where_clause = ''
             else:
                 where_clause += ' AND '
-            where_clause += " DatasetType NOT IN ('Other', 'Other Observations', 'Other Range', " + \
-                "'Area of Occupancy')"
+            where_clause += "DatasetType IN ('Critical Habitat', 'Range Estimate', 'Habitat Suitability'"
+            if include_other == 'true':
+                where_clause += ", 'Area of Occupancy', 'Other', 'Other Observations', 'Other Range'"
+            where_clause += ')'
         arcpy.SelectLayerByAttribute_management(fclyr, 'NEW_SELECTION', where_clause)
         # sub-select features using spatial criteria
         arcpy.SelectLayerByLocation_management(fclyr, 'INTERSECT', jurs, selection_type='SUBSET_SELECTION')
