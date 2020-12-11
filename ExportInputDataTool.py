@@ -41,8 +41,8 @@ class ExportInputDataTool:
         jur_ids_comma = EBARUtils.buildJurisdictionList(param_geodatabase, param_jurisdictions_list)
         param_include_cdc = parameters[2].valueAsText
         param_include_restricted = parameters[3].valueAsText
-        param_include_other = parameters[4].valueAsText
-        param_output_zip = parameters[5].valueAsText
+        #param_include_other = parameters[4].valueAsText
+        param_output_zip = parameters[4].valueAsText
         if param_output_zip[-4:] != '.zip':
             param_output_zip += '.zip'
 
@@ -81,20 +81,20 @@ class ExportInputDataTool:
         # process points, lines and polygons separately
         EBARUtils.displayMessage(messages, 'Processing points')
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputPoint', 'points')
-        self.processFeatureClass('points', 'jurs', param_include_cdc, param_include_restricted, param_include_other,
-                                 output_gdb, 'EBARPoints', md)
+        self.processFeatureClass('points', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
+                                 'EBARPoints', md)
         EBARUtils.displayMessage(messages, 'Processing lines')
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputLine', 'lines')
-        self.processFeatureClass('lines', 'jurs', param_include_cdc, param_include_restricted, param_include_other,
-                                 output_gdb, 'EBARLines', md)
+        self.processFeatureClass('lines', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
+                                 'EBARLines', md)
         EBARUtils.displayMessage(messages, 'Processing EBAR polygons')
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputPolygon', 'ebar_polygons')
-        self.processFeatureClass('ebar_polygons', 'jurs', param_include_cdc, param_include_restricted, param_include_other,
-                                 output_gdb, 'EBARPolygons', md)
+        self.processFeatureClass('ebar_polygons', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
+                                 'EBARPolygons', md)
         EBARUtils.displayMessage(messages, 'Processing Other polygons')
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputPolygon', 'other_polygons')
-        self.processFeatureClass('other_polygons', 'jurs', param_include_cdc, param_include_restricted,
-                                 param_include_other, output_gdb, 'OtherPolygons', md)
+        self.processFeatureClass('other_polygons', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
+                                 'OtherPolygons', md)
 
         # zip gdb into single file for download
         EBARUtils.displayMessage(messages, 'Zipping output')
@@ -106,7 +106,7 @@ class ExportInputDataTool:
         EBARUtils.displayMessage(messages,
                                  'Please download output from https://gis.natureserve.ca/download/' + param_output_zip)
 
-    def processFeatureClass(self, fclyr, jurs, include_cdc, include_restricted, include_other, output_gdb, output_fc, md):
+    def processFeatureClass(self, fclyr, jurs, include_cdc, include_restricted, output_gdb, output_fc, md):
         # select features using non-spatial criteria
         where_clause = None
         if include_cdc == 'false':
@@ -131,8 +131,8 @@ class ExportInputDataTool:
             else:
                 where_clause += ' AND '
             where_clause += "DatasetType IN ('Critical Habitat', 'Range Estimate', 'Habitat Suitability'"
-            if include_other == 'true':
-                where_clause += ", 'Area of Occupancy', 'Other', 'Other Observations', 'Other Range'"
+            #if include_other == 'true':
+            #    where_clause += ", 'Area of Occupancy', 'Other', 'Other Observations', 'Other Range'"
             where_clause += ')'
         arcpy.SelectLayerByAttribute_management(fclyr, 'NEW_SELECTION', where_clause)
         # sub-select features using spatial criteria
