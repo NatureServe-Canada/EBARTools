@@ -5,7 +5,8 @@
 # © NatureServe Canada 2020 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 # Program: ExportInputDataTool.py
-# ArcGIS Python tool for exporting InputPoint/Line/Polygon records, excluding "other" DatasetTypes
+# ArcGIS Python tool for exporting InputPoint/Line/Polygon records, excluding "other" DatasetTypes and EBAR
+# Restricted records
 
 # Notes:
 # - Relies on views in server geodatabase, so not possible to use/debug with local file gdb
@@ -18,7 +19,7 @@ import shutil
 
 
 class ExportInputDataTool:
-    """Export InputPoint/Line/Polygon records, excluding "other" DatasetTypes"""
+    """Export InputPoint/Line/Polygon records, excluding "other" DatasetTypes and EBAR Restricted records"""
     def __init__(self):
         pass
 

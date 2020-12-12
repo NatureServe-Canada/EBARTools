@@ -755,7 +755,7 @@ class ExportInputData(object):
     def __init__(self):
         """Define the tool (tool name is the name of the class)."""
         self.label = 'Export Input Data'
-        self.description = 'Export InputPoint/Line/Polygon records, excluding "other" DatasetTypes'
+        self.description = 'Export InputPoint/Line/Polygon records, excluding "other" DatasetTypes and EBAR Restricted records'
         self.canRunInBackground = True
 
     def getParameterInfo(self):
