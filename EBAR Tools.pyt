@@ -811,7 +811,7 @@ class ExportInputData(object):
             name='output_zip',
             datatype='GPString',
             parameterType='Required',
-            direction='Output')
+            direction='Input')
 
         params = [param_geodatabase, param_jurisdictions_covered, param_include_cdc, param_include_restricted,
                   param_output_zip] # param_include_other, 
