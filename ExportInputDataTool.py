@@ -18,7 +18,7 @@ import shutil
 
 
 class ExportInputDataTool:
-    """Export InputPoint/Line/Polygon records"""
+    """Export InputPoint/Line/Polygon records, excluding "other" DatasetTypes"""
     def __init__(self):
         pass
 
