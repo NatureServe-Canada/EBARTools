@@ -118,7 +118,7 @@ class BuildEBARDownloadTableTool:
                 element_global_id += 'N'
             status = 'Expert Reviewed'
             if row[7] == 2:
-                status = 'Data Deficient'
+                status = 'Insufficient Data'
             if row[7] == 3:
                 status = 'Partially Reviewed'
             html += '''
