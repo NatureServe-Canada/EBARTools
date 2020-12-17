@@ -4,7 +4,6 @@ This ZIP package contains a single file geodatabase with the following feature c
 - EBARPoints
 - EBARLines
 - EBARPolygons
-- OtherPolygons
 
 Each feature class has the following fields:
 ObjectID - ArcGIS unique identifier
