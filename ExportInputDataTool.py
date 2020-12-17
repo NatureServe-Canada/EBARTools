@@ -92,10 +92,10 @@ class ExportInputDataTool:
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputPolygon', 'ebar_polygons')
         self.processFeatureClass('ebar_polygons', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
                                  'EBARPolygons', md)
-        EBARUtils.displayMessage(messages, 'Processing Other polygons')
-        arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputPolygon', 'other_polygons')
-        self.processFeatureClass('other_polygons', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
-                                 'OtherPolygons', md)
+        #EBARUtils.displayMessage(messages, 'Processing Other polygons')
+        #arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputPolygon', 'other_polygons')
+        #self.processFeatureClass('other_polygons', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
+        #                         'OtherPolygons', md)
 
         # zip gdb into single file for download
         EBARUtils.displayMessage(messages, 'Zipping output')
