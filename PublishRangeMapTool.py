@@ -37,7 +37,7 @@ class PublishRangeMapTool:
         pdf_template_file = EBARUtils.resources_folder + '/pdf_template.html'
         #reviewers_by_taxa_file = 'C:/Users/rgree/OneDrive/EBAR/EBAR Maps/ReviewersByTaxa.txt'
         reviewers_by_taxa_link = 'https://onedrive.live.com/download?cid=AAAAAE977404FA3B&resid=AAAAAE977404FA3B' + \
-            '%21442509&authkey=APQx60zQOjRu23A'
+            '%21447463&authkey=APQx60zQOjRu23A'
 
         # make variables for parms
         EBARUtils.displayMessage(messages, 'Processing parameters')
@@ -329,7 +329,7 @@ if __name__ == '__main__':
     # Batch 2b = 685, 1086, 687, 688, 689, 683, 705, 706, 707, 708, 709, 710, 716, 717, 718, 719, 720, 721, 722, 723, 1087, 714, 713, 711, 728, 1089, 737, 1090, 740, 820, 821, 822, 747, 823
     # Batch 2c = 749, 824
     #batch_ids = [246, 728]
-    batch_ids = [135]
+    batch_ids = [56]
     for id in batch_ids:
         # hard code parameters for debugging
         param_range_map_id = arcpy.Parameter()
