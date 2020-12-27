@@ -35,9 +35,9 @@ class PublishRangeMapTool:
         #arcpy.gp.overwriteOutput = True
         arcgis_pro_project = EBARUtils.resources_folder + '/EBARMapLayouts.aprx'
         pdf_template_file = EBARUtils.resources_folder + '/pdf_template.html'
-        #reviewers_by_taxa_file = 'C:/Users/rgree/OneDrive/EBAR/EBAR Maps/ReviewersByTaxa.txt'
-        reviewers_by_taxa_link = 'https://onedrive.live.com/download?cid=AAAAAE977404FA3B&resid=AAAAAE977404FA3B' + \
-            '%21447463&authkey=APQx60zQOjRu23A'
+        reviewers_by_taxa_file = 'C:/Users/rgree/OneDrive/EBAR/EBAR Maps/ReviewersByTaxa.txt'
+        #reviewers_by_taxa_link = 'https://onedrive.live.com/download?cid=AAAAAE977404FA3B&resid=AAAAAE977404FA3B' + \
+        #    '%21447463&authkey=APQx60zQOjRu23A'
 
         # make variables for parms
         EBARUtils.displayMessage(messages, 'Processing parameters')
@@ -152,11 +152,11 @@ class PublishRangeMapTool:
 
         # insert fixed list of reviewers by taxa
         EBARUtils.displayMessage(messages, 'Inserting ReviewersByTaxa file')
-        #reviewers = open(reviewers_by_taxa_file)
-        reviewers = urllib.request.urlopen(reviewers_by_taxa_link).read().decode('ansi')
-        #pdf_html = pdf_html.replace('[ReviewersByTaxa]', reviewers.read())
-        #reviewers.close()
-        pdf_html = pdf_html.replace('[ReviewersByTaxa]', reviewers)
+        reviewers = open(reviewers_by_taxa_file)
+        #reviewers = urllib.request.urlopen(reviewers_by_taxa_link).read().decode('utf-8')
+        pdf_html = pdf_html.replace('[ReviewersByTaxa]', reviewers.read())
+        reviewers.close()
+        #pdf_html = pdf_html.replace('[ReviewersByTaxa]', reviewers)
 
         # get taxon attributes
         EBARUtils.displayMessage(messages, 'Getting taxon attributes')
