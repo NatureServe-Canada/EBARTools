@@ -97,9 +97,9 @@ class PublishRangeMapSetsTool:
         md.accessConstraints = 'Publicly shareable under CC BY 4.0 (<a href=' + \
             '"https://creativecommons.org/licenses/by/4.0/">https://creativecommons.org/licenses/by/4.0/</a>)'
 
-        # loop all RangeMap records where IncludeInDownloadTable=1
+        # loop all RangeMap records where IncludeInDownloadTable is populated
         arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/11', 'range_map_view',
-                                       'IncludeInDownloadTable IN (1, 2, 3)')
+                                       'IncludeInDownloadTable IN (1, 2, 3, 4)')
         # join BIOTICS_ELEMENT_NATIONAL to RangeMap
         arcpy.AddJoin_management('range_map_view', 'SpeciesID', EBARUtils.ebar_feature_service + '/4', 'SpeciesID',
                                  'KEEP_COMMON')
@@ -163,7 +163,7 @@ class PublishRangeMapSetsTool:
             attributes_dict[str(row[8])] = EBARUtils.getTaxonAttributes(global_unique_id, element_global_id, row[8],
                                                                             messages)
 
-            # don't include spatial data for data deficient and partially reviewed
+            # don't include spatial data for data deficient, partially reviewed and low star rating
             if row[9] == 1:
                 only_deficient_partial = False
                 # update ArcGIS Pro template

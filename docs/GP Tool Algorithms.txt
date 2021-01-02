@@ -8,14 +8,14 @@ AddSynonyms(csv)
 
 BuildBulkDownloadTable()
 	create html header
-	loop all RangeMap records where IncludeInDownloadTable=1, ordering by category_taxa
+	loop all RangeMap records where IncludeInDownloadTable is populated, ordering by category_taxa
 		when category_taxa changes, create html table row
 	create html footer
 	save html
 	
 BuildBulkDownloadTable()
 	create html header
-	loop all RangeMap records where IncludeInDownloadTable=1, ordering by category_taxa
+	loop all RangeMap records where IncludeInDownloadTable is populated, ordering by category_taxa
 		when category_taxa changes, create new html table
 		create html table row
 	create html footer

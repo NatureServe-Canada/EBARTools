@@ -67,9 +67,9 @@ class BuildEBARDownloadTableTool:
         }
     </style>
 	<body>'''
-        # loop all RangeMap records where IncludeInDownloadTable=1
+        # loop all RangeMap records where IncludeInDownloadTable is populated
         arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/11', 'range_map_view',
-                                       'IncludeInDownloadTable IN (1, 2, 3)')
+                                       'IncludeInDownloadTable IN (1, 2, 3, 4)')
         # join BIOTICS_ELEMENT_NATIONAL to RangeMap
         arcpy.AddJoin_management('range_map_view', 'SpeciesID', EBARUtils.ebar_feature_service + '/4', 'SpeciesID',
                                  'KEEP_COMMON')
@@ -121,6 +121,8 @@ class BuildEBARDownloadTableTool:
                 status = 'Insufficient Data'
             if row[7] == 3:
                 status = 'Partially Reviewed'
+            if row[7] == 4:
+                status = 'Low Star Rating'
             html += '''
             <tr>
                 <td>''' + row[2] + '''</td>
