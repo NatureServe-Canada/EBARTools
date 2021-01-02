@@ -715,12 +715,12 @@ def getTaxonAttributes(global_unique_id, element_global_id, range_map_id, messag
 
     else:
         # get from BIOTICS table
-        attributes_dict['us_rank'] = 'Not available'
-        attributes_dict['mx_rank'] = 'Not available'
-        attributes_dict['ca_subnational_ranks'] = 'Not available'
-        attributes_dict['us_subnational_ranks'] = 'Not available'
-        attributes_dict['mx_subnational_ranks'] = 'Not available'
-        attributes_dict['esa_status'] = 'Not available'
+        attributes_dict['us_rank'] = 'Cannot access'
+        attributes_dict['mx_rank'] = 'Cannot access'
+        attributes_dict['ca_subnational_ranks'] = 'Cannot access'
+        attributes_dict['us_subnational_ranks'] = 'Cannot access'
+        attributes_dict['mx_subnational_ranks'] = 'Cannot access'
+        attributes_dict['esa_status'] = 'Cannot access'
         with arcpy.da.SearchCursor('biotics_view', 
                                    ['G_RANK', 'G_RANK_REVIEW_DATE', 'N_RANK', 'N_RANK_REVIEW_DATE', 
                                    'COSEWIC_STATUS', 'SARA_STATUS']) as cursor:
