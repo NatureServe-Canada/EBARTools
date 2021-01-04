@@ -216,6 +216,21 @@ class GenerateRangeMapTool:
                 arcpy.RemoveJoin_management('range_map_view', table_name_prefix + 'EcoshapeReview')
             arcpy.RemoveJoin_management('range_map_view', table_name_prefix + 'Review')
 
+            # check if published, and if so terminate
+            with arcpy.da.SearchCursor('range_map_view', ['IncludeInDownloadTable']) as cursor:
+                published = False
+                for row in EBARUtils.searchCursor(cursor):
+                    if row['IncludeInDownloadTable'] in (1, 2, 3, 4):
+                        published = True
+                        break
+                if published:
+                    del row
+            if published:
+                EBARUtils.displayMessage(messages, 'ERROR: Range Map already published')
+                # terminate with error
+                return
+                #raise arcpy.ExecuteError
+
             # no reviews completed or in progress, so delete any existing related records
             EBARUtils.displayMessage(messages, 'Range Map already exists with but with no Review(s) completed or in '
                                                'progress, so existing related records will be deleted')
