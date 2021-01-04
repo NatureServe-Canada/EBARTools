@@ -220,7 +220,7 @@ class GenerateRangeMapTool:
             with arcpy.da.SearchCursor('range_map_view', ['IncludeInDownloadTable']) as cursor:
                 published = False
                 for row in EBARUtils.searchCursor(cursor):
-                    if row['IncludeInDownloadTable'] in (1, 2, 3, 4):
+                    if row['IncludeInDownloadTable'] in [1, 2, 3, 4]:
                         published = True
                         break
                 if published:
