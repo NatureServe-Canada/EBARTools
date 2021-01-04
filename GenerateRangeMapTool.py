@@ -285,14 +285,15 @@ class GenerateRangeMapTool:
                                               notes, 0, scope, synonyms_used])
             range_map_id = EBARUtils.getUniqueID(param_geodatabase + '/RangeMap', 'RangeMapID', object_id)
             EBARUtils.displayMessage(messages, 'Range Map record created')
-            # create SecondarySpecies records
-            if param_secondary:
-                with arcpy.da.InsertCursor(param_geodatabase + '/SecondarySpecies',
-                                           ['RangeMapID', 'SpeciesID']) as cursor:
-                    for secondary in param_secondary:
-                        secondary_id, short_citation = EBARUtils.checkSpecies(secondary, param_geodatabase)
-                        cursor.insertRow([range_map_id, secondary_id])
-                EBARUtils.displayMessage(messages, 'Secondary Species records created')
+
+        # create SecondarySpecies records
+        if param_secondary:
+            with arcpy.da.InsertCursor(param_geodatabase + '/SecondarySpecies',
+                                       ['RangeMapID', 'SpeciesID']) as cursor:
+                for secondary in param_secondary:
+                    secondary_id, short_citation = EBARUtils.checkSpecies(secondary, param_geodatabase)
+                    cursor.insertRow([range_map_id, secondary_id])
+            EBARUtils.displayMessage(messages, 'Secondary Species records created')
 
         # select all points for species and buffer
         EBARUtils.displayMessage(messages, 'Buffering Input Points')
