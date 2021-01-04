@@ -217,10 +217,10 @@ class GenerateRangeMapTool:
             arcpy.RemoveJoin_management('range_map_view', table_name_prefix + 'Review')
 
             # check if published, and if so terminate
-            with arcpy.da.SearchCursor('range_map_view', ['IncludeInDownloadTable']) as cursor:
+            with arcpy.da.SearchCursor('range_map_view', ['IncludeInDownloadTable', 'RangeMapScope']) as cursor:
                 published = False
                 for row in EBARUtils.searchCursor(cursor):
-                    if row['IncludeInDownloadTable'] in [1, 2, 3, 4]:
+                    if (row['IncludeInDownloadTable'] in [1, 2, 3, 4]) and (row['RangeMapScope'] == scope):
                         published = True
                         break
                 if published:
@@ -285,15 +285,14 @@ class GenerateRangeMapTool:
                                               notes, 0, scope, synonyms_used])
             range_map_id = EBARUtils.getUniqueID(param_geodatabase + '/RangeMap', 'RangeMapID', object_id)
             EBARUtils.displayMessage(messages, 'Range Map record created')
-
-        # create SecondarySpecies records
-        if param_secondary:
-            with arcpy.da.InsertCursor(param_geodatabase + '/SecondarySpecies',
-                                       ['RangeMapID', 'SpeciesID']) as cursor:
-                for secondary in param_secondary:
-                    secondary_id, short_citation = EBARUtils.checkSpecies(secondary, param_geodatabase)
-                    cursor.insertRow([range_map_id, secondary_id])
-            EBARUtils.displayMessage(messages, 'Secondary Species records created')
+            # create SecondarySpecies records
+            if param_secondary:
+                with arcpy.da.InsertCursor(param_geodatabase + '/SecondarySpecies',
+                                           ['RangeMapID', 'SpeciesID']) as cursor:
+                    for secondary in param_secondary:
+                        secondary_id, short_citation = EBARUtils.checkSpecies(secondary, param_geodatabase)
+                        cursor.insertRow([range_map_id, secondary_id])
+                EBARUtils.displayMessage(messages, 'Secondary Species records created')
 
         # select all points for species and buffer
         EBARUtils.displayMessage(messages, 'Buffering Input Points')

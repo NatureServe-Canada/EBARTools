@@ -21,8 +21,36 @@ BuildBulkDownloadTable()
 	create html footer
 	save html
 
-GenerateRangeMap [TO DO - requires refactoring/modularization and possible sharing of code, such as "find" RangeMap code, with other tools]
-
+GenerateRangeMap
+	check for species (primary and secondary)
+	check for RangeMap record (species/version/stage/[scope])
+		if exists, confirm no reviews completed or in progress nor range map published
+		if exists, delete related review records to facilitate overwrite
+		otherwise create RangeMap [and SecondarySpecies records]
+	[for each of points/lines/polygons]
+		select any from secondary inputs (chicken and egg - RangeMapID must already exist!)
+		add [primary] to selection based on type
+		remove excluded (InputFeedback) from selection
+		buffer [different for points/lines/polygons]
+	merge buffers
+	determine historical (eo ranks, when available, override dates - fake the date to accomplish this)
+	pairwise intersect buffers and ecoshape polygons
+	get max date by type per ecoshape
+	create RangeMapEcoshape records based on dataset type and max date
+	get ecoshape input counts by dataset
+	get ecoshape input counts by source
+	apply Reviews and summaries to RangeMapEcoshape records
+		loop existing range map ecoshapes
+			check/process ecoshape "remove" reviews
+			check/process ecoshape "update" reviews
+		loop review records and add as necessary
+	create RangeMapEcoshapeInputDataset records based on summary
+	get overall input counts by source
+	create RangeMapInput records from Non-restricted [or Allowed by jurisdiction] for overlay display in EBAR Reviewer
+	get synonyms used
+	count expert reviews and calcuate average star rating
+	update RangeMap metadata
+	
 ImportExternalRangeReview(species, secondary, version, stage, external_range_table, presence_field, review_label, jurisdictions_covered, username)
 	check for species
 	check for secondary species
