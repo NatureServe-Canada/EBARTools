@@ -40,6 +40,18 @@ ebar_summary_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA
 worst_accuracy = 32000
 
 
+# buffer size in metres #, used if Accuracy not provided
+default_buffer_size = 10
+
+
+## proportion of point buffer that must be within ecoshape to get Present; otherwise gets Presence Expected
+#buffer_proportion_overlap = 0.6
+
+
+# number of years beyond which Presence gets set to Historical
+age_for_historical = 40
+
+
 # WKIDs for datums/SRSs
 srs_dict = {'North America Albers Equal Area Conic': 102008,
             'WGS84': 4326,

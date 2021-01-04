@@ -21,12 +21,24 @@ BuildBulkDownloadTable()
 	create html footer
 	save html
 
+FlagBadDataUsingRangeMap()
+	select ecoshapes using RangeMapID
+	get primary and secondary species
+	[for each of points/lines/polygons]
+		select any from secondary inputs???
+		add primary to selection based on type
+		remove excluded (InputFeedback) from selection
+		buffer [different for points/lines/polygons]
+		[select any that don't intersect]
+			create InputFeedback record with BadData flag
+		
 GenerateRangeMap
 	check for species (primary and secondary)
 	check for RangeMap record (species/version/stage/[scope])
 		if exists, confirm no reviews completed or in progress nor range map published
-		if exists, delete related review records to facilitate overwrite
-		otherwise create RangeMap [and SecondarySpecies records]
+		if exists, delete related records
+		otherwise create RangeMap
+	create SecondarySpecies records
 	[for each of points/lines/polygons]
 		select any from secondary inputs (chicken and egg - RangeMapID must already exist!)
 		add [primary] to selection based on type

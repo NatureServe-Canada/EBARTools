@@ -39,12 +39,12 @@ class GenerateRangeMapTool:
 
         # settings
         #arcpy.gp.overwriteOutput = True
-        # buffer size in metres #, used if Accuracy not provided
-        default_buffer_size = 10
-        ## proportion of point buffer that must be within ecoshape to get Present; otherwise gets Presence Expected
-        #buffer_proportion_overlap = 0.6
-        # number of years beyond which Presence gets set to Historical
-        age_for_historical = 40
+        ## buffer size in metres #, used if Accuracy not provided
+        #default_buffer_size = 10
+        ### proportion of point buffer that must be within ecoshape to get Present; otherwise gets Presence Expected
+        ##buffer_proportion_overlap = 0.6
+        ## number of years beyond which Presence gets set to Historical
+        #age_for_historical = 40
 
         # make variables for parms
         EBARUtils.displayMessage(messages, 'Processing parameters')
@@ -336,15 +336,15 @@ class GenerateRangeMapTool:
 def GetBuffer(accuracy):
     ret = accuracy
     if not ret:
-        ret = ''' + str(default_buffer_size) + '''
+        ret = ''' + str(EBARUtils.default_buffer_size) + '''
     elif ret <= 0:
-        ret = ''' + str(default_buffer_size) + '''
+        ret = ''' + str(EBARUtils.default_buffer_size) + '''
     return ret'''
         arcpy.CalculateField_management('input_point_layer', 'buffer', 'GetBuffer(!Accuracy!)', 'PYTHON3', code_block)
         temp_point_buffer = 'TempPointBuffer' + str(start_time.year) + str(start_time.month) + \
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
         arcpy.Buffer_analysis('input_point_layer', temp_point_buffer, 'buffer')
-        #arcpy.Buffer_analysis('input_point_layer', temp_point_buffer, default_buffer_size)
+        #arcpy.Buffer_analysis('input_point_layer', temp_point_buffer, EBARUtils.default_buffer_size)
 
         # select all lines for species and buffer
         EBARUtils.displayMessage(messages, 'Buffering Input Lines')
@@ -384,7 +384,7 @@ def GetBuffer(accuracy):
         # buffer
         temp_line_buffer = 'TempLineBuffer' + str(start_time.year) + str(start_time.month) + \
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
-        arcpy.Buffer_analysis('input_line_layer', temp_line_buffer, default_buffer_size)
+        arcpy.Buffer_analysis('input_line_layer', temp_line_buffer, EBARUtils.default_buffer_size)
 
         # select all polygons for species
         EBARUtils.displayMessage(messages, 'Selecting Input Polygons')
