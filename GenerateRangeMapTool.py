@@ -39,12 +39,6 @@ class GenerateRangeMapTool:
 
         # settings
         #arcpy.gp.overwriteOutput = True
-        ## buffer size in metres #, used if Accuracy not provided
-        #default_buffer_size = 10
-        ### proportion of point buffer that must be within ecoshape to get Present; otherwise gets Presence Expected
-        ##buffer_proportion_overlap = 0.6
-        ## number of years beyond which Presence gets set to Historical
-        #age_for_historical = 40
 
         # make variables for parms
         EBARUtils.displayMessage(messages, 'Processing parameters')
@@ -93,8 +87,6 @@ class GenerateRangeMapTool:
         secondary_ids = []
         secondary_names = ''
         synonyms_used = ''
-        #additional_input_records = 0
-        #excluded_input_records = 0
         if param_secondary:
             for secondary in param_secondary:
                 secondary_id, short_citation = EBARUtils.checkSpecies(secondary.lower(), param_geodatabase)
@@ -297,137 +289,26 @@ class GenerateRangeMapTool:
 
         # select all points for species and buffer
         EBARUtils.displayMessage(messages, 'Buffering Input Points')
-        arcpy.MakeFeatureLayer_management(param_geodatabase + '/InputPoint', 'input_point_layer')
-        # select any from secondary inputs (chicken and egg - RangeMapID must already exist!)
-        arcpy.AddJoin_management('input_point_layer', 'InputPointID', param_geodatabase + '/SecondaryInput',
-                                 'InputPointID')
-        arcpy.SelectLayerByAttribute_management('input_point_layer', 'NEW_SELECTION',
-                                                table_name_prefix + 'SecondaryInput.RangeMapID = ' + str(range_map_id))
-        arcpy.RemoveJoin_management('input_point_layer', table_name_prefix + 'SecondaryInput')
-        # add "real" points to selection based on type
-        arcpy.AddJoin_management('input_point_layer', 'InputDatasetID',
-                                 param_geodatabase + '/InputDataset', 'InputDatasetID', 'KEEP_COMMON')
-        arcpy.AddJoin_management('input_point_layer', 'DatasetSourceID',
-                                 param_geodatabase + '/DatasetSource', 'DatasetSourceID', 'KEEP_COMMON')
-        where_clause = table_name_prefix + 'InputPoint.SpeciesID IN (' + species_ids + ') AND (' + \
-                       table_name_prefix + 'InputPoint.Accuracy IS NULL OR ' + table_name_prefix + \
-                       'InputPoint.Accuracy <= ' + str(EBARUtils.worst_accuracy) + ') AND ((' + \
-                       table_name_prefix + "DatasetSource.DatasetType IN ('Element Occurrences', 'Source Features'," + \
-                       " 'Species Observations') AND " + table_name_prefix + 'InputPoint.MaxDate IS NOT NULL) OR (' + \
-                       table_name_prefix + "DatasetSource.DatasetType IN ('Critical Habitat', 'Range Estimate'," + \
-                       " 'Habitat Suitabilty')))"
-        arcpy.SelectLayerByAttribute_management('input_point_layer', 'ADD_TO_SELECTION', where_clause)
-        arcpy.RemoveJoin_management('input_point_layer', table_name_prefix + 'DatasetSource')
-        arcpy.RemoveJoin_management('input_point_layer', table_name_prefix + 'InputDataset')
-        # remove excluded points from selection
-        arcpy.AddJoin_management('input_point_layer', 'InputPointID', param_geodatabase + '/InputFeedback',
-                                 'InputPointID')
-        #arcpy.SelectLayerByAttribute_management('input_point_layer', 'REMOVE_FROM_SELECTION',
-        #                                        table_name_prefix + 'InputFeedback.ExcludeFromRangeMaps = 1')
-        arcpy.SelectLayerByAttribute_management('input_point_layer', 'REMOVE_FROM_SELECTION',
-                                                table_name_prefix + 'InputFeedback.ExcludeFromRangeMapID = ' + \
-                                                    str(range_map_id))
-        arcpy.SelectLayerByAttribute_management('input_point_layer', 'REMOVE_FROM_SELECTION',
-                                                table_name_prefix + 'InputFeedback.BadData = 1')
-        arcpy.RemoveJoin_management('input_point_layer', table_name_prefix + 'InputFeedback')
-        # add field for buffer
-        EBARUtils.checkAddField('input_point_layer', 'buffer', 'LONG')
-        code_block = '''
-def GetBuffer(accuracy):
-    ret = accuracy
-    if not ret:
-        ret = ''' + str(EBARUtils.default_buffer_size) + '''
-    elif ret <= 0:
-        ret = ''' + str(EBARUtils.default_buffer_size) + '''
-    return ret'''
-        arcpy.CalculateField_management('input_point_layer', 'buffer', 'GetBuffer(!Accuracy!)', 'PYTHON3', code_block)
-        temp_point_buffer = 'TempPointBuffer' + str(start_time.year) + str(start_time.month) + \
-            str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
-        arcpy.Buffer_analysis('input_point_layer', temp_point_buffer, 'buffer')
-        #arcpy.Buffer_analysis('input_point_layer', temp_point_buffer, EBARUtils.default_buffer_size)
+        temp_point_buffer = EBARUtils.inputSelectAndBuffer(param_geodatabase, 'InputPoint', range_map_id,
+                                                           table_name_prefix, species_ids, species_id, start_time)
 
         # select all lines for species and buffer
         EBARUtils.displayMessage(messages, 'Buffering Input Lines')
-        arcpy.MakeFeatureLayer_management(param_geodatabase + '/InputLine', 'input_line_layer')
-        # select any from secondary inputs (chicken and egg - RangeMapID must already exist!)
-        arcpy.AddJoin_management('input_line_layer', 'InputLineID', param_geodatabase + '/SecondaryInput',
-                                 'InputLineID')
-        arcpy.SelectLayerByAttribute_management('input_line_layer', 'NEW_SELECTION',
-                                                table_name_prefix + 'SecondaryInput.RangeMapID = ' + str(range_map_id))
-        arcpy.RemoveJoin_management('input_line_layer', table_name_prefix + 'SecondaryInput')
-        # add "real" lines to selection based on type
-        arcpy.AddJoin_management('input_line_layer', 'InputDatasetID',
-                                 param_geodatabase + '/InputDataset', 'InputDatasetID', 'KEEP_COMMON')
-        arcpy.AddJoin_management('input_line_layer', 'DatasetSourceID',
-                                 param_geodatabase + '/DatasetSource', 'DatasetSourceID', 'KEEP_COMMON')
-        where_clause = table_name_prefix + 'InputLine.SpeciesID IN (' + species_ids + ') AND (' + \
-                       table_name_prefix + 'InputLine.Accuracy IS NULL OR ' + table_name_prefix + \
-                       'InputLine.Accuracy <= ' + str(EBARUtils.worst_accuracy) + ') AND ((' + \
-                       table_name_prefix + "DatasetSource.DatasetType IN ('Element Occurrences', 'Source Features'," + \
-                       " 'Species Observations') AND " + table_name_prefix + 'InputLine.MaxDate IS NOT NULL) OR (' + \
-                       table_name_prefix + "DatasetSource.DatasetType IN ('Critical Habitat', 'Range Estimate'," + \
-                       " 'Habitat Suitabilty')))"
-        arcpy.SelectLayerByAttribute_management('input_line_layer', 'ADD_TO_SELECTION', where_clause)
-        arcpy.RemoveJoin_management('input_line_layer', table_name_prefix + 'DatasetSource')
-        arcpy.RemoveJoin_management('input_line_layer', table_name_prefix + 'InputDataset')
-        # remove excluded lines from selection
-        arcpy.AddJoin_management('input_line_layer', 'InputLineID', param_geodatabase + '/InputFeedback',
-                                 'InputLineID')
-        #arcpy.SelectLayerByAttribute_management('input_line_layer', 'REMOVE_FROM_SELECTION',
-        #                                        table_name_prefix + 'InputFeedback.ExcludeFromRangeMaps = 1')
-        arcpy.SelectLayerByAttribute_management('input_line_layer', 'REMOVE_FROM_SELECTION',
-                                                table_name_prefix + 'InputFeedback.ExcludeFromRangeMapID = ' + \
-                                                    str(range_map_id))
-        arcpy.SelectLayerByAttribute_management('input_line_layer', 'REMOVE_FROM_SELECTION',
-                                                table_name_prefix + 'InputFeedback.BadData = 1')
-        arcpy.RemoveJoin_management('input_line_layer', table_name_prefix + 'InputFeedback')
-        # buffer
-        temp_line_buffer = 'TempLineBuffer' + str(start_time.year) + str(start_time.month) + \
-            str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
-        arcpy.Buffer_analysis('input_line_layer', temp_line_buffer, EBARUtils.default_buffer_size)
+        temp_line_buffer = EBARUtils.inputSelectAndBuffer(param_geodatabase, 'InputLine', range_map_id,
+                                                          table_name_prefix, species_ids, species_id, start_time)
 
         # select all polygons for species
         EBARUtils.displayMessage(messages, 'Selecting Input Polygons')
-        arcpy.MakeFeatureLayer_management(param_geodatabase + '/InputPolygon', 'input_polygon_layer')
-        # select any from secondary inputs (chicken and egg - RangeMapID must already exist!)
-        arcpy.AddJoin_management('input_polygon_layer', 'InputPolygonID', param_geodatabase + '/SecondaryInput',
-                                 'InputPolygonID')
-        arcpy.SelectLayerByAttribute_management('input_polygon_layer', 'NEW_SELECTION',
-                                                table_name_prefix + 'SecondaryInput.RangeMapID = ' + str(range_map_id))
-        arcpy.RemoveJoin_management('input_polygon_layer', table_name_prefix + 'SecondaryInput')
-        # add "real" polygons to selection based on type
-        arcpy.AddJoin_management('input_polygon_layer', 'InputDatasetID',
-                                 param_geodatabase + '/InputDataset', 'InputDatasetID', 'KEEP_COMMON')
-        arcpy.AddJoin_management('input_polygon_layer', 'DatasetSourceID',
-                                 param_geodatabase + '/DatasetSource', 'DatasetSourceID', 'KEEP_COMMON')
-        where_clause = table_name_prefix + 'InputPolygon.SpeciesID IN (' + species_ids + ') AND (' + \
-                       table_name_prefix + 'InputPolygon.Accuracy IS NULL OR ' + table_name_prefix + \
-                       'InputPolygon.Accuracy <= ' + str(EBARUtils.worst_accuracy) + ') AND ((' + \
-                       table_name_prefix + "DatasetSource.DatasetType IN ('Element Occurrences', 'Source Features'," + \
-                       " 'Species Observations') AND " + table_name_prefix + 'InputPolygon.MaxDate IS NOT NULL) OR (' + \
-                       table_name_prefix + "DatasetSource.DatasetType = 'Element Occurrences' AND " + \
-                       table_name_prefix + 'InputPolygon.EORank IS NOT NULL) OR (' + table_name_prefix + \
-                       "DatasetSource.DatasetType IN ('Critical Habitat', 'Range Estimate', 'Habitat Suitabilty')))"
-        arcpy.SelectLayerByAttribute_management('input_polygon_layer', 'ADD_TO_SELECTION', where_clause)
-        arcpy.RemoveJoin_management('input_polygon_layer', table_name_prefix + 'DatasetSource')
-        arcpy.RemoveJoin_management('input_polygon_layer', table_name_prefix + 'InputDataset')
-        # remove excluded lines from selection
-        arcpy.AddJoin_management('input_polygon_layer', 'InputPolygonID', param_geodatabase + '/InputFeedback',
-                                 'InputPolygonID')
-        #arcpy.SelectLayerByAttribute_management('input_polygon_layer', 'REMOVE_FROM_SELECTION',
-        #                                        table_name_prefix + 'InputFeedback.ExcludeFromRangeMaps = 1')
-        arcpy.SelectLayerByAttribute_management('input_polygon_layer', 'REMOVE_FROM_SELECTION',
-                                                table_name_prefix + 'InputFeedback.ExcludeFromRangeMapID = ' + \
-                                                    str(range_map_id))
-        arcpy.SelectLayerByAttribute_management('input_polygon_layer', 'REMOVE_FROM_SELECTION',
-                                                table_name_prefix + 'InputFeedback.BadData = 1')
-        arcpy.RemoveJoin_management('input_polygon_layer', table_name_prefix + 'InputFeedback')
+        input_polygon_layer = EBARUtils.inputSelectAndBuffer(param_geodatabase, 'InputPolygon', range_map_id,
+                                                             table_name_prefix, species_ids, species_id, start_time)
 
         # merge buffer polygons and input polygons
         EBARUtils.displayMessage(messages, 'Merging Buffered Points and Lines and Input Polygons')
         temp_all_inputs = 'TempAllInputs' + str(start_time.year) + str(start_time.month) + \
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
-        arcpy.Merge_management([temp_point_buffer, temp_line_buffer, 'input_polygon_layer'], temp_all_inputs, None,
+        #arcpy.Merge_management([temp_point_buffer, temp_line_buffer, 'input_polygon_layer'], temp_all_inputs, None,
+        #                       'ADD_SOURCE_INFO')
+        arcpy.Merge_management([temp_point_buffer, temp_line_buffer, input_polygon_layer], temp_all_inputs, None,
                                'ADD_SOURCE_INFO')
         EBARUtils.checkAddField(temp_all_inputs, 'RangeMapID', 'LONG')
         arcpy.CalculateField_management(temp_all_inputs, 'RangeMapID', range_map_id)
@@ -559,7 +440,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                             (row[field_names[1]] in ['Element Occurrences', 'Source Features',
                                                      'Species Observations'] and
                              (datetime.datetime.now().year - row[field_names[2]].year)
-                             <= age_for_historical)):
+                             <= EBARUtils.age_for_historical)):
                             if presence in ['H', 'X']:
                                 presence = 'P'
                 if input_found:
@@ -578,8 +459,6 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         arcpy.Statistics_analysis('pairwise_intersect_layer', temp_ecoshape_countby_dataset,
                                   [['InputPointID', 'COUNT']], ['EcoshapeID', 'InputDatasetID'])
 
-        ## get ecoshape input counts by source and restricted input counts
-        #EBARUtils.displayMessage(messages, 'Counting Ecoshape Inputs by Dataset Source and Restricted Inputs')
         # get ecoshape input counts by source
         EBARUtils.displayMessage(messages, 'Counting Ecoshape Inputs by Dataset Source')
         temp_ecoshape_countby_source = 'TempEcoshapeCountBySource' + str(start_time.year) + str(start_time.month) + \
@@ -591,20 +470,12 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         arcpy.Statistics_analysis('pairwise_intersect_layer', temp_ecoshape_countby_source, [['InputPointID', 'COUNT']],
                                   ['EcoshapeID', table_name_prefix + 'DatasetSource.DatasetSourceName',
                                    table_name_prefix + 'DatasetSource.DatasetType'])
-        #temp_ecoshape_restricted = 'TempEcoshapeRestricted' + str(start_time.year) + str(start_time.month) + \
-        #    str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
-        #arcpy.SelectLayerByAttribute_management('pairwise_intersect_layer', 'NEW_SELECTION',
-        #                                        table_name_prefix + "InputDataset.Restrictions IN ('R', 'E')")
-        #arcpy.Statistics_analysis('pairwise_intersect_layer', temp_ecoshape_restricted, [['InputPointID', 'COUNT']],
-        #                          ['EcoshapeID'])
-        #arcpy.SelectLayerByAttribute_management('pairwise_intersect_layer', 'CLEAR_SELECTION')
         arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'DatasetSource')
         arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'InputDataset')
 
         # apply Reviews and summaries to RangeMapEcoshape records
         EBARUtils.displayMessage(messages,
                                  'Applying Reviews and summaries to Range Map Ecoshape records')
-        #ecoshape_reviews = 0
         if len(prev_range_map_ids) > 0:
             arcpy.MakeTableView_management(param_geodatabase + '/EcoshapeReview', 'ecoshape_review_view')
             arcpy.AddJoin_management('ecoshape_review_view', 'EcoshapeID', param_geodatabase + '/Ecoshape', 'EcoshapeID')
@@ -627,7 +498,6 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                'EcoshapeReview.EcoshapeID = ' + \
                                                str(update_row['EcoshapeID'])) as search_cursor:
                         for search_row in EBARUtils.searchCursor(search_cursor):
-                            #ecoshape_reviews += 1
                             remove = True
                 if remove:
                     del search_row
@@ -650,22 +520,6 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                             summary += str(search_row[field_names[2]]) + ' ' + search_row[field_names[0]]
                         if len(summary) > 0:
                             del search_row
-                    ## get restricted count
-                    ## kludge because arc ends up with different field names under Enterprise gdb after joining
-                    #field_names = [f.name for f in arcpy.ListFields(temp_ecoshape_restricted) if f.aliasName in
-                    #               ['FREQUENCY', 'frequency']]
-                    #id_field_name = [f.name for f in arcpy.ListFields(temp_ecoshape_restricted) if f.aliasName ==
-                    #                 'EcoshapeID'][0]
-                    #restricted = 0
-                    #with arcpy.da.SearchCursor(temp_ecoshape_restricted, field_names,
-                    #                           id_field_name + ' = ' + str(update_row['EcoshapeID'])) as search_cursor:
-                    #    for search_row in EBARUtils.searchCursor(search_cursor):
-                    #        restricted = search_row[field_names[0]]
-                    #    if restricted > 0:
-                    #        del search_row
-                    #        summary = 'Input records (' + str(restricted) + ' RESTRICTED) - ' + summary
-                    #    else:
-                    #        summary = 'Input records - ' + summary
                     summary = 'Input records - ' + summary
                     # check for ecoshape "update" reviews
                     if len(prev_range_map_ids) > 0:
@@ -681,7 +535,6 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                    str(update_row['EcoshapeID'])) as search_cursor:
                             search_row = None
                             for search_row in EBARUtils.searchCursor(search_cursor):
-                                #ecoshape_reviews += 1
                                 presence = search_row[table_name_prefix + 'EcoshapeReview.Markup']
                                 migrant_status = search_row[table_name_prefix + 'EcoshapeReview.MigrantStatus']
                             if search_row:
@@ -716,7 +569,6 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     if not add:
                         del update_row
                     else:
-                        #ecoshape_reviews += 1
                         with arcpy.da.InsertCursor(param_geodatabase + '/RangeMapEcoshape',
                                                    ['RangeMapID', 'EcoshapeID', 'Presence',
                                                     'RangeMapEcoshapeNotes', 'MigrantStatus']) as insert_cursor:
@@ -749,8 +601,6 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             if rme_row:
                 del rme_row
 
-        ## get overall input counts by source and restricted input counts (using original inputs)
-        #EBARUtils.displayMessage(messages, 'Counting Overall Inputs by Dataset Source and Restricted Inputs')
         # get overall input counts by source
         EBARUtils.displayMessage(messages, 'Counting Overall Inputs by Dataset Source')
         # select only those within ecoshapes
@@ -763,10 +613,6 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
         arcpy.Statistics_analysis('all_inputs_layer', temp_overall_countby_source, [['InputDatasetID', 'COUNT']],
                                   [table_name_prefix + 'DatasetSource.DatasetSourceName'])
-        #temp_overall_restricted = 'TempOverallRestricted' + str(start_time.year) + str(start_time.month) + \
-        #    str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
-        #arcpy.Statistics_analysis('all_inputs_layer', temp_overall_restricted, [['InputDatasetID', 'COUNT']],
-        #                          [table_name_prefix + 'InputDataset.Restrictions'])
 
         # create RangeMapInput records from Non-restricted for overlay display in EBAR Reviewer
         EBARUtils.displayMessage(messages, 'Creating Range Map Input records for overlay display in EBAR Reviewer')
@@ -911,38 +757,10 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                 if completed_expert_reviews - null_rating_reviews > 0:
                     summary += ' (average star rating = ' + str(star_rating_sum /
                                                                 (completed_expert_reviews - null_rating_reviews)) + ')'
-                ## expert reviews
-                #if ecoshape_reviews > 0:
-                #    summary += '; Ecoshape Reviews Applied - ' + str(ecoshape_reviews)
-                #if ecoshape_reviews > 0:
-                #    if len(summary) > 0:
-                #        summary += '; '
-                #    summary += 'Expert Ecoshape Reviews - ' + str(ecoshape_reviews)
-
                 # Notes
-                ## restricted count
-                ## kludge because arc ends up with different field names under Enterprise gdb after joining
-                #field_names = [f.name for f in arcpy.ListFields(temp_overall_restricted) if f.aliasName in
-                #               ['Restrictions', 'FREQUENCY', 'frequency']]
-                #with arcpy.da.SearchCursor(temp_overall_restricted, field_names) as search_cursor:
-                #    restricted = 0
-                #    for search_row in EBARUtils.searchCursor(search_cursor):
-                #        if search_row[field_names[0]] in ['R', 'E']:
-                #            restricted += search_row[field_names[1]]
-                #    if restricted > 0:
-                #        del search_row
-                #        summary = 'Input Records (' + str(restricted) + ' RESTRICTED) - ' + summary
-                #    else:
-                #        summary = 'Input Records - ' + summary
                 notes = 'Primary Species Name - ' + param_species
                 if len(secondary_names) > 0:
                     notes += '; Synonyms - ' + secondary_names
-                ## additional input records
-                #if additional_input_records > 0:
-                #    notes += '; Additional Input Records - ' + str(additional_input_records)
-                ## excluded input records
-                #if excluded_input_records > 0:
-                #    notes += '; Excluded Input Records - ' + str(excluded_input_records)
                 update_cursor.updateRow([summary, datetime.datetime.now(), notes, scope, synonyms_used])
 
         # generate TOC entry and actual map!!!
@@ -952,12 +770,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             arcpy.Delete_management(temp_unique_synonyms)
         if arcpy.Exists(temp_overall_countby_source):
             arcpy.Delete_management(temp_overall_countby_source)
-        #if arcpy.Exists(temp_overall_restricted):
-        #    arcpy.Delete_management(temp_overall_restricted)
         if arcpy.Exists(temp_ecoshape_countby_source):
             arcpy.Delete_management(temp_ecoshape_countby_source)
-        #if arcpy.Exists(temp_ecoshape_restricted):
-        #    arcpy.Delete_management(temp_ecoshape_restricted)
         if arcpy.Exists(temp_ecoshape_countby_dataset):
             arcpy.Delete_management(temp_ecoshape_countby_dataset)
         if arcpy.Exists(temp_ecoshape_max_polygon):
@@ -990,7 +804,7 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_species = arcpy.Parameter()
-    param_species.value = 'Abronia latifolia'
+    param_species.value = 'Muhlenbergia andina'
     param_secondary = arcpy.Parameter()
     param_secondary.value = None
     #param_secondary.value = "'Dodia verticalis'"
@@ -998,9 +812,9 @@ if __name__ == '__main__':
     param_version = arcpy.Parameter()
     param_version.value = '1.0'
     param_stage = arcpy.Parameter()
-    param_stage.value = 'Auto-generated'
+    param_stage.value = 'Expert Reviewed'
     param_scope = arcpy.Parameter()
-    #param_scope.value = 'Canadian'
+    param_scope.value = 'Canadian'
     param_scope.value = None
     parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope]
     grm.runGenerateRangeMapTool(parameters, None)

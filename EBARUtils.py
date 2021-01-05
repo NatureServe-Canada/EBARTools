@@ -824,3 +824,72 @@ def buildJurisdictionList(geodatabase, jurisdictions_list):
         jur_ids_comma += str(jur_name_dict[jur_name])
     jur_ids_comma += ')'
     return jur_ids_comma
+
+
+def inputSelectAndBuffer(geodatabase, input_features, range_map_id, table_name_prefix, species_ids, species_id, 
+                         start_time):
+    """Select relevant input features and (for points and lines) buffer them"""
+    # determine input type and make layer
+    desc = arcpy.Describe(input_features)
+    arcpy.MakeFeatureLayer_management(geodatabase + '/' + input_features, input_features + '_layer')
+
+    # select any from secondary inputs (chicken and egg - RangeMapID must already exist!)
+    arcpy.AddJoin_management(input_features + '_layer', input_features + 'ID', geodatabase + '/SecondaryInput',
+                             input_features+ 'ID')
+    arcpy.SelectLayerByAttribute_management(input_features + '_layer', 'NEW_SELECTION',
+                                            table_name_prefix + 'SecondaryInput.RangeMapID = ' + str(range_map_id))
+    arcpy.RemoveJoin_management(input_features + '_layer', table_name_prefix + 'SecondaryInput')
+
+    # add primary inputs to selection based on type
+    arcpy.AddJoin_management(input_features + '_layer', 'InputDatasetID',
+                             geodatabase + '/InputDataset', 'InputDatasetID', 'KEEP_COMMON')
+    arcpy.AddJoin_management(input_features + '_layer', 'DatasetSourceID',
+                             geodatabase + '/DatasetSource', 'DatasetSourceID', 'KEEP_COMMON')
+    where_clause = table_name_prefix + input_features + '.SpeciesID IN (' + species_ids + ') AND (' + \
+                   table_name_prefix + input_features + '.Accuracy IS NULL OR ' + table_name_prefix + \
+                   input_features + '.Accuracy <= ' + str(worst_accuracy) + ') AND ((' + table_name_prefix + \
+                   "DatasetSource.DatasetType IN ('Element Occurrences', " + \
+                   "'Source Features', 'Species Observations') AND " + table_name_prefix + input_features + \
+                   '.MaxDate IS NOT NULL) OR (' + table_name_prefix + 'DatasetSource.DatasetType IN ' + \
+                   "('Critical Habitat', 'Range Estimate', 'Habitat Suitabilty')"
+    if desc.shapeType == 'Polygon':
+        where_clause += ' OR (' + table_name_prefix + 'DatasetSource.DatasetType = ' + \
+                        "'Element Occurrences' AND " + table_name_prefix + input_features + \
+                        '.EORank IS NOT NULL)'
+    where_clause += '))'
+    arcpy.SelectLayerByAttribute_management(input_features + '_layer', 'ADD_TO_SELECTION', where_clause)
+    arcpy.RemoveJoin_management(input_features + '_layer', table_name_prefix + 'DatasetSource')
+    arcpy.RemoveJoin_management(input_features + '_layer', table_name_prefix + 'InputDataset')
+
+    # remove excluded points from selection
+    arcpy.AddJoin_management(input_features + '_layer', input_features + 'ID', geodatabase + '/InputFeedback',
+                             input_features + 'ID')
+    arcpy.SelectLayerByAttribute_management(input_features + '_layer', 'REMOVE_FROM_SELECTION', table_name_prefix +
+                                            'InputFeedback.ExcludeFromRangeMapID = ' + str(range_map_id))
+    arcpy.SelectLayerByAttribute_management(input_features + '_layer', 'REMOVE_FROM_SELECTION', table_name_prefix +
+                                            'InputFeedback.BadData = 1')
+    arcpy.RemoveJoin_management(input_features + '_layer', table_name_prefix + 'InputFeedback')
+
+    # buffer
+    if desc.shapeType == 'Point':
+        buffered_polygons = 'TempPointBuffer' + str(start_time.year) + str(start_time.month) + \
+            str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
+        # add and calculate field based on accuracy
+        checkAddField(input_features + '_layer', 'buffer', 'LONG')
+        code_block = '''
+def GetBuffer(accuracy):
+    ret = accuracy
+    if not ret:
+        ret = ''' + str(default_buffer_size) + '''
+    elif ret <= 0:
+        ret = ''' + str(default_buffer_size) + '''
+    return ret'''
+        arcpy.CalculateField_management(input_features + '_layer', 'buffer', 'GetBuffer(!Accuracy!)', 'PYTHON3', code_block)
+        arcpy.Buffer_analysis(input_features + '_layer', buffered_polygons, 'buffer')
+    elif desc.shapeType == 'Polyline':
+        buffered_polygons = 'TempLineBuffer' + str(start_time.year) + str(start_time.month) + \
+            str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
+        arcpy.Buffer_analysis(input_features + '_layer', buffered_polygons, default_buffer_size)
+    else:
+        buffered_polygons = input_features + '_layer'
+    return buffered_polygons

@@ -21,12 +21,12 @@ BuildBulkDownloadTable()
 	create html footer
 	save html
 
-FlagBadDataUsingRangeMap()
+FlagBadDataUsingRange()
 	select ecoshapes using RangeMapID
 	get primary and secondary species
 	[for each of points/lines/polygons]
 		select any from secondary inputs???
-		add primary to selection based on type
+		add primary inputs to selection based on type
 		remove excluded (InputFeedback) from selection
 		buffer [different for points/lines/polygons]
 		[select any that don't intersect]
