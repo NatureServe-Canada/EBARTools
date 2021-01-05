@@ -919,5 +919,6 @@ def GetBuffer(accuracy):
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
         arcpy.Buffer_analysis(input_features + '_layer', buffered_polygons, default_buffer_size)
     else:
+        # no buffering applied to polygons
         buffered_polygons = input_features + '_layer'
     return buffered_polygons
