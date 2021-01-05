@@ -23,6 +23,7 @@ import SyncSpeciesListKBATool
 import BuildEBARDownloadTableTool
 import BuildBulkDownloadTableTool
 import ExportInputDataTool
+import FlagBadDataUsingRangeTool
 import EBARUtils
 import datetime
 import locale
@@ -37,7 +38,7 @@ class Toolbox(object):
         # List of tool classes associated with this toolbox
         self.tools = [ImportTabularData, ImportSpatialData, GenerateRangeMap, ListElementNationalIDs,
                       SyncSpeciesListBiotics, AddSynonyms, ImportExternalRangeReview, SyncSpeciesListKBA,
-                      BuildEBARDownloadTable, BuildBulkDownloadTable, ExportInputData]
+                      BuildEBARDownloadTable, BuildBulkDownloadTable, ExportInputData, FlagBadDataUsingRange]
 
 
 class ImportTabularData(object):
@@ -847,6 +848,55 @@ class ExportInputData(object):
         """The source code of the tool."""
         ied = ExportInputDataTool.ExportInputDataTool()
         ied.runExportInputDataTool(parameters, messages)
+        return
+
+
+class FlagBadDataUsingRange(object):
+    def __init__(self):
+        """Define the tool (tool name is the name of the class)."""
+        self.label = 'Flag Bad Data Using Range'
+        self.description = 'Use reviewed range to identify and flag bad input data'
+        self.canRunInBackground = True
+
+    def getParameterInfo(self):
+        """Define parameter definitions"""
+        # Geodatabase
+        param_geodatabase = arcpy.Parameter(
+            displayName='Geodatabase',
+            name='geodatabase',
+            datatype='DEWorkspace',
+            parameterType='Required',
+            direction='Input')
+        param_geodatabase.filter.list = ['Local Database', 'Remote Database']
+
+        # Range Map ID
+        param_range_map_id = arcpy.Parameter(
+            displayName='Range Map ID',
+            name='range_map_id',
+            datatype='GPLong',
+            parameterType='Required',
+            direction='Input')
+        params = [param_geodatabase, param_range_map_id]
+        return params
+
+    def isLicensed(self):
+        """Set whether tool is licensed to execute."""
+        return True
+
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal validation is performed.  This method is 
+        called whenever a parameter has been changed."""
+        return
+
+    def updateMessages(self, parameters):
+        """Modify the messages created by internal validation for each tool parameter.  This method is called 
+        after internal validation."""
+        return
+
+    def execute(self, parameters, messages):
+        """The source code of the tool."""
+        fbdur = FlagBadDataUsingRangeTool.FlagBadDataUsingRangeTool()
+        fbdur.runFlagBadDataUsingRangeTool(parameters, messages)
         return
 
 
