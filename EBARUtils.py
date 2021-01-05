@@ -826,7 +826,35 @@ def buildJurisdictionList(geodatabase, jurisdictions_list):
     return jur_ids_comma
 
 
-def inputSelectAndBuffer(geodatabase, input_features, range_map_id, table_name_prefix, species_ids, species_id, 
+def getSpeciesForRangeMap(geodatabase, range_map_id):
+    """Get primary and seconday species ids for range map"""
+    species_id = None
+    species_ids = None
+
+    # primary
+    with arcpy.da.SearchCursor(geodatabase + '/RangeMap', ['SpeciesID'], 'RangeMapID = ' + str(range_map_id),
+                               None) as cursor:
+        for row in searchCursor(cursor):
+            species_id = row['SpeciesID']
+        if species_id:
+            # found
+            del row
+
+    # primary and secondary in comma-separated list
+    if species_id:
+        species_ids = str(species_id)
+        with arcpy.da.SearchCursor(geodatabase + '/SecondarySpecies', ['SpeciesID'],
+                                   'RangeMapID = ' + str(range_map_id), None) as cursor:
+            for row in searchCursor(cursor):
+                species_ids += ',' + str(row['SpeciesID'])
+            if species_ids != str(species_id):
+                # found at least one
+                del row
+
+    return species_id, species_ids
+
+
+def inputSelectAndBuffer(geodatabase, input_features, range_map_id, table_name_prefix, species_ids, species_id,
                          start_time):
     """Select relevant input features and (for points and lines) buffer them"""
     # determine input type and make layer
