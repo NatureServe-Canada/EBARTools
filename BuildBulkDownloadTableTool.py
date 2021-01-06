@@ -19,7 +19,7 @@ import datetime
 
 
 class BuildBulkDownloadTableTool:
-    """Create html table per category/taxagroup downloads"""
+    """Create html table of per category/taxagroup downloads"""
     def __init__(self):
         pass
 
