@@ -37,6 +37,7 @@ class FlagBadDataUsingRangeTool:
         EBARUtils.displayMessage(messages, 'Processing parameters')
         param_geodatabase = parameters[0].valueAsText
         param_range_map_id = parameters[1].valueAsText
+        EBARUtils.displayMessage(messages, 'RangeMapID: ' + param_range_map_id)
         range_map_id = int(param_range_map_id)
 
         # use passed geodatabase as workspace (still seems to go to default geodatabase)
