@@ -19,6 +19,7 @@ import datetime
 import pdfkit
 import shutil
 import urllib
+import io
 
 
 class PublishRangeMapTool:
@@ -35,9 +36,9 @@ class PublishRangeMapTool:
         #arcpy.gp.overwriteOutput = True
         arcgis_pro_project = EBARUtils.resources_folder + '/EBARMapLayouts.aprx'
         pdf_template_file = EBARUtils.resources_folder + '/pdf_template.html'
-        reviewers_by_taxa_file = 'C:/Users/rgree/OneDrive/EBAR/EBAR Maps/ReviewersByTaxa.txt'
-        #reviewers_by_taxa_link = 'https://onedrive.live.com/download?cid=AAAAAE977404FA3B&resid=AAAAAE977404FA3B' + \
-        #    '%21447463&authkey=APQx60zQOjRu23A'
+        #reviewers_by_taxa_file = 'C:/Users/rgree/OneDrive/EBAR/EBAR Maps/TestReviewersByTaxa.txt'
+        reviewers_by_taxa_link = 'https://onedrive.live.com/download?cid=AAAAAE977404FA3B&resid=AAAAAE977404FA3B' + \
+            '%21447909&authkey=AGzKOrgGlB1SHSE'
 
         # make variables for parms
         EBARUtils.displayMessage(messages, 'Processing parameters')
@@ -152,11 +153,18 @@ class PublishRangeMapTool:
 
         # insert fixed list of reviewers by taxa
         EBARUtils.displayMessage(messages, 'Inserting ReviewersByTaxa file')
-        reviewers = open(reviewers_by_taxa_file)
-        #reviewers = urllib.request.urlopen(reviewers_by_taxa_link).read().decode('ansi')
-        pdf_html = pdf_html.replace('[ReviewersByTaxa]', reviewers.read())
-        reviewers.close()
-        #pdf_html = pdf_html.replace('[ReviewersByTaxa]', reviewers)
+        reviewers_by_taxa_html = None
+        #reviewers = io.open(reviewers_by_taxa_file, 'r', encoding='mbcs') # mbcs encoding is Windows ANSI
+        #for reviewer_line in reviewers:
+        for reviewer_line in urllib.request.urlopen(reviewers_by_taxa_link):
+            if not reviewers_by_taxa_html:
+                reviewers_by_taxa_html = '<tr><th>Reviewers by Taxa:</th>'
+            else:
+                reviewers_by_taxa_html += '<tr><th></th>'
+            # mbcs encoding is Windows ANSI
+            reviewers_by_taxa_html += '<td>' + reviewer_line.decode('mbcs') + '</td></tr>'
+        pdf_html = pdf_html.replace('[ReviewersByTaxa]', reviewers_by_taxa_html)
+        #reviewers.close()
 
         # get taxon attributes
         EBARUtils.displayMessage(messages, 'Getting taxon attributes')
@@ -331,22 +339,23 @@ if __name__ == '__main__':
     # Batch 2c = 749, 824
     
     #spatial_batch_ids = [52, 56, 448, 608, 616, 617, 618, 619, 620, 621, 622, 624, 625, 626, 627, 628, 629, 630, 631, 633, 634, 635, 636, 637, 638, 639, 640, 641, 664, 665, 670, 680, 685, 687, 689, 705, 706, 707, 709, 710, 712, 713, 714, 716, 717, 718, 719, 720, 723, 747, 749, 824, 858, 859, 862, 865, 866, 867, 868, 869, 870, 871, 1087, 1093, 1098, 1102, 1103, 1104, 1105, 1112, 1113, 1115, 1128, 1129, 1130, 1131, 1133, 1134, 1135, 1136, 1137, 1138, 1139, 1140, 1142, 1143, 1144, 1145, 1146, 1147, 1151, 1152, 1153, 1154, 1155, 1156, 1157, 1158, 1179, 1184, 1187, 1190, 1223, 1225, 1227, 1231, 1233, 1241, 1243, 1254, 1258, 1261, 1278, 1283, 1296, 1729, 1737, 1739, 1747, 1752, 1780, 1823, 1840]
-    spatial_batch_ids = [1880]
-    for id in spatial_batch_ids:
-        # hard code parameters for debugging
-        param_range_map_id = arcpy.Parameter()
-        param_range_map_id.value = str(id)
-        param_spatial = arcpy.Parameter()
-        param_spatial.value = 'true'
-        parameters = [param_range_map_id, param_spatial]
-        prm.runPublishRangeMapTool(parameters, None)
-    
-    #non_spatial_batch_ids = [623, 644, 645, 646, 671, 683, 684, 704, 721, 722, 728, 737, 740, 820, 821, 822, 823, 864, 1086, 1088, 1089, 1090, 1095, 1099, 1100, 1101, 1132, 1150, 1163, 1181, 1218, 1239, 1240, 1242, 1266, 1730, 1738, 1740, 1742, 1744, 1745, 1750, 1751, 1753, 1754, 1755, 1757, 1758, 1759, 1760, 1761, 1762, 1763, 1764, 1765, 1766, 1767, 1768, 1769, 1770, 1771, 1772, 1773, 1774, 1776, 1777, 1778, 1779, 1781, 1782, 1784, 1785, 1786, 1787, 1788, 1789, 1790, 1791, 1792, 1793, 1794, 1795, 1796, 1797, 1798, 1799, 1800, 1802, 1803, 1804, 1805, 1806, 1807, 1808, 1809, 1810, 1812, 1813, 1815, 1816, 1817, 1818, 1819, 1820, 1821, 1822, 1824, 1825, 1826, 1827, 1828, 1829, 1830, 1831, 1832, 1833, 1834, 1835, 1836, 1837, 1838, 1839, 1841, 1842, 1843, 1844, 1845, 1846, 1847, 1848, 1849, 1850, 1851, 1852, 1853, 1854, 1855, 1856, 1857, 1858, 1860, 1861, 1862, 1863, 1864, 1865, 1866, 1867, 1872, 1875, 1876, 1877, 1878, 1879]
-    #for id in non_spatial_batch_ids:
+    #spatial_batch_ids = [1880]
+    #for id in spatial_batch_ids:
     #    # hard code parameters for debugging
     #    param_range_map_id = arcpy.Parameter()
     #    param_range_map_id.value = str(id)
     #    param_spatial = arcpy.Parameter()
-    #    param_spatial.value = 'false'
+    #    param_spatial.value = 'true'
     #    parameters = [param_range_map_id, param_spatial]
     #    prm.runPublishRangeMapTool(parameters, None)
+    
+    #non_spatial_batch_ids = [623, 644, 645, 646, 671, 683, 684, 704, 721, 722, 728, 737, 740, 820, 821, 822, 823, 864, 1086, 1088, 1089, 1090, 1095, 1099, 1100, 1101, 1132, 1150, 1163, 1181, 1218, 1239, 1240, 1242, 1266, 1730, 1738, 1740, 1742, 1744, 1745, 1750, 1751, 1753, 1754, 1755, 1757, 1758, 1759, 1760, 1761, 1762, 1763, 1764, 1765, 1766, 1767, 1768, 1769, 1770, 1771, 1772, 1773, 1774, 1776, 1777, 1778, 1779, 1781, 1782, 1784, 1785, 1786, 1787, 1788, 1789, 1790, 1791, 1792, 1793, 1794, 1795, 1796, 1797, 1798, 1799, 1800, 1802, 1803, 1804, 1805, 1806, 1807, 1808, 1809, 1810, 1812, 1813, 1815, 1816, 1817, 1818, 1819, 1820, 1821, 1822, 1824, 1825, 1826, 1827, 1828, 1829, 1830, 1831, 1832, 1833, 1834, 1835, 1836, 1837, 1838, 1839, 1841, 1842, 1843, 1844, 1845, 1846, 1847, 1848, 1849, 1850, 1851, 1852, 1853, 1854, 1855, 1856, 1857, 1858, 1860, 1861, 1862, 1863, 1864, 1865, 1866, 1867, 1872, 1875, 1876, 1877, 1878, 1879]
+    non_spatial_batch_ids = [623]
+    for id in non_spatial_batch_ids:
+        # hard code parameters for debugging
+        param_range_map_id = arcpy.Parameter()
+        param_range_map_id.value = str(id)
+        param_spatial = arcpy.Parameter()
+        param_spatial.value = 'false'
+        parameters = [param_range_map_id, param_spatial]
+        prm.runPublishRangeMapTool(parameters, None)
