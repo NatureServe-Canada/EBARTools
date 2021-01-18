@@ -69,7 +69,7 @@ class BuildEBARDownloadTableTool:
 	<body>'''
         # loop all RangeMap records where IncludeInDownloadTable is populated
         arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/11', 'range_map_view',
-                                       'IncludeInDownloadTable IN (1, 2, 3, 4)')
+                                       'IncludeInDownloadTable IN (1, 2, 3, 4) AND Publish = 1')
         # join BIOTICS_ELEMENT_NATIONAL to RangeMap
         arcpy.AddJoin_management('range_map_view', 'SpeciesID', EBARUtils.ebar_feature_service + '/4', 'SpeciesID',
                                  'KEEP_COMMON')
