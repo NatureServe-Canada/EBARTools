@@ -36,7 +36,7 @@ class BuildBulkDownloadTableTool:
         else:
             html +='''
                 <td><a href="https://gis.natureserve.ca/download/EBAR - ''' + category_taxagroup + \
-                    ''' - All Data.zip" target="_blank">Download Data</a></td>'''
+                    ''' - All Data.zip" target="_blank">Download GIS Data</a></td>'''
         html +='''
             </tr>'''
         return html

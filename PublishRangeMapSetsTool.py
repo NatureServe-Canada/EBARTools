@@ -183,10 +183,10 @@ class PublishRangeMapSetsTool:
 if __name__ == '__main__':
     prms = PublishRangeMapSetsTool()
     param_category = arcpy.Parameter()
-    param_category.value = 'Invertebrate Animal'
-    #param_category.value = None
+    #param_category.value = 'Invertebrate Animal'
+    param_category.value = None
     param_taxagroup = arcpy.Parameter()
-    param_taxagroup.value = 'Grasshoppers'
-    #param_taxagroup.value = None
+    #param_taxagroup.value = 'Bee Flies'
+    param_taxagroup.value = None
     parameters = [param_category, param_taxagroup]
     prms.runPublishRangeMapSetsTool(parameters, None)
