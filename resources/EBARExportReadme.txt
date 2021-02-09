@@ -6,11 +6,11 @@ This ZIP package contains a single file geodatabase with the following feature c
 - EBARPolygons
 
 The following rules were used when extracting data for export:
-- Exclude records marked as EBAR Restricted (i.e., acquired through a licensing agreement that restricts sharing)
+- Include records that overlap the jurisdiction or fall within 32km of its boundary or coastline (32km is the approximate maximum locational obscuring applied to iNaturalist obscured records)
+- Exclude records marked as EBAR Restricted or that come from a United States Natural Heritage Program (i.e., acquired through a licensing agreement that restricts sharing)
 - Exclude records marked as Bad Data (this is done by the EBAR team either manually based on expert input, or automatically using a tool that compares an expert-review range map to the underlying species data)
 - Exclude records that were provided by a Conservation Data Centre
 - Exclude polygon datasets not associated with confirmed species presence, such as Critical Habitat, Range Estimate, Habitat Suitability, and Area of Occupancy
-- Include records that overlap the jurisdiction or fall within 32km of its boundary or coastline (32km is the approximate maximum locational obscuring applied to iNaturalist obscured records)
 
 Each feature class has the following fields:
 ObjectID - ArcGIS unique identifier
