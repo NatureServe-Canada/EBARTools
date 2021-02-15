@@ -141,12 +141,16 @@ class PublishRangeMapTool:
         input_references = ''
         arcpy.MakeTableView_management(EBARUtils.ebar_summary_service + '/7', 'citation_view',
                                        'RangeMapID = ' + param_range_map_id)
-        with arcpy.da.SearchCursor('citation_view', ['DatasetSourceName', 'DatasetSourceCitation']) as cursor:
+        with arcpy.da.SearchCursor('citation_view', ['DatasetSourceName', 'DatasetSourceCitation',
+                                                     'DatasetSourceWebsite']) as cursor:
             row = None
             for row in EBARUtils.searchCursor(cursor):
                 if len (input_references) > 0:
                     input_references += '<br>'
                 input_references += row['DatasetSourceName'] + ' - ' + row['DatasetSourceCitation']
+                if row['DatasetSourceWebsite']:
+                    input_references += ' (<a href="' + row['DatasetSourceWebsite'] + '">' + \
+                        row['DatasetSourceWebsite'] + '</a>)'
             if row:
                 del row
         pdf_html = pdf_html.replace('[InputReferences]', input_references)
@@ -345,19 +349,19 @@ if __name__ == '__main__':
     #1241, 1243, 1254, 1258, 1261, 1278, 1283, 1296, 1729, 1737, 1739, 1747, 1752, 1780, 1823, 1840]
     #spatial_batch_ids = [637, 638, 639, 640, 641, 716, 717, 670, 705, 625, 626, 627, 628, 723, 747, 689, 616, 631, 633, 718, 719, 720, 622, 629, 634,
     #                     706, 707, 448, 619, 620, 621, 664, 713, 714, 1087, 1243, 709, 151]
-    spatial_batch_ids = [448, 608, 616, 617, 618, 619, 620, 621, 622, 624, 625, 626, 627, 628, 631, 633, 634, 635, 636, 637, 638, 639, 640, 641, 665, 670,
-                         680, 685, 687, 689, 706, 707, 709, 713, 714, 716, 719, 720, 747, 749, 824, 858, 859, 865, 866, 867, 871, 1087, 1093, 1098, 1102,
-                         1103, 1104, 1105, 1112, 1113, 1115, 1128, 1129, 1131, 1133, 1134, 1135, 1137, 1138, 1139, 1140, 1142, 1143, 1144, 1145, 1146,
-                         1151, 1152, 1153, 1155, 1156, 1157, 1184, 1187, 1190, 1223, 1225, 1227, 1231, 1233, 1241, 1243, 1254, 1258, 1283, 1296, 1729,
-                         1737, 1739, 1747, 1780, 1823, 1840, 1861, 1878]
-    for id in spatial_batch_ids:
-        # hard code parameters for debugging
-        param_range_map_id = arcpy.Parameter()
-        param_range_map_id.value = str(id)
-        param_spatial = arcpy.Parameter()
-        param_spatial.value = 'true'
-        parameters = [param_range_map_id, param_spatial]
-        prm.runPublishRangeMapTool(parameters, None)
+    #spatial_batch_ids = [448, 608, 616, 617, 618, 619, 620, 621, 622, 624, 625, 626, 627, 628, 631, 633, 634, 635, 636, 637, 638, 639, 640, 641, 665, 670,
+    #                     680, 685, 687, 689, 706, 707, 709, 713, 714, 716, 719, 720, 747, 749, 824, 858, 859, 865, 866, 867, 871, 1087, 1093, 1098, 1102,
+    #                     1103, 1104, 1105, 1112, 1113, 1115, 1128, 1129, 1131, 1133, 1134, 1135, 1137, 1138, 1139, 1140, 1142, 1143, 1144, 1145, 1146,
+    #                     1151, 1152, 1153, 1155, 1156, 1157, 1184, 1187, 1190, 1223, 1225, 1227, 1231, 1233, 1241, 1243, 1254, 1258, 1283, 1296, 1729,
+    #                     1737, 1739, 1747, 1780, 1823, 1840, 1861, 1878]
+    #for id in spatial_batch_ids:
+    #    # hard code parameters for debugging
+    #    param_range_map_id = arcpy.Parameter()
+    #    param_range_map_id.value = str(id)
+    #    param_spatial = arcpy.Parameter()
+    #    param_spatial.value = 'true'
+    #    parameters = [param_range_map_id, param_spatial]
+    #    prm.runPublishRangeMapTool(parameters, None)
     
     ##non_spatial_batch_ids = [623, 644, 645, 646, 671, 683, 684, 704, 721, 722, 728, 737, 740, 820, 821, 822, 823, 864, 1086, 1088, 1089, 1090, 1095, 1099,
     ##1100, 1101, 1132, 1150, 1163, 1181, 1218, 1239, 1240, 1242, 1266, 1730, 1738, 1740, 1742, 1744, 1745, 1750, 1751, 1753, 1754, 1755, 1757, 1758, 1759,
@@ -367,9 +371,10 @@ if __name__ == '__main__':
     ##1843, 1844, 1845, 1846, 1847, 1848, 1849, 1850, 1851, 1852, 1853, 1854, 1855, 1856, 1857, 1858, 1860, 1861, 1862, 1863, 1864, 1865, 1866, 1867, 1872,
     ##1875, 1876, 1877, 1878, 1879]
     #non_spatial_batch_ids = [690, 1392, 1735]
-    non_spatial_batch_ids = [1806, 684, 704, 1150, 1750, 1758, 1762, 1764, 1766, 1778, 1779, 1786, 1788, 1789, 1791, 1793, 1798, 1800, 1808, 1817, 1818,
-                             1819, 1824, 1826, 1827, 1828, 1830, 1831, 1833, 1839, 1843, 1852, 1853, 1854, 1855, 1857, 1872, 623, 629, 644, 671, 705, 717,
-                             718, 721, 723, 864, 1095, 1099, 1132, 1163, 1239, 1242, 1738, 1740, 1742, 1745, 1757, 1769, 1795, 1820, 1821]
+    #non_spatial_batch_ids = [1806, 684, 704, 1150, 1750, 1758, 1762, 1764, 1766, 1778, 1779, 1786, 1788, 1789, 1791, 1793, 1798, 1800, 1808, 1817, 1818,
+    #                         1819, 1824, 1826, 1827, 1828, 1830, 1831, 1833, 1839, 1843, 1852, 1853, 1854, 1855, 1857, 1872, 623, 629, 644, 671, 705, 717,
+    #                         718, 721, 723, 864, 1095, 1099, 1132, 1163, 1239, 1242, 1738, 1740, 1742, 1745, 1757, 1769, 1795, 1820, 1821]
+    non_spatial_batch_ids = [1820]
     for id in non_spatial_batch_ids:
         # hard code parameters for debugging
         param_range_map_id = arcpy.Parameter()
