@@ -48,8 +48,9 @@ class DeleteRangeMapTool:
 
         # check for range map
         arcpy.MakeTableView_management('RangeMap', 'range_map_view')
-        select_count = arcpy.SelectLayerByAttribute_management('range_map_view', 'NEW_SELECTION',
-                                                               'RangeMapID = ' + param_range_map_id)
+        result = arcpy.SelectLayerByAttribute_management('range_map_view', 'NEW_SELECTION',
+                                                         'RangeMapID = ' + param_range_map_id)
+        select_count = int(result[1])
         if select_count == 0:
             # terminate with error
             EBARUtils.displayMessage(messages, 'ERROR: Range Map not found')
