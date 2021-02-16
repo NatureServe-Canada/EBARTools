@@ -21,6 +21,12 @@ BuildBulkDownloadTable()
 	create html footer
 	save html
 
+DeleteRangeMap(RangeMapID)
+    check for range map
+	check for completed or in progress reviews
+	check for published
+	perform deletes
+	
 FlagBadDataUsingRange()
 	select ecoshapes using RangeMapID
 	get primary and secondary species
