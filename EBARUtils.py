@@ -922,3 +922,57 @@ def GetBuffer(accuracy):
         # no buffering applied to polygons
         buffered_polygons = input_features + '_layer'
     return buffered_polygons
+
+
+def deleteRows(table_name, view_name, where_clause):
+    arcpy.MakeTableView_management(table_name, view_name)
+    result = arcpy.SelectLayerByAttribute_management(view_name, 'NEW_SELECTION', where_clause)
+    select_count = int(result[1])
+    if select_count > 0:
+        arcpy.DeleteRows_management(view_name)
+    return select_count
+
+
+def checkReview(range_map_view, table_name_prefix):
+    review_found = False
+    review_completed = False
+    ecoshape_review = False
+    # join to review
+    arcpy.AddJoin_management(range_map_view, 'RangeMapID', 'Review', 'RangeMapID', 'KEEP_COMMON')
+    # check for completed reviews
+    with arcpy.da.SearchCursor(range_map_view, [table_name_prefix + 'Review.DateCompleted']) as cursor:
+        for row in searchCursor(cursor):
+            review_found = True
+            if row[table_name_prefix + 'Review.DateCompleted']:
+                review_completed = True
+                break
+        if review_found:
+            del row
+    # check for reviews in progress
+    if review_found:
+        arcpy.AddJoin_management(range_map_view, table_name_prefix + 'Review.ReviewID', 'EcoshapeReview', 'ReviewID',
+                                 'KEEP_COMMON')
+        with arcpy.da.SearchCursor(range_map_view,
+                                   [table_name_prefix + 'EcoshapeReview.ReviewID']) as cursor:
+            for row in searchCursor(cursor):
+                ecoshape_review = True
+                break
+            if ecoshape_review:
+                del row
+        arcpy.RemoveJoin_management(range_map_view, table_name_prefix + 'EcoshapeReview')
+    arcpy.RemoveJoin_management(range_map_view, table_name_prefix + 'Review')
+    # return
+    return review_completed, ecoshape_review
+
+
+def checkPublished(range_map_view):
+    published = False
+    row = None
+    with arcpy.da.SearchCursor(range_map_view, ['Publish']) as cursor:
+        for row in searchCursor(cursor):
+            if row['Publish']:
+                if row['Publish'] == 1:
+                    published = True
+        if row:
+            del row
+    return published
