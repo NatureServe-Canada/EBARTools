@@ -165,48 +165,65 @@ class GenerateRangeMapTool:
         if range_map_id:
             arcpy.SelectLayerByAttribute_management('range_map_view', 'NEW_SELECTION',
                                                     'RangeMapID = ' + str(range_map_id))
-            # check for completed Reviews or Reviews in progress
-            review_found = False
-            review_completed = False
-            ecoshape_review = False
-            # use multi-table joins
-            arcpy.AddJoin_management('range_map_view', 'RangeMapID',
-                                      param_geodatabase + '/Review', 'RangeMapID', 'KEEP_COMMON')
 
-            # check for completed reviews, and if so terminate
-            with arcpy.da.SearchCursor('range_map_view', [table_name_prefix + 'Review.DateCompleted']) as cursor:
-                for row in EBARUtils.searchCursor(cursor):
-                    review_found = True
-                    if row[table_name_prefix + 'Review.DateCompleted']:
-                        review_completed = True
-                        break
-                if review_found:
-                    del row
+            # check for completed or in progress reviews
+            review_completed, ecoshape_review = EBARUtils.checkReview('range_map_view', table_name_prefix)
             if review_completed:
-                EBARUtils.displayMessage(messages, 'ERROR: Range Map already exists with completed Review(s)')
                 # terminate with error
+                EBARUtils.displayMessage(messages, 'ERROR: Range Map already exists with completed Review(s)')
                 return
-                #raise arcpy.ExecuteError
+            if ecoshape_review:
+                # terminate with error
+                EBARUtils.displayMessage(messages, 'ERROR: Range Map already exists with Review(s) in progress')
+                return
 
-            # check for reviews in progress, and if so terminate
-            if review_found:
-                arcpy.AddJoin_management('range_map_view', table_name_prefix + 'Review.ReviewID',
-                                         param_geodatabase + '/EcoshapeReview', 'ReviewID', 'KEEP_COMMON')
-                with arcpy.da.SearchCursor('range_map_view',
-                                           [table_name_prefix + 'EcoshapeReview.ReviewID']) as cursor:
-                    for row in EBARUtils.searchCursor(cursor):
-                        ecoshape_review = True
-                        break
-                    if ecoshape_review:
-                        del row
-                if ecoshape_review:
-                    EBARUtils.displayMessage(messages, 'ERROR: Range Map already exists with Review(s) in progress')
-                    # terminate with error
-                    return
-                    #raise arcpy.ExecuteError
+            # check for published
+            if EBARUtils.checkPublished('range_map_view'):
+                # terminate with error
+                EBARUtils.displayMessage(messages, 'ERROR: Range Map has been published')
+                return
 
-                arcpy.RemoveJoin_management('range_map_view', table_name_prefix + 'EcoshapeReview')
-            arcpy.RemoveJoin_management('range_map_view', table_name_prefix + 'Review')
+            ## check for completed Reviews or Reviews in progress
+            #review_found = False
+            #review_completed = False
+            #ecoshape_review = False
+            ## use multi-table joins
+            #arcpy.AddJoin_management('range_map_view', 'RangeMapID',
+            #                          param_geodatabase + '/Review', 'RangeMapID', 'KEEP_COMMON')
+            ## check for completed reviews, and if so terminate
+            #with arcpy.da.SearchCursor('range_map_view', [table_name_prefix + 'Review.DateCompleted']) as cursor:
+            #    for row in EBARUtils.searchCursor(cursor):
+            #        review_found = True
+            #        if row[table_name_prefix + 'Review.DateCompleted']:
+            #            review_completed = True
+            #            break
+            #    if review_found:
+            #        del row
+            #if review_completed:
+            #    EBARUtils.displayMessage(messages, 'ERROR: Range Map already exists with completed Review(s)')
+            #    # terminate with error
+            #    return
+            #    #raise arcpy.ExecuteError
+
+            ## check for reviews in progress, and if so terminate
+            #if review_found:
+            #    arcpy.AddJoin_management('range_map_view', table_name_prefix + 'Review.ReviewID',
+            #                             param_geodatabase + '/EcoshapeReview', 'ReviewID', 'KEEP_COMMON')
+            #    with arcpy.da.SearchCursor('range_map_view',
+            #                               [table_name_prefix + 'EcoshapeReview.ReviewID']) as cursor:
+            #        for row in EBARUtils.searchCursor(cursor):
+            #            ecoshape_review = True
+            #            break
+            #        if ecoshape_review:
+            #            del row
+            #    if ecoshape_review:
+            #        EBARUtils.displayMessage(messages, 'ERROR: Range Map already exists with Review(s) in progress')
+            #        # terminate with error
+            #        return
+            #        #raise arcpy.ExecuteError
+
+            #    arcpy.RemoveJoin_management('range_map_view', table_name_prefix + 'EcoshapeReview')
+            #arcpy.RemoveJoin_management('range_map_view', table_name_prefix + 'Review')
 
             ## check if published, and if so terminate
             #with arcpy.da.SearchCursor('range_map_view', ['IncludeInDownloadTable', 'RangeMapScope']) as cursor:
