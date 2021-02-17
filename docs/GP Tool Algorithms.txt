@@ -25,6 +25,7 @@ DeleteRangeMap(RangeMapID)
     check for range map
 	check for completed or in progress reviews
 	check for published
+	check for marked for deletion
 	perform deletes
 	
 FlagBadDataUsingRange()

@@ -73,6 +73,12 @@ class DeleteRangeMapTool:
             EBARUtils.displayMessage(messages, 'ERROR: Range Map has been published')
             return
 
+        # check for marked for deletion
+        if not EBARUtils.checkMarkedForDelete('range_map_view'):
+            # terminate with error
+            EBARUtils.displayMessage(messages, 'ERROR: RangeStage field must be set to "Delete"')
+            return
+
         # perform deletes
         where_clause = 'RangeMapEcoshapeID IN (SELECT RangeMapEcoshapeID FROM RangeMapEcoshape WHERE RangeMapID = ' + \
             param_range_map_id + ')'
@@ -103,6 +109,6 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_range_map_id = arcpy.Parameter()
-    param_range_map_id.value = '2'
+    param_range_map_id.value = '70'
     parameters = [param_geodatabase, param_range_map_id]
     drm.runDeleteRangeMapTool(parameters, None)

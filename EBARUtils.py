@@ -976,3 +976,16 @@ def checkPublished(range_map_view):
         if row:
             del row
     return published
+
+
+def checkMarkedForDelete(range_map_view):
+    marked = False
+    row = None
+    with arcpy.da.SearchCursor(range_map_view, ['RangeStage']) as cursor:
+        for row in searchCursor(cursor):
+            if row['RangeStage']:
+                if row['RangeStage'].lower() == 'delete':
+                    marked = True
+        if row:
+            del row
+    return marked
