@@ -43,7 +43,7 @@ class SyncSpeciesListBioticsTool:
         count = 0
         added = 0
         skipped = 0
-        biotics_fields = ['ELEMENT_GLOBAL_ID',
+        regular_fields = ['ELEMENT_GLOBAL_ID',
                           'ELEMENT_NATIONAL_ID',
                           'ELEMENT_CODE',
                           'CLASSIFICATION_STATUS',
@@ -112,19 +112,52 @@ class SyncSpeciesListBioticsTool:
                           'INACTIVE_IND',
                           'N_ENDEMISM_DESC',
                           'G_JURIS_ENDEM_DESC']
+        special_fields = ['N_DATA_SENSITIVE_IND',
+                          'AB_DATASEN',
+                          'AB_DATASEN_CAT',
+                          'BC_DATASEN',
+                          'BC_DATASEN_CAT',
+                          'LB_DATASEN',
+                          'LB_DATASEN_CAT',
+                          'MB_DATASEN',
+                          'MB_DATASEN_CAT',
+                          'NB_DATASEN',
+                          'NB_DATASEN_CAT',
+                          'NF_DATASEN',
+                          'NF_DATASEN_CAT',
+                          'NS_DATASEN',
+                          'NS_DATASEN_CAT',
+                          'NT_DATASEN',
+                          'NT_DATASEN_CAT',
+                          'NU_DATASEN',
+                          'NU_DATASEN_CAT',
+                          'ON_DATASEN',
+                          'ON_DATASEN_CAT',
+                          'PE_DATASEN',
+                          'PE_DATASEN_CAT',
+                          'QC_DATASEN',
+                          'QC_DATASEN_CAT',
+                          'SK_DATASEN',
+                          'SK_DATASEN_CAT',
+                          'YT_DATASEN',
+                          'YT_DATASEN_CAT']
+        all_fields = regular_fields + special_fields
         for file_line in reader:
             element_national_id = int(float(file_line['ELEMENT_NATIONAL_ID']))
             EBARUtils.displayMessage(messages, 'ELEMENT_NATIONAL_ID: ' + str(element_national_id))
             if element_national_id in element_species_dict:
-                # update
-                with arcpy.da.UpdateCursor(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', biotics_fields,
+                with arcpy.da.UpdateCursor(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', all_fields,
                                            'ELEMENT_NATIONAL_ID = ' + str(element_national_id)) as update_cursor:
                     update_row = None
                     for update_row in EBARUtils.updateCursor(update_cursor):
                         update_values = []
-                        for field in biotics_fields:
+                        for field in all_fields:
                             if len(file_line[field]) > 0:
-                                update_values.append(file_line[field])
+                                # special fields get replaced only if existing value is null
+                                if field in special_fields and update_row[field]:
+                                    update_values.append(update_row[field])
+                                else:
+                                    update_values.append(file_line[field])
                             else:
                                 update_values.append(None)
                         update_cursor.updateRow(update_values)
@@ -144,11 +177,11 @@ class SyncSpeciesListBioticsTool:
                                                ['ActiveEBAR']) as insert_cursor:
                         object_id = insert_cursor.insertRow([1])
                     species_id = EBARUtils.getUniqueID(param_geodatabase + '/Species', 'SpeciesID', object_id)
-                    biotics_fields.append('SpeciesID')
+                    all_fields.append('SpeciesID')
                     with arcpy.da.InsertCursor(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
-                                               biotics_fields) as insert_cursor:
+                                               all_fields) as insert_cursor:
                         insert_values = []
-                        for field in biotics_fields:
+                        for field in all_fields:
                             if field == 'SpeciesID':
                                 insert_values.append(species_id)
                             elif len(file_line[field]) > 0:
@@ -157,7 +190,7 @@ class SyncSpeciesListBioticsTool:
                                 insert_values.append(None)
                         #EBARUtils.displayMessage(messages, 'BIOTICS insert values: ' + str(insert_values))
                         insert_cursor.insertRow(insert_values)
-                    biotics_fields.remove('SpeciesID')
+                    all_fields.remove('SpeciesID')
                     added += 1
             count += 1
 
@@ -178,6 +211,6 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_csv = arcpy.Parameter()
-    param_csv.value = 'C:/GIS/EBAR/samples/BioticsSpeciesExample.csv'
+    param_csv.value = 'C:/Users/rgree/Downloads/rgreene_1614637677240.csv'
     parameters = [param_geodatabase, param_csv]
     ssl.runSyncSpeciesListBioticsTool(parameters, None)
