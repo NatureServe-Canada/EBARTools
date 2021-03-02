@@ -60,7 +60,7 @@ class GenerateRangeMapTool:
         if param_scope:
             EBARUtils.displayMessage(messages, 'Scope: ' + param_scope)
             if param_scope == 'Canadian':
-                national_jur_ids = '(1,2,3,4,5,6,7,8,9,10,11,12,13)'
+                national_jur_ids = EBARUtils.national_jur_ids
                 scope = 'N'
             if param_scope == 'Global':
                 scope = 'G'

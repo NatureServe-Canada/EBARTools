@@ -47,18 +47,23 @@ class FlagBadDataUsingRangeTool:
         table_name_prefix = EBARUtils.getTableNamePrefix(param_geodatabase)
 
 	    # get primary and secondary species
-        species_id, species_ids = EBARUtils.getSpeciesForRangeMap(param_geodatabase, range_map_id)
+        species_id, species_ids, scope = EBARUtils.getSpeciesAndScopeForRangeMap(param_geodatabase, range_map_id)
         if not species_id:
             EBARUtils.displayMessage(messages, 'ERROR: Range Map not found')
             # terminate with error
             return
             #raise arcpy.ExecuteError
 
-        # select ecoshapes using RangeMapID
-        arcpy.MakeFeatureLayer_management(param_geodatabase + '/Ecoshape', 'ecoshape_layer')
-        arcpy.SelectLayerByAttribute_management('ecoshape_layer', 'NEW_SELECTION',
+        # select range ecoshapes using RangeMapID
+        arcpy.MakeFeatureLayer_management(param_geodatabase + '/Ecoshape', 'range_ecoshape_layer')
+        arcpy.SelectLayerByAttribute_management('range_ecoshape_layer', 'NEW_SELECTION',
                                                 'EcoshapeID IN (SELECT EcoshapeID FROM RangeMapEcoshape WHERE ' +
                                                 'RangeMapID = ' + str(range_map_id) + ')')
+        # select subset of all ecoshapes for National (Canadian) scope
+        if scope == 'N':
+            arcpy.MakeFeatureLayer_management(param_geodatabase + '/Ecoshape', 'nat_ecoshape_layer')
+            arcpy.SelectLayerByAttribute_management('nat_ecoshape_layer', 'NEW_SELECTION',
+                                                    'JurisdictionID IN ' + EBARUtils.national_jur_ids)
 
         # process points
         # select all points for species and buffer
@@ -68,8 +73,12 @@ class FlagBadDataUsingRangeTool:
         EBARUtils.displayMessage(messages, 'Marking as Bad Data any Input Points that do not intersect range')
         arcpy.MakeFeatureLayer_management(temp_point_buffer, 'point_layer')
         # select any that don't intersect range
-        arcpy.SelectLayerByLocation_management('point_layer', 'INTERSECT', 'ecoshape_layer', None, 'NEW_SELECTION',
-                                               'INVERT')
+        arcpy.SelectLayerByLocation_management('point_layer', 'INTERSECT', 'range_ecoshape_layer', None,
+                                               'NEW_SELECTION', 'INVERT')
+        # subset points for national
+        if scope == 'N':
+            arcpy.SelectLayerByLocation_management('point_layer', 'INTERSECT', 'nat_ecoshape_layer', None,
+                                                   'SUBSET_SELECTION')
         points_found = 0
         if len(arcpy.Describe('point_layer').FIDSet) > 0:
             # create InputFeedback records with BadData flag
@@ -91,8 +100,12 @@ class FlagBadDataUsingRangeTool:
         EBARUtils.displayMessage(messages, 'Marking as Bad Data any Input Lines that do not intersect range')
         arcpy.MakeFeatureLayer_management(temp_line_buffer, 'line_layer')
         # select any that don't intersect range
-        arcpy.SelectLayerByLocation_management('line_layer', 'INTERSECT', 'ecoshape_layer', None, 'NEW_SELECTION',
-                                               'INVERT')
+        arcpy.SelectLayerByLocation_management('line_layer', 'INTERSECT', 'range_ecoshape_layer', None,
+                                               'NEW_SELECTION', 'INVERT')
+        # subset lines for national
+        if scope == 'N':
+            arcpy.SelectLayerByLocation_management('line_layer', 'INTERSECT', 'nat_ecoshape_layer', None,
+                                                   'SUBSET_SELECTION')
         lines_found = 0
         if len(arcpy.Describe('line_layer').FIDSet) > 0:
             # create InputFeedback record with BadData flag
@@ -117,8 +130,12 @@ class FlagBadDataUsingRangeTool:
         polygons_found = 0
         if len(arcpy.Describe(input_polygon_layer).FIDSet) > 0:
             # select any that don't intersect range
-            arcpy.SelectLayerByLocation_management(input_polygon_layer, 'INTERSECT', 'ecoshape_layer', None,
+            arcpy.SelectLayerByLocation_management(input_polygon_layer, 'INTERSECT', 'range_ecoshape_layer', None,
                                                    'SUBSET_SELECTION', 'INVERT')
+            # subset polygons for national
+            if scope == 'N':
+                arcpy.SelectLayerByLocation_management(input_polygon_layer, 'INTERSECT', 'nat_ecoshape_layer', None,
+                                                       'SUBSET_SELECTION')
             polygons_found = 0
             if len(arcpy.Describe(input_polygon_layer).FIDSet) > 0:
                 # create InputFeedback record with BadData flag
@@ -159,6 +176,6 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_range_map_id = arcpy.Parameter()
-    param_range_map_id.value = '71'
+    param_range_map_id.value = '61'
     parameters = [param_geodatabase, param_range_map_id]
     fbdur.runFlagBadDataUsingRangeTool(parameters, None)

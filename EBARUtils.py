@@ -104,10 +104,15 @@ eo_rank_dict = {'Excellent estimated viability/ecological integrity': 'A',
                 'Not ranked': 'NR'}
 
 
+# range scopes
 scope_dict = {'G': 'Global',
               'N': 'Canadian',
               'A': 'North American',
               None: 'None'}
+
+
+# jurisdiction ids for national (Canadian) range maps
+national_jur_ids = '(1,2,3,4,5,6,7,8,9,10,11,12,13)'
 
 
 def displayMessage(messages, msg):
@@ -826,16 +831,18 @@ def buildJurisdictionList(geodatabase, jurisdictions_list):
     return jur_ids_comma
 
 
-def getSpeciesForRangeMap(geodatabase, range_map_id):
+def getSpeciesAndScopeForRangeMap(geodatabase, range_map_id):
     """Get primary and seconday species ids for range map"""
     species_id = None
     species_ids = None
+    scope = None
 
     # primary
-    with arcpy.da.SearchCursor(geodatabase + '/RangeMap', ['SpeciesID'], 'RangeMapID = ' + str(range_map_id),
-                               None) as cursor:
+    with arcpy.da.SearchCursor(geodatabase + '/RangeMap', ['SpeciesID', 'RangeMapScope'],
+                               'RangeMapID = ' + str(range_map_id), None) as cursor:
         for row in searchCursor(cursor):
             species_id = row['SpeciesID']
+            scope = row['RangeMapScope']
         if species_id:
             # found
             del row
@@ -851,7 +858,7 @@ def getSpeciesForRangeMap(geodatabase, range_map_id):
                 # found at least one
                 del row
 
-    return species_id, species_ids
+    return species_id, species_ids, scope
 
 
 def inputSelectAndBuffer(geodatabase, input_features, range_map_id, table_name_prefix, species_ids, species_id,

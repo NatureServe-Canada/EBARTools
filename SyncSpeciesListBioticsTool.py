@@ -43,6 +43,7 @@ class SyncSpeciesListBioticsTool:
         count = 0
         added = 0
         skipped = 0
+        # fields that are always sync'd, overwriting values on update
         regular_fields = ['ELEMENT_GLOBAL_ID',
                           'ELEMENT_NATIONAL_ID',
                           'ELEMENT_CODE',
@@ -112,8 +113,9 @@ class SyncSpeciesListBioticsTool:
                           'INACTIVE_IND',
                           'N_ENDEMISM_DESC',
                           'G_JURIS_ENDEM_DESC']
-        special_fields = ['N_DATA_SENSITIVE_IND',
-                          'AB_DATASEN',
+        # fields that only get overwritten on update if they are currently null
+        # this is to avoid overwriting a value from a CDC recevied as part of an input point/line/polygon import
+        special_fields = ['AB_DATASEN',
                           'AB_DATASEN_CAT',
                           'BC_DATASEN',
                           'BC_DATASEN_CAT',
@@ -155,10 +157,13 @@ class SyncSpeciesListBioticsTool:
                             if len(file_line[field]) > 0:
                                 # special fields get replaced only if existing value is null
                                 if field in special_fields and update_row[field]:
+                                    # retain existing value
                                     update_values.append(update_row[field])
                                 else:
+                                    # import value
                                     update_values.append(file_line[field])
                             else:
+                                # import NULL
                                 update_values.append(None)
                         update_cursor.updateRow(update_values)
                     if update_row:
