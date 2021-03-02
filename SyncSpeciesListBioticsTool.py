@@ -80,6 +80,7 @@ class SyncSpeciesListBioticsTool:
                           'CA_POPULATION',
                           'SHORT_CITATION_AUTHOR',
                           'SHORT_CITATION_YEAR',
+                          'AUTHOR_NAME',
                           'MAJOR_HABITAT',
                           'PHYLUM',
                           'GLOBAL_SCIENTIFIC_NAME',
@@ -216,6 +217,6 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_csv = arcpy.Parameter()
-    param_csv.value = 'C:/Users/rgree/Downloads/rgreene_1614637677240.csv'
+    param_csv.value = 'C:/Users/rgree/Downloads/rgreene_1614721964444.csv'
     parameters = [param_geodatabase, param_csv]
     ssl.runSyncSpeciesListBioticsTool(parameters, None)
