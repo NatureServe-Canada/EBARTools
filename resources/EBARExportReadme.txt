@@ -8,9 +8,11 @@ This ZIP package contains a single file geodatabase with the following feature c
 The following rules were used when extracting data for export:
 - Include records that overlap the jurisdiction or fall within 32km of its boundary or coastline (32km is the approximate maximum locational obscuring applied to iNaturalist obscured records)
 - Exclude records marked as EBAR Restricted or that come from a United States Natural Heritage Program (i.e., acquired through a licensing agreement that restricts sharing)
-- Exclude records marked as Bad Data (this is done by the EBAR team either manually based on expert input, or automatically using a tool that compares an expert-review range map to the underlying species data)
 - Exclude records that were provided by a Conservation Data Centre
 - Exclude polygon datasets not associated with confirmed species presence, such as Critical Habitat, Range Estimate, Habitat Suitability, and Area of Occupancy
+- Exclude records marked as Bad Data (see description below)
+
+Individual records can be flagged as "Bad Data" by the EBAR team. This is done using an automated tool that compares a fully expert-reviewed range map with a high star rating to the underlying species data. Any species records (including their uncertainty distance buffers) that fall outside the reviewed range are flagged as Bad Data. Bad data was not included in exports of species and will not be included when generating range maps in future. The EBAR team has chosen to retain, rather than delete, bad data to avoid re-importing it in future. If you would like a copy of records flagged as "Bad Data" please contact the EBAR-KBA team at EBAR-KBA@natureserve.ca
 
 Each feature class has the following fields:
 ObjectID - ArcGIS unique identifier
@@ -24,7 +26,7 @@ DatasetSourceUniqueID - provider's unique identifier
 URI - uniform resource identifier (e.g. URL, URN) for the observation/occurrence
 License - provider's licensing terms for the record
 CoordinatesObscured - 1 indicates exact location has been obscured by the data provided (currently only applies iNaturalist data)
-RepresentationAccuracy - Level of accuracy associated with an Element Occurrence as per http://help.natureserve.org/biotics/#Record_Management/Element_Occurrence/EO_Representation_Accuracy_Value.htm
+RepresentationAccuracy - Level ofÂ accuracyÂ associated with an Element Occurrence as per http://help.natureserve.org/biotics/#Record_Management/Element_Occurrence/EO_Representation_Accuracy_Value.htm
 ELEMENT_NATIONAL_ID - Canadian unique identier for the element
 ELEMENT_GLOBAL_ID - international unique identier for the element
 ELEMENT_CODE - unique identifier compatible with the Biological and Conservation Data system
