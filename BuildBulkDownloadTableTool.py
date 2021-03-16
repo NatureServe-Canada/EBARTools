@@ -85,6 +85,7 @@ class BuildBulkDownloadTableTool:
         }
     </style>
 	<body>
+        Last updated ''' + start_time.strftime('%B %d, %Y') + '''
         <h2>Bulk Download by Category - Taxa Group</h2>
         <table><tbody>
             <tr>
