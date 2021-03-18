@@ -79,7 +79,7 @@ class ExportInputDataTool:
         else:
             md.accessConstraints = 'Please credit original providers as per DatasetSourceCitation field.'
 
-        # process points, lines and polygons separately
+        # process points, lines and polygons
         EBARUtils.displayMessage(messages, 'Processing points')
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputPoint', 'points')
         self.processFeatureClass('points', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
@@ -96,6 +96,24 @@ class ExportInputDataTool:
         #arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputPolygon', 'other_polygons')
         #self.processFeatureClass('other_polygons', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
         #                         'OtherPolygons', md)
+
+        # process bad points, lines and polygons
+        EBARUtils.displayMessage(messages, 'Processing bad points')
+        arcpy.MakeFeatureLayer_management(param_geodatabase + '/xb_InputPoint', 'bad_points')
+        self.processFeatureClass('bad_points', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
+                                 'BadEBARPoints', md)
+        EBARUtils.displayMessage(messages, 'Processing bad lines')
+        arcpy.MakeFeatureLayer_management(param_geodatabase + '/xb_InputLine', 'bad_lines')
+        self.processFeatureClass('bad_lines', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
+                                 'BadEBARLines', md)
+        EBARUtils.displayMessage(messages, 'Processing bad EBAR polygons')
+        arcpy.MakeFeatureLayer_management(param_geodatabase + '/xb_InputPolygon', 'bad_ebar_polygons')
+        self.processFeatureClass('bad_ebar_polygons', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
+                                 'BadEBARPolygons', md)
+        #EBARUtils.displayMessage(messages, 'Processing bad Other polygons')
+        #arcpy.MakeFeatureLayer_management(param_geodatabase + '/xb_InputPolygon', 'bad_other_polygons')
+        #self.processFeatureClass('bad_other_polygons', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
+        #                         'BadOtherPolygons', md)
 
         # zip gdb into single file for download
         EBARUtils.displayMessage(messages, 'Zipping output')
@@ -126,7 +144,7 @@ class ExportInputDataTool:
             # these types go to other polygons
             where_clause += "DatasetType NOT IN ('Critical Habitat', 'Range Estimate', 'Habitat Suitability', " + \
                 "'Area of Occupancy', 'Other', 'Other Observations', 'Other Range')"
-        if fclyr == 'other_polygons':
+        if fclyr == 'other_polygons' or fclyr == 'bad_other_polygons':
             if not where_clause:
                where_clause = ''
             else:

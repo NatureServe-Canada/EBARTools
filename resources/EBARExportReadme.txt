@@ -4,6 +4,9 @@ This ZIP package contains a single file geodatabase with the following feature c
 - EBARPoints
 - EBARLines
 - EBARPolygons
+- BadEBARPoints
+- BadEBARLines
+- BadEBARPolygons
 
 The following rules were used when extracting data for export:
 - Include records that overlap the jurisdiction or fall within 32km of its boundary or coastline (32km is the approximate maximum locational obscuring applied to iNaturalist obscured records)
