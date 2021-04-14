@@ -65,15 +65,19 @@ class ImportSpatialDataTool:
                                                                           'ScientificNameField', 'MinDateField',
                                                                           'MaxDateField', 'RepAccuracyField',
                                                                           'EORankField', 'AccuracyField',
-                                                                          'OriginField', 'SeasonalityField'],
-                                                                          #'SubnationField', 'EODataField',
-                                                                          #'GenDescField', 'EORankDescField',
-                                                                          #'SurveyDateField', 'RepAccuracyCommentField',
-                                                                          #'ConfidenceExtentField',
-                                                                          #'ConfidenceExtentDescField',
-                                                                          #'DataSensitivityField',
-                                                                          #'EODataSensitivityField',
-                                                                          #'EODataSensitivityCatField'],
+                                                                          'OriginField', 'SeasonalityField',
+                                                                          'SubnationField', 'EODataField',
+                                                                          'GenDescField', 'EORankDescField',
+                                                                          'SurveyDateField', 'RepAccuracyCommentField',
+                                                                          'ConfidenceExtentField',
+                                                                          'ConfidenceExtentDescField',
+                                                                          'EODataSensitivityField',
+                                                                          'EODataSensitivityCatField',
+                                                                          'IDConfirmedField', 'EORankDateField',
+                                                                          'EORankCommentsField',
+                                                                          'AdditionalInvNeededField', 'OwnershipField',
+                                                                          'OwnerCommentsField', 'DataQCStatusField',
+                                                                          'MapQCStatusField', 'QCCommentsField'],
                                    "DatasetSourceName = '" + param_dataset_source + "'") as cursor:
             row = None
             for row in EBARUtils.searchCursor(cursor):
@@ -100,18 +104,26 @@ class ImportSpatialDataTool:
                 field_dict['accuracy'] = row['AccuracyField']
                 field_dict['origin'] = row['OriginField']
                 field_dict['seasonality'] = row['SeasonalityField']
-                #if feature_class_type in ('Polygon', 'MultiPatch'):
-                #    field_dict['subnation'] = row['SubnationField']
-                #    field_dict['eo_data'] = row['EODataField']
-                #    field_dict['gen_desc'] = row['GenDescField']
-                #    field_dict['eo_rank_desc'] = row['EORankDescField']
-                #    field_dict['survey_date'] = row['SurveyDateField']
-                #    field_dict['rep_accuracy_comment'] = row['RepAccuracyCommentField']
-                #    field_dict['confidence_extent'] = row['ConfidenceExtentField']
-                #    field_dict['confidence_extent_desc'] = row['ConfidenceExtentDescField']
-                #    field_dict['data_sensitivity'] = row['DataSensitivityField']
-                #    field_dict['eo_data_sensitivity'] = row['EODataSensitivityField']
-                #    field_dict['eo_data_sensitivity_cat'] = row['EODataSensitivityCatField']
+                if feature_class_type in ('Polygon', 'MultiPatch'):
+                    field_dict['subnation'] = row['SubnationField']
+                    field_dict['eo_data'] = row['EODataField']
+                    field_dict['gen_desc'] = row['GenDescField']
+                    field_dict['eo_rank_desc'] = row['EORankDescField']
+                    field_dict['survey_date'] = row['SurveyDateField']
+                    field_dict['rep_accuracy_comment'] = row['RepAccuracyCommentField']
+                    field_dict['confidence_extent'] = row['ConfidenceExtentField']
+                    field_dict['confidence_extent_desc'] = row['ConfidenceExtentDescField']
+                    field_dict['eo_data_sensitivity'] = row['EODataSensitivityField']
+                    field_dict['eo_data_sensitivity_cat'] = row['EODataSensitivityCatField']
+                    field_dict['id_confirmed'] = row['IDConfirmedField']
+                    field_dict['eo_rank_date'] = row['EORankDateField']
+                    field_dict['eo_rank_comments'] = row['EORankCommentsField']
+                    field_dict['additinal_inv_needed'] = row['AdditionalInvNeededField']
+                    field_dict['ownership'] = row['OwnershipField']
+                    field_dict['owner_comments'] = row['OwnerCommentsField']
+                    field_dict['data_qc_status'] = row['DataQCStatusField']
+                    field_dict['map_qc_status'] = row['MapQCStatusField']
+                    field_dict['qc_comments'] = row['QCCommentsField']
             if row:
                 del row
         if not match:
@@ -344,47 +356,79 @@ class ImportSpatialDataTool:
             if field_dict['seasonality']:
                 field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict['seasonality'],
                                                                     'Seasonality', 'TEXT'))
-            ## map polygon-only fields
-            #if feature_class_type in ('Polygon', 'MultiPatch'):
-            #    if field_dict['subnation']:
-            #        field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict['subnation'],
-            #                                                            'Subnation', 'TEXT'))
-            #    if field_dict['eo_data']:
-            #        field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict['eo_data'],
-            #                                                            'EOData', 'TEXT'))
-            #    if field_dict['gen_desc']:
-            #        field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict['gen_desc'],
-            #                                                            'GenDesc', 'TEXT'))
-            #    if field_dict['eo_rank_desc']:
-            #        field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict['eo_rank_desc'],
-            #                                                            'EORankDesc', 'TEXT'))
-            #    if field_dict['survey_date']:
-            #        field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict['survey_date'],
-            #                                                            'SurveyDate', 'DATE'))
-            #    if field_dict['rep_accuracy_comment']:
-            #        field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features',
-            #                                                            field_dict['rep_accuracy_comment'],
-            #                                                            'RepAccuracyComment', 'TEXT'))
-            #    if field_dict['confidence_extent']:
-            #        field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features',
-            #                                                            field_dict['confidence_extent'],
-            #                                                            'ConfidenceExtent', 'TEXT'))
-            #    if field_dict['confidence_extent_desc']:
-            #        field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features',
-            #                                                            field_dict['confidence_extent_desc'],
-            #                                                            'ConfidenceExtentDesc', 'TEXT'))
-            #    if field_dict['data_sensitivity']:
-            #        field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features',
-            #                                                            field_dict['data_sensitivity'],
-            #                                                            'DataSensitivity', 'TEXT'))
-            #    if field_dict['eo_data_sensitivity']:
-            #        field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features',
-            #                                                            field_dict['eo_data_sensitivity'],
-            #                                                            'EODataSensitivity', 'TEXT'))
-            #    if field_dict['eo_data_sensitivity_cat']:
-            #        field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features',
-            #                                                            field_dict['eo_data_sensitivity_cat'],
-            #                                                            'EODataSensitivityCat', 'TEXT'))
+            # map polygon-only fields
+            if feature_class_type in ('Polygon', 'MultiPatch'):
+                if field_dict['subnation']:
+                    field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict['subnation'],
+                                                                        'Subnation', 'TEXT'))
+                if field_dict['eo_data']:
+                    field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict['eo_data'],
+                                                                        'EOData', 'TEXT'))
+                if field_dict['gen_desc']:
+                    field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict['gen_desc'],
+                                                                        'GenDesc', 'TEXT'))
+                if field_dict['eo_rank_desc']:
+                    field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict['eo_rank_desc'],
+                                                                        'EORankDesc', 'TEXT'))
+                if field_dict['survey_date']:
+                    field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict['survey_date'],
+                                                                        'SurveyDate', 'DATE'))
+                if field_dict['rep_accuracy_comment']:
+                    field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features',
+                                                                        field_dict['rep_accuracy_comment'],
+                                                                        'RepAccuracyComment', 'TEXT'))
+                if field_dict['confidence_extent']:
+                    field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features',
+                                                                        field_dict['confidence_extent'],
+                                                                        'ConfidenceExtent', 'TEXT'))
+                if field_dict['confidence_extent_desc']:
+                    field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features',
+                                                                        field_dict['confidence_extent_desc'],
+                                                                        'ConfidenceExtentDesc', 'TEXT'))
+                if field_dict['eo_data_sensitivity']:
+                    field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features',
+                                                                        field_dict['eo_data_sensitivity'],
+                                                                        'EODataSensitivity', 'TEXT'))
+                if field_dict['eo_data_sensitivity_cat']:
+                    field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features',
+                                                                        field_dict['eo_data_sensitivity_cat'],
+                                                                        'EODataSensitivityCat', 'TEXT'))
+                if field_dict['id_confirmed']:
+                    field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features',
+                                                                        field_dict['id_confirmed'],
+                                                                        'IDConfirmed', 'TEXT'))
+                if field_dict['eo_rank_date']:
+                    field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features',
+                                                                        field_dict['eo_rank_date'],
+                                                                        'EORankDate', 'TEXT'))
+                if field_dict['eo_rank_comments']:
+                    field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features',
+                                                                        field_dict['eo_rank_comments'],
+                                                                        'EORankComments', 'TEXT'))
+                if field_dict['additinal_inv_needed']:
+                    field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features',
+                                                                        field_dict['additinal_inv_needed'],
+                                                                        'AdditionalInvNeeded', 'TEXT'))
+                if field_dict['ownership']:
+                    field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features',
+                                                                        field_dict['ownership'],
+                                                                        'Ownership', 'TEXT'))
+                if field_dict['owner_comments']:
+                    field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features',
+                                                                        field_dict['owner_comments'],
+                                                                        'OwnerComments', 'TEXT'))
+                if field_dict['data_qc_status']:
+                    field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features',
+                                                                        field_dict['data_qc_status'],
+                                                                        'DataQCStatus', 'TEXT'))
+                if field_dict['map_qc_status']:
+                    field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features',
+                                                                        field_dict['map_qc_status'],
+                                                                        'MapQCStatus', 'TEXT'))
+                if field_dict['qc_comments']:
+                    field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features',
+                                                                        field_dict['qc_comments'],
+                                                                        'QCComments', 'TEXT'))
             # append
             if feature_class_type in ('Polygon', 'MultiPatch'):
                 destination = param_geodatabase + '/InputPolygon'
@@ -431,15 +475,15 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_import_feature_class = arcpy.Parameter()
-    param_import_feature_class.value = 'C:/GIS/EBAR/US_CDC_Data/Nature_Serve/EBAR_EOs_NJ_OH_supplement_20200305.shp'
+    param_import_feature_class.value = 'C:/GIS/EBAR/CDN_CDC_Data/Nunavut/EO_rmulder_1616699099735.gdb/rmulder_1616699099735.gdb/query_result'
     param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'NJ OH Supplement'
+    param_dataset_name.value = 'Nunavut EOs'
     param_dataset_source = arcpy.Parameter()
-    param_dataset_source.value = 'US Element Occurrences'
+    param_dataset_source.value = 'NU Element Occurrences'
     param_date_received = arcpy.Parameter()
-    param_date_received.value = 'March 6, 2020'
+    param_date_received.value = 'April 2, 2021'
     param_restrictions = arcpy.Parameter()
-    param_restrictions.value = 'Restricted EBAR'
+    param_restrictions.value = 'Non-restricted'
     parameters = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_source,
                   param_date_received, param_restrictions]
     isd.runImportSpatialDataTool(parameters, None)
