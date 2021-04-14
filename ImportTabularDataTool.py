@@ -204,7 +204,8 @@ class ImportTabularDataTool:
             else:
                 species_id = synonym_species_dict[file_line[field_dict['scientific_name']].lower()]
                 synonym_id = synonym_dict[file_line[field_dict['scientific_name']].lower()]
-        unique_id_species = str(file_line[field_dict['unique_id']]) + ' - ' + str(species_id)
+        #unique_id_species = str(file_line[field_dict['unique_id']]) + ' - ' + str(species_id)
+        unique_id_species = str(file_line[field_dict['unique_id']])
 
         # CoordinatesObscured
         coordinates_obscured = False
