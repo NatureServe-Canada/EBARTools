@@ -64,7 +64,7 @@ class ImportSpatialDataTool:
         field_dict['SpeciesID'] = 'SpeciesID'
         field_dict['SynonymID'] = 'SynonymID'
         field_dict['MinDate'] = 'MinDate'
-        field_dict['MinDate'] = 'MinDate'
+        field_dict['MaxDate'] = 'MaxDate'
 
         # get dataset source id, type and dynamic field mappings
         with arcpy.da.SearchCursor(param_geodatabase + '/DatasetSource', ['DatasetSourceID', 'UniqueIDField',
@@ -78,8 +78,8 @@ class ImportSpatialDataTool:
                                                                           'SurveyDateField', 'RepAccuracyCommentField',
                                                                           'ConfidenceExtentField',
                                                                           'ConfidenceExtentDescField',
-                                                                          'EODataSensitivityField',
-                                                                          'EODataSensitivityCatField',
+                                                                          'DataSensitivityField',
+                                                                          'DataSensitivityCatField',
                                                                           'IDConfirmedField', 'EORankDateField',
                                                                           'EORankCommentsField',
                                                                           'AdditionalInvNeededField', 'OwnershipField',
@@ -120,8 +120,8 @@ class ImportSpatialDataTool:
                     field_dict['RepAccuracyComment'] = row['RepAccuracyCommentField']
                     field_dict['ConfidenceExtent'] = row['ConfidenceExtentField']
                     field_dict['ConfidenceExtentDesc'] = row['ConfidenceExtentDescField']
-                    field_dict['EODataSensitivity'] = row['EODataSensitivityField']
-                    field_dict['EODataSensitivityCat'] = row['EODataSensitivityCatField']
+                    field_dict['DataSensitivity'] = row['DataSensitivityField']
+                    field_dict['DataSensitivityCat'] = row['DataSensitivityCatField']
                     field_dict['IDConfirmed'] = row['IDConfirmedField']
                     field_dict['EORankDate'] = row['EORankDateField']
                     field_dict['EORankComments'] = row['EORankCommentsField']
@@ -144,7 +144,7 @@ class ImportSpatialDataTool:
         type_dict['SpeciesID'] = 'LONG'
         type_dict['SynonymID'] = 'LONG'
         type_dict['MinDate'] = 'DATE'
-        type_dict['MinDate'] = 'DATE'
+        type_dict['MaxDate'] = 'DATE'
         type_dict['DatasetSourceUniqueID'] = 'TEXT'
         type_dict['URI'] = 'TEXT'
         type_dict['scientific_name'] = 'TEXT'
@@ -163,8 +163,8 @@ class ImportSpatialDataTool:
         type_dict['RepAccuracyComment'] = 'TEXT'
         type_dict['ConfidenceExtent'] = 'TEXT'
         type_dict['ConfidenceExtentDesc'] = 'TEXT'
-        type_dict['EODataSensitivity'] = 'TEXT'
-        type_dict['EODataSensitivityCat'] = 'TEXT'
+        type_dict['DataSensitivity'] = 'TEXT'
+        type_dict['DataSensitivityCat'] = 'TEXT'
         type_dict['IDConfirmed'] = 'TEXT'
         type_dict['EORankDate'] = 'TEXT'
         type_dict['EORankComments'] = 'TEXT'
