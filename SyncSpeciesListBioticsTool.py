@@ -143,7 +143,35 @@ class SyncSpeciesListBioticsTool:
                           'SK_DATASEN',
                           'SK_DATASEN_CAT',
                           'YT_DATASEN',
-                          'YT_DATASEN_CAT']
+                          'YT_DATASEN_CAT',
+                          'AB_S_RANK',
+                          'AB_ROUNDED_S_RANK',
+                          'BC_S_RANK',
+                          'BC_ROUNDED_S_RANK',
+                          'LB_S_RANK',
+                          'LB_ROUNDED_S_RANK',
+                          'MB_S_RANK',
+                          'MB_ROUNDED_S_RANK',
+                          'NB_S_RANK',
+                          'NB_ROUNDED_S_RANK',
+                          'NF_S_RANK',
+                          'NF_ROUNDED_S_RANK',
+                          'NS_S_RANK',
+                          'NS_ROUNDED_S_RANK',
+                          'NT_S_RANK',
+                          'NT_ROUNDED_S_RANK',
+                          'NU_S_RANK',
+                          'NU_ROUNDED_S_RANK',
+                          'ON_S_RANK',
+                          'ON_ROUNDED_S_RANK',
+                          'PE_S_RANK',
+                          'PE_ROUNDED_S_RANK',
+                          'QC_S_RANK',
+                          'QC_ROUNDED_S_RANK',
+                          'SK_S_RANK',
+                          'SK_ROUNDED_S_RANK',
+                          'YT_S_RANK',
+                          'YT_ROUNDED_S_RANK']
         all_fields = regular_fields + special_fields
         for file_line in reader:
             element_national_id = int(float(file_line['ELEMENT_NATIONAL_ID']))
@@ -217,6 +245,6 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_csv = arcpy.Parameter()
-    param_csv.value = 'C:/Users/rgree/Downloads/rgreene_1614721964444.csv'
+    param_csv.value = 'C:/Users/rgree/Downloads/rgreene_1618599894446.csv'
     parameters = [param_geodatabase, param_csv]
     ssl.runSyncSpeciesListBioticsTool(parameters, None)
