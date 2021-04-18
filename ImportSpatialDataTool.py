@@ -69,7 +69,8 @@ class ImportSpatialDataTool:
         # get dataset source id, type and dynamic field mappings
         with arcpy.da.SearchCursor(param_geodatabase + '/DatasetSource', ['DatasetSourceID', 'UniqueIDField',
                                                                           'DatasetSourceType', 'URIField',
-                                                                          'ScientificNameField', 'MinDateField',
+                                                                          'ScientificNameField', 'SRankField',
+                                                                          'RoundedSRankField', 'MinDateField',
                                                                           'MaxDateField', 'RepAccuracyField',
                                                                           'EORankField', 'AccuracyField',
                                                                           'OriginField', 'SeasonalityField',
@@ -104,6 +105,8 @@ class ImportSpatialDataTool:
                 field_dict['DatasetSourceUniqueID'] = row['UniqueIDField']
                 field_dict['URI'] = row['URIField']
                 field_dict['scientific_name'] = row['ScientificNameField']
+                field_dict['S_RANK'] = row['SRankField']
+                field_dict['ROUNDED_S_RANK'] = row['RoundedSRankField']
                 field_dict['min_date'] = row['MinDateField']
                 field_dict['max_date'] = row['MaxDateField']
                 field_dict['RepresentationAccuracy'] = row['RepAccuracyField']
@@ -111,8 +114,13 @@ class ImportSpatialDataTool:
                 field_dict['Accuracy'] = row['AccuracyField']
                 field_dict['Origin'] = row['OriginField']
                 field_dict['Seasonality'] = row['SeasonalityField']
+                field_dict['Subnation'] = row['SubnationField']
+                field_dict['DataSensitivity'] = row['DataSensitivityField']
+                field_dict['DataSensitivityCat'] = row['DataSensitivityCatField']
+                field_dict['DataQCStatus'] = row['DataQCStatusField']
+                field_dict['MapQCStatus'] = row['MapQCStatusField']
+                field_dict['QCComments'] = row['QCCommentsField']
                 if feature_class_type in ('Polygon', 'MultiPatch'):
-                    field_dict['Subnation'] = row['SubnationField']
                     field_dict['EOData'] = row['EODataField']
                     field_dict['GenDesc'] = row['GenDescField']
                     field_dict['EORankDesc'] = row['EORankDescField']
@@ -120,17 +128,12 @@ class ImportSpatialDataTool:
                     field_dict['RepAccuracyComment'] = row['RepAccuracyCommentField']
                     field_dict['ConfidenceExtent'] = row['ConfidenceExtentField']
                     field_dict['ConfidenceExtentDesc'] = row['ConfidenceExtentDescField']
-                    field_dict['DataSensitivity'] = row['DataSensitivityField']
-                    field_dict['DataSensitivityCat'] = row['DataSensitivityCatField']
                     field_dict['IDConfirmed'] = row['IDConfirmedField']
                     field_dict['EORankDate'] = row['EORankDateField']
                     field_dict['EORankComments'] = row['EORankCommentsField']
                     field_dict['AdditionalInvNeeded'] = row['AdditionalInvNeededField']
                     field_dict['Ownership'] = row['OwnershipField']
                     field_dict['OwnerComments'] = row['OwnerCommentsField']
-                    field_dict['DataQCStatus'] = row['DataQCStatusField']
-                    field_dict['MapQCStatus'] = row['MapQCStatusField']
-                    field_dict['QCComments'] = row['QCCommentsField']
             if row:
                 del row
         if not match:
@@ -147,9 +150,6 @@ class ImportSpatialDataTool:
         type_dict['MaxDate'] = 'DATE'
         type_dict['DatasetSourceUniqueID'] = 'TEXT'
         type_dict['URI'] = 'TEXT'
-        type_dict['scientific_name'] = 'TEXT'
-        type_dict['min_date'] = 'TEXT'
-        type_dict['max_date'] = 'TEXT'
         type_dict['RepresentationAccuracy'] = 'TEXT'
         type_dict['EORank'] = 'TEXT'
         type_dict['Accuracy'] = 'LONG'
@@ -229,17 +229,19 @@ class ImportSpatialDataTool:
         bad_date = 0
         no_match_list = []
         with arcpy.da.UpdateCursor('import_features',
-                                   [field_dict['DatasetSourceUniqueID'], field_dict['scientific_name'], 'SpeciesID',
-                                    'SynonymID', 'ignore_imp', 'SHAPE@']) as cursor:
+                                   [field_dict['DatasetSourceUniqueID'], field_dict['scientific_name'],
+                                    field_dict['Subnation'], 'SpeciesID', 'SynonymID', 'ignore_imp',
+                                    'SHAPE@']) as cursor:
             for row in EBARUtils.updateCursor(cursor):
                 overall_count += 1
                 if overall_count % 1000 == 0:
-                    EBARUtils.displayMessage(messages, 'Species, coordinates and duplicates pre-processed ' + str(overall_count))
+                    EBARUtils.displayMessage(messages, 'Subnation, species, coordinates and duplicates pre-processed ' + str(overall_count))
                 # ignore_imp: 0=Add, 1=Ignore(species, coords), 2=Duplicate/Update
                 ignore_imp = 0
                 # check for species
                 species_id = None
                 synonym_id = None
+                subnation = None
                 if (row[field_dict['scientific_name']].lower() not in species_dict and
                     row[field_dict['scientific_name']].lower() not in synonym_id_dict):
                     no_species_match += 1
@@ -249,6 +251,11 @@ class ImportSpatialDataTool:
                         EBARUtils.displayMessage(messages,
                                                  'WARNING: No match for species ' + row[field_dict['scientific_name']])
                 else:
+                    if field_dict['Subnation']:
+                        subnation = row[field_dict['Subnation']]
+                        if subnation in EBARUtils.subnation_dict:
+                            # convert to abbreviation
+                            subnation = EBARUtils.subnation_dict[subnation]
                     if row[field_dict['scientific_name']].lower() in species_dict:
                         species_id = species_dict[row[field_dict['scientific_name']].lower()]
                     else:
@@ -269,13 +276,13 @@ class ImportSpatialDataTool:
                             duplicates += 1
                             ignore_imp = 2
                 # save
-                cursor.updateRow([row[field_dict['DatasetSourceUniqueID']], row[field_dict['scientific_name']], species_id,
-                                  synonym_id, ignore_imp, row['SHAPE@']])
+                cursor.updateRow([row[field_dict['DatasetSourceUniqueID']], row[field_dict['scientific_name']],
+                                  subnation, species_id, synonym_id, ignore_imp, row['SHAPE@']])
             if overall_count > 0:
                 del row
                 # index ignore_imp to improve performance
                 arcpy.AddIndex_management('import_features', ['ignore_imp'], 'temp_ignore_imp_idx')
-        EBARUtils.displayMessage(messages, 'Species, coordinates and duplicates pre-processed ' + str(overall_count))
+        EBARUtils.displayMessage(messages, 'Subnation, species, coordinates and duplicates pre-processed ' + str(overall_count))
 
         # check accuracy if provided
         if field_dict['Accuracy']:
@@ -365,6 +372,40 @@ class ImportSpatialDataTool:
                         del row
                 EBARUtils.displayMessage(messages, 'Max Date pre-processed ' + str(count))
 
+            # pre-process ranks
+            if field_dict['S_RANK']:
+                count = 0
+                with arcpy.da.SearchCursor('import_features', [field_dict['S_RANK'], 'SpeciesID',
+                                                               field_dict['Subnation']], 'ignore_imp <> 1') as cursor:
+                    row = None
+                    for row in EBARUtils.updateCursor(cursor):
+                        count += 1
+                        if count % 1000 == 0:
+                            EBARUtils.displayMessage(messages, 'S_RANK pre-processed ' + str(count))
+                        # update ranks in BIOTICS_ELEMENT_NATIONAL table, if provided
+                        if row[field_dict['S_RANK']]:
+                            EBARUtils.updateSRanks(param_geodatabase, row[field_dict['S_RANK']], None, 
+                                                   row[field_dict['Subnation']], row['SpeciesID'])
+                    if row:
+                        del row
+                EBARUtils.displayMessage(messages, 'S_RANK pre-processed ' + str(count))
+            if field_dict['ROUNDED_S_RANK']:
+                count = 0
+                with arcpy.da.SearchCursor('import_features', [field_dict['ROUNDED_S_RANK'], 'SpeciesID',
+                                                               field_dict['Subnation']], 'ignore_imp <> 1') as cursor:
+                    row = None
+                    for row in EBARUtils.updateCursor(cursor):
+                        count += 1
+                        if count % 1000 == 0:
+                            EBARUtils.displayMessage(messages, 'ROUNDED_S_RANK pre-processed ' + str(count))
+                        # update ranks in BIOTICS_ELEMENT_NATIONAL table, if provided
+                        if row[field_dict['ROUNDED_S_RANK']]:
+                            EBARUtils.updateSRanks(param_geodatabase, None, row[field_dict['ROUNDED_S_RANK']],
+                                                   row[field_dict['Subnation']], row['SpeciesID'])
+                    if row:
+                        del row
+                EBARUtils.displayMessage(messages, 'ROUNDED_S_RANK pre-processed ' + str(count))
+
             # select for appending
             arcpy.SelectLayerByAttribute_management('import_features', where_clause='ignore_imp = 0')
             result = arcpy.GetCount_management('import_features')
@@ -376,7 +417,7 @@ class ImportSpatialDataTool:
             field_mappings = arcpy.FieldMappings()
             for key in field_dict:
                 # exclude fields that were used for preprocessing
-                if key not in ['scientific_name', 'min_date', 'max_date']:
+                if key not in ['scientific_name', 'S_RANK', 'ROUNDED_S_RANK', 'min_date', 'max_date']:
                     if field_dict[key]:
                         field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict[key], key,
                                                                             type_dict[key]))
@@ -410,7 +451,7 @@ class ImportSpatialDataTool:
                 src_fields = []
                 for key in field_dict:
                     # exclude fields that were used for preprocessing
-                    if key not in ['scientific_name', 'min_date', 'max_date']:
+                    if key not in ['scientific_name', 'S_RANK', 'ROUNDED_S_RANK', 'min_date', 'max_date']:
                         if field_dict[key]:
                             src_fields.append(field_dict[key])
                 arcpy.SelectLayerByAttribute_management('import_features', 'CLEAR_SELECTION')
@@ -421,14 +462,14 @@ class ImportSpatialDataTool:
                         values = []
                         for key in field_dict:
                             # exclude fields that were used for preprocessing
-                            if key not in ['scientific_name', 'min_date', 'max_date']:
+                            if key not in ['scientific_name', 'S_RANK', 'ROUNDED_S_RANK', 'min_date', 'max_date']:
                                 if field_dict[key]:
                                     values.append(row[field_dict[key]])
                         # use most keys from dict to automate
                         dst_fields = []
                         for key in field_dict:
                             # exclude fields that were used for preprocessing
-                            if key not in ['scientific_name', 'min_date', 'max_date']:
+                            if key not in ['scientific_name', 'S_RANK', 'ROUNDED_S_RANK', 'min_date', 'max_date']:
                                 if field_dict[key]:
                                     dst_fields.append(key)
                         # retrieve and update duplicate destination row

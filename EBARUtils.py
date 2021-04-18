@@ -115,6 +115,23 @@ scope_dict = {'G': 'Global',
 national_jur_ids = '(1,2,3,4,5,6,7,8,9,10,11,12,13)'
 
 
+# subnation codes for Canada
+subnation_dict = {'Alberta': 'AB',
+                  'British Columbia': 'BC',
+                  'Labrador': 'LB',
+                  'Manitoba': 'MB',
+                  'New Brunswick': 'NB',
+                  'Newfoundland': 'NF',
+                  'Nova Scotia': 'NS',
+                  'Northwest Territories': 'NT',
+                  'Nunavut': 'NU',
+                  'Ontario': 'ON',
+                  'Prince Edward Island': 'PE',
+                  'Quebec': 'QC',
+                  'Saskatchewan': 'SK',
+                  'Yukon': 'YT'}
+
+
 def displayMessage(messages, msg):
     """Output message to arcpy message object or to Python standard output."""
     if messages:
@@ -997,3 +1014,17 @@ def checkMarkedForDelete(range_map_view):
         if row:
             del row
     return marked
+
+
+def updateSRanks(geodatabase, s_rank, rounded_s_rank, subnation_code, species_id):
+    with arcpy.da.UpdateCursor(geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
+                               [subnation_code + '_S_RANK', subnation_code + '_ROUNDED_S_RANK'],
+                               'SpeciesID = ' + str(species_id)) as cursor:
+        for row in searchCursor(cursor):
+            if not s_rank:
+                s_rank = row[subnation_code + '_S_RANK']
+            if not rounded_s_rank:
+                rounded_s_rank = row[subnation_code + '_ROUNDED_S_RANK']
+            cursor.updateRow([s_rank, rounded_s_rank])
+        if row:
+            del row
