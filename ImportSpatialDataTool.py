@@ -65,6 +65,7 @@ class ImportSpatialDataTool:
         field_dict['SynonymID'] = 'SynonymID'
         field_dict['MinDate'] = 'MinDate'
         field_dict['MaxDate'] = 'MaxDate'
+        field_dict['SHAPE@'] = 'SHAPE@'
 
         # get dataset source id, type and dynamic field mappings
         with arcpy.da.SearchCursor(param_geodatabase + '/DatasetSource', ['DatasetSourceID', 'UniqueIDField',
@@ -85,7 +86,8 @@ class ImportSpatialDataTool:
                                                                           'EORankCommentsField',
                                                                           'AdditionalInvNeededField', 'OwnershipField',
                                                                           'OwnerCommentsField', 'DataQCStatusField',
-                                                                          'MapQCStatusField', 'QCCommentsField'],
+                                                                          'MapQCStatusField', 'QCCommentsField',
+                                                                          'EOIDField', 'SFIDField'],
                                    "DatasetSourceName = '" + param_dataset_source + "'") as cursor:
             row = None
             for row in EBARUtils.searchCursor(cursor):
@@ -120,6 +122,8 @@ class ImportSpatialDataTool:
                 field_dict['DataQCStatus'] = row['DataQCStatusField']
                 field_dict['MapQCStatus'] = row['MapQCStatusField']
                 field_dict['QCComments'] = row['QCCommentsField']
+                field_dict['EOID'] = row['EOIDField']
+                field_dict['SFID'] = row['SFIDField']
                 if feature_class_type in ('Polygon', 'MultiPatch'):
                     field_dict['EOData'] = row['EODataField']
                     field_dict['GenDesc'] = row['GenDescField']
@@ -174,6 +178,8 @@ class ImportSpatialDataTool:
         type_dict['DataQCStatus'] = 'TEXT'
         type_dict['MapQCStatus'] = 'TEXT'
         type_dict['QCComments'] = 'TEXT'
+        type_dict['EOID'] = 'LONG'
+        type_dict['SFID'] = 'LONG'
 
         # encode restriction using domain
         param_restrictions = EBARUtils.encodeRestriction(param_geodatabase, param_restrictions)
@@ -417,7 +423,7 @@ class ImportSpatialDataTool:
             field_mappings = arcpy.FieldMappings()
             for key in field_dict:
                 # exclude fields that were used for preprocessing
-                if key not in ['scientific_name', 'S_RANK', 'ROUNDED_S_RANK', 'min_date', 'max_date']:
+                if key not in ['scientific_name', 'S_RANK', 'ROUNDED_S_RANK', 'min_date', 'max_date', 'SHAPE@']:
                     if field_dict[key]:
                         field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict[key], key,
                                                                             type_dict[key]))
