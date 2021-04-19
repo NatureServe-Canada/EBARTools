@@ -1021,10 +1021,18 @@ def updateSRanks(geodatabase, s_rank, rounded_s_rank, subnation_code, species_id
                                [subnation_code + '_S_RANK', subnation_code + '_ROUNDED_S_RANK'],
                                'SpeciesID = ' + str(species_id)) as cursor:
         for row in searchCursor(cursor):
-            if not s_rank:
-                s_rank = row[subnation_code + '_S_RANK']
-            if not rounded_s_rank:
-                rounded_s_rank = row[subnation_code + '_ROUNDED_S_RANK']
-            cursor.updateRow([s_rank, rounded_s_rank])
+            update = False
+            update_s_rank = row[subnation_code + '_S_RANK']
+            update_rounded_s_rank = row[subnation_code + '_ROUNDED_S_RANK']
+            if s_rank:
+                if not update_s_rank or s_rank != update_s_rank:
+                    update_s_rank = s_rank
+                    update = True
+            if rounded_s_rank:
+                if not update_rounded_s_rank or rounded_s_rank != update_rounded_s_rank:
+                    update_rounded_s_rank = rounded_s_rank
+                    update = True
+            if update:
+                cursor.updateRow([update_s_rank, update_rounded_s_rank])
         if row:
             del row

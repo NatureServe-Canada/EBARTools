@@ -383,7 +383,7 @@ class ImportSpatialDataTool:
                         if count % 1000 == 0:
                             EBARUtils.displayMessage(messages, 'S_RANK pre-processed ' + str(count))
                         # update ranks in BIOTICS_ELEMENT_NATIONAL table, if provided
-                        if row[field_dict['S_RANK']]:
+                        if row[field_dict['S_RANK']] and row[field_dict['Subnation']]:
                             EBARUtils.updateSRanks(param_geodatabase, row[field_dict['S_RANK']], None, 
                                                    row[field_dict['Subnation']], row['SpeciesID'])
                     if row:
@@ -399,7 +399,7 @@ class ImportSpatialDataTool:
                         if count % 1000 == 0:
                             EBARUtils.displayMessage(messages, 'ROUNDED_S_RANK pre-processed ' + str(count))
                         # update ranks in BIOTICS_ELEMENT_NATIONAL table, if provided
-                        if row[field_dict['ROUNDED_S_RANK']]:
+                        if row[field_dict['ROUNDED_S_RANK']] and row[field_dict['Subnation']]:
                             EBARUtils.updateSRanks(param_geodatabase, None, row[field_dict['ROUNDED_S_RANK']],
                                                    row[field_dict['Subnation']], row['SpeciesID'])
                     if row:
