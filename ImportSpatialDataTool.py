@@ -82,6 +82,8 @@ class ImportSpatialDataTool:
                                                                           'ConfidenceExtentDescField',
                                                                           'DataSensitivityField',
                                                                           'DataSensitivityCatField',
+                                                                          'ESTDataSensitivityField',
+                                                                          'ESTDataSensitivityCatField',
                                                                           'IDConfirmedField', 'EORankDateField',
                                                                           'EORankCommentsField',
                                                                           'AdditionalInvNeededField', 'OwnershipField',
@@ -109,6 +111,8 @@ class ImportSpatialDataTool:
                 field_dict['scientific_name'] = row['ScientificNameField']
                 field_dict['S_RANK'] = row['SRankField']
                 field_dict['ROUNDED_S_RANK'] = row['RoundedSRankField']
+                field_dict['EST_DATA_SENS'] = row['ESTDataSensitivityField']
+                field_dict['EST_DATASEN_CAT'] = row['ESTDataSensitivityCatField']
                 field_dict['min_date'] = row['MinDateField']
                 field_dict['max_date'] = row['MaxDateField']
                 field_dict['RepresentationAccuracy'] = row['RepAccuracyField']
@@ -378,7 +382,7 @@ class ImportSpatialDataTool:
                         del row
                 EBARUtils.displayMessage(messages, 'Max Date pre-processed ' + str(count))
 
-            # pre-process ranks
+            # pre-process species subnational fields
             if field_dict['S_RANK']:
                 count = 0
                 with arcpy.da.SearchCursor('import_features', [field_dict['S_RANK'], 'SpeciesID',
@@ -390,8 +394,9 @@ class ImportSpatialDataTool:
                             EBARUtils.displayMessage(messages, 'S_RANK pre-processed ' + str(count))
                         # update ranks in BIOTICS_ELEMENT_NATIONAL table, if provided
                         if row[field_dict['S_RANK']] and row[field_dict['Subnation']]:
-                            EBARUtils.updateSRanks(param_geodatabase, row[field_dict['S_RANK']], None, 
-                                                   row[field_dict['Subnation']], row['SpeciesID'])
+                            EBARUtils.updateBioticsSubnational(param_geodatabase, row[field_dict['S_RANK']], None,
+                                                               None, None, row[field_dict['Subnation']],
+                                                               row['SpeciesID'])
                     if row:
                         del row
                 EBARUtils.displayMessage(messages, 'S_RANK pre-processed ' + str(count))
@@ -406,11 +411,49 @@ class ImportSpatialDataTool:
                             EBARUtils.displayMessage(messages, 'ROUNDED_S_RANK pre-processed ' + str(count))
                         # update ranks in BIOTICS_ELEMENT_NATIONAL table, if provided
                         if row[field_dict['ROUNDED_S_RANK']] and row[field_dict['Subnation']]:
-                            EBARUtils.updateSRanks(param_geodatabase, None, row[field_dict['ROUNDED_S_RANK']],
-                                                   row[field_dict['Subnation']], row['SpeciesID'])
+                            EBARUtils.updateBioticsSubnational(param_geodatabase, None,
+                                                               row[field_dict['ROUNDED_S_RANK']],
+                                                               None, None, row[field_dict['Subnation']],
+                                                               row['SpeciesID'])
                     if row:
                         del row
                 EBARUtils.displayMessage(messages, 'ROUNDED_S_RANK pre-processed ' + str(count))
+            if field_dict['EST_DATA_SENS']:
+                count = 0
+                with arcpy.da.SearchCursor('import_features', [field_dict['EST_DATA_SENS'], 'SpeciesID',
+                                                               field_dict['Subnation']], 'ignore_imp <> 1') as cursor:
+                    row = None
+                    for row in EBARUtils.updateCursor(cursor):
+                        count += 1
+                        if count % 1000 == 0:
+                            EBARUtils.displayMessage(messages, 'EST_DATA_SENS pre-processed ' + str(count))
+                        # update ranks in BIOTICS_ELEMENT_NATIONAL table, if provided
+                        if row[field_dict['EST_DATA_SENS']] and row[field_dict['Subnation']]:
+                            EBARUtils.updateBioticsSubnational(param_geodatabase, None, None,
+                                                               row[field_dict['EST_DATA_SENS']],
+                                                               None, row[field_dict['Subnation']],
+                                                               row['SpeciesID'])
+                    if row:
+                        del row
+                EBARUtils.displayMessage(messages, 'EST_DATA_SENS pre-processed ' + str(count))
+            if field_dict['EST_DATASEN_CAT']:
+                count = 0
+                with arcpy.da.SearchCursor('import_features', [field_dict['EST_DATASEN_CAT'], 'SpeciesID',
+                                                               field_dict['Subnation']], 'ignore_imp <> 1') as cursor:
+                    row = None
+                    for row in EBARUtils.updateCursor(cursor):
+                        count += 1
+                        if count % 1000 == 0:
+                            EBARUtils.displayMessage(messages, 'EST_DATASEN_CAT pre-processed ' + str(count))
+                        # update ranks in BIOTICS_ELEMENT_NATIONAL table, if provided
+                        if row[field_dict['EST_DATASEN_CAT']] and row[field_dict['Subnation']]:
+                            EBARUtils.updateBioticsSubnational(param_geodatabase, None, None,
+                                                               row[field_dict['EST_DATASEN_CAT']],
+                                                               None, row[field_dict['Subnation']],
+                                                               row['SpeciesID'])
+                    if row:
+                        del row
+                EBARUtils.displayMessage(messages, 'EST_DATASEN_CAT pre-processed ' + str(count))
 
             # select for appending
             arcpy.SelectLayerByAttribute_management('import_features', where_clause='ignore_imp = 0')
@@ -423,7 +466,8 @@ class ImportSpatialDataTool:
             field_mappings = arcpy.FieldMappings()
             for key in field_dict:
                 # exclude fields that were used for preprocessing
-                if key not in ['scientific_name', 'S_RANK', 'ROUNDED_S_RANK', 'min_date', 'max_date', 'SHAPE@']:
+                if key not in ['scientific_name', 'S_RANK', 'ROUNDED_S_RANK', 'EST_DATA_SENS', 'EST_DATASEN_CAT',
+                               'min_date', 'max_date', 'SHAPE@']:
                     if field_dict[key]:
                         field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict[key], key,
                                                                             type_dict[key]))
@@ -457,7 +501,8 @@ class ImportSpatialDataTool:
                 src_fields = []
                 for key in field_dict:
                     # exclude fields that were used for preprocessing
-                    if key not in ['scientific_name', 'S_RANK', 'ROUNDED_S_RANK', 'min_date', 'max_date']:
+                    if key not in ['scientific_name', 'S_RANK', 'ROUNDED_S_RANK', 'EST_DATA_SENS', 'EST_DATASEN_CAT',
+                                   'min_date', 'max_date']:
                         if field_dict[key]:
                             src_fields.append(field_dict[key])
                 arcpy.SelectLayerByAttribute_management('import_features', 'CLEAR_SELECTION')
@@ -468,14 +513,16 @@ class ImportSpatialDataTool:
                         values = []
                         for key in field_dict:
                             # exclude fields that were used for preprocessing
-                            if key not in ['scientific_name', 'S_RANK', 'ROUNDED_S_RANK', 'min_date', 'max_date']:
+                            if key not in ['scientific_name', 'S_RANK', 'ROUNDED_S_RANK', 'EST_DATA_SENS',
+                                           'EST_DATASEN_CAT', 'min_date', 'max_date']:
                                 if field_dict[key]:
                                     values.append(row[field_dict[key]])
                         # use most keys from dict to automate
                         dst_fields = []
                         for key in field_dict:
                             # exclude fields that were used for preprocessing
-                            if key not in ['scientific_name', 'S_RANK', 'ROUNDED_S_RANK', 'min_date', 'max_date']:
+                            if key not in ['scientific_name', 'S_RANK', 'ROUNDED_S_RANK', 'EST_DATA_SENS',
+                                           'EST_DATASEN_CAT', 'min_date', 'max_date']:
                                 if field_dict[key]:
                                     dst_fields.append(key)
                         # retrieve and update duplicate destination row

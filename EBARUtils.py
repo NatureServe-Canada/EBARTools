@@ -1016,14 +1016,18 @@ def checkMarkedForDelete(range_map_view):
     return marked
 
 
-def updateSRanks(geodatabase, s_rank, rounded_s_rank, subnation_code, species_id):
+def updateBioticsSubnational(geodatabase, s_rank, rounded_s_rank, est_data_sens, est_datasen_cat, subnation_code,
+                             species_id):
     with arcpy.da.UpdateCursor(geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
-                               [subnation_code + '_S_RANK', subnation_code + '_ROUNDED_S_RANK'],
+                               [subnation_code + '_S_RANK', subnation_code + '_ROUNDED_S_RANK',
+                                subnation_code + '_DATASEN', subnation_code + '_DATASEN_CAT'], 
                                'SpeciesID = ' + str(species_id)) as cursor:
         for row in searchCursor(cursor):
             update = False
             update_s_rank = row[subnation_code + '_S_RANK']
             update_rounded_s_rank = row[subnation_code + '_ROUNDED_S_RANK']
+            update_data_sens = row[subnation_code + '_DATASEN']
+            update_datasen_cat = row[subnation_code + '_DATASEN_CAT']
             if s_rank:
                 if not update_s_rank or s_rank != update_s_rank:
                     update_s_rank = s_rank
@@ -1032,7 +1036,15 @@ def updateSRanks(geodatabase, s_rank, rounded_s_rank, subnation_code, species_id
                 if not update_rounded_s_rank or rounded_s_rank != update_rounded_s_rank:
                     update_rounded_s_rank = rounded_s_rank
                     update = True
+            if est_data_sens:
+                if not update_data_sens or est_data_sens != update_data_sens:
+                    update_data_sens = est_data_sens
+                    update = True
+            if est_datasen_cat:
+                if not update_datasen_cat or est_datasen_cat != update_datasen_cat:
+                    update_datasen_cat = est_datasen_cat
+                    update = True
             if update:
-                cursor.updateRow([update_s_rank, update_rounded_s_rank])
+                cursor.updateRow([update_s_rank, update_rounded_s_rank, update_data_sens, update_datasen_cat])
         if row:
             del row
