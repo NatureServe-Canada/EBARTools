@@ -129,7 +129,7 @@ subnation_dict = {'Alberta': 'AB',
                   'Prince Edward Island': 'PE',
                   'Quebec': 'QC',
                   'Saskatchewan': 'SK',
-                  'Yukon': 'YT'}
+                  'Yukon Territory': 'YT'}
 
 
 def displayMessage(messages, msg):

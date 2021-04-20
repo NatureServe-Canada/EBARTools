@@ -141,7 +141,6 @@ class ImportSpatialDataTool:
                 field_dict['min_date'] = row['MinDateField']
                 field_dict['max_date'] = row['MaxDateField']
                 field_dict['RepresentationAccuracy'] = row['RepAccuracyField']
-                field_dict['EORank'] = row['EORankField']
                 field_dict['Accuracy'] = row['AccuracyField']
                 field_dict['Origin'] = row['OriginField']
                 field_dict['Seasonality'] = row['SeasonalityField']
@@ -164,6 +163,7 @@ class ImportSpatialDataTool:
                 field_dict['IndependentSF'] = row['IndependentSFField']
                 field_dict['UnsuitableHabExcluded'] = row['UnsuitableHabExcludedField']
                 if feature_class_type in ('Polygon', 'MultiPatch'):
+                    field_dict['EORank'] = row['EORankField']
                     field_dict['EOData'] = row['EODataField']
                     field_dict['GenDesc'] = row['GenDescField']
                     field_dict['EORankDesc'] = row['EORankDescField']
@@ -364,24 +364,25 @@ class ImportSpatialDataTool:
         #if overall_count - duplicates - no_species_match - no_coords - inaccurate > 0:
         if overall_count - no_species_match - no_coords - inaccurate > 0:
             # loop to set eo rank
-            if field_dict['EORank'] and feature_class_type in ('Polygon', 'MultiPatch'):
-                loop_count = 0
-                with arcpy.da.UpdateCursor('import_features', [field_dict['EORank'], 'eo_rank'],
-                                           'ignore_imp <> 1') as cursor:
-                    for row in EBARUtils.updateCursor(cursor):
-                        loop_count += 1
-                        if loop_count % 1000 == 0:
-                            EBARUtils.displayMessage(messages, 'EO Rank pre-processed ' + str(loop_count))
-                        # encode eo rank if full description provided
-                        eo_rank = row[field_dict['EORank']]
-                        if eo_rank:
-                            if len(eo_rank) > 2:
-                                eo_rank = EBARUtils.eo_rank_dict[eo_rank]
-                            # save
-                            cursor.updateRow([row[field_dict['EORank']], eo_rank])
-                    if loop_count > 0:
-                        del row
-                EBARUtils.displayMessage(messages, 'EO Rank pre-processed ' + str(loop_count))
+            if feature_class_type in ('Polygon', 'MultiPatch'):
+                if field_dict['EORank']:
+                    loop_count = 0
+                    with arcpy.da.UpdateCursor('import_features', [field_dict['EORank'], 'eo_rank'],
+                                               'ignore_imp <> 1') as cursor:
+                        for row in EBARUtils.updateCursor(cursor):
+                            loop_count += 1
+                            if loop_count % 1000 == 0:
+                                EBARUtils.displayMessage(messages, 'EO Rank pre-processed ' + str(loop_count))
+                            # encode eo rank if full description provided
+                            eo_rank = row[field_dict['EORank']]
+                            if eo_rank:
+                                if len(eo_rank) > 2:
+                                    eo_rank = EBARUtils.eo_rank_dict[eo_rank]
+                                # save
+                                cursor.updateRow([row[field_dict['EORank']], eo_rank])
+                        if loop_count > 0:
+                            del row
+                    EBARUtils.displayMessage(messages, 'EO Rank pre-processed ' + str(loop_count))
 
             # pre-process dates
             if field_dict['min_date']:
@@ -618,11 +619,11 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_import_feature_class = arcpy.Parameter()
-    param_import_feature_class.value = 'C:/GIS/EBAR/CDN_CDC_Data/Nunavut/SF_poly_rmulder_1616694489411.gdb/rmulder_1616694489411.gdb/query_result'
+    param_import_feature_class.value = 'C:/GIS/EBAR/CDN_CDC_Data/Yukon/Yukon_nonsensitive_data.gdb/YT_nonsensitive_SF_line'
     param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'Nunavut SFs'
+    param_dataset_name.value = 'Yukon Non-sensitive SF Lines'
     param_dataset_source = arcpy.Parameter()
-    param_dataset_source.value = 'NU Source Feature Polygons'
+    param_dataset_source.value = 'YT Source Feature Lines'
     param_date_received = arcpy.Parameter()
     param_date_received.value = 'April 2, 2021'
     param_restrictions = arcpy.Parameter()
