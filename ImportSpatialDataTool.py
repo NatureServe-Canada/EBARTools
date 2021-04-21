@@ -595,7 +595,7 @@ class ImportSpatialDataTool:
         EBARUtils.displayMessage(messages, 'Processed - ' + str(overall_count))
         EBARUtils.displayMessage(messages, 'Added - ' + str(added))
         EBARUtils.displayMessage(messages, 'Duplicates updated - ' + str(duplicates))
-        EBARUtils.displayMessage(messages, 'Species not matched - ' + str(no_species_match))
+        EBARUtils.displayMessage(messages, 'Records with no species match - ' + str(no_species_match))
         EBARUtils.displayMessage(messages, 'No coordinates - ' + str(no_coords))
         EBARUtils.displayMessage(messages,
                                  'Accuracy worse than ' + str(EBARUtils.worst_accuracy) + ' m - ' + str(inaccurate))

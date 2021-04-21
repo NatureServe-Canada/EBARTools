@@ -116,7 +116,7 @@ class ImportTabularDataTool:
         no_coords = 0
         inaccurate = 0
         fossils = 0
-        duplicates = 0
+        #duplicates = 0
         updates = 0
         non_research = 0
         deleted = 0
@@ -139,10 +139,10 @@ class ImportTabularDataTool:
                     inaccurate += 1
                 elif status == 'fossil':
                     fossils += 1
-                elif status == 'duplicate':
-                    duplicates += 1
+                #elif status == 'duplicate':
+                #    duplicates += 1
                 elif status == 'updated':
-                    duplicates += 1
+                    #duplicates += 1
                     updates += 1
                 elif status == 'non-research':
                     non_research += 1
@@ -173,7 +173,7 @@ class ImportTabularDataTool:
             EBARUtils.displayMessage(messages,
                                      'Accuracy worse than ' + str(EBARUtils.worst_accuracy) + ' m - ' + str(inaccurate))
             EBARUtils.displayMessage(messages, 'Fossils - ' + str(fossils))
-            EBARUtils.displayMessage(messages, 'Duplicates - ' + str(duplicates))
+            #EBARUtils.displayMessage(messages, 'Duplicates - ' + str(duplicates))
             EBARUtils.displayMessage(messages, 'Duplicates updated - ' + str(updates))
             EBARUtils.displayMessage(messages, 'Non-research - ' + str(non_research))
             EBARUtils.displayMessage(messages, 'Non-research deleted - ' + str(deleted))
@@ -303,32 +303,21 @@ class ImportTabularDataTool:
                     if row:
                         del row
                     return id_dict[unique_id_species], 'deleted', None
-            #if coordinates_obscured and private_coords:
-            #    # we don't know if private_coords were recorded last time, so update
-            #    update = True
-            #if not coordinates_obscured:
-            #    # check if it has become unobscured
+            else:
+                update = True
+            #if private_coords:
+            #    # check if it was previously obscured, and if so update
             #    with arcpy.da.SearchCursor(geodatabase + '/InputPoint', ['CoordinatesObscured'],
-            #                               "DatasetSourceUniqueID = '" + str(file_line[field_dict['unique_id']]) +
-            #                               "' AND InputDatasetID = " + str(input_dataset_id)) as cursor:
+            #                               "InputPointID = " + str(id_dict[unique_id_species])) as cursor:
             #        row = None
             #        for row in EBARUtils.searchCursor(cursor):
             #            update = row['CoordinatesObscured']
             #        if row:
             #            del row
-            if private_coords:
-                # check if it was previously obscured, and if so update
-                with arcpy.da.SearchCursor(geodatabase + '/InputPoint', ['CoordinatesObscured'],
-                                           "InputPointID = " + str(id_dict[unique_id_species])) as cursor:
-                    row = None
-                    for row in EBARUtils.searchCursor(cursor):
-                        update = row['CoordinatesObscured']
-                    if row:
-                        del row
 
-            if not update:
-                # existing record that does not need to be updated
-                return id_dict[unique_id_species], 'duplicate', None
+            #if not update:
+            #    # existing record that does not need to be updated
+            #    return id_dict[unique_id_species], 'duplicate', None
 
         # don't add non research grade
         if quality_grade != 'research':
@@ -394,7 +383,7 @@ if __name__ == '__main__':
     param_dataset_name = arcpy.Parameter()
     param_dataset_name.value = 'Atlantic Canada Other Species'
     param_dataset_source = arcpy.Parameter()
-    param_dataset_source.value = 'Test'
+    param_dataset_source.value = 'Other'
     param_date_received = arcpy.Parameter()
     param_date_received.value = 'November 20, 2019'
     param_restrictions = arcpy.Parameter()
