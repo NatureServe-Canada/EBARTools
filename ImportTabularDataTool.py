@@ -377,7 +377,7 @@ if __name__ == '__main__':
     itd = ImportTabularDataTool()
     # hard code parameters for debugging
     param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
+    param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_raw_data_file = arcpy.Parameter()
     param_raw_data_file.value = 'C:/GIS/EBAR/otherSpecies.csv'
     param_dataset_name = arcpy.Parameter()
