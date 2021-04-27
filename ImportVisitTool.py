@@ -62,27 +62,31 @@ class ImportVisitTool:
         sf_missings = 0
         duplicates = 0
         date_missings = 0
+        id_missings = 0
         max_date_updates = 0
         min_date_updates = 0
         try:
             for file_line in reader:
                 # check/add point for current line
-                sf_missing, duplicate, date_missing, max_date_update, min_date_update = self.CheckAddVisit(param_geodatabase,
-                                                                                           file_line, param_subnation)
+                sf_missing, duplicate, date_missing, id_missing, max_date_update, min_date_update = \
+                    self.CheckAddVisit(param_geodatabase, file_line, param_subnation)
                 # increment/report counts
                 count += 1
                 if count % 100 == 0:
                     EBARUtils.displayMessage(messages, 'Processed ' + str(count))
                 if sf_missing:
                     sf_missings += 1
-                if duplicate:
+                elif duplicate:
                     duplicates += 1
-                if date_missing:
-                    date_missings += 1
-                if max_date_update:
-                    max_date_updates += 1
-                if min_date_update:
-                    min_date_updates += 1
+                else:
+                    if date_missing:
+                        date_missings += 1
+                    if id_missing:
+                        id_missings += 1
+                    if max_date_update:
+                        max_date_updates += 1
+                    if min_date_update:
+                        min_date_updates += 1
         except:
             # output error messages in exception so that summary of processing thus far gets displayed in finally
             EBARUtils.displayMessage(messages, '\nERROR processing file row ' + str(count + 1))
@@ -103,6 +107,7 @@ class ImportVisitTool:
             EBARUtils.displayMessage(messages, 'Missing SFID ignored - ' + str(sf_missings))
             EBARUtils.displayMessage(messages, 'Duplicate ignored - ' + str(duplicates))
             EBARUtils.displayMessage(messages, 'Imported without VisitDate - ' + str(date_missings))
+            EBARUtils.displayMessage(messages, 'Imported without InputPoint/Line/PolygonID - ' + str(id_missings))
             EBARUtils.displayMessage(messages, 'InputPoint/Line/Polygon MaxDate updated - ' + str(max_date_updates))
             EBARUtils.displayMessage(messages, 'InputPoint/Line/Polygon MinDate updated - ' + str(min_date_updates))
             end_time = datetime.datetime.now()
@@ -119,17 +124,20 @@ class ImportVisitTool:
         # return flag defaults
         duplicate = False
         date_missing = False
+        id_missing = True
         max_date_update = False
         min_date_update = False
 
         # read from file_line (fields must match exactly in input - no mapping mechanism)
         sf_id = file_line['SOURCE_FEATURE_ID']
         if not sf_id:
-            return True, upate, max_date_update, min_date
+            return True, duplicate, date_missing, id_missing, max_date_update, min_date_update
         visit_date = EBARUtils.extractDate(file_line['VISIT_DATE'])
+        if not visit_date:
+            date_missing = True
         visit_notes = file_line['VISIT_NOTES']
         visited_by = file_line['VISITED_BY']
-        detected = EBARUtils.extractDate(file_line['DETECTED_IND'])
+        detected = file_line['DETECTED_IND']
 
         # check for duplicate visit
         if sf_id:
@@ -147,18 +155,34 @@ class ImportVisitTool:
                     duplicate = True
                 if row:
                     del row
+
         if not duplicate:
-            # add
-            with arcpy.da.InsertCursor(geodatabase + '/Visit', ['SFID', 'Subnation', 'VisitDate', 'VisitNotes',
-                                                                'VisitedBy', 'Detected']) as cursor:
-                cursor.insertRow([sf_id, subnation, visit_date, visit_notes, visited_by, detected])
-            # check InputPoint/Line/Polygon with same sf_id and subnation for dates
-            if visit_date:
-                for input_table in ('/InputPoint', '/InputLine', '/InputPolygon'):
-                    with arcpy.da.UpdateCursor(geodatabase + input_table, ['MaxDate', 'MinDate'],
-                                               'SFID = ' + str(sf_id) + " AND Subnation = '" + subnation + "'") as cursor:
-                        row = None
-                        for row in EBARUtils.updateCursor(cursor):
+            # check InputPoint/Line/Polygon with same sf_id and subnation for dates and get ID
+            input_point_id = None
+            input_line_id = None
+            input_polygon_id = None
+            for input_table in ('/InputPoint', '/InputLine', '/InputPolygon'):
+                fields = ['MaxDate', 'MinDate']
+                if input_table == '/InputPoint':
+                    fields.append('InputPointID')
+                elif input_table == '/InputLine':
+                    fields.append('InputLineID')
+                elif input_table == '/InputPolygon':
+                    fields.append('InputPolygonID')
+                with arcpy.da.UpdateCursor(geodatabase + input_table, fields,
+                                           'SFID = ' + str(sf_id) + " AND Subnation = '" + subnation + "'") as cursor:
+                    row = None
+                    for row in EBARUtils.updateCursor(cursor):
+                        id_missing = False
+                        # get ID
+                        if input_table == '/InputPoint':
+                            input_point_id = row['InputPointID']
+                        elif input_table == '/InputLine':
+                            input_line_id = row['InputLineID']
+                        elif input_table == '/InputPolygon':
+                            input_polygon_id = row['InputPolygonID']
+                        # check dates
+                        if visit_date:
                             max_date = row['MaxDate']
                             min_date = row['MinDate']
                             # only update max_date if visit_date is greater
@@ -171,13 +195,25 @@ class ImportVisitTool:
                                     min_date_update = True
                                     min_date = visit_date
                             if max_date_update or min_date_update:
-                                cursor.updateRow([max_date, min_date])
-                        if row:
-                            del row
-            else:
-                date_missing = True
+                                values = [max_date, min_date]
+                                if input_table == '/InputPoint':
+                                    values.append(input_point_id)
+                                elif input_table == '/InputLine':
+                                    values.append(input_line_id)
+                                elif input_table == '/InputPolygon':
+                                    values.append(input_polygon_id)
+                                cursor.updateRow(values)
+                    if row:
+                        del row
 
-        return False, duplicate, date_missing, max_date_update, min_date_update
+            # add
+            with arcpy.da.InsertCursor(geodatabase + '/Visit', ['SFID', 'Subnation', 'VisitDate', 'VisitNotes',
+                                                                'VisitedBy', 'Detected', 'InputPointId',
+                                                                'InputLineID', 'InputPolygonID']) as cursor:
+                object_id = cursor.insertRow([sf_id, subnation, visit_date, visit_notes, visited_by, detected,
+                                              input_point_id, input_line_id, input_polygon_id])
+
+        return False, duplicate, date_missing, id_missing, max_date_update, min_date_update
 
 
 # controlling process
