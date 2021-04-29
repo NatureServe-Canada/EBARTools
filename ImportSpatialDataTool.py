@@ -619,15 +619,15 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_import_feature_class = arcpy.Parameter()
-    param_import_feature_class.value = 'C:/GIS/EBAR/CDN_CDC_Data/Yukon/Yukon_nonsensitive_data.gdb/YT_nonsensitive_SF_line'
+    param_import_feature_class.value = 'C:/GIS/EBAR/CDN_CDC_Data/Yukon/Yukon_sensitive_data.gdb/YT_sensitive_SF_poly'
     param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'Yukon Non-sensitive SF Lines'
+    param_dataset_name.value = 'Yukon Sensitive SF Polygons'
     param_dataset_source = arcpy.Parameter()
-    param_dataset_source.value = 'YT Source Feature Lines'
+    param_dataset_source.value = 'YT Source Feature Polygons'
     param_date_received = arcpy.Parameter()
     param_date_received.value = 'April 2, 2021'
     param_restrictions = arcpy.Parameter()
-    param_restrictions.value = 'Non-restricted'
+    param_restrictions.value = 'Restricted'
     parameters = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_source,
                   param_date_received, param_restrictions]
     isd.runImportSpatialDataTool(parameters, None)

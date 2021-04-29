@@ -25,6 +25,7 @@ import BuildBulkDownloadTableTool
 import ExportInputDataTool
 import FlagBadDataUsingRangeTool
 import DeleteRangeMapTool
+import ImportVisitsTool
 import EBARUtils
 import datetime
 import locale
@@ -40,7 +41,7 @@ class Toolbox(object):
         self.tools = [ImportTabularData, ImportSpatialData, GenerateRangeMap, ListElementNationalIDs,
                       SyncSpeciesListBiotics, AddSynonyms, ImportExternalRangeReview, SyncSpeciesListKBA,
                       BuildEBARDownloadTable, BuildBulkDownloadTable, ExportInputData, FlagBadDataUsingRange,
-                      DeleteRangeMap]
+                      DeleteRangeMap, ImportVisits]
 
 
 class ImportTabularData(object):
@@ -611,12 +612,12 @@ class ImportExternalRangeReview(object):
     def updateParameters(self, parameters):
         """Modify the values and properties of parameters before internal validation is performed.  This method is 
         called whenever a parameter has been changed."""
-        # build list of jurisdictions (exclude AC because it is used for data only, not ecoshapes)
+        # build list of jurisdictions (exclude AC, NF, LB because they are used for data only, not ecoshapes)
         if parameters[0].altered and parameters[0].value:
             param_geodatabase = parameters[0].valueAsText
             jur_list = []
             with arcpy.da.SearchCursor(param_geodatabase + '/Jurisdiction', ['JurisdictionName'],
-                                       "JurisdictionAbbreviation <> 'AC'",
+                                       "JurisdictionAbbreviation NOT IN ('AC', 'NF', 'LB')",
                                        sql_clause=(None,'ORDER BY JurisdictionName')) as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     jur_list.append(row['JurisdictionName'])
@@ -827,12 +828,12 @@ class ExportInputData(object):
     def updateParameters(self, parameters):
         """Modify the values and properties of parameters before internal validation is performed.  This method is 
         called whenever a parameter has been changed."""
-        # build list of jurisdictions (exclude AC because it is used for data only, not ecoshapes)
+        # build list of jurisdictions (exclude Atlantic Canadian jurisdictions because they are lumped as AC)
         if parameters[0].altered and parameters[0].value:
             param_geodatabase = parameters[0].valueAsText
             jur_list = []
             with arcpy.da.SearchCursor(param_geodatabase + '/Jurisdiction', ['JurisdictionName'],
-                                       "JurisdictionAbbreviation NOT IN ('NL', 'NS', 'NB', 'PE')",
+                                       "JurisdictionAbbreviation NOT IN ('NL', 'NS', 'NB', 'PE', 'NF', 'LB')",
                                        sql_clause=(None,'ORDER BY JurisdictionName')) as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     jur_list.append(row['JurisdictionName'])
@@ -948,6 +949,78 @@ class DeleteRangeMap(object):
         """The source code of the tool."""
         drm = DeleteRangeMapTool.DeleteRangeMapTool()
         drm.runDeleteRangeMapTool(parameters, messages)
+        return
+
+
+class ImportVisits(object):
+    def __init__(self):
+        """Define the tool (tool name is the name of the class)."""
+        self.label = 'Import Visits'
+        self.description = 'Imports visits and relates them to the appropriate InputPoint/Line/Polygon based on ' + \
+            'SFID and Subnation'
+        self.canRunInBackground = True
+
+    def getParameterInfo(self):
+        """Define parameter definitions"""
+        # Geodatabase
+        param_geodatabase = arcpy.Parameter(
+            displayName='Geodatabase',
+            name='geodatabase',
+            datatype='DEWorkspace',
+            parameterType='Required',
+            direction='Input')
+        param_geodatabase.filter.list = ['Local Database', 'Remote Database']
+
+        # Raw Data File
+        param_raw_data_file = arcpy.Parameter(
+            displayName='Raw Data File',
+            name='raw_data_file',
+            datatype='DEFile',
+            parameterType='Required',
+            direction='Input')
+        param_raw_data_file.filter.list = ['txt', 'csv']
+
+        # Subnation
+        param_subnation = arcpy.Parameter(
+            displayName='Subnation',
+            name='subnation',
+            datatype='GPString',
+            parameterType='Required',
+            direction='Input')
+
+        params = [param_geodatabase, param_raw_data_file, param_subnation]
+        return params
+
+    def isLicensed(self):
+        """Set whether tool is licensed to execute."""
+        return True
+
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal validation is performed.  This method is 
+        called whenever a parameter has been changed."""
+        # build list of subnations (Canadian only, with NL split into NF and LB)
+        if parameters[0].altered and parameters[0].value:
+            param_geodatabase = parameters[0].valueAsText
+            subnation_list = []
+            with arcpy.da.SearchCursor(param_geodatabase + '/Jurisdiction', ['JurisdictionName'],
+                                       "JurisdictionAbbreviation NOT IN ('AC', 'NL','US', 'MX')",
+                                       sql_clause=(None,'ORDER BY JurisdictionName')) as cursor:
+                for row in EBARUtils.searchCursor(cursor):
+                    subnation_list.append(row['JurisdictionName'])
+                if len(subnation_list) > 0:
+                    del row
+            parameters[2].filter.list = subnation_list
+        return
+
+    def updateMessages(self, parameters):
+        """Modify the messages created by internal validation for each tool parameter.  This method is called "
+        "after internal validation."""
+        return
+
+    def execute(self, parameters, messages):
+        """The source code of the tool."""
+        iv = ImportVisitsTool.ImportVisitsTool()
+        iv.runImportVisitsTool(parameters, messages)
         return
 
 

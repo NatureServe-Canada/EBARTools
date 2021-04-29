@@ -849,6 +849,18 @@ def buildJurisdictionList(geodatabase, jurisdictions_list):
     return jur_ids_comma
 
 
+def getJurisidictionAbbreviation(geodatabase, jurisdiction_name):
+    """Look up and return abbreviation that corresponds to name"""
+    abbrev = None
+    with arcpy.da.SearchCursor(geodatabase + '/Jurisdiction', ['JurisdictionAbbreviation'],
+                               "JurisdictionName = '" + jurisdiction_name + "'") as cursor:
+        for row in searchCursor(cursor):
+            abbrev = row['JurisdictionAbbreviation']
+        if abbrev:
+            del row
+    return abbrev
+
+
 def getSpeciesAndScopeForRangeMap(geodatabase, range_map_id):
     """Get primary and seconday species ids for range map"""
     species_id = None

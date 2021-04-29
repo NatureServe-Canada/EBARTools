@@ -4,8 +4,9 @@
 # Credits: Randal Greene, Christine Terwissen
 # © NatureServe Canada 2019 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
-# Program: ImportVisitTool.py
-# ArcGIS Python tool for importing visits into the EBAR geodatabase
+# Program: ImportVisitsTool.py
+# ArcGIS Python tool for importing visits into the EBAR geodatabase and relating them to the appropriate
+# InputPoint/Line/Polygon based on SFID and Subnation
 
 # Notes:
 # - Normally called from EBAR Tools.pyt, unless doing interactive debugging
@@ -24,12 +25,12 @@ import EBARUtils
 import TabularFieldMapping
 
 
-class ImportVisitTool:
+class ImportVisitsTool:
     """Import point data into the InputDataset and InputPoint tables of the EBAR geodatabase"""
     def __init__(self):
         pass
 
-    def runImportVisitTool(self, parameters, messages):
+    def runImportVisitsTool(self, parameters, messages):
         # check out any needed extension licenses
         #arcpy.CheckOutExtension('Spatial')
 
@@ -52,6 +53,10 @@ class ImportVisitTool:
         # get table name prefix (needed for joined tables and feature classes in enterprise geodatabases)
         table_name_prefix = EBARUtils.getTableNamePrefix(param_geodatabase)
 
+        # convert subnation to code
+        if len(param_subnation) > 2:
+            param_subnation = EBARUtils.getJurisidictionAbbreviation(param_geodatabase, param_subnation)
+        
         # try to open data file as a csv
         infile = io.open(param_raw_data_file, 'r', encoding='mbcs') # mbcs encoding is Windows ANSI
         reader = csv.DictReader(infile)
@@ -218,13 +223,13 @@ class ImportVisitTool:
 
 # controlling process
 if __name__ == '__main__':
-    iv = ImportVisitTool()
+    iv = ImportVisitsTool()
     # hard code parameters for debugging
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_raw_data_file = arcpy.Parameter()
-    param_raw_data_file.value = 'C:/GIS/EBAR/CDN_CDC_Data/Nunavut/Visit_details_NunavutSFs.csv'
+    param_raw_data_file.value = 'C:/GIS/EBAR/CDN_CDC_Data/Yukon/Yukon_visit_data_nonsensitive.csv'
     param_subnation = arcpy.Parameter()
-    param_subnation.value = 'NU'
+    param_subnation.value = 'YT'
     parameters = [param_geodatabase, param_raw_data_file, param_subnation]
-    iv.runImportVisitTool(parameters, None)
+    iv.runImportVisitsTool(parameters, None)
