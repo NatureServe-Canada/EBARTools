@@ -235,7 +235,8 @@ class ImportTabularDataTool:
             # assume WGS84 if not provided
             srs = EBARUtils.srs_dict['WGS84']
             if field_dict['srs']:
-                if file_line[field_dict['srs']] not in ('unknown', 'not recorded', ''):
+                if file_line[field_dict['srs']].lower() not in ('unknown', 'not recorded',
+                                                                'not recorded (forced wgs84)'):
                     srs = EBARUtils.srs_dict[file_line[field_dict['srs']]]
             input_geometry = arcpy.PointGeometry(input_point, arcpy.SpatialReference(srs))
             output_geometry = input_geometry.projectAs(
@@ -274,7 +275,12 @@ class ImportTabularDataTool:
                     if field_dict['day']:
                         if file_line[field_dict['day']] not in ('NA', ''):
                             max_day = int(file_line[field_dict['day']])
-                    max_date = datetime.datetime(max_year, max_month, max_day)
+                    if max_year >= 1500:
+                        if max_month <= 0 or max_month > 12:
+                            max_month = 1
+                        if max_day <= 0 or max_day > 31:
+                            max_day = 1
+                        max_date = datetime.datetime(max_year, max_month, max_day)
 
         # reject fossils records
         if field_dict['basis_of_record']:
