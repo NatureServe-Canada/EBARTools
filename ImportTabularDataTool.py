@@ -345,22 +345,27 @@ class ImportTabularDataTool:
             if file_line[field_dict['individual_count']] not in ('NA', ''):
                 individual_count = int(file_line[field_dict['individual_count']])
 
+        # Geoprivacy
+        geoprivacy = None
+        if field_dict['geoprivacy']:
+            geoprivacy = file_line[field_dict['geoprivacy']]
+
+        # TaxonGeoprivacy
+        taxon_geoprivacy = None
+        if field_dict['taxon_geoprivacy']:
+            taxon_geoprivacy = file_line[field_dict['taxon_geoprivacy']]
+
         # update or insert
         if update:
-            #with arcpy.da.UpdateCursor(geodatabase + '/InputPoint',
-            #                           ['SHAPE@XY', 'InputPointID', 'CoordinatesObscured', 'Accuracy'],
-            #                           "DatasetSourceUniqueID = '" + str(file_line[field_dict['unique_id']]) +
-            #                           "' AND InputDatasetID = " + str(input_dataset_id)) as cursor:
             with arcpy.da.UpdateCursor(geodatabase + '/InputPoint',
                                        ['SHAPE@XY', 'InputDatasetID', 'URI', 'License', 'SpeciesID', 'SynonymID',
-                                        'MaxDate', 'CoordinatesObscured', 'Accuracy', 'IndividualCount'],
-                                       "InputPointID = " + str(id_dict[unique_id_species])) as cursor:
+                                        'MaxDate', 'CoordinatesObscured', 'Accuracy', 'IndividualCount', 'Geoprivacy',
+                                        'TaxonGeoprivacy'],
+                                        "InputPointID = " + str(id_dict[unique_id_species])) as cursor:
                 row = None
                 for row in EBARUtils.updateCursor(cursor):
-                    #input_point_id = row['InputPointID']
-                    #cursor.updateRow([output_point, input_point_id, coordinates_obscured, accuracy])
                     cursor.updateRow([output_point, input_dataset_id, uri, license, species_id, synonym_id, max_date,
-                                      coordinates_obscured, accuracy, individual_count])
+                                      coordinates_obscured, accuracy, individual_count, geoprivacy, taxon_geoprivacy])
                 if row:
                     del row
             return id_dict[unique_id_species], 'updated', max_date

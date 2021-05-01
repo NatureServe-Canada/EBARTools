@@ -26,7 +26,9 @@ gbif_fields = {'quality_grade': None,
                'day': 'day',
                'date': None,
                'basis_of_record': 'basisOfRecord',
-               'individual_count': 'individualCount'}
+               'individual_count': 'individualCount',
+               'geoprivacy': None,
+               'taxon_geoprivacy': None}
 
 ncc_gbif_fields = {'quality_grade': None,
                    'unique_id': 'gbifID',
@@ -46,7 +48,9 @@ ncc_gbif_fields = {'quality_grade': None,
                    'day': 'day_',
                    'date': 'eventDate',
                    'basis_of_record': 'basisOfRec',
-                   'individual_count': None}
+                   'individual_count': None,
+                   'geoprivacy': None,
+                   'taxon_geoprivacy': None}
 
 vertnet_fields = {'quality_grade': None,
                   'unique_id': 'occurrenceid',
@@ -66,7 +70,9 @@ vertnet_fields = {'quality_grade': None,
                   'day': 'day',
                   'date': 'eventdate',
                   'basis_of_record': 'basisofrecord',
-                  'individual_count': 'individualcount'}
+                  'individual_count': 'individualcount',
+                  'geoprivacy': None,
+                  'taxon_geoprivacy': None}
 
 ecoengine_fields = {'quality_grade': None,
                     'unique_id': 'key',
@@ -86,7 +92,9 @@ ecoengine_fields = {'quality_grade': None,
                     'day': None,
                     'date': 'begin_date',
                     'basis_of_record': 'observation_type',
-                    'individual_count': None}
+                    'individual_count': None,
+                    'geoprivacy': 'geoprivacy',
+                    'taxon_geoprivacy': 'taxon_geoprivacy'}
 
 inaturalistorg_fields = {'quality_grade': 'quality_grade',
                          'unique_id': 'id',
@@ -106,7 +114,9 @@ inaturalistorg_fields = {'quality_grade': 'quality_grade',
                          'day': None,
                          'date': 'observed_on',
                          'basis_of_record': None,
-                         'individual_count': None}
+                         'individual_count': None,
+                         'geoprivacy': 'geoprivacy',
+                         'taxon_geoprivacy': 'taxon_geoprivacy'}
 
 inaturalistca_fields = {'quality_grade': 'quality_grade',
                         'unique_id': 'id',
@@ -126,7 +136,9 @@ inaturalistca_fields = {'quality_grade': 'quality_grade',
                         'day': None,
                         'date': 'observed_on',
                         'basis_of_record': None,
-                        'individual_count': None}
+                        'individual_count': None,
+                        'geoprivacy': None,
+                        'taxon_geoprivacy': None}
 
 bison_fields = {'quality_grade': None,
                 'unique_id': 'occurrenceID',
@@ -146,7 +158,9 @@ bison_fields = {'quality_grade': None,
                 'day': None,
                 'date': 'date',
                 'basis_of_record': 'basisOfRecord',
-                'individual_count': None}
+                'individual_count': None,
+                'geoprivacy': None,
+                'taxon_geoprivacy': None}
 
 canadensys_fields = {'quality_grade': None,
                      'unique_id': 'occurrenceID',
@@ -166,7 +180,9 @@ canadensys_fields = {'quality_grade': None,
                      'day': None,
                      'date': 'eventDate',
                      'basis_of_record': 'basisOfRecord',
-                     'individual_count': 'individualCount'}
+                     'individual_count': 'individualCount',
+                     'geoprivacy': None,
+                     'taxon_geoprivacy': None}
 
 ncc_endemics_fields = {'quality_grade': None,
                        'unique_id': 'OBJECTID',
@@ -186,7 +202,9 @@ ncc_endemics_fields = {'quality_grade': None,
                        'day': None,
                        'date': 'OBSERVAT_2',
                        'basis_of_record': None,
-                       'individual_count': None}
+                       'individual_count': None,
+                       'geoprivacy': None,
+                       'taxon_geoprivacy': None}
 
 idigbio_fields = {'quality_grade': None,
                   'unique_id': 'etag',
@@ -206,7 +224,9 @@ idigbio_fields = {'quality_grade': None,
                   'day': None,
                   'date': 'datecollected',
                   'basis_of_record': 'basisofrecord',
-                  'individual_count': 'individualcount'}
+                  'individual_count': 'individualcount',
+                  'geoprivacy': None,
+                  'taxon_geoprivacy': None}
 
 other_fields = {'quality_grade': None,
                 'unique_id': 'originalID',
@@ -226,7 +246,9 @@ other_fields = {'quality_grade': None,
                 'day': 'Day',
                 'date': 'observationDate',
                 'basis_of_record': None,
-                'individual_count': 'individualsCount'}
+                'individual_count': 'individualsCount',
+                'geoprivacy': None,
+                'taxon_geoprivacy': None}
 
 tabular_field_mapping_dict = {'GBIF': gbif_fields,
                               'NCC_GBIF': ncc_gbif_fields,
