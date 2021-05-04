@@ -236,12 +236,13 @@ class ImportTabularDataTool:
             srs = EBARUtils.srs_dict['WGS84']
             if field_dict['srs']:
                 # srs provided
-                if file_line[field_dict['srs']].lower() not in ('unknown', 'not recorded'):
+                if file_line[field_dict['srs']].lower() not in ('unknown', 'not recorded', ''):
+                    srs = file_line[field_dict['srs']]
                     if 'wgs84' in srs.lower():
                         srs = 'WGS84'
                     elif 'nad83' in srs.lower():
                         srs = 'NAD83'
-                    srs = EBARUtils.srs_dict[file_line[field_dict['srs']]]
+                    srs = EBARUtils.srs_dict[srs]
             input_geometry = arcpy.PointGeometry(input_point, arcpy.SpatialReference(srs))
             output_geometry = input_geometry.projectAs(
                 arcpy.SpatialReference(EBARUtils.srs_dict['North America Albers Equal Area Conic']))
