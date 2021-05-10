@@ -177,6 +177,10 @@ class ImportSpatialDataTool:
                     field_dict['AdditionalInvNeeded'] = row['AdditionalInvNeededField']
                     field_dict['Ownership'] = row['OwnershipField']
                     field_dict['OwnerComments'] = row['OwnerCommentsField']
+                # convert zero-length strings to None
+                for field in field_dict:
+                    if field_dict[field] and field_dict[field] == '':
+                        field_dict[field] = None
             if row:
                 del row
         if not match:
@@ -282,7 +286,9 @@ class ImportSpatialDataTool:
         no_coords = 0
         no_species_match = 0
         bad_date = 0
+        species_updates = 0
         no_match_list = []
+        subnation = None
         with arcpy.da.UpdateCursor('import_features',
                                    [field_dict['DatasetSourceUniqueID'], field_dict['scientific_name'],
                                     field_dict['Subnation'], 'SpeciesID', 'SynonymID', 'ignore_imp',
@@ -296,7 +302,6 @@ class ImportSpatialDataTool:
                 # check for species
                 species_id = None
                 synonym_id = None
-                subnation = None
                 if (row[field_dict['scientific_name']].lower() not in species_dict and
                     row[field_dict['scientific_name']].lower() not in synonym_id_dict):
                     no_species_match += 1
@@ -428,78 +433,37 @@ class ImportSpatialDataTool:
                         del row
                 EBARUtils.displayMessage(messages, 'Max Date pre-processed ' + str(loop_count))
 
-            # pre-process species subnational fields
-            if field_dict['S_RANK']:
+            # pre-process subnational species fields
+            if subnation:
+                # read all subnational fields per species
+                subnational_species_dict = EBARUtils.readSubnationalSpeciesFields(param_geodatabase, subnation)
+                # check all features to be imported
                 loop_count = 0
-                with arcpy.da.SearchCursor('import_features', [field_dict['S_RANK'], 'SpeciesID',
-                                                               field_dict['Subnation']], 'ignore_imp <> 1') as cursor:
+                fields = ['SpeciesID']
+                for field in ('S_RANK', 'ROUNDED_S_RANK', 'EST_DATA_SENS', 'EST_DATASEN_CAT'):
+                    if field_dict[field]:
+                        fields.append(field_dict[field])
+                with arcpy.da.SearchCursor('import_features', fields, 'ignore_imp <> 1') as cursor:
                     row = None
                     for row in EBARUtils.updateCursor(cursor):
                         loop_count += 1
                         if loop_count % 1000 == 0:
-                            EBARUtils.displayMessage(messages, 'S_RANK pre-processed ' + str(loop_count))
-                        # update ranks in BIOTICS_ELEMENT_NATIONAL table, if provided
-                        if row[field_dict['S_RANK']] and row[field_dict['Subnation']]:
-                            EBARUtils.updateBioticsSubnational(param_geodatabase, row[field_dict['S_RANK']], None,
-                                                               None, None, row[field_dict['Subnation']],
-                                                               row['SpeciesID'])
+                            EBARUtils.displayMessage(messages,
+                                                     'Species Subnational fields pre-processed ' + str(loop_count))
+                        # check/update each field
+                        for field in ('S_RANK', 'ROUNDED_S_RANK', 'EST_DATA_SENS', 'EST_DATASEN_CAT'):
+                            if field_dict[field]:
+                                if row[field_dict[field]]:
+                                    if ((not subnational_species_dict[row['SpeciesID']][field]) or
+                                        (subnational_species_dict[row['SpeciesID']][field] != row[field_dict[field]])):
+                                        subnational_species_dict[row['SpeciesID']][field] = row[field_dict[field]]
+                                        subnational_species_dict[row['SpeciesID']]['changed'] = True
                     if row:
                         del row
-                EBARUtils.displayMessage(messages, 'S_RANK pre-processed ' + str(loop_count))
-            if field_dict['ROUNDED_S_RANK']:
-                loop_count = 0
-                with arcpy.da.SearchCursor('import_features', [field_dict['ROUNDED_S_RANK'], 'SpeciesID',
-                                                               field_dict['Subnation']], 'ignore_imp <> 1') as cursor:
-                    row = None
-                    for row in EBARUtils.updateCursor(cursor):
-                        loop_count += 1
-                        if loop_count % 1000 == 0:
-                            EBARUtils.displayMessage(messages, 'ROUNDED_S_RANK pre-processed ' + str(loop_count))
-                        # update ranks in BIOTICS_ELEMENT_NATIONAL table, if provided
-                        if row[field_dict['ROUNDED_S_RANK']] and row[field_dict['Subnation']]:
-                            EBARUtils.updateBioticsSubnational(param_geodatabase, None,
-                                                               row[field_dict['ROUNDED_S_RANK']],
-                                                               None, None, row[field_dict['Subnation']],
-                                                               row['SpeciesID'])
-                    if row:
-                        del row
-                EBARUtils.displayMessage(messages, 'ROUNDED_S_RANK pre-processed ' + str(loop_count))
-            if field_dict['EST_DATA_SENS']:
-                loop_count = 0
-                with arcpy.da.SearchCursor('import_features', [field_dict['EST_DATA_SENS'], 'SpeciesID',
-                                                               field_dict['Subnation']], 'ignore_imp <> 1') as cursor:
-                    row = None
-                    for row in EBARUtils.updateCursor(cursor):
-                        loop_count += 1
-                        if loop_count % 1000 == 0:
-                            EBARUtils.displayMessage(messages, 'EST_DATA_SENS pre-processed ' + str(loop_count))
-                        # update ranks in BIOTICS_ELEMENT_NATIONAL table, if provided
-                        if row[field_dict['EST_DATA_SENS']] and row[field_dict['Subnation']]:
-                            EBARUtils.updateBioticsSubnational(param_geodatabase, None, None,
-                                                               row[field_dict['EST_DATA_SENS']],
-                                                               None, row[field_dict['Subnation']],
-                                                               row['SpeciesID'])
-                    if row:
-                        del row
-                EBARUtils.displayMessage(messages, 'EST_DATA_SENS pre-processed ' + str(loop_count))
-            if field_dict['EST_DATASEN_CAT']:
-                loop_count = 0
-                with arcpy.da.SearchCursor('import_features', [field_dict['EST_DATASEN_CAT'], 'SpeciesID',
-                                                               field_dict['Subnation']], 'ignore_imp <> 1') as cursor:
-                    row = None
-                    for row in EBARUtils.updateCursor(cursor):
-                        loop_count += 1
-                        if loop_count % 1000 == 0:
-                            EBARUtils.displayMessage(messages, 'EST_DATASEN_CAT pre-processed ' + str(loop_count))
-                        # update ranks in BIOTICS_ELEMENT_NATIONAL table, if provided
-                        if row[field_dict['EST_DATASEN_CAT']] and row[field_dict['Subnation']]:
-                            EBARUtils.updateBioticsSubnational(param_geodatabase, None, None,
-                                                               row[field_dict['EST_DATASEN_CAT']],
-                                                               None, row[field_dict['Subnation']],
-                                                               row['SpeciesID'])
-                    if row:
-                        del row
-                EBARUtils.displayMessage(messages, 'EST_DATASEN_CAT pre-processed ' + str(loop_count))
+                # update all subnational fields per species
+                species_updates = EBARUtils.updateSubnationalSpeciesFields(param_geodatabase, subnation,
+                                                                           subnational_species_dict)
+                EBARUtils.displayMessage(messages, 'Species Subnational fields pre-processed ' + str(loop_count))
 
             # select for appending
             arcpy.SelectLayerByAttribute_management('import_features', where_clause='ignore_imp = 0')
@@ -604,6 +568,7 @@ class ImportSpatialDataTool:
         else:
             EBARUtils.displayMessage(messages, 'Imported without date - ' + str(overall_count - no_species_match - 
                                                                                 no_coords - inaccurate))
+        EBARUtils.displayMessage(messages, 'Species records updated - ' + str(species_updates))
         end_time = datetime.datetime.now()
         EBARUtils.displayMessage(messages, 'End time: ' + str(end_time))
         elapsed_time = end_time - start_time
@@ -619,13 +584,13 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_import_feature_class = arcpy.Parameter()
-    param_import_feature_class.value = 'C:/GIS/EBAR/CDN_CDC_Data/Yukon/Yukon_sensitive_data.gdb/YT_sensitive_SF_poly'
+    param_import_feature_class.value = 'C:/GIS/EBAR/CDN_CDC_Data/Saskatchewan/SFPolygons_10May2021_1620643624705.gdb/query_result'
     param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'Yukon Sensitive SF Polygons'
+    param_dataset_name.value = 'Saskatchewan Source Feature Polygons'
     param_dataset_source = arcpy.Parameter()
-    param_dataset_source.value = 'YT Source Feature Polygons'
+    param_dataset_source.value = 'SK Source Feature Polygons'
     param_date_received = arcpy.Parameter()
-    param_date_received.value = 'April 2, 2021'
+    param_date_received.value = 'May 10, 2021'
     param_restrictions = arcpy.Parameter()
     param_restrictions.value = 'Restricted'
     parameters = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_source,

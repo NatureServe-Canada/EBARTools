@@ -25,8 +25,8 @@ import json
 # shared folders and addresses
 resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
 temp_folder = 'C:/GIS/EBAR/temp'
-download_folder = 'C:/GIS/EBAR/pub/download'
-#download_folder = 'F:/download'
+#download_folder = 'C:/GIS/EBAR/pub/download'
+download_folder = 'F:/download'
 #nsx_species_search_url = 'https://explorer.natureserve.org/api/data/search'
 nsx_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/ELEMENT_GLOBAL.'
 
@@ -962,6 +962,7 @@ def GetBuffer(accuracy):
 
 
 def deleteRows(table_name, view_name, where_clause):
+    """delete rows matching where clause"""
     arcpy.MakeTableView_management(table_name, view_name)
     result = arcpy.SelectLayerByAttribute_management(view_name, 'NEW_SELECTION', where_clause)
     select_count = int(result[1])
@@ -971,6 +972,7 @@ def deleteRows(table_name, view_name, where_clause):
 
 
 def checkReview(range_map_view, table_name_prefix):
+    """check for reviews completed or in progress"""
     review_found = False
     review_completed = False
     ecoshape_review = False
@@ -1003,6 +1005,7 @@ def checkReview(range_map_view, table_name_prefix):
 
 
 def checkPublished(range_map_view):
+    """check if view has any published range maps"""
     published = False
     row = None
     with arcpy.da.SearchCursor(range_map_view, ['Publish']) as cursor:
@@ -1016,6 +1019,7 @@ def checkPublished(range_map_view):
 
 
 def checkMarkedForDelete(range_map_view):
+    """check if view has a range map marked for deletion"""
     marked = False
     row = None
     with arcpy.da.SearchCursor(range_map_view, ['RangeStage']) as cursor:
@@ -1028,35 +1032,40 @@ def checkMarkedForDelete(range_map_view):
     return marked
 
 
-def updateBioticsSubnational(geodatabase, s_rank, rounded_s_rank, est_data_sens, est_datasen_cat, subnation_code,
-                             species_id):
-    with arcpy.da.UpdateCursor(geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
-                               [subnation_code + '_S_RANK', subnation_code + '_ROUNDED_S_RANK',
-                                subnation_code + '_DATASEN', subnation_code + '_DATASEN_CAT'], 
-                               'SpeciesID = ' + str(species_id)) as cursor:
+def readSubnationalSpeciesFields(geodatabase, subnation_code):
+    """retrieve in subnational species field values into dict within dict"""
+    subnational_species_dict = {}
+    with arcpy.da.SearchCursor(geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
+                               ['SpeciesID', subnation_code + '_S_RANK', subnation_code + '_ROUNDED_S_RANK',
+                                subnation_code + '_DATASEN', subnation_code + '_DATASEN_CAT']) as cursor:
+        row = None
         for row in searchCursor(cursor):
-            update = False
-            update_s_rank = row[subnation_code + '_S_RANK']
-            update_rounded_s_rank = row[subnation_code + '_ROUNDED_S_RANK']
-            update_data_sens = row[subnation_code + '_DATASEN']
-            update_datasen_cat = row[subnation_code + '_DATASEN_CAT']
-            if s_rank:
-                if not update_s_rank or s_rank != update_s_rank:
-                    update_s_rank = s_rank
-                    update = True
-            if rounded_s_rank:
-                if not update_rounded_s_rank or rounded_s_rank != update_rounded_s_rank:
-                    update_rounded_s_rank = rounded_s_rank
-                    update = True
-            if est_data_sens:
-                if not update_data_sens or est_data_sens != update_data_sens:
-                    update_data_sens = est_data_sens
-                    update = True
-            if est_datasen_cat:
-                if not update_datasen_cat or est_datasen_cat != update_datasen_cat:
-                    update_datasen_cat = est_datasen_cat
-                    update = True
-            if update:
-                cursor.updateRow([update_s_rank, update_rounded_s_rank, update_data_sens, update_datasen_cat])
+            values_dict = {}
+            values_dict['S_RANK'] = row[subnation_code + '_S_RANK']
+            values_dict['ROUNDED_S_RANK'] = row[subnation_code + '_ROUNDED_S_RANK']
+            values_dict['EST_DATA_SENS'] = row[subnation_code + '_DATASEN']
+            values_dict['EST_DATASEN_CAT'] = row[subnation_code + '_DATASEN_CAT']
+            values_dict['changed'] = False
+            subnational_species_dict[row['SpeciesID']] = values_dict
         if row:
             del row
+    return subnational_species_dict
+
+
+def updateSubnationalSpeciesFields(geodatabase, subnation_code, subnational_species_dict):
+    """update subnational species fields based on passed dict within dict"""
+    with arcpy.da.UpdateCursor(geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
+                               ['SpeciesID', subnation_code + '_S_RANK', subnation_code + '_ROUNDED_S_RANK',
+                                subnation_code + '_DATASEN', subnation_code + '_DATASEN_CAT']) as cursor:
+        count = 0
+        for row in updateCursor(cursor):
+            if subnational_species_dict[row['SpeciesID']]['changed']:
+                count += 1
+                cursor.updateRow([row['SpeciesID'],
+                                  subnational_species_dict[row['SpeciesID']]['S_RANK'],
+                                  subnational_species_dict[row['SpeciesID']]['ROUNDED_S_RANK'],
+                                  subnational_species_dict[row['SpeciesID']]['EST_DATA_SENS'],
+                                  subnational_species_dict[row['SpeciesID']]['EST_DATASEN_CAT']])
+        if count > 0:
+            del row
+    return count
