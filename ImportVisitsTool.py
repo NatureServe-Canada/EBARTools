@@ -150,8 +150,10 @@ class ImportVisitsTool:
             if visit_date:
                 where_clause += " AND VisitDate = date '" + visit_date.strftime('%Y-%m-%d') + "'"
             if visit_notes:
+                visit_notes = visit_notes.replace("'", '')
                 where_clause += " AND VisitNotes = '" + visit_notes.replace("'", "''") + "'"
             if visited_by:
+                visited_by = visited_by.replace("'", '')
                 where_clause += " AND VisitedBy = '" + visited_by + "'"
             with arcpy.da.SearchCursor(geodatabase + '/Visit', ['VisitedBy'], where_clause) as cursor:
                 row = None
