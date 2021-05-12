@@ -340,8 +340,8 @@ class ImportSpatialDataTool:
                                   subnation, species_id, synonym_id, ignore_imp, row['SHAPE@']])
             if overall_count > 0:
                 del row
-                # index ignore_imp to improve performance
-                arcpy.AddIndex_management('import_features', ['ignore_imp'], 'temp_ignore_imp_idx')
+                ## index ignore_imp to improve performance
+                #arcpy.AddIndex_management('import_features', ['ignore_imp'], 'temp_ignore_imp_idx')
         EBARUtils.displayMessage(messages, 'Subnation, species, coordinates and duplicates pre-processed ' + str(overall_count))
 
         # check accuracy if provided
