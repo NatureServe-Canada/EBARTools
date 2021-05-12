@@ -536,8 +536,13 @@ class ImportSpatialDataTool:
                                 if field_dict[key]:
                                     dst_fields.append(key)
                         # retrieve and update duplicate destination row
-                        with arcpy.da.UpdateCursor(destination, dst_fields, "DatasetSourceUniqueID = '" +
-                                                   str(int(row[field_dict['DatasetSourceUniqueID']])) +
+                        dsuid = row[field_dict['DatasetSourceUniqueID']]
+                        try:
+                            # if number, need to convert to integer first to get of decimals added by Python
+                            dsuid = str(int(dsuid))
+                        except:
+                            pass
+                        with arcpy.da.UpdateCursor(destination, dst_fields, "DatasetSourceUniqueID = '" + dsuid +
                                                    "' AND InputDatasetID IN " +
                                                    input_dataset_ids) as update_cursor:
                             update_row = None
@@ -584,13 +589,13 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_import_feature_class = arcpy.Parameter()
-    param_import_feature_class.value = 'C:/GIS/EBAR/CDN_CDC_Data/Saskatchewan/SFPolygons_10May2021_1620643624705.gdb/query_result'
+    param_import_feature_class.value = 'C:/GIS/EBAR/EBARServer.gdb/ON_Obs_Test'
     param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'Saskatchewan Source Feature Polygons'
+    param_dataset_name.value = 'Ontario Observations'
     param_dataset_source = arcpy.Parameter()
-    param_dataset_source.value = 'SK Source Feature Polygons'
+    param_dataset_source.value = 'ON Observations'
     param_date_received = arcpy.Parameter()
-    param_date_received.value = 'May 10, 2021'
+    param_date_received.value = 'Apr 23, 2021'
     param_restrictions = arcpy.Parameter()
     param_restrictions.value = 'Restricted'
     parameters = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_source,
