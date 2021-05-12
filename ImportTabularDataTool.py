@@ -377,12 +377,13 @@ class ImportTabularDataTool:
         else:
             # insert, set new id and return
             point_fields = ['SHAPE@XY', 'InputDatasetID', 'DatasetSourceUniqueID', 'URI', 'License', 'SpeciesID',
-                            'SynonymID', 'MaxDate', 'CoordinatesObscured', 'Accuracy', 'IndividualCount']
+                            'SynonymID', 'MaxDate', 'CoordinatesObscured', 'Accuracy', 'IndividualCount', 'Geoprivacy',
+                                        'TaxonGeoprivacy']
             with arcpy.da.InsertCursor(geodatabase + '/InputPoint', point_fields) as cursor:
                 object_id = cursor.insertRow([output_point, input_dataset_id,
                                               str(file_line[field_dict['unique_id']]), uri, license, species_id,
-                                              synonym_id, max_date, coordinates_obscured, accuracy,
-                                              individual_count])
+                                              synonym_id, max_date, coordinates_obscured, accuracy, individual_count,
+                                              geoprivacy, taxon_geoprivacy])
             input_point_id = EBARUtils.getUniqueID(geodatabase + '/InputPoint', 'InputPointID', object_id)
             id_dict[unique_id_species] = input_point_id
             return input_point_id, 'new', max_date
@@ -395,15 +396,15 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_raw_data_file = arcpy.Parameter()
-    param_raw_data_file.value = 'C:/GIS/EBAR/otherSpecies.csv'
+    param_raw_data_file.value = 'C:/GIS/iNatExchange/test_obscured_for_ebar_import.csv'
     param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'Atlantic Canada Other Species'
+    param_dataset_name.value = 'iNaturalist TEST'
     param_dataset_source = arcpy.Parameter()
-    param_dataset_source.value = 'Other'
+    param_dataset_source.value = 'iNaturalist.ca'
     param_date_received = arcpy.Parameter()
-    param_date_received.value = 'November 20, 2019'
+    param_date_received.value = 'November 30, 2020'
     param_restrictions = arcpy.Parameter()
-    param_restrictions.value = 'Non-restricted'
+    param_restrictions.value = 'Restricted'
     parameters = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_source,
                   param_date_received, param_restrictions]
     itd.runImportTabularDataTool(parameters, None)

@@ -93,8 +93,8 @@ ecoengine_fields = {'quality_grade': None,
                     'date': 'begin_date',
                     'basis_of_record': 'observation_type',
                     'individual_count': None,
-                    'geoprivacy': 'geoprivacy',
-                    'taxon_geoprivacy': 'taxon_geoprivacy'}
+                    'geoprivacy': None,
+                    'taxon_geoprivacy': None}
 
 inaturalistorg_fields = {'quality_grade': 'quality_grade',
                          'unique_id': 'id',
@@ -137,8 +137,8 @@ inaturalistca_fields = {'quality_grade': 'quality_grade',
                         'date': 'observed_on',
                         'basis_of_record': None,
                         'individual_count': None,
-                        'geoprivacy': None,
-                        'taxon_geoprivacy': None}
+                        'geoprivacy': 'geoprivacy',
+                        'taxon_geoprivacy': 'taxon_geoprivacy'}
 
 bison_fields = {'quality_grade': None,
                 'unique_id': 'occurrenceID',
