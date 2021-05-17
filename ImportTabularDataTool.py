@@ -190,6 +190,12 @@ class ImportTabularDataTool:
                       synonym_species_dict, file_line, field_dict, no_match_list, messages):
         """If point already exists, check if needs update; otherwise, add"""
         # check for species
+        if not file_line[field_dict['scientific_name']]:
+            if '[None]' not in no_match_list:
+                no_match_list.append('[None]')
+                EBARUtils.displayMessage(messages,
+                                         'WARNING: No match for species [None]')
+            return None, 'no_species_match', None
         if (file_line[field_dict['scientific_name']].lower() not in species_dict and
             file_line[field_dict['scientific_name']].lower() not in synonym_dict):
             if file_line[field_dict['scientific_name']] not in no_match_list:
