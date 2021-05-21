@@ -63,7 +63,8 @@ srs_dict = {'North America Albers Equal Area Conic': 102008,
             'North American Datum 1983': 4269,
             'NAD27': 4267,
             'NAD 1927': 4267,
-            'North American Datum 1927': 4267}
+            'North American Datum 1927': 4267,
+            'Australian Geodetic Datum 1984': 6203}
 
 
 # element observation rank values
