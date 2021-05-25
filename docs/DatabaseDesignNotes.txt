@@ -1,0 +1,8 @@
+The sample geodatabase (EBARDev.gdb.zip) provided in this GitHub project was a schema export from the EBAR-KBA production enterprise geodatabase, stored in PostgreSQL.
+
+Tables named as all lowercase are views in the enterprise geodatabase; see "EBAR-KBA Views SQL.zip" for the view definitions.
+
+The geodatabase was first developed and tested as a file geodatabase, using mixed case object names. When this was copied to an enterprise geodatabase, all fields were converted to lowercase. Field Aliases have been established for readability.
+
+Because ArcGIS can reassign OBJECTID values when tables and feature classes are copied, the EBAR-KBA database has unique identifier fields of the form TableNameID in most tables and feature classes, and uses these as primary and foreign keys in relationship classes. Users are encouraged to use the Related Data feature of the ArcGIS Attribute Table view to navigate between related tables. Values in the custom unique identifier fields are set using an Attribute Rule within the table or feature class.
+
