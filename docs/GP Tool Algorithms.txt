@@ -27,6 +27,13 @@ DeleteRangeMap(RangeMapID)
 	check for published
 	check for marked for deletion
 	perform deletes
+
+ExportInputData(JurisdictionsCovered)	
+	select jurisdiction(s)
+	generate metadata
+	process points, lines and polygons
+	process bad points, lines and polygons
+	zip gdb into single file for download
 	
 FlagBadDataUsingRange()
 	select ecoshapes using RangeMapID
@@ -89,14 +96,20 @@ ImportExternalRangeReview(species, secondary, version, stage, external_range_tab
 
 ImportSpatialData(import_feature_class, dataset_name, dataset_source, date_received, restrictions)
 	check dataset source
+	populate fixed field mappings
 	get dataset source id, type and data-drive field mappings based on dataset_source
+	populate field types
 	check/add InputDataset record using dataset_name, dataset_source, date_received, restrictions
+	read existing species into dict
+	read existing unique IDs into dict
+	make temp copy of features being imported so that it is geodatabase format
 	perform preprocessing on import_feature_class
 		add fields
 		loop to check/add species and flag duplicates
 		loop to check accuracy if provided
-		loop for additional preprocessing (eo rank, dates, 
+		loop for additional preprocessing (eo rank, dates, subnational species fields
 	append to InputPolygon/Point/Line feature class
+	update duplicates
 	summarize and clean-up
 
 ImportTabularData(raw_data_file, dataset_name, dataset_source, date_received, restrictions)
@@ -107,7 +120,7 @@ ImportTabularData(raw_data_file, dataset_name, dataset_source, date_received, re
 	read existing species
 	read existing dataset_source unique IDs
 	loop all raw_data_file lines
-		check/add InputPoint record for each line
+		add/update InputPoint record for each line
 			check for species (don't import row and warn if no match)
 			perform various field-by-field checks
 			check for existing point with same unique_id within the dataset source
@@ -115,26 +128,18 @@ ImportTabularData(raw_data_file, dataset_name, dataset_source, date_received, re
 				if doesn't exit, insert
 	summarize and clean-up
 	
+ImportVisits(raw_data_file, subnation)
+	convert subnation to code
+	process all file lines
+		check (for duplicates using combination of fields) and add if not duplicate
+		check InputPoint/Line/Polygon with same sf_id and subnation for dates
+	summarize and clean-up
+		
 ListElementNationalIDs()
 	loop all active BIOTICS_ELEMENT_NATIONAL records
 		output element_national_id separated by comma
-		break after every 1000 records, becuase this is the maxium that could be used in the Biotics query window
+			break after every 1000 records, becuase this is the maxium that could be used in the Biotics query window
 
-SyncSpeciesListBiotics(csv)
-	read existing element_national_ids and scientific_names
-	loop all csv lines
-		check for existing element_national id
-			if exists, update BIOTICS_ELEMENT_NATIONAL records
-			if doesn't exist, insert Species and BIOTICS_ELEMENT_NATIONAL records
-	summarize and clean-up
-
-SyncSpeciesListKBA(csv)
-	read existing element_national_id and species_id values
-	loop all csv lines
-		check for element_national_id and skip if no match
-		update Species record
-	summarize and clean-up
-			
 PublishRangeMap(range_map_id, include_spatial)
 	get dynamic attributes
 	update map template
@@ -169,3 +174,18 @@ PublishRangeMapSets(optional category_taxa)
 			update ArcGIS Pro template and lyrx files
 			update ArcMap temlate and lyr files???
 		zip spatial data
+
+SyncSpeciesListBiotics(csv)
+	read existing element_national_ids and scientific_names
+	loop all csv lines
+		check for existing element_national id
+			if exists, update BIOTICS_ELEMENT_NATIONAL records
+			if doesn't exist, insert Species and BIOTICS_ELEMENT_NATIONAL records
+	summarize and clean-up
+
+SyncSpeciesListKBA(csv)
+	read existing element_national_id and species_id values
+	loop all csv lines
+		check for element_national_id and skip if no match
+		update Species record
+	summarize and clean-up

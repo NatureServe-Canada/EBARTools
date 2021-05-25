@@ -72,7 +72,7 @@ class ImportVisitsTool:
         min_date_updates = 0
         try:
             for file_line in reader:
-                # check/add point for current line
+                # check/add visit for current line
                 sf_missing, duplicate, date_missing, id_missing, max_date_update, min_date_update = \
                     self.CheckAddVisit(param_geodatabase, file_line, param_subnation)
                 # increment/report counts
