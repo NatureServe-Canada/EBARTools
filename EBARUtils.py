@@ -57,14 +57,14 @@ srs_dict = {'North America Albers Equal Area Conic': 102008,
             'WGS84': 4326,
             'WGS 1984': 4326,
             'World Geodetic System 1984': 4326,
-            'World Geodetic System 1972': 6322,
+            'World Geodetic System 1972': 4322,
             'NAD83': 4269,
             'NAD 1983': 4269,
             'North American Datum 1983': 4269,
             'NAD27': 4267,
             'NAD 1927': 4267,
             'North American Datum 1927': 4267,
-            'Australian Geodetic Datum 1984': 6203}
+            'Australian Geodetic Datum 1984': 4203}
 
 
 # element observation rank values

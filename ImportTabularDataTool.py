@@ -402,15 +402,15 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_raw_data_file = arcpy.Parameter()
-    param_raw_data_file.value = 'C:/GIS/iNatExchange/test_obscured_for_ebar_import.csv'
+    param_raw_data_file.value = 'C:/GIS/VertNet_data_bind.csv'
     param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'iNaturalist TEST'
+    param_dataset_name.value = 'VertNet TEST'
     param_dataset_source = arcpy.Parameter()
-    param_dataset_source.value = 'iNaturalist.ca'
+    param_dataset_source.value = 'VertNet'
     param_date_received = arcpy.Parameter()
-    param_date_received.value = 'November 30, 2020'
+    param_date_received.value = 'May 26, 2020'
     param_restrictions = arcpy.Parameter()
-    param_restrictions.value = 'Restricted'
+    param_restrictions.value = 'Non-Restricted'
     parameters = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_source,
                   param_date_received, param_restrictions]
     itd.runImportTabularDataTool(parameters, None)
