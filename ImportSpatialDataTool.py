@@ -589,13 +589,13 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_import_feature_class = arcpy.Parameter()
-    param_import_feature_class.value = 'C:/GIS/EBAR/EBARServer.gdb/ON_Obs_Test'
+    param_import_feature_class.value = 'C:/GIS/EBAR/CDN_CDC_Data/British_Columbia/Restricted_Data/SecureSpeciesData_27May2021.gdb/SPI_SurveyObs_SecureSpeciesData_NatureServeCanada'
     param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'Ontario Observations'
+    param_dataset_name.value = 'British Columbia Observations'
     param_dataset_source = arcpy.Parameter()
-    param_dataset_source.value = 'ON Observations'
+    param_dataset_source.value = 'BC Survey Observations Restricted'
     param_date_received = arcpy.Parameter()
-    param_date_received.value = 'Apr 23, 2021'
+    param_date_received.value = 'May 27, 2021'
     param_restrictions = arcpy.Parameter()
     param_restrictions.value = 'Restricted'
     parameters = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_source,

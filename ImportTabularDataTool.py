@@ -242,12 +242,26 @@ class ImportTabularDataTool:
             srs = EBARUtils.srs_dict['WGS84']
             if field_dict['srs']:
                 # srs provided
-                if file_line[field_dict['srs']].lower() not in ('unknown', 'not recorded', ''):
+                if file_line[field_dict['srs']].lower() not in ('unknown', 'not recorded', 'NA', ''):
                     srs = file_line[field_dict['srs']]
-                    if 'wgs84' in srs.lower():
+                    if '84' in srs.lower() and 'wgs' in srs.lower():
                         srs = 'WGS84'
-                    elif 'nad83' in srs.lower():
+                    if '85' in srs.lower() and 'wgs' in srs.lower():
+                        srs = 'WGS84'
+                    if '87' in srs.lower() and 'wgs' in srs.lower():
+                        srs = 'WGS84'
+                    elif 'gps' in srs.lower():
+                        srs = 'WGS84'
+                    elif 'prp_m' in srs.lower():
+                        srs = 'WGS84'
+                    elif 'nad' in srs.lower() and '83' in srs.lower():
                         srs = 'NAD83'
+                    elif 'nad' in srs.lower() and '27' in srs.lower():
+                        srs = 'NAD27'
+                    elif 'nad' in srs.lower() and '28' in srs.lower():
+                        srs = 'NAD27'
+                    elif 'ocotopeque' in srs.lower():
+                        srs = 'Ocotepeque 1935'
                     srs = EBARUtils.srs_dict[srs]
             input_geometry = arcpy.PointGeometry(input_point, arcpy.SpatialReference(srs))
             output_geometry = input_geometry.projectAs(
@@ -402,7 +416,7 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_raw_data_file = arcpy.Parameter()
-    param_raw_data_file.value = 'C:/GIS/VertNet_data_bind.csv'
+    param_raw_data_file.value = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/SPOCC_Data/CWS_ExtraDownloads/VertNet_Data_bind.csv'
     param_dataset_name = arcpy.Parameter()
     param_dataset_name.value = 'VertNet TEST'
     param_dataset_source = arcpy.Parameter()
