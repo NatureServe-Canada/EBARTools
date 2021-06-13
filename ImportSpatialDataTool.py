@@ -289,14 +289,16 @@ class ImportSpatialDataTool:
         species_updates = 0
         no_match_list = []
         subnation = None
-        with arcpy.da.UpdateCursor('import_features',
-                                   [field_dict['DatasetSourceUniqueID'], field_dict['scientific_name'],
-                                    field_dict['Subnation'], 'SpeciesID', 'SynonymID', 'ignore_imp',
-                                    'SHAPE@']) as cursor:
+        fields = [field_dict['DatasetSourceUniqueID'], field_dict['scientific_name'], 'SpeciesID', 'SynonymID',
+                  'ignore_imp', 'SHAPE@']
+        if field_dict['Subnation']:
+            fields.append(field_dict['Subnation'])
+        with arcpy.da.UpdateCursor('import_features', fields) as cursor:
             for row in EBARUtils.updateCursor(cursor):
                 overall_count += 1
                 if overall_count % 1000 == 0:
-                    EBARUtils.displayMessage(messages, 'Subnation, species, coordinates and duplicates pre-processed ' + str(overall_count))
+                    EBARUtils.displayMessage(messages, 'Subnation, species, ' + \
+                                             'coordinates and duplicates pre-processed ' + str(overall_count))
                 # ignore_imp: 0=Add, 1=Ignore(species, coords), 2=Duplicate/Update
                 ignore_imp = 0
                 # check for species
@@ -336,13 +338,17 @@ class ImportSpatialDataTool:
                             duplicates += 1
                             ignore_imp = 2
                 # save
-                cursor.updateRow([row[field_dict['DatasetSourceUniqueID']], row[field_dict['scientific_name']],
-                                  subnation, species_id, synonym_id, ignore_imp, row['SHAPE@']])
+                values = [row[field_dict['DatasetSourceUniqueID']], row[field_dict['scientific_name']], species_id,
+                          synonym_id, ignore_imp, row['SHAPE@']]
+                if field_dict['Subnation']:
+                    values.append(subnation)
+                cursor.updateRow(values)
             if overall_count > 0:
                 del row
                 ## index ignore_imp to improve performance
                 #arcpy.AddIndex_management('import_features', ['ignore_imp'], 'temp_ignore_imp_idx')
-        EBARUtils.displayMessage(messages, 'Subnation, species, coordinates and duplicates pre-processed ' + str(overall_count))
+        EBARUtils.displayMessage(messages, 'Subnation, species, ' + \
+                                 'coordinates and duplicates pre-processed ' + str(overall_count))
 
         # check accuracy if provided
         if field_dict['Accuracy']:
@@ -589,13 +595,13 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_import_feature_class = arcpy.Parameter()
-    param_import_feature_class.value = 'C:/GIS/EBAR/CDN_CDC_Data/British_Columbia/Restricted_Data/SecureSpeciesData_27May2021.gdb/SPI_SurveyObs_SecureSpeciesData_NatureServeCanada'
+    param_import_feature_class.value = 'C:/GIS/EBAR/CDN_CDC_Data/Ontario/OntarioNHIC_data_for_NatureServeCanada/EBAR_KBA_OntarioNHIC_20210410.gdb/EOs_20210410'
     param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'British Columbia Observations'
+    param_dataset_name.value = 'ON EOs'
     param_dataset_source = arcpy.Parameter()
-    param_dataset_source.value = 'BC Survey Observations Restricted'
+    param_dataset_source.value = 'ON Element Occurrences'
     param_date_received = arcpy.Parameter()
-    param_date_received.value = 'May 27, 2021'
+    param_date_received.value = 'April 23, 2021'
     param_restrictions = arcpy.Parameter()
     param_restrictions.value = 'Restricted'
     parameters = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_source,
