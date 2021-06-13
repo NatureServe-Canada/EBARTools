@@ -23,7 +23,7 @@ class SummarizeDownloadsTool:
         pass
 
     def runSummarizeDownloadsTool(self, parameters, messages):
-        log_folder = 'C:/GIS/EBAR/LogFiles'
+        log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
         file_list = os.listdir(log_folder)
         year_month_pdfs = {}
         year_month_zips = {}
