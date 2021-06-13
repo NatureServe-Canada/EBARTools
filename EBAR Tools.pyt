@@ -26,6 +26,7 @@ import ExportInputDataTool
 import FlagBadDataUsingRangeTool
 import DeleteRangeMapTool
 import ImportVisitsTool
+import SummarizeDownloadsTool
 import EBARUtils
 import datetime
 import locale
@@ -41,7 +42,7 @@ class Toolbox(object):
         self.tools = [ImportTabularData, ImportSpatialData, GenerateRangeMap, ListElementNationalIDs,
                       SyncSpeciesListBiotics, AddSynonyms, ImportExternalRangeReview, SyncSpeciesListKBA,
                       BuildEBARDownloadTable, BuildBulkDownloadTable, ExportInputData, FlagBadDataUsingRange,
-                      DeleteRangeMap, ImportVisits]
+                      DeleteRangeMap, ImportVisits, SummarizeDownloads]
 
 
 class ImportTabularData(object):
@@ -1021,6 +1022,39 @@ class ImportVisits(object):
         """The source code of the tool."""
         iv = ImportVisitsTool.ImportVisitsTool()
         iv.runImportVisitsTool(parameters, messages)
+        return
+
+
+class SummarizeDownloads(object):
+    def __init__(self):
+        """Define the tool (tool name is the name of the class)."""
+        self.label = 'Summarize Downloads'
+        self.description = 'Summarize downloads by month'
+        self.canRunInBackground = True
+
+    def getParameterInfo(self):
+        """Define parameter definitions"""
+        params = []
+        return params
+
+    def isLicensed(self):
+        """Set whether tool is licensed to execute."""
+        return True
+
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal validation is performed.  This method is 
+        called whenever a parameter has been changed."""
+        return
+
+    def updateMessages(self, parameters):
+        """Modify the messages created by internal validation for each tool parameter.  This method is called 
+        after internal validation."""
+        return
+
+    def execute(self, parameters, messages):
+        """The source code of the tool."""
+        sd = SummarizeDownloadsTool.SummarizeDownloadsTool()
+        sd.runSummarizeDownloadsTool(parameters, messages)
         return
 
 

@@ -595,7 +595,7 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_import_feature_class = arcpy.Parameter()
-    param_import_feature_class.value = 'C:/GIS/EBAR/CDN_CDC_Data/Ontario/OntarioNHIC_data_for_NatureServeCanada/EBAR_KBA_OntarioNHIC_20210410.gdb/EOs_20210410'
+    param_import_feature_class.value = 'C:/GIS/EBAR/EBARServer.gdb/teston'
     param_dataset_name = arcpy.Parameter()
     param_dataset_name.value = 'ON EOs'
     param_dataset_source = arcpy.Parameter()
