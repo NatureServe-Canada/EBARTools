@@ -66,7 +66,6 @@ class ImportSpatialDataTool:
         field_dict['MinDate'] = 'MinDate'
         field_dict['MaxDate'] = 'MaxDate'
         field_dict['SHAPE@'] = 'SHAPE@'
-
         # get dataset source id, type and dynamic field mappings
         with arcpy.da.SearchCursor(param_geodatabase + '/DatasetSource', ['DatasetSourceID',
                                                                           'UniqueIDField',
@@ -274,9 +273,9 @@ class ImportSpatialDataTool:
         EBARUtils.checkAddField('import_features', 'MinDate', 'DATE')
         EBARUtils.checkAddField('import_features', 'MaxDate', 'DATE')
         EBARUtils.checkAddField('import_features', 'ignore_imp', 'SHORT')
-        if feature_class_type in ('Polygon', 'MultiPatch'):
-            # EOs can only be polygons
-            EBARUtils.checkAddField('import_features', 'eo_rank', 'TEXT')
+        #if feature_class_type in ('Polygon', 'MultiPatch'):
+        #    # EOs can only be polygons
+        #    EBARUtils.checkAddField('import_features', 'eo_rank', 'TEXT')
 
         # loop to check/add species and flag duplicates
         overall_count = 0
@@ -378,8 +377,7 @@ class ImportSpatialDataTool:
             if feature_class_type in ('Polygon', 'MultiPatch'):
                 if field_dict['EORank']:
                     loop_count = 0
-                    with arcpy.da.UpdateCursor('import_features', [field_dict['EORank'], 'eo_rank'],
-                                               'ignore_imp <> 1') as cursor:
+                    with arcpy.da.UpdateCursor('import_features', [field_dict['EORank']], 'ignore_imp <> 1') as cursor:
                         for row in EBARUtils.updateCursor(cursor):
                             loop_count += 1
                             if loop_count % 1000 == 0:
@@ -394,8 +392,10 @@ class ImportSpatialDataTool:
                                     remove_chars = ('i', 'r')
                                     for remove_char in remove_chars:
                                         eo_rank = eo_rank.replace(remove_char, '')
+                                    # convert remainder to upper
+                                    eo_rank = eo_rank.upper()
                                 # save
-                                cursor.updateRow([row[field_dict['EORank']], eo_rank])
+                                cursor.updateRow([eo_rank])
                         if loop_count > 0:
                             del row
                     EBARUtils.displayMessage(messages, 'EO Rank pre-processed ' + str(loop_count))
@@ -492,6 +492,7 @@ class ImportSpatialDataTool:
                     if field_dict[key]:
                         field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict[key], key,
                                                                             type_dict[key]))
+
             # append
             if feature_class_type in ('Polygon', 'MultiPatch'):
                 destination = param_geodatabase + '/InputPolygon'
@@ -600,13 +601,13 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_import_feature_class = arcpy.Parameter()
-    param_import_feature_class.value = 'C:/GIS/EBAR/EBARServer.gdb/teston'
+    param_import_feature_class.value = 'C:/GIS/EBAR/CDN_CDC_Data/Quebec/EO_S_v2021-06-17.shp'
     param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'ON EOs'
+    param_dataset_name.value = 'Quebec EOs'
     param_dataset_source = arcpy.Parameter()
-    param_dataset_source.value = 'ON Element Occurrences'
+    param_dataset_source.value = 'QC Element Occurrences'
     param_date_received = arcpy.Parameter()
-    param_date_received.value = 'April 23, 2021'
+    param_date_received.value = 'June 17, 2021'
     param_restrictions = arcpy.Parameter()
     param_restrictions.value = 'Restricted'
     parameters = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_source,
