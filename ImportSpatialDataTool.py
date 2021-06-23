@@ -387,8 +387,13 @@ class ImportSpatialDataTool:
                             # encode eo rank if full description provided
                             eo_rank = row[field_dict['EORank']]
                             if eo_rank:
-                                if len(eo_rank) > 2:
+                                if len(eo_rank) > 3:
                                     eo_rank = EBARUtils.eo_rank_dict[eo_rank]
+                                else:
+                                    # handle QC (re)introduced suffixes by removing them
+                                    remove_chars = ('i', 'r')
+                                    for remove_char in remove_chars:
+                                        eo_rank = eo_rank.replace(remove_char, '')
                                 # save
                                 cursor.updateRow([row[field_dict['EORank']], eo_rank])
                         if loop_count > 0:
