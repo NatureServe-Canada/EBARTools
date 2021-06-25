@@ -354,10 +354,10 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             fake_date_expr = 'datetime.datetime(datetime.datetime.now().year - 1000, 1, 1)'
             arcpy.CalculateField_management('all_inputs_layer', 'TempDate', fake_date_expr)
         result = arcpy.SelectLayerByAttribute_management('all_inputs_layer', 'NEW_SELECTION',
-                                                         'TempDate IS NULL AND EORank IS NOT NULL ' + \
-                                                             "AND EORank NOT IN (' ', 'H', 'H?', 'X', 'X?')")
-                                                             #"AND EORank NOT IN (' ', 'F', 'F?', 'H', 'H?', 'NR', " + \
-                                                             #"'U', 'X', 'X?,')")
+                                                         'EORank IS NOT NULL ' + \
+                                                         "AND EORank NOT IN ('', ' ', 'H', 'H?', 'X', 'X?')")
+                                                         #"AND EORank NOT IN (' ', 'F', 'F?', 'H', 'H?', 'NR', " + \
+                                                         #"'U', 'X', 'X?,')")
         if int(result[1]) > 0:
             # 1000 years in the future
             fake_date_expr = 'datetime.datetime(datetime.datetime.now().year + 1000, 1, 1)'
@@ -802,9 +802,9 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         if arcpy.Exists(temp_restrictions):
             arcpy.Delete_management(temp_restrictions)
         # trouble deleting on server only due to locks; could be layer?
-        if param_geodatabase[-4:].lower() == '.gdb':
-            if arcpy.Exists(temp_all_inputs):
-                arcpy.Delete_management(temp_all_inputs)
+        #if param_geodatabase[-4:].lower() == '.gdb':
+        #    if arcpy.Exists(temp_all_inputs):
+        #        arcpy.Delete_management(temp_all_inputs)
 
         # end time
         end_time = datetime.datetime.now()
@@ -821,7 +821,7 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_species = arcpy.Parameter()
-    param_species.value = 'Muhlenbergia andina'
+    param_species.value = 'Astragalus kentrophyta var. kentrophyta'
     param_secondary = arcpy.Parameter()
     param_secondary.value = None
     #param_secondary.value = "'Dodia verticalis'"
@@ -829,9 +829,9 @@ if __name__ == '__main__':
     param_version = arcpy.Parameter()
     param_version.value = '1.0'
     param_stage = arcpy.Parameter()
-    param_stage.value = 'Expert Reviewed'
+    param_stage.value = 'Auto-generated'
     param_scope = arcpy.Parameter()
-    param_scope.value = 'Canadian'
+    param_scope.value = 'Global'
     param_scope.value = None
     parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope]
     grm.runGenerateRangeMapTool(parameters, None)
