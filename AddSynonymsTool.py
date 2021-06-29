@@ -63,11 +63,19 @@ class AddSynonymsTool:
                     short_citation_year = None
                     if len(file_line['SHORT_CITATION_YEAR']) > 0:
                         short_citation_year = file_line['SHORT_CITATION_YEAR']
+                    formatted_full_citation = None
+                    if len(file_line['FORMATTED_FULL_CITATION']) > 0:
+                        formatted_full_citation = file_line['FORMATTED_FULL_CITATION']
+                    author_name = None
+                    if len(file_line['AUTHOR_NAME']) > 0:
+                        author_name = file_line['AUTHOR_NAME']
                     insert_cursor = arcpy.da.InsertCursor(param_geodatabase + '/Synonym',
                                                           ['SpeciesID', 'SynonymName', 'SHORT_CITATION_AUTHOR',
-                                                           'SHORT_CITATION_YEAR'])
+                                                           'SHORT_CITATION_YEAR', 'FORMATTED_FULL_CITATION',
+                                                           'AUTHOR_NAME'])
                     insert_cursor.insertRow([element_species_dict[element_national_id], scientific_name,
-                                             short_citation_author, short_citation_year])
+                                             short_citation_author, short_citation_year, formatted_full_citation,
+                                             author_name])
                     del insert_cursor
                     added += 1
             count += 1
@@ -88,7 +96,7 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_csv = arcpy.Parameter()
-    param_csv.value = 'C:/GIS/EBAR/samples/BioticsSynonymExample.csv'
+    param_csv.value = 'C:/Users/rgree/Downloads/rgreene_1624976220408.csv'
     parameters = [param_geodatabase, param_csv]
     ast.runAddSynonymsTool(parameters, None)
 
