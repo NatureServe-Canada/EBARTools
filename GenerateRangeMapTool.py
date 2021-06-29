@@ -74,13 +74,15 @@ class GenerateRangeMapTool:
         table_name_prefix = EBARUtils.getTableNamePrefix(param_geodatabase)
 
         # check for species
-        species_id, short_citation = EBARUtils.checkSpecies(param_species.lower(), param_geodatabase)
+        #species_id, short_citation = EBARUtils.checkSpecies(param_species.lower(), param_geodatabase)
+        species_id, author_name = EBARUtils.checkSpecies(param_species.lower(), param_geodatabase)
         if not species_id:
             EBARUtils.displayMessage(messages, 'ERROR: Species not found')
             # terminate with error
             return
             #raise arcpy.ExecuteError
-        param_species += '' + short_citation
+        #param_species += '' + short_citation
+        param_species = '<i>' + param_species + '</i> ' + author_name
 
         # check for secondary species
         species_ids = str(species_id)
@@ -89,7 +91,8 @@ class GenerateRangeMapTool:
         synonyms_used = ''
         if param_secondary:
             for secondary in param_secondary:
-                secondary_id, short_citation = EBARUtils.checkSpecies(secondary.lower(), param_geodatabase)
+                #secondary_id, short_citation = EBARUtils.checkSpecies(secondary.lower(), param_geodatabase)
+                secondary_id, author_name = EBARUtils.checkSpecies(secondary.lower(), param_geodatabase)
                 if not secondary_id:
                     EBARUtils.displayMessage(messages, 'ERROR: Secondary species not found')
                     # terminate with error
@@ -105,7 +108,8 @@ class GenerateRangeMapTool:
                 if len(secondary_names) > 0:
                     secondary_names += ', '
                     synonyms_used += ', '
-                secondary_names += secondary + short_citation
+                #secondary_names += secondary + short_citation
+                secondary_names += '<i>' + secondary + '</i> ' + author_name
                 synonyms_used += secondary
 
         # check for range map record and add if necessary
@@ -300,7 +304,8 @@ class GenerateRangeMapTool:
             with arcpy.da.InsertCursor(param_geodatabase + '/SecondarySpecies',
                                        ['RangeMapID', 'SpeciesID']) as cursor:
                 for secondary in param_secondary:
-                    secondary_id, short_citation = EBARUtils.checkSpecies(secondary, param_geodatabase)
+                    #secondary_id, short_citation = EBARUtils.checkSpecies(secondary, param_geodatabase)
+                    secondary_id, author_name = EBARUtils.checkSpecies(secondary, param_geodatabase)
                     cursor.insertRow([range_map_id, secondary_id])
             EBARUtils.displayMessage(messages, 'Secondary Species records created')
 
@@ -712,21 +717,26 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                 del search_row
         # get synonym names for IDs and combine with secondary names
         if len(synonym_ids) > 0:
-            with arcpy.da.SearchCursor(param_geodatabase + '/Synonym', ['SynonymName', 'SHORT_CITATION_AUTHOR',
-                                                                        'SHORT_CITATION_YEAR'],
+            #with arcpy.da.SearchCursor(param_geodatabase + '/Synonym', ['SynonymName', 'SHORT_CITATION_AUTHOR',
+            #                                                            'SHORT_CITATION_YEAR'],
+            #                           'SynonymID IN (' + ','.join(map(str, synonym_ids)) + ')') as search_cursor:
+            with arcpy.da.SearchCursor(param_geodatabase + '/Synonym', ['SynonymName', 'AUTHOR_NAME'],
                                        'SynonymID IN (' + ','.join(map(str, synonym_ids)) + ')') as search_cursor:
                 search_row = None
                 for search_row in EBARUtils.searchCursor(search_cursor):
                     if len(secondary_names) > 0:
                         secondary_names += ', '
                         synonyms_used += ', '
-                    secondary_names += search_row['SynonymName']
+                    #secondary_names += search_row['SynonymName']
+                    secondary_names += '<i>' + search_row['SynonymName'] + '</i>'
                     synonyms_used += search_row['SynonymName']
-                    if search_row['SHORT_CITATION_AUTHOR']:
-                        secondary_names += ' (' + search_row['SHORT_CITATION_AUTHOR']
-                        if search_row['SHORT_CITATION_YEAR']:
-                            secondary_names += ', ' + str(int(search_row['SHORT_CITATION_YEAR']))
-                        secondary_names += ')'
+                    #if search_row['SHORT_CITATION_AUTHOR']:
+                    #    secondary_names += ' (' + search_row['SHORT_CITATION_AUTHOR']
+                    #    if search_row['SHORT_CITATION_YEAR']:
+                    #        secondary_names += ', ' + str(int(search_row['SHORT_CITATION_YEAR']))
+                    #    secondary_names += ')'
+                    if search_row['AUTHOR_NAME']:
+                        secondary_names += ' ' + search_row['AUTHOR_NAME']
                 if search_row:
                     del search_row
 
@@ -821,10 +831,10 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_species = arcpy.Parameter()
-    param_species.value = 'Astragalus kentrophyta var. kentrophyta'
+    param_species.value = 'Acalypta cooleyi'
     param_secondary = arcpy.Parameter()
     param_secondary.value = None
-    #param_secondary.value = "'Dodia verticalis'"
+    param_secondary.value = "'Abronia latifolia'"
     #param_secondary.value = "'Dodia tarandus';'Dodia verticalis'"
     param_version = arcpy.Parameter()
     param_version.value = '1.0'

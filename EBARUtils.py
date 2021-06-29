@@ -310,24 +310,37 @@ def readElementSpecies(geodatabase):
 
 
 def checkSpecies(scientific_name, geodatabase):
-    """if exists return SpeciesID"""
+    """if exists return SpeciesID and citation"""
+    #species_id = None
+    #short_citation = None
+    #with arcpy.da.SearchCursor(geodatabase + '/BIOTICS_ELEMENT_NATIONAL', ['SpeciesID', 'SHORT_CITATION_AUTHOR',
+    #                                                                       'SHORT_CITATION_YEAR'],
+    #                           "LOWER(NATIONAL_SCIENTIFIC_NAME) = '" + scientific_name.lower() + "'",
+    #                           None) as cursor:
+    #    for row in searchCursor(cursor):
+    #        species_id = row['SpeciesID']
+    #        if row['SHORT_CITATION_AUTHOR']:
+    #            short_citation = ' (' + row['SHORT_CITATION_AUTHOR']
+    #            if row['SHORT_CITATION_YEAR']:
+    #                short_citation += ', ' + str(int(row['SHORT_CITATION_YEAR']))
+    #            short_citation += ')'
+    #    if species_id:
+    #        # found
+    #        del row
+    #return species_id, short_citation
     species_id = None
-    short_citation = None
-    with arcpy.da.SearchCursor(geodatabase + '/BIOTICS_ELEMENT_NATIONAL', ['SpeciesID', 'SHORT_CITATION_AUTHOR',
-                                                                           'SHORT_CITATION_YEAR'],
+    author_name = ''
+    with arcpy.da.SearchCursor(geodatabase + '/BIOTICS_ELEMENT_NATIONAL', ['SpeciesID', 'AUTHOR_NAME'],
                                "LOWER(NATIONAL_SCIENTIFIC_NAME) = '" + scientific_name.lower() + "'",
                                None) as cursor:
         for row in searchCursor(cursor):
             species_id = row['SpeciesID']
-            if row['SHORT_CITATION_AUTHOR']:
-                short_citation = ' (' + row['SHORT_CITATION_AUTHOR']
-                if row['SHORT_CITATION_YEAR']:
-                    short_citation += ', ' + str(int(row['SHORT_CITATION_YEAR']))
-                short_citation += ')'
+            if row['AUTHOR_NAME']:
+                author_name = row['AUTHOR_NAME']
         if species_id:
             # found
             del row
-    return species_id, short_citation
+    return species_id, author_name
 
 
 def readDatasetSourceUniqueIDs(geodatabase, table_name_prefix, dataset_source_id, feature_class_type):
