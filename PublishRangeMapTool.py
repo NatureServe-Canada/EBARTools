@@ -96,19 +96,25 @@ class PublishRangeMapTool:
         with arcpy.da.SearchCursor('biotics_view', 
                                    ['NATIONAL_SCIENTIFIC_NAME', 'NATIONAL_ENGL_NAME', 'NATIONAL_FR_NAME',
                                     'ELEMENT_NATIONAL_ID', 'ELEMENT_GLOBAL_ID', 'ELEMENT_CODE', 
-                                    'GLOBAL_UNIQUE_IDENTIFIER', 'G_JURIS_ENDEM_DESC']) as cursor:
+                                    'GLOBAL_UNIQUE_IDENTIFIER', 'G_JURIS_ENDEM_DESC', 'AUTHOR_NAME',
+                                    'FORMATTED_FULL_CITATION']) as cursor:
             for row in EBARUtils.searchCursor(cursor):
                 pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME]',
                                             row['NATIONAL_SCIENTIFIC_NAME'])
+                author_name = ''
+                if row['AUTHOR_NAME']:
+                    author_name = row['AUTHOR_NAME']
+                pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.AUTHOR_NAME]', author_name)
+                pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.FORMATTED_FULL_CITATION]',
+                                            row['FORMATTED_FULL_CITATION'])
                 pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.NATIONAL_ENGL_NAME]',
                                             row['NATIONAL_ENGL_NAME'])
                 french_name = ''
                 if row['NATIONAL_FR_NAME']:
                     french_name = row['NATIONAL_FR_NAME']
-                pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.NATIONAL_FR_NAME]',
-                                                        french_name)
+                pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.NATIONAL_FR_NAME]', french_name)
                 pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.ELEMENT_NATIONAL_ID]',
-                                                        str(row['ELEMENT_NATIONAL_ID']))
+                                            str(row['ELEMENT_NATIONAL_ID']))
                 element_global_id = str(row['ELEMENT_GLOBAL_ID'])
                 pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.ELEMENT_GLOBAL_ID]',
                                             element_global_id)
