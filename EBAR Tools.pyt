@@ -7,7 +7,7 @@
 
 # Notes:
 # - following 120 maximum line length "convention"
-# - tested with ArcGIS Pro 2.4.2 and ArcMap 10.4.1
+# - tested with ArcGIS Pro 2.8.1
 
 
 # import python packages
