@@ -27,6 +27,7 @@ import FlagBadDataUsingRangeTool
 import DeleteRangeMapTool
 import ImportVisitsTool
 import SummarizeDownloadsTool
+import PublishRangeMapTool
 import EBARUtils
 import datetime
 import locale
@@ -42,7 +43,7 @@ class Toolbox(object):
         self.tools = [ImportTabularData, ImportSpatialData, GenerateRangeMap, ListElementNationalIDs,
                       SyncSpeciesListBiotics, AddSynonyms, ImportExternalRangeReview, SyncSpeciesListKBA,
                       BuildEBARDownloadTable, BuildBulkDownloadTable, ExportInputData, FlagBadDataUsingRange,
-                      DeleteRangeMap, ImportVisits, SummarizeDownloads]
+                      DeleteRangeMap, ImportVisits, SummarizeDownloads, PublishRangeMap]
 
 
 class ImportTabularData(object):
@@ -1058,47 +1059,47 @@ class SummarizeDownloads(object):
         return
 
 
-#class PublishRangeMap(object):
-#    def __init__(self):
-#        """Define the tool (tool name is the name of the class)."""
-#        self.label = 'Publish Range Map'
-#        self.description = 'Publish one Range Map as JPG, PDF and GIS Data Zip'
-#        self.canRunInBackground = True
+class PublishRangeMap(object):
+    def __init__(self):
+        """Define the tool (tool name is the name of the class)."""
+        self.label = 'Publish Range Map'
+        self.description = 'Publish one Range Map as JPG, PDF and GIS Data Zip'
+        self.canRunInBackground = True
 
-#    def getParameterInfo(self):
-#        """Define parameter definitions"""
-#        param_range_map_id = arcpy.Parameter(
-#            displayName='Range Map ID',
-#            name='range_map_id',
-#            datatype='GPString',
-#            parameterType='Required',
-#            direction='Input')
-#        param_spatial = arcpy.Parameter(
-#            displayName='Output GIS Data Zip',
-#            name='spatial',
-#            datatype='GPBoolean',
-#            parameterType='Required',
-#            direction='Input')
-#        param_spatial.value = 'true'
-#        params = [param_range_map_id, param_spatial]
-#        return params
+    def getParameterInfo(self):
+        """Define parameter definitions"""
+        param_range_map_id = arcpy.Parameter(
+            displayName='Range Map ID',
+            name='range_map_id',
+            datatype='GPString',
+            parameterType='Required',
+            direction='Input')
+        param_spatial = arcpy.Parameter(
+            displayName='Output GIS Data Zip',
+            name='spatial',
+            datatype='GPBoolean',
+            parameterType='Required',
+            direction='Input')
+        param_spatial.value = 'true'
+        params = [param_range_map_id, param_spatial]
+        return params
 
-#    def isLicensed(self):
-#        """Set whether tool is licensed to execute."""
-#        return True
+    def isLicensed(self):
+        """Set whether tool is licensed to execute."""
+        return True
 
-#    def updateParameters(self, parameters):
-#        """Modify the values and properties of parameters before internal validation is performed.  This method is
-#        called whenever a parameter has been changed."""
-#        return
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal validation is performed.  This method is
+        called whenever a parameter has been changed."""
+        return
 
-#    def updateMessages(self, parameters):
-#        """Modify the messages created by internal validation for each tool parameter.  This method is called
-#        after internal validation."""
-#        return
+    def updateMessages(self, parameters):
+        """Modify the messages created by internal validation for each tool parameter.  This method is called
+        after internal validation."""
+        return
 
-#    def execute(self, parameters, messages):
-#        """The source code of the tool."""
-#        prm = PublishRangeMapTool.PublishRangeMapTool()
-#        prm.runPublishRangeMapTool(parameters, messages)
-#        return
+    def execute(self, parameters, messages):
+        """The source code of the tool."""
+        prm = PublishRangeMapTool.PublishRangeMapTool()
+        prm.runPublishRangeMapTool(parameters, messages)
+        return
