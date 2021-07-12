@@ -28,6 +28,7 @@ import DeleteRangeMapTool
 import ImportVisitsTool
 import SummarizeDownloadsTool
 import PublishRangeMapTool
+import PublishRangeMapSetsTool
 import EBARUtils
 import datetime
 import locale
@@ -43,7 +44,7 @@ class Toolbox(object):
         self.tools = [ImportTabularData, ImportSpatialData, GenerateRangeMap, ListElementNationalIDs,
                       SyncSpeciesListBiotics, AddSynonyms, ImportExternalRangeReview, SyncSpeciesListKBA,
                       BuildEBARDownloadTable, BuildBulkDownloadTable, ExportInputData, FlagBadDataUsingRange,
-                      DeleteRangeMap, ImportVisits, SummarizeDownloads, PublishRangeMap]
+                      DeleteRangeMap, ImportVisits, SummarizeDownloads, PublishRangeMap, PublishRangeMapSets]
 
 
 class ImportTabularData(object):
@@ -1102,4 +1103,49 @@ class PublishRangeMap(object):
         """The source code of the tool."""
         prm = PublishRangeMapTool.PublishRangeMapTool()
         prm.runPublishRangeMapTool(parameters, messages)
+        return
+
+
+class PublishRangeMapSets(object):
+    def __init__(self):
+        """Define the tool (tool name is the name of the class)."""
+        self.label = 'Publish Range Map Sets'
+        self.description = 'Create Zip sets of PDFs and Spatial Data per Category/Taxa'
+        self.canRunInBackground = True
+
+    def getParameterInfo(self):
+        """Define parameter definitions"""
+        param_category = arcpy.Parameter(
+            displayName='Category',
+            name='category',
+            datatype='GPString',
+            parameterType='Optional',
+            direction='Input')
+        param_taxagroup = arcpy.Parameter(
+            displayName='Taxa Group',
+            name='taxagroup',
+            datatype='GPString',
+            parameterType='Optional',
+            direction='Input')
+        params = [param_category, param_taxagroup]
+        return params
+
+    def isLicensed(self):
+        """Set whether tool is licensed to execute."""
+        return True
+
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal validation is performed.  This method is
+        called whenever a parameter has been changed."""
+        return
+
+    def updateMessages(self, parameters):
+        """Modify the messages created by internal validation for each tool parameter.  This method is called
+        after internal validation."""
+        return
+
+    def execute(self, parameters, messages):
+        """The source code of the tool."""
+        prms = PublishRangeMapSetsTool.PublishRangeMapSetsTool()
+        prms.runPublishRangeMapSetsTool(parameters, messages)
         return
