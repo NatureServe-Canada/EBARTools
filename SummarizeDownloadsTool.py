@@ -23,8 +23,7 @@ class SummarizeDownloadsTool:
         pass
 
     def runSummarizeDownloadsTool(self, parameters, messages):
-        log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
-        file_list = os.listdir(log_folder)
+        file_list = os.listdir(EBARUtils.log_folder)
         year_month_pdfs = {}
         year_month_zips = {}
         file_count = 0
@@ -35,7 +34,7 @@ class SummarizeDownloadsTool:
                 year_month_pdfs[year_month] = 0
                 year_month_zips[year_month] = 0
             # open file
-            with open(log_folder + '/' + file_name, 'r', encoding='MBCS') as log_file:
+            with open(EBARUtils.log_folder + '/' + file_name, 'r', encoding='MBCS') as log_file:
                 # read the whole file to a string
                 log_text = log_file.read()
                 # search/count .pdf and add to stats

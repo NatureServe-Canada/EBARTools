@@ -29,6 +29,7 @@ temp_folder = 'C:/GIS/EBAR/temp'
 download_folder = 'F:/download'
 #nsx_species_search_url = 'https://explorer.natureserve.org/api/data/search'
 nsx_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/ELEMENT_GLOBAL.'
+log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
 
 
 # various services
