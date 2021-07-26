@@ -372,10 +372,13 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         # pairwise intersect buffers and ecoshape polygons
         EBARUtils.displayMessage(messages, 'Pairwise Intersecting All Inputs with Ecoshapes')
         if national_jur_ids:
-            arcpy.MakeFeatureLayer_management(param_geodatabase + '/Ecoshape', 'ecoshape_layer',
+            #arcpy.MakeFeatureLayer_management(param_geodatabase + '/Ecoshape', 'ecoshape_layer',
+            #                                  'JurisdictionID IN ' + national_jur_ids)
+            arcpy.MakeFeatureLayer_management(param_geodatabase + '/EcoshapeCoastalBuffer', 'ecoshape_layer',
                                               'JurisdictionID IN ' + national_jur_ids)
         else:
-            arcpy.MakeFeatureLayer_management(param_geodatabase + '/Ecoshape', 'ecoshape_layer')
+            #arcpy.MakeFeatureLayer_management(param_geodatabase + '/Ecoshape', 'ecoshape_layer')
+            arcpy.MakeFeatureLayer_management(param_geodatabase + '/EcoshapeCoastalBuffer', 'ecoshape_layer')
         temp_pairwise_intersect = 'TempPairwiseIntersect' + str(start_time.year) + str(start_time.month) + \
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
         arcpy.PairwiseIntersect_analysis(['all_inputs_layer',  'ecoshape_layer'], temp_pairwise_intersect)
