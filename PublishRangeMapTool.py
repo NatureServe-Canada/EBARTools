@@ -253,7 +253,7 @@ class PublishRangeMapTool:
             md.description = 'See EBAR' + element_global_id + '.pdf for map and additional metadata, and ' + \
                 'EBARMethods.pdf for additional details. <a href="' + nsx_url + '">Go to ' + \
                 'NatureServe Explorer</a> for information about the species.'
-            md.credits = '© NatureServe Canada ' + str(datetime.datetime.now().year)
+            md.credits = 'Copyright NatureServe Canada ' + str(datetime.datetime.now().year)
             md.accessConstraints = 'Publicly shareable under CC BY 4.0 (<a href=' + \
                 '"https://creativecommons.org/licenses/by/4.0/">https://creativecommons.org/licenses/by/4.0/</a>)'
 

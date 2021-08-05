@@ -98,7 +98,7 @@ class BuildEBARDownloadTableTool:
             <tr>
     	        <th>Scientific Name</th>
                 <th>English Name</th>
-                <th>Nom Français</th>
+                <th>Nom Francais</th>
                 <th>Scope</th>
                 <th>Status</th>
                 <th>PDF Link</th>

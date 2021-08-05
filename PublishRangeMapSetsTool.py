@@ -94,7 +94,7 @@ class PublishRangeMapSetsTool:
             'for species attributes for each ELEMENT_GLOBAL_ID (xxxxx), and ' + \
             'EBARMethods.pdf for additional details. <a href="https://explorer.natureserve.org/">Go to ' + \
             'NatureServe Explorer</a> for information about the species.'
-        md.credits = '© NatureServe Canada ' + str(datetime.datetime.now().year)
+        md.credits = 'Copyright NatureServe Canada ' + str(datetime.datetime.now().year)
         md.accessConstraints = 'Publicly shareable under CC BY 4.0 (<a href=' + \
             '"https://creativecommons.org/licenses/by/4.0/">https://creativecommons.org/licenses/by/4.0/</a>)'
 
