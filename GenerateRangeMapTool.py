@@ -66,6 +66,13 @@ class GenerateRangeMapTool:
                 scope = 'G'
             if param_scope == 'North American':
                 scope = 'A'
+        param_jurisdictions_covered = parameters[6].valueAsText
+        # convert to Python list
+        param_jurisdictions_list = []
+        if param_jurisdictions_covered:
+            param_jurisdictions_list = param_jurisdictions_covered.replace("'", '')
+            param_jurisdictions_list = param_jurisdictions_list.split(';')
+            jur_ids_comma = EBARUtils.buildJurisdictionList(param_geodatabase, param_jurisdictions_list)
 
         # use passed geodatabase as workspace (still seems to go to default geodatabase)
         arcpy.env.workspace = param_geodatabase
@@ -371,11 +378,18 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
 
         # pairwise intersect buffers and ecoshape polygons
         EBARUtils.displayMessage(messages, 'Pairwise Intersecting All Inputs with Ecoshapes')
-        if national_jur_ids:
+        if national_jur_ids or param_jurisdictions_covered:
+            where_clause = ''
+            if national_jur_ids:
+                where_clause = 'JurisdictionID IN ' + national_jur_ids
+            if param_jurisdictions_covered:
+                if len(where_clause) > 0:
+                    where_clause += ' AND '
+                where_clause += 'JurisdictionID IN ' + jur_ids_comma
             #arcpy.MakeFeatureLayer_management(param_geodatabase + '/Ecoshape', 'ecoshape_layer',
             #                                  'JurisdictionID IN ' + national_jur_ids)
             arcpy.MakeFeatureLayer_management(param_geodatabase + '/EcoshapeCoastalBuffer', 'ecoshape_layer',
-                                              'JurisdictionID IN ' + national_jur_ids)
+                                              where_clause)
         else:
             #arcpy.MakeFeatureLayer_management(param_geodatabase + '/Ecoshape', 'ecoshape_layer')
             arcpy.MakeFeatureLayer_management(param_geodatabase + '/EcoshapeCoastalBuffer', 'ecoshape_layer')
@@ -576,6 +590,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                 "EcoshapeReview.Markup IN ('P', 'X', 'H')"
             if scope == 'N':
                 condition += ' AND ' + table_name_prefix + 'Ecoshape.JurisdictionID IN ' + national_jur_ids
+            if param_jurisdictions_covered:
+                condition += ' AND ' + table_name_prefix + 'Ecoshape.JurisdictionID IN ' + jur_ids_comma
             with arcpy.da.SearchCursor('ecoshape_review_view',
                                        [table_name_prefix + 'EcoshapeReview.EcoshapeID',
                                         table_name_prefix + 'EcoshapeReview.Markup',
@@ -793,8 +809,6 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     notes += '; Synonyms - ' + secondary_names
                 update_cursor.updateRow([summary, datetime.datetime.now(), notes, scope, synonyms_used])
 
-        # generate TOC entry and actual map!!!
-
         # temp clean-up
         if arcpy.Exists(temp_unique_synonyms):
             arcpy.Delete_management(temp_unique_synonyms)
@@ -834,17 +848,20 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_species = arcpy.Parameter()
-    param_species.value = 'Acalypta cooleyi'
+    param_species.value = 'Bombus suckleyi'
     param_secondary = arcpy.Parameter()
     param_secondary.value = None
-    param_secondary.value = "'Abronia latifolia'"
     #param_secondary.value = "'Dodia tarandus';'Dodia verticalis'"
     param_version = arcpy.Parameter()
-    param_version.value = '1.0'
+    param_version.value = '0.99'
     param_stage = arcpy.Parameter()
-    param_stage.value = 'Auto-generated'
+    param_stage.value = 'Expert Reviewed (National - BC constraint)'
     param_scope = arcpy.Parameter()
-    param_scope.value = 'Global'
-    param_scope.value = None
-    parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope]
+    #param_scope.value = None
+    param_scope.value = 'Canadian'
+    param_jurisdictions_covered = arcpy.Parameter()
+    #param_jurisdictions_covered.value = None
+    param_jurisdictions_covered.value = "'British Columbia'"
+    parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
+                  param_jurisdictions_covered]
     grm.runGenerateRangeMapTool(parameters, None)

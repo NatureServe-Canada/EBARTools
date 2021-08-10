@@ -216,9 +216,9 @@ class PublishRangeMapTool:
         x_buffer = (extent.XMax - extent.XMin) / 20.0
         y_buffer = (extent.YMax - extent.YMin) / 20.0
         buffered_extent = arcpy.Extent(extent.XMin - x_buffer,
-                                        extent.YMin - y_buffer,
-                                        extent.XMax + x_buffer,
-                                        extent.YMax + y_buffer)
+                                       extent.YMin - y_buffer,
+                                       extent.XMax + x_buffer,
+                                       extent.YMax + y_buffer)
         map_frame.camera.setExtent(buffered_extent)
         if range_map_scope == 'Canadian':
             element_global_id += 'N'

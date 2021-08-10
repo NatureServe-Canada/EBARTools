@@ -308,7 +308,17 @@ class GenerateRangeMap(object):
             direction='Input')
         param_scope.filter.list = ['Canadian', 'Global', 'North American']
 
-        params = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope]
+        # Jurisdictions Covered
+        param_jurisdictions_covered = arcpy.Parameter(
+            displayName='Jurisdictions Covered',
+            name='jurisdictions_covered',
+            datatype='GPString',
+            parameterType='Optional',
+            direction='Input',
+            multiValue=True)
+
+        params = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
+                  param_jurisdictions_covered]
         return params
 
     def isLicensed(self):
@@ -341,6 +351,19 @@ class GenerateRangeMap(object):
         #    if parameters[4].valueAsText not in stage_list:
         #        stage_list.append(parameters[4].valueAsText)
         #parameters[4].filter.list = stage_list
+
+        # build list of jurisdictions (exclude AC, NF, LB because they are used for data only, not ecoshapes)
+        if parameters[0].altered and parameters[0].value:
+            param_geodatabase = parameters[0].valueAsText
+            jur_list = []
+            with arcpy.da.SearchCursor(param_geodatabase + '/Jurisdiction', ['JurisdictionName'],
+                                       "JurisdictionAbbreviation NOT IN ('AC', 'NF', 'LB')",
+                                       sql_clause=(None,'ORDER BY JurisdictionName')) as cursor:
+                for row in EBARUtils.searchCursor(cursor):
+                    jur_list.append(row['JurisdictionName'])
+                if len(jur_list) > 0:
+                    del row
+            parameters[6].filter.list = jur_list
         return
 
 
