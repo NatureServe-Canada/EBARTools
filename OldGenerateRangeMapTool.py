@@ -66,14 +66,6 @@ class GenerateRangeMapTool:
                 scope = 'G'
             if param_scope == 'North American':
                 scope = 'A'
-        param_jurisdictions_covered = parameters[6].valueAsText
-        # convert to Python list
-        param_jurisdictions_list = []
-        if param_jurisdictions_covered:
-            param_jurisdictions_list = param_jurisdictions_covered.replace("'", '')
-            param_jurisdictions_list = param_jurisdictions_list.split(';')
-            jur_ids_comma = EBARUtils.buildJurisdictionList(param_geodatabase, param_jurisdictions_list)
-        param_custom_polygons_covered = parameters[7].valueAsText
 
         # use passed geodatabase as workspace (still seems to go to default geodatabase)
         arcpy.env.workspace = param_geodatabase
@@ -379,23 +371,14 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
 
         # pairwise intersect buffers and ecoshape polygons
         EBARUtils.displayMessage(messages, 'Pairwise Intersecting All Inputs with Ecoshapes')
-        if national_jur_ids or param_jurisdictions_covered:
-            where_clause = ''
-            if national_jur_ids:
-                where_clause = 'JurisdictionID IN ' + national_jur_ids
-            if param_jurisdictions_covered:
-                if len(where_clause) > 0:
-                    where_clause += ' AND '
-                where_clause += 'JurisdictionID IN ' + jur_ids_comma
+        if national_jur_ids:
             #arcpy.MakeFeatureLayer_management(param_geodatabase + '/Ecoshape', 'ecoshape_layer',
             #                                  'JurisdictionID IN ' + national_jur_ids)
             arcpy.MakeFeatureLayer_management(param_geodatabase + '/EcoshapeCoastalBuffer', 'ecoshape_layer',
-                                              where_clause)
+                                              'JurisdictionID IN ' + national_jur_ids)
         else:
             #arcpy.MakeFeatureLayer_management(param_geodatabase + '/Ecoshape', 'ecoshape_layer')
             arcpy.MakeFeatureLayer_management(param_geodatabase + '/EcoshapeCoastalBuffer', 'ecoshape_layer')
-        if param_custom_polygons_covered:
-            arcpy.SelectLayerByLocation_management('ecoshape_layer', 'INTERSECT', param_custom_polygons_covered)
         temp_pairwise_intersect = 'TempPairwiseIntersect' + str(start_time.year) + str(start_time.month) + \
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
         arcpy.PairwiseIntersect_analysis(['all_inputs_layer',  'ecoshape_layer'], temp_pairwise_intersect)
@@ -591,22 +574,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                 'Review.UseForMapGen = 1 AND ' + table_name_prefix + \
                 'EcoshapeReview.UseForMapGen = 1 AND ' + table_name_prefix + \
                 "EcoshapeReview.Markup IN ('P', 'X', 'H')"
-            #if scope == 'N':
-            #    condition += ' AND ' + table_name_prefix + 'Ecoshape.JurisdictionID IN ' + national_jur_ids
-            #if param_jurisdictions_covered:
-            #    condition += ' AND ' + table_name_prefix + 'Ecoshape.JurisdictionID IN ' + jur_ids_comma
-            if scope == 'N' or param_jurisdictions_covered or param_custom_polygons_covered:
-                ecoshape_ids_comma = '('
-                with arcpy.da.SearchCursor('ecoshape_layer', ['EcoshapeID']) as search_cursor:
-                    search_row = None
-                    for search_row in EBARUtils.searchCursor(search_cursor):
-                        if len(ecoshape_ids_comma) > 1:
-                            ecoshape_ids_comma += ', '
-                        ecoshape_ids_comma += str(search_row['EcoshapeID'])
-                    if search_row:
-                        del search_row
-                ecoshape_ids_comma += ')'
-                condition += ' AND ' + table_name_prefix + 'EcoshapeReview.EcoshapeID IN ' + ecoshape_ids_comma
+            if scope == 'N':
+                condition += ' AND ' + table_name_prefix + 'Ecoshape.JurisdictionID IN ' + national_jur_ids
             with arcpy.da.SearchCursor('ecoshape_review_view',
                                        [table_name_prefix + 'EcoshapeReview.EcoshapeID',
                                         table_name_prefix + 'EcoshapeReview.Markup',
@@ -824,6 +793,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     notes += '; Synonyms - ' + secondary_names
                 update_cursor.updateRow([summary, datetime.datetime.now(), notes, scope, synonyms_used])
 
+        # generate TOC entry and actual map!!!
+
         # temp clean-up
         if arcpy.Exists(temp_unique_synonyms):
             arcpy.Delete_management(temp_unique_synonyms)
@@ -863,23 +834,17 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_species = arcpy.Parameter()
-    param_species.value = 'Acalypta cooleyi' #Muhlenbergia andina' #Bombus suckleyi
+    param_species.value = 'Muhlenbergia andina'
     param_secondary = arcpy.Parameter()
-    #param_secondary.value = None
-    param_secondary.value = "'Abronia latifolia'" #"'Dodia tarandus';'Dodia verticalis'"
+    param_secondary.value = None
+    #param_secondary.value = "'Abronia latifolia'"
+    #param_secondary.value = "'Dodia tarandus';'Dodia verticalis'"
     param_version = arcpy.Parameter()
     param_version.value = '1.0'
     param_stage = arcpy.Parameter()
-    param_stage.value = 'Auto-generated'
+    param_stage.value = 'Expert Reviewed'
     param_scope = arcpy.Parameter()
+    #param_scope.value = 'Global'
     param_scope.value = None
-    #param_scope.value = 'Canadian'
-    param_jurisdictions_covered = arcpy.Parameter()
-    param_jurisdictions_covered.value = None
-    #param_jurisdictions_covered.value = "'British Columbia'"
-    param_custom_polygons_covered = arcpy.Parameter()
-    #param_custom_polygons_covered.value = None
-    param_custom_polygons_covered.value = 'C:/GIS/EBAR/EBARServer.gdb/Custom'
-    parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
-                  param_jurisdictions_covered, param_custom_polygons_covered]
+    parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope]
     grm.runGenerateRangeMapTool(parameters, None)

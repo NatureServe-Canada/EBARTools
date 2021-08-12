@@ -317,8 +317,17 @@ class GenerateRangeMap(object):
             direction='Input',
             multiValue=True)
 
+        # Custom Polygons Covered
+        param_custom_polygons_covered = arcpy.Parameter(
+            displayName='Custom Polygons Covered',
+            name='custom_polygons_covered',
+            datatype='GPFeatureLayer',
+            parameterType='Optional',
+            direction='Input')
+        param_custom_polygons_covered.filter.list = ['Polygon', 'MultiPatch']
+
         params = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
-                  param_jurisdictions_covered]
+                  param_jurisdictions_covered, param_custom_polygons_covered]
         return params
 
     def isLicensed(self):
