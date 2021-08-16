@@ -524,7 +524,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             arcpy.AddJoin_management('ecoshape_review_view', 'ReviewID', param_geodatabase + '/Review', 'ReviewID')
         # loop existing range map ecoshapes
         with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape',
-                                   ['EcoshapeID', 'Presence', 'RangeMapEcoshapeNotes', 'MigrantStatus'],
+                                   ['EcoshapeID', 'RangeMapEcoshapeID', 'RangeMapID', 'Presence',
+                                    'RangeMapEcoshapeNotes', 'MigrantStatus'],
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
             update_row = None
             for update_row in EBARUtils.updateCursor(update_cursor):
@@ -581,7 +582,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                 migrant_status = search_row[table_name_prefix + 'EcoshapeReview.MigrantStatus']
                             if search_row:
                                 del search_row
-                    update_cursor.updateRow([update_row['EcoshapeID'], presence, summary, migrant_status])
+                    update_cursor.updateRow([update_row['EcoshapeID'], update_row['RangeMapEcoshapeID'],
+                                             update_row['RangeMapID'], presence, summary, migrant_status])
             if update_row:
                 del update_row
         # loop review records and check for need to add
@@ -863,14 +865,14 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_species = arcpy.Parameter()
-    param_species.value = 'Acalypta cooleyi' #Muhlenbergia andina' #Bombus suckleyi
+    param_species.value = 'Muhlenbergia andina' #Acalypta cooleyi' #Bombus suckleyi
     param_secondary = arcpy.Parameter()
-    #param_secondary.value = None
-    param_secondary.value = "'Abronia latifolia'" #"'Dodia tarandus';'Dodia verticalis'"
+    param_secondary.value = None
+    #param_secondary.value = "'Abronia latifolia'" #"'Dodia tarandus';'Dodia verticalis'"
     param_version = arcpy.Parameter()
     param_version.value = '1.0'
     param_stage = arcpy.Parameter()
-    param_stage.value = 'Auto-generated'
+    param_stage.value = 'Expert Reviewed'
     param_scope = arcpy.Parameter()
     param_scope.value = None
     #param_scope.value = 'Canadian'
@@ -878,8 +880,8 @@ if __name__ == '__main__':
     param_jurisdictions_covered.value = None
     #param_jurisdictions_covered.value = "'British Columbia'"
     param_custom_polygons_covered = arcpy.Parameter()
-    #param_custom_polygons_covered.value = None
-    param_custom_polygons_covered.value = 'C:/GIS/EBAR/EBARServer.gdb/Custom'
+    param_custom_polygons_covered.value = None
+    #param_custom_polygons_covered.value = 'C:/GIS/EBAR/EBARServer.gdb/Custom'
     parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
                   param_jurisdictions_covered, param_custom_polygons_covered]
     grm.runGenerateRangeMapTool(parameters, None)
