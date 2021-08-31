@@ -52,14 +52,13 @@ class BuildBulkDownloadTableTool:
         # html header
         html = '''<!doctype html>
     <style>
-        h2 {
-            font-family: "Trebuchet MS","Lucida Grande","Lucida Sans Unicode","Lucida Sans",Tahoma,sans-serif;
+        h4 {
+            font: 'Roboto', sans-serif !important;Unicode","Lucida Sans",Tahoma,sans-serif;
             font-size: 28px;
-            color: #365700;
             font-weight: normal;
         }
         body {
-            font-family:"Calibri",Candara,Segoe,"Segoe UI",Optima,Arial,sans-serif;
+            font: 'Roboto', sans-serif !important;
             font-size: 14px; 
             color: #222222;
     	}
@@ -68,7 +67,7 @@ class BuildBulkDownloadTableTool:
             text-align: left;
 			vertical-align: top;
             border-collapse: collapse;
-            width: 560px;
+            width: 100% !important;
     	}
         th {
             border-bottom: 3px solid #ccc;
@@ -80,13 +79,13 @@ class BuildBulkDownloadTableTool:
         tr:nth-child(even) {background-color: #f9f9f9;}
         a {
             font-weight: bold;
-            color: #5c9400;
+            color: #0449a4;
             text-decoration: none;
         }
     </style>
 	<body>
         Last updated ''' + start_time.strftime('%B %d, %Y') + '''
-        <h2>Bulk Download by Category - Taxa Group</h2>
+        <h4>Bulk Download by Category - Taxa Group</h4>
         <table><tbody>
             <tr>
     	        <th>Category</th>

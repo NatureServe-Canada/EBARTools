@@ -34,14 +34,13 @@ class BuildEBARDownloadTableTool:
         # html header
         html = '''<!doctype html>
     <style>
-        h2 {
-            font-family: "Trebuchet MS","Lucida Grande","Lucida Sans Unicode","Lucida Sans",Tahoma,sans-serif;
+        h4 {
+            font: 'Roboto', sans-serif !important;Unicode","Lucida Sans",Tahoma,sans-serif;
             font-size: 28px;
-            color: #365700;
             font-weight: normal;
         }
         body {
-            font-family:"Calibri",Candara,Segoe,"Segoe UI",Optima,Arial,sans-serif;
+            font: 'Roboto', sans-serif !important;
             font-size: 14px; 
             color: #222222;
     	}
@@ -50,7 +49,7 @@ class BuildEBARDownloadTableTool:
             text-align: left;
 			vertical-align: top;
             border-collapse: collapse;
-            width: 560px;
+            width: 100% !important;
     	}
         th {
             border-bottom: 3px solid #ccc;
@@ -62,7 +61,7 @@ class BuildEBARDownloadTableTool:
         tr:nth-child(even) {background-color: #f9f9f9;}
         a {
             font-weight: bold;
-            color: #5c9400;
+            color: #0449a4;
             text-decoration: none;
         }
     </style>
@@ -93,7 +92,7 @@ class BuildEBARDownloadTableTool:
                 category_taxa = row[0] + ' - ' + row[1]
                 EBARUtils.displayMessage(messages, category_taxa + ' table')
                 html += '''
-        <h2>''' + category_taxa + '''</h2>
+        <h4>''' + category_taxa + '''</h4>
         <table><tbody>
             <tr>
     	        <th>Scientific Name</th>
