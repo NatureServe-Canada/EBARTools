@@ -568,6 +568,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     if len(prev_range_map_ids) > 0:
                         with arcpy.da.SearchCursor('ecoshape_review_view',
                                                    [table_name_prefix + 'EcoshapeReview.Markup',
+                                                    table_name_prefix + 'EcoshapeReview.EcoshapeReviewNotes',
+                                                    table_name_prefix + 'EcoshapeReview.Username',
                                                     table_name_prefix + 'EcoshapeReview.MigrantStatus'],
                                                    table_name_prefix + 'Review.RangeMapID IN (' + \
                                                    prev_range_map_ids + ') AND ' + table_name_prefix + \
@@ -580,6 +582,26 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                             for search_row in EBARUtils.searchCursor(search_cursor):
                                 presence = search_row[table_name_prefix + 'EcoshapeReview.Markup']
                                 migrant_status = search_row[table_name_prefix + 'EcoshapeReview.MigrantStatus']
+                                # get expert name and publish settings to populate reviewer comments
+                                with arcpy.da.SearchCursor(param_geodatabase + '/Expert',
+                                                           ['ExpertName', 'PublishName', 'PublishComments'],
+                                                           "Username = '" + search_row[table_name_prefix +
+                                                           'EcoshapeReview.Username'] + "'") as expert_cursor:
+                                    expert_comment = None
+                                    for expert_row in EBARUtils.searchCursor(expert_cursor):
+                                        if expert_row['PublishName']:
+                                            expert_comment = expert_row['ExpertName']
+                                        else:
+                                            expert_comment = 'Anonymous'
+                                        expert_comment += ' Reviewer Comment - '
+                                        if expert_row['PublishComments']:
+                                            expert_comment += search_row[table_name_prefix + \
+                                                'EcoshapeReview.EcoshapeReviewNotes']
+                                        else:
+                                            expert_comment += 'Unpublished'
+                                        summary += '<br> ' + expert_comment
+                                    if expert_comment:
+                                        del expert_row
                             if search_row:
                                 del search_row
                     update_cursor.updateRow([update_row['EcoshapeID'], update_row['RangeMapEcoshapeID'],
@@ -612,6 +634,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             with arcpy.da.SearchCursor('ecoshape_review_view',
                                        [table_name_prefix + 'EcoshapeReview.EcoshapeID',
                                         table_name_prefix + 'EcoshapeReview.Markup',
+                                        table_name_prefix + 'EcoshapeReview.EcoshapeReviewNotes',
+                                        table_name_prefix + 'EcoshapeReview.Username',
                                         table_name_prefix + 'EcoshapeReview.MigrantStatus'],
                                        condition) as search_cursor:
                 search_row = None
@@ -627,13 +651,34 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     if not add:
                         del update_row
                     else:
+                        # get expert name and publish settings to populate reviewer comments
+                        with arcpy.da.SearchCursor(param_geodatabase + '/Expert',
+                                                    ['ExpertName', 'PublishName', 'PublishComments'],
+                                                    "Username = '" + search_row[table_name_prefix +
+                                                    'EcoshapeReview.Username'] + "'") as expert_cursor:
+                            expert_comment = None
+                            notes = 'Expert Ecoshape Review'
+                            for expert_row in EBARUtils.searchCursor(expert_cursor):
+                                if expert_row['PublishName']:
+                                    expert_comment = expert_row['ExpertName']
+                                else:
+                                    expert_comment = 'Anonymous'
+                                expert_comment += ' Reviewer Comment - '
+                                if expert_row['PublishComments']:
+                                    expert_comment += search_row[table_name_prefix + \
+                                        'EcoshapeReview.EcoshapeReviewNotes']
+                                else:
+                                    expert_comment += 'Unpublished'
+                                notes += '<br> ' + expert_comment
+                            if expert_comment:
+                                del expert_row
                         with arcpy.da.InsertCursor(param_geodatabase + '/RangeMapEcoshape',
                                                    ['RangeMapID', 'EcoshapeID', 'Presence',
                                                     'RangeMapEcoshapeNotes', 'MigrantStatus']) as insert_cursor:
                             insert_cursor.insertRow([range_map_id,
                                                      search_row[table_name_prefix + 'EcoshapeReview.EcoshapeID'],
                                                      search_row[table_name_prefix + 'EcoshapeReview.Markup'],
-                                                     'Expert Ecoshape Review',
+                                                     notes,
                                                      search_row[table_name_prefix + 'EcoshapeReview.MigrantStatus']])
                 if search_row:
                     del search_row
@@ -781,8 +826,9 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         completed_expert_reviews = 0
         null_rating_reviews = 0
         star_rating_sum = 0
+        experts_comments = []
         if len(prev_range_map_ids) > 0:
-            with arcpy.da.SearchCursor(param_geodatabase + '/Review', ['OverallStarRating'],
+            with arcpy.da.SearchCursor(param_geodatabase + '/Review', ['OverallStarRating', 'ReviewNotes', 'Username'],
                                        'RangeMapID IN (' + prev_range_map_ids +
                                        ') AND DateCompleted IS NOT NULL AND UseForMapGen = 1') as cursor:
                 row = None
@@ -792,6 +838,24 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                         star_rating_sum += row['OverallStarRating']
                     else:
                         null_rating_reviews += 1
+                    # get expert name and publish settings to populate reviewer comments
+                    with arcpy.da.SearchCursor(param_geodatabase + '/Expert',
+                                               ['ExpertName', 'PublishName', 'PublishComments'],
+                                               "Username = '" + row['Username'] + "'") as expert_cursor:
+                        expert_comment = None
+                        for expert_row in EBARUtils.searchCursor(expert_cursor):
+                            if expert_row['PublishName']:
+                                expert_comment = expert_row['ExpertName']
+                            else:
+                                expert_comment = 'Anonymous'
+                            expert_comment += ' Reviewer Comment - '
+                            if expert_row['PublishComments']:
+                                expert_comment += row['ReviewNotes']
+                            else:
+                                expert_comment += 'Unpublished'
+                            experts_comments.append(expert_comment)
+                        if expert_comment:
+                            del expert_row
                 if row:
                     del row
 
@@ -820,6 +884,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                 if completed_expert_reviews - null_rating_reviews > 0:
                     summary += ' (average star rating = ' + str(star_rating_sum /
                                                                 (completed_expert_reviews - null_rating_reviews)) + ')'
+                for expert_comment in experts_comments:
+                    summary += '<br>' + expert_comment
                 # Notes
                 notes = 'Primary Species Name - ' + param_species
                 if len(secondary_names) > 0:
