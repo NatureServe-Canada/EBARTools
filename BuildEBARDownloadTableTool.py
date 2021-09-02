@@ -34,16 +34,20 @@ class BuildEBARDownloadTableTool:
         # html header
         html = '''<!doctype html>
     <style>
-        h4 {
-            font: 'Roboto', sans-serif !important;Unicode","Lucida Sans",Tahoma,sans-serif;
-            font-size: 28px;
-            font-weight: normal;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+    </style>
+    <style>
         body {
-            font: 'Roboto', sans-serif !important;
+            font-family: 'Roboto', sans-serif !important;
             font-size: 14px; 
             color: #222222;
     	}
+        h4 {
+            font-family: 'Roboto', sans-serif !important;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
     	table {
 			border: solid 1px #dddddd;
             text-align: left;
