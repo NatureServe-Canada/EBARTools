@@ -527,6 +527,8 @@ def ExportRangeMapToCSV(range_map_view, range_map_ids, attributes_dict, output_f
     field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.RangeMapNotes', 'RangeMapNotes', 'TEXT'))
     field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.RangeMapComments', 'RangeMapComments',
                                               'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.ReviewerComments', 'ReviewerComments',
+                                              'TEXT'))
     field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.SynonymsUsed', 'SynonymsUsed', 'TEXT'))
     field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.ELEMENT_NATIONAL_ID',
                                               'ELEMENT_NATIONAL_ID', 'LONG'))
