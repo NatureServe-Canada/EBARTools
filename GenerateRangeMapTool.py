@@ -828,6 +828,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         null_rating_reviews = 0
         star_rating_sum = 0
         experts_comments = []
+        experts = []
         if len(prev_range_map_ids) > 0:
             with arcpy.da.SearchCursor(param_geodatabase + '/Review', ['OverallStarRating', 'ReviewNotes', 'Username'],
                                        'RangeMapID IN (' + prev_range_map_ids +
@@ -846,9 +847,11 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                         expert_comment = None
                         for expert_row in EBARUtils.searchCursor(expert_cursor):
                             if expert_row['PublishName']:
-                                expert_comment = expert_row['ExpertName']
+                                expert_name =  expert_row['ExpertName']
                             else:
-                                expert_comment = 'Anonymous'
+                                expert_name = 'Anonymous'
+                            experts.append(expert_name)
+                            expert_comment = expert_name
                             expert_comment += ' Reviewer Comment - '
                             if expert_row['PublishComments']:
                                 expert_comment += row['ReviewNotes']
@@ -863,7 +866,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         # update RangeMap metadata
         EBARUtils.displayMessage(messages, 'Updating Range Map record with Overall Summary')
         with arcpy.da.UpdateCursor('range_map_view',
-                                   ['RangeMetadata', 'RangeDate', 'RangeMapNotes', 'RangeMapScope', 'SynonymsUsed'],
+                                   ['RangeMetadata', 'RangeDate', 'RangeMapNotes', 'RangeMapScope', 'SynonymsUsed',
+                                    'ReviewerComments'],
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
             for update_row in update_cursor:
                 # Metadata
@@ -881,17 +885,28 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                         del search_row
                 summary = 'Input Records - ' + summary
                 # expert reviews
-                summary += '; Expert Reviews - ' + str(completed_expert_reviews)
+                #summary += '; Expert Reviews - ' + str(completed_expert_reviews)
+                summary += '; Expert Reviews - '
+                first = True
+                for expert_name in experts:
+                    if not first:
+                        summary += ', '
+                    first = False
+                    summary += expert_name
                 if completed_expert_reviews - null_rating_reviews > 0:
                     summary += ' (average star rating = ' + str(star_rating_sum /
                                                                 (completed_expert_reviews - null_rating_reviews)) + ')'
+                reviewer_comments = ''
                 for expert_comment in experts_comments:
-                    summary += '<br>' + expert_comment
+                    if len(reviewer_comments) > 0:
+                        reviewer_comments += '<br>'
+                    reviewer_comments += expert_comment
                 # Notes
                 notes = 'Primary Species Name - ' + param_species
                 if len(secondary_names) > 0:
                     notes += '; Synonyms - ' + secondary_names
-                update_cursor.updateRow([summary, datetime.datetime.now(), notes, scope, synonyms_used])
+                update_cursor.updateRow([summary, datetime.datetime.now(), notes, scope, synonyms_used,
+                                         reviewer_comments])
 
         # temp clean-up
         if arcpy.Exists(temp_unique_synonyms):
