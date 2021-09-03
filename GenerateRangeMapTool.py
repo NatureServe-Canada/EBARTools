@@ -600,7 +600,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                 'EcoshapeReview.EcoshapeReviewNotes']
                                         else:
                                             expert_comment += 'Unpublished'
-                                        summary += '<br> ' + expert_comment
+                                        summary += '<br>' + expert_comment
                                     if expert_comment:
                                         del expert_row
                             if search_row:
@@ -670,7 +670,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                         'EcoshapeReview.EcoshapeReviewNotes']
                                 else:
                                     expert_comment += 'Unpublished'
-                                notes += '<br> ' + expert_comment
+                                notes += '<br>' + expert_comment
                             if expert_comment:
                                 del expert_row
                         with arcpy.da.InsertCursor(param_geodatabase + '/RangeMapEcoshape',
