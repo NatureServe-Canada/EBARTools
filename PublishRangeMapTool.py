@@ -71,7 +71,7 @@ class PublishRangeMapTool:
                                        'RangeMapID = ' + param_range_map_id)
         with arcpy.da.SearchCursor('range_map_view',
                                     ['SpeciesID', 'RangeVersion', 'RangeStage', 'RangeDate', 'RangeMapScope',
-                                    'RangeMapNotes', 'RangeMetadata', 'RangeMapComments']) as cursor:
+                                    'RangeMapNotes', 'RangeMetadata', 'RangeMapComments', 'IncludeInDownloadTable']) as cursor:
             for row in EBARUtils.searchCursor(cursor):
                 species_id = row['SpeciesID']
                 pdf_html = pdf_html.replace('[RangeMap.RangeDate]', row['RangeDate'].strftime('%B %d, %Y'))
@@ -81,7 +81,16 @@ class PublishRangeMapTool:
                 pdf_html = pdf_html.replace('[RangeMap.RangeMapScope]', range_map_scope)
                 pdf_html = pdf_html.replace('[RangeMap.RangeMapNotes]', row['RangeMapNotes'])
                 pdf_html = pdf_html.replace('[RangeMap.RangeMetadata]', row['RangeMetadata'])
-                pdf_html = pdf_html.replace('[RangeMap.RangeMapComments]', str(row['RangeMapComments']))
+                comment = ''
+                if row['RangeMapComments']:
+                    comment += row['RangeMapComments']
+                if row['IncludeInDownloadTable'] == 1:
+                    if len(comment) > 0:
+                        comment += '<br>'
+                    comment += 'See spatial data for reviewer comments.'
+                if len(comment) == 0:
+                    comment = 'None'
+                pdf_html = pdf_html.replace('[RangeMap.RangeMapComments]', comment)
             if species_id:
                 del row
             else:
@@ -364,12 +373,12 @@ if __name__ == '__main__':
     #                         1847,1848,1850,1851,1852,1853,1854,1855,1857,1860,1863,1864,1872,1876,1896,623,629,644,
     #                         646,671,705,717,718,721,722,723,864,1086,1088,1095,1099,1101,1132,1163,1181,1239,1242,
     #                         1266,1731,1738,1740,1742,1744,1745,1751,1753,1757,1769,1795,1820,1821,1877]
-    non_spatial_batch_ids = [1806]
+    non_spatial_batch_ids = [1880]
     for id in non_spatial_batch_ids:
         # hard code parameters for debugging
         param_range_map_id = arcpy.Parameter()
         param_range_map_id.value = str(id)
         param_spatial = arcpy.Parameter()
-        param_spatial.value = 'false'
+        param_spatial.value = 'true'
         parameters = [param_range_map_id, param_spatial]
         prm.runPublishRangeMapTool(parameters, None)

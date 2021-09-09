@@ -923,7 +923,7 @@ def inputSelectAndBuffer(geodatabase, input_features, range_map_id, table_name_p
 
     # select any from secondary inputs (chicken and egg - RangeMapID must already exist!)
     arcpy.AddJoin_management(input_features + '_layer', input_features + 'ID', geodatabase + '/SecondaryInput',
-                             input_features+ 'ID')
+                             input_features + 'ID')
     arcpy.SelectLayerByAttribute_management(input_features + '_layer', 'NEW_SELECTION',
                                             table_name_prefix + 'SecondaryInput.RangeMapID = ' + str(range_map_id))
     arcpy.RemoveJoin_management(input_features + '_layer', table_name_prefix + 'SecondaryInput')
