@@ -63,40 +63,32 @@ class PublishRangeMapTool:
         pdf_html = pdf_html.replace('[reviews_header_image]', EBARUtils.resources_folder + '/reviews_header.png')
         pdf_html = pdf_html.replace('[credits_header_image]', EBARUtils.resources_folder + '/credits_header.png')
 
-        # get range map data from database
-        EBARUtils.displayMessage(messages, 'Getting RangeMap data from database')
+        # get species_id
+        EBARUtils.displayMessage(messages, 'Getting SpeciesID from database')
         species_id = None
-        range_map_scope = None
         arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/11', 'range_map_view',
                                        'RangeMapID = ' + param_range_map_id)
-        with arcpy.da.SearchCursor('range_map_view',
-                                    ['SpeciesID', 'RangeVersion', 'RangeStage', 'RangeDate', 'RangeMapScope',
-                                    'RangeMapNotes', 'RangeMetadata', 'RangeMapComments', 'IncludeInDownloadTable']) as cursor:
+        with arcpy.da.SearchCursor('range_map_view', ['SpeciesID']) as cursor:
             for row in EBARUtils.searchCursor(cursor):
                 species_id = row['SpeciesID']
-                pdf_html = pdf_html.replace('[RangeMap.RangeDate]', row['RangeDate'].strftime('%B %d, %Y'))
-                pdf_html = pdf_html.replace('[RangeMap.RangeVersion]', row['RangeVersion'])
-                pdf_html = pdf_html.replace('[RangeMap.RangeStage]', row['RangeStage'])
-                range_map_scope = EBARUtils.scope_dict[row['RangeMapScope']]
-                pdf_html = pdf_html.replace('[RangeMap.RangeMapScope]', range_map_scope)
-                pdf_html = pdf_html.replace('[RangeMap.RangeMapNotes]', row['RangeMapNotes'])
-                pdf_html = pdf_html.replace('[RangeMap.RangeMetadata]', row['RangeMetadata'])
-                comment = ''
-                if row['RangeMapComments']:
-                    comment += row['RangeMapComments']
-                if row['IncludeInDownloadTable'] == 1:
-                    if len(comment) > 0:
-                        comment += '<br>'
-                    comment += 'See spatial data for reviewer comments.'
-                if len(comment) == 0:
-                    comment = 'None'
-                pdf_html = pdf_html.replace('[RangeMap.RangeMapComments]', comment)
             if species_id:
                 del row
             else:
                 EBARUtils.displayMessage(messages, 'ERROR: Range Map Not Found')
                 # terminate with error
                 return
+
+        # get species data from database
+        EBARUtils.displayMessage(messages, 'Getting Species data from database')
+        endemism_type = 'None'
+        arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/19', 'species_view',
+                                       'SpeciesID = ' + str(species_id))
+        with arcpy.da.SearchCursor('species_view', ['Endemism_Type']) as cursor:
+            for row in EBARUtils.searchCursor(cursor):
+                if row['Endemism_Type']:
+                    endemism_type = row['Endemism_Type']
+            del row
+        pdf_html = pdf_html.replace('[Species.Endemism_Type]', endemism_type)
 
         # get biotics data from database
         EBARUtils.displayMessage(messages, 'Getting Biotics data from database')
@@ -139,18 +131,6 @@ class PublishRangeMapTool:
                 #pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.G_JURIS_ENDEM_DESC]', endemism)
             del row
 
-        # get species data from database
-        EBARUtils.displayMessage(messages, 'Getting Species data from database')
-        endemism_type = 'None'
-        arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/19', 'species_view',
-                                       'SpeciesID = ' + str(species_id))
-        with arcpy.da.SearchCursor('species_view', ['Endemism_Type']) as cursor:
-            for row in EBARUtils.searchCursor(cursor):
-                if row['Endemism_Type']:
-                    endemism_type = row['Endemism_Type']
-            del row
-        pdf_html = pdf_html.replace('[Species.Endemism_Type]', endemism_type)
-
         # get input references
         EBARUtils.displayMessage(messages, 'Getting InputReferences from database')
         input_references = ''
@@ -169,6 +149,35 @@ class PublishRangeMapTool:
             if row:
                 del row
         pdf_html = pdf_html.replace('[InputReferences]', input_references)
+
+        # get range map data from database
+        EBARUtils.displayMessage(messages, 'Getting RangeMap data from database')
+        range_map_scope = None
+        with arcpy.da.SearchCursor('range_map_view',
+                                    ['SpeciesID', 'RangeVersion', 'RangeStage', 'RangeDate', 'RangeMapScope',
+                                     'RangeMapNotes', 'RangeMetadata', 'RangeMapComments',
+                                     'IncludeInDownloadTable']) as cursor:
+            for row in EBARUtils.searchCursor(cursor):
+                pdf_html = pdf_html.replace('[RangeMap.RangeDate]', row['RangeDate'].strftime('%B %d, %Y'))
+                pdf_html = pdf_html.replace('[RangeMap.RangeVersion]', row['RangeVersion'])
+                pdf_html = pdf_html.replace('[RangeMap.RangeStage]', row['RangeStage'])
+                range_map_scope = EBARUtils.scope_dict[row['RangeMapScope']]
+                pdf_html = pdf_html.replace('[RangeMap.RangeMapScope]', range_map_scope)
+                pdf_html = pdf_html.replace('[RangeMap.RangeMapNotes]', row['RangeMapNotes'])
+                pdf_html = pdf_html.replace('[RangeMap.RangeMetadata]', row['RangeMetadata'])
+                comment = ''
+                if row['RangeMapComments']:
+                    comment += row['RangeMapComments']
+                if row['IncludeInDownloadTable'] == 1:
+                    if len(comment) > 0:
+                        comment += '<br>'
+                    comment += '<a href="' + EBARUtils.download_url + '/EBAR' + element_global_id + \
+                        '.zip" target="_blank">See spatial data for reviewer comments.</a>'
+                if len(comment) == 0:
+                    comment = 'None'
+                pdf_html = pdf_html.replace('[RangeMap.RangeMapComments]', comment)
+            if range_map_scope:
+                del row
 
         # insert fixed list of reviewers by taxa
         EBARUtils.displayMessage(messages, 'Inserting ReviewersByTaxa file')
@@ -329,12 +338,12 @@ class PublishRangeMapTool:
 
         # results link messages
         EBARUtils.displayMessage(messages,
-                                 'Image: https://gis.natureserve.ca/download/EBAR' + element_global_id + '.jpg')
+                                 'Image: ' + EBARUtils.download_url + '/EBAR' + element_global_id + '.jpg')
         EBARUtils.displayMessage(messages,
-                                 'PDF: https://gis.natureserve.ca/download/EBAR' + element_global_id + '.pdf')
+                                 'PDF: ' + EBARUtils.download_url + '/EBAR' + element_global_id + '.pdf')
         if param_spatial == 'true':
             EBARUtils.displayMessage(messages,
-                                     'GIS Data: https://gis.natureserve.ca/download/EBAR' + element_global_id + '.zip')
+                                     'GIS Data: ' + EBARUtils.download_url + '/EBAR' + element_global_id + '.zip')
 
         # cleanup
         arcpy.Delete_management('range_map_view')
