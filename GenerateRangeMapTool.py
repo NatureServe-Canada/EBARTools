@@ -845,11 +845,13 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                ['ExpertName', 'PublishName', 'PublishComments'],
                                                "Username = '" + row['Username'] + "'") as expert_cursor:
                         expert_comment = None
+                        anonymous_count = 0
                         for expert_row in EBARUtils.searchCursor(expert_cursor):
                             if expert_row['PublishName']:
                                 expert_name =  expert_row['ExpertName']
                             else:
                                 expert_name = 'Anonymous'
+                                anonymous_count += 1
                             experts.append(expert_name)
                             expert_comment = expert_name
                             expert_comment += ' Reviewer Comment - '
@@ -889,10 +891,15 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                 summary += '; Expert Reviews - '
                 first = True
                 for expert_name in experts:
+                    if expert_name != 'Anonymous':
+                        if not first:
+                            summary += ', '
+                        first = False
+                        summary += expert_name
+                if anonymous_count > 0:
                     if not first:
                         summary += ', '
-                    first = False
-                    summary += expert_name
+                    summary += str(anonymous_count) + ' Anonymous'
                 if completed_expert_reviews - null_rating_reviews > 0:
                     summary += ' (average star rating = ' + str(star_rating_sum /
                                                                 (completed_expert_reviews - null_rating_reviews)) + ')'

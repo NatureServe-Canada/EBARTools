@@ -172,7 +172,7 @@ class PublishRangeMapTool:
                     if len(comment) > 0:
                         comment += '<br>'
                     comment += '<a href="' + EBARUtils.download_url + '/EBAR' + element_global_id + \
-                        '.zip" target="_blank">See spatial data for reviewer comments.</a>'
+                        '.zip" target="_blank">Please see spatial data for reviewer comments</a>.'
                 if len(comment) == 0:
                     comment = 'None'
                 pdf_html = pdf_html.replace('[RangeMap.RangeMapComments]', comment)
