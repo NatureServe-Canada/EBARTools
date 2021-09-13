@@ -829,6 +829,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         star_rating_sum = 0
         experts_comments = []
         experts = []
+        anonymous_count = 0
         if len(prev_range_map_ids) > 0:
             with arcpy.da.SearchCursor(param_geodatabase + '/Review', ['OverallStarRating', 'ReviewNotes', 'Username'],
                                        'RangeMapID IN (' + prev_range_map_ids +
@@ -845,7 +846,6 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                ['ExpertName', 'PublishName', 'PublishComments'],
                                                "Username = '" + row['Username'] + "'") as expert_cursor:
                         expert_comment = None
-                        anonymous_count = 0
                         for expert_row in EBARUtils.searchCursor(expert_cursor):
                             if expert_row['PublishName']:
                                 expert_name =  expert_row['ExpertName']
