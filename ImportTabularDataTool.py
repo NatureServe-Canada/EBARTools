@@ -324,8 +324,9 @@ class ImportTabularDataTool:
             # already exists
             if quality_grade != 'research':
                 # delete it because it has been downgraded
-                with arcpy.da.UpdateCursor(geodatabase + '/InputPoint', ['CoordinatesObscured'],
-                                           "InputPointID = " + str(id_dict[unique_id_species])) as cursor:
+                with arcpy.da.UpdateCursor(geodatabase + '/InputPoint',
+                                           ['InputPointID', 'InputDatasetID', 'SpeciesID'],
+                                           'InputPointID = ' + str(id_dict[unique_id_species])) as cursor:
                                            #"DatasetSourceUniqueID = '" + str(file_line[field_dict['unique_id']]) +
                                            #"' AND InputDatasetID = " + str(input_dataset_id)) as cursor:
                     row = None
