@@ -417,13 +417,13 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_raw_data_file = arcpy.Parameter()
-    param_raw_data_file.value = 'C:/GIS/iNatExchange/Output/iNatTest2.csv'
+    param_raw_data_file.value = 'C:/GIS/iNatExchange/Output/iNatTest3.csv'
     param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'iNaturalist TEST2'
+    param_dataset_name.value = 'iNaturalist TEST3'
     param_dataset_source = arcpy.Parameter()
     param_dataset_source.value = 'iNaturalist.ca'
     param_date_received = arcpy.Parameter()
-    param_date_received.value = 'September 27, 2021'
+    param_date_received.value = 'September 30, 2021'
     param_restrictions = arcpy.Parameter()
     param_restrictions.value = 'Restricted'
     parameters = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_source,
