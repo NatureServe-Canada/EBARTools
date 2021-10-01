@@ -114,7 +114,8 @@ class SyncSpeciesListBioticsTool:
                           'INACTIVE_IND',
                           'N_ENDEMISM_DESC',
                           'G_JURIS_ENDEM_DESC',
-                          'FORMATTED_FULL_CITATION']
+                          'FORMATTED_FULL_CITATION',
+                          'COSEWIC_ASSESS_CRITERIA']
         # fields that only get overwritten on update if they are currently null
         # this is to avoid overwriting a value from a CDC recevied as part of an input point/line/polygon import
         special_fields = ['AB_DATASEN',
@@ -246,6 +247,6 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_csv = arcpy.Parameter()
-    param_csv.value = 'C:/Users/rgree/Downloads/rgreene_1624977424028.csv'
+    param_csv.value = 'C:/Users/rgree/Downloads/rgreene_1633090553524.csv'
     parameters = [param_geodatabase, param_csv]
     ssl.runSyncSpeciesListBioticsTool(parameters, None)
