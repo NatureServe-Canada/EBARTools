@@ -273,11 +273,16 @@ class ImportTabularDataTool:
         # Accuracy
         accuracy = None
         if (not coordinates_obscured) or private_coords:
-            if field_dict['accuracy']:
+            if private_coords:
+                if field_dict['private_accuracy']:
+                    if file_line[field_dict['private_accuracy']] not in ('NA', ''):
+                        accuracy = round(float(file_line[field_dict['private_accuracy']]))
+            elif field_dict['accuracy']:
                 if file_line[field_dict['accuracy']] not in ('NA', ''):
                     accuracy = round(float(file_line[field_dict['accuracy']]))
-                    if accuracy > EBARUtils.worst_accuracy:
-                        return None, 'inaccurate', None
+            if accuracy:
+                if accuracy > EBARUtils.worst_accuracy:
+                    return None, 'inaccurate', None
         else:
             # provided accuracy is not relevant for obscured data, estimate based on 0.2 degree square
             accuracy = EBARUtils.estimateAccuracy(input_point.Y, 0.2)
@@ -417,9 +422,9 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_raw_data_file = arcpy.Parameter()
-    param_raw_data_file.value = 'C:/GIS/iNatExchange/Output/iNatTest3.csv'
+    param_raw_data_file.value = 'C:/GIS/iNatExchange/Output/iNatTest5.csv'
     param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'iNaturalist TEST3'
+    param_dataset_name.value = 'iNaturalist TEST5'
     param_dataset_source = arcpy.Parameter()
     param_dataset_source.value = 'iNaturalist.ca'
     param_date_received = arcpy.Parameter()
