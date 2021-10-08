@@ -120,6 +120,7 @@ class ImportTabularDataTool:
         updates = 0
         non_research = 0
         deleted = 0
+        private = 0
         bad_date = 0
         try:
             for file_line in reader:
@@ -149,6 +150,8 @@ class ImportTabularDataTool:
                 elif status == 'deleted':
                     non_research += 1
                     deleted += 1
+                elif status == 'private':
+                    private += 1
                 if status in ('new', 'updated') and not max_date:
                     bad_date += 1
         except:
@@ -168,15 +171,16 @@ class ImportTabularDataTool:
             # summary and end time
             EBARUtils.displayMessage(messages, 'Summary:')
             EBARUtils.displayMessage(messages, 'Processed - ' + str(count))
-            EBARUtils.displayMessage(messages, 'Species not matched - ' + str(no_species_match))
-            EBARUtils.displayMessage(messages, 'No coordinates - ' + str(no_coords))
+            EBARUtils.displayMessage(messages, 'Species not matched (rejected) - ' + str(no_species_match))
+            EBARUtils.displayMessage(messages, 'No coordinates (rejected) - ' + str(no_coords))
             EBARUtils.displayMessage(messages,
-                                     'Accuracy worse than ' + str(EBARUtils.worst_accuracy) + ' m - ' + str(inaccurate))
-            EBARUtils.displayMessage(messages, 'Fossils - ' + str(fossils))
-            #EBARUtils.displayMessage(messages, 'Duplicates - ' + str(duplicates))
+                                     'Accuracy worse than ' + str(EBARUtils.worst_accuracy) +
+                                     ' m (rehected) - ' + str(inaccurate))
+            EBARUtils.displayMessage(messages, 'Fossils (rejected) - ' + str(fossils))
+            EBARUtils.displayMessage(messages, 'Geoprivacy=private (rejected) - ' + str(bad_date))
+            EBARUtils.displayMessage(messages, 'Non-research (rejected) - ' + str(non_research))
+            EBARUtils.displayMessage(messages, 'Non-research (deleted) - ' + str(deleted))
             EBARUtils.displayMessage(messages, 'Duplicates updated - ' + str(updates))
-            EBARUtils.displayMessage(messages, 'Non-research - ' + str(non_research))
-            EBARUtils.displayMessage(messages, 'Non-research deleted - ' + str(deleted))
             EBARUtils.displayMessage(messages, 'Imported without date - ' + str(bad_date))
             end_time = datetime.datetime.now()
             EBARUtils.displayMessage(messages, 'End time: ' + str(end_time))
@@ -380,6 +384,8 @@ class ImportTabularDataTool:
         geoprivacy = None
         if field_dict['geoprivacy']:
             geoprivacy = file_line[field_dict['geoprivacy']]
+            if geoprivacy == 'private':
+                return None, 'private', None
 
         # TaxonGeoprivacy
         taxon_geoprivacy = None
@@ -422,9 +428,9 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_raw_data_file = arcpy.Parameter()
-    param_raw_data_file.value = 'C:/GIS/iNatExchange/Output/iNatTest5.csv'
+    param_raw_data_file.value = 'C:/GIS/iNatExchange/Output/obscured_for_ebar_import.csv'
     param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'iNaturalist TEST5'
+    param_dataset_name.value = 'iNaturalist TEST6'
     param_dataset_source = arcpy.Parameter()
     param_dataset_source.value = 'iNaturalist.ca'
     param_date_received = arcpy.Parameter()
