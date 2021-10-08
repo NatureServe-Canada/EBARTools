@@ -177,7 +177,7 @@ class ImportTabularDataTool:
                                      'Accuracy worse than ' + str(EBARUtils.worst_accuracy) +
                                      ' m (rehected) - ' + str(inaccurate))
             EBARUtils.displayMessage(messages, 'Fossils (rejected) - ' + str(fossils))
-            EBARUtils.displayMessage(messages, 'Geoprivacy=private (rejected) - ' + str(bad_date))
+            EBARUtils.displayMessage(messages, 'Geoprivacy=private (rejected) - ' + str(private))
             EBARUtils.displayMessage(messages, 'Non-research (rejected) - ' + str(non_research))
             EBARUtils.displayMessage(messages, 'Non-research (deleted) - ' + str(deleted))
             EBARUtils.displayMessage(messages, 'Duplicates updated - ' + str(updates))
@@ -428,7 +428,7 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_raw_data_file = arcpy.Parameter()
-    param_raw_data_file.value = 'C:/GIS/iNatExchange/Output/obscured_for_ebar_import.csv'
+    param_raw_data_file.value = 'C:/GIS/iNatExchange/Output/iNatTest6.csv'
     param_dataset_name = arcpy.Parameter()
     param_dataset_name.value = 'iNaturalist TEST6'
     param_dataset_source = arcpy.Parameter()
