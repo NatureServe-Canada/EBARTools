@@ -194,6 +194,8 @@ class ImportTabularDataTool:
                       synonym_species_dict, file_line, field_dict, no_match_list, messages):
         """If point already exists, check if needs update; otherwise, add"""
         # check for species
+        ## NT perf debug
+        species_start = datetime.datetime.now()
         if not file_line[field_dict['scientific_name']]:
             if '[None]' not in no_match_list:
                 no_match_list.append('[None]')
@@ -216,7 +218,12 @@ class ImportTabularDataTool:
                 synonym_id = synonym_dict[file_line[field_dict['scientific_name']].lower()]
         #unique_id_species = str(file_line[field_dict['unique_id']]) + ' - ' + str(species_id)
         unique_id_species = str(file_line[field_dict['unique_id']])
+        ## NT perf debug
+        species_time = datetime.datetime.now() - species_start
+        EBARUtils.displayMessage(messages, 'Species checked: ' + str(species_time))
 
+        ## NT perf debug
+        ob_geom_accuracy_start = datetime.datetime.now()
         # CoordinatesObscured
         coordinates_obscured = False
         if field_dict['coordinates_obscured']:
@@ -290,7 +297,12 @@ class ImportTabularDataTool:
         else:
             # provided accuracy is not relevant for obscured data, estimate based on 0.2 degree square
             accuracy = EBARUtils.estimateAccuracy(input_point.Y, 0.2)
+        ## NT perf debug
+        ob_geom_accuracy_time = datetime.datetime.now() - ob_geom_accuracy_start
+        EBARUtils.displayMessage(messages, 'Obscured, Geometry, Accuracy: ' + str(ob_geom_accuracy_time))
 
+        ## NT perf debug
+        date_fossil_grade_start = datetime.datetime.now()
         # MaxDate
         max_date = None
         if field_dict['date']:
@@ -363,7 +375,12 @@ class ImportTabularDataTool:
         # don't add non research grade
         if quality_grade != 'research':
             return None, 'non-research', None
+        ## NT perf debug
+        date_fossil_grade_time = datetime.datetime.now() - date_fossil_grade_start
+        EBARUtils.displayMessage(messages, 'Date, Fossil, Grade, Uniqueness: ' + str(date_fossil_grade_time))
 
+        ## NT perf debug
+        other_start = datetime.datetime.now()
         # URI
         uri = None
         if field_dict['uri']:
@@ -391,7 +408,12 @@ class ImportTabularDataTool:
         taxon_geoprivacy = None
         if field_dict['taxon_geoprivacy']:
             taxon_geoprivacy = file_line[field_dict['taxon_geoprivacy']]
+        ## NT perf debug
+        other_time = datetime.datetime.now() - other_start
+        EBARUtils.displayMessage(messages, 'Other Fields: ' + str(other_time))
 
+        ## NT perf debug
+        save_start = datetime.datetime.now()
         # update or insert
         if update:
             with arcpy.da.UpdateCursor(geodatabase + '/InputPoint',
@@ -405,6 +427,9 @@ class ImportTabularDataTool:
                                       coordinates_obscured, accuracy, individual_count, geoprivacy, taxon_geoprivacy])
                 if row:
                     del row
+            ## NT perf debug
+            save_time = datetime.datetime.now() - save_start
+            EBARUtils.displayMessage(messages, 'Save: ' + str(save_time))
             return id_dict[unique_id_species], 'updated', max_date
         else:
             # insert, set new id and return
@@ -418,6 +443,9 @@ class ImportTabularDataTool:
                                               geoprivacy, taxon_geoprivacy])
             input_point_id = EBARUtils.getUniqueID(geodatabase + '/InputPoint', 'InputPointID', object_id)
             id_dict[unique_id_species] = input_point_id
+            ## NT perf debug
+            save_time = datetime.datetime.now() - save_start
+            EBARUtils.displayMessage(messages, 'Save: ' + str(save_time))
             return input_point_id, 'new', max_date
 
 
@@ -428,15 +456,15 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_raw_data_file = arcpy.Parameter()
-    param_raw_data_file.value = 'C:/GIS/iNatExchange/Output/iNatTest6.csv'
+    param_raw_data_file.value = 'C:/Users/rgree/Downloads/BGC_GNWT_CollarandSurveyLocations_19000101to20201231_Subset2.csv'
     param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'iNaturalist TEST6'
+    param_dataset_name.value = 'NWT Caribou TEST'
     param_dataset_source = arcpy.Parameter()
-    param_dataset_source.value = 'iNaturalist.ca'
+    param_dataset_source.value = 'Other'
     param_date_received = arcpy.Parameter()
-    param_date_received.value = 'September 30, 2021'
+    param_date_received.value = 'October 19, 2021'
     param_restrictions = arcpy.Parameter()
-    param_restrictions.value = 'Restricted'
+    param_restrictions.value = 'Restricted EBAR'
     parameters = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_source,
                   param_date_received, param_restrictions]
     itd.runImportTabularDataTool(parameters, None)
