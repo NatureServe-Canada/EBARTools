@@ -954,14 +954,14 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_species = arcpy.Parameter()
-    param_species.value = 'Muhlenbergia andina' #Acalypta cooleyi' #Bombus suckleyi
+    param_species.value = 'Micranthes spicata' #Acalypta cooleyi' #Bombus suckleyi
     param_secondary = arcpy.Parameter()
     param_secondary.value = None
     #param_secondary.value = "'Abronia latifolia'" #"'Dodia tarandus';'Dodia verticalis'"
     param_version = arcpy.Parameter()
     param_version.value = '1.0'
     param_stage = arcpy.Parameter()
-    param_stage.value = 'Expert Reviewed'
+    param_stage.value = 'Expert reviewed test00'
     param_scope = arcpy.Parameter()
     param_scope.value = None
     #param_scope.value = 'Canadian'

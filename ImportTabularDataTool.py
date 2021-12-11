@@ -102,7 +102,10 @@ class ImportTabularDataTool:
 
         # read existing unique IDs into dict
         EBARUtils.displayMessage(messages, 'Reading existing Unique IDs for the Dataset Source')
-        id_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, table_name_prefix, dataset_source_id, 'Point')
+        id_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, table_name_prefix, dataset_source_id,
+                                                       'Point', False)
+        bad_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, table_name_prefix, dataset_source_id,
+                                                        'Point', True)
 
         # try to open data file as a csv
         infile = io.open(param_raw_data_file, 'r', encoding='mbcs') # mbcs encoding is Windows ANSI
@@ -116,7 +119,7 @@ class ImportTabularDataTool:
         no_coords = 0
         inaccurate = 0
         fossils = 0
-        #duplicates = 0
+        bad_data = 0
         updates = 0
         non_research = 0
         deleted = 0
@@ -125,9 +128,10 @@ class ImportTabularDataTool:
         try:
             for file_line in reader:
                 # check/add point for current line
-                input_point_id, status, max_date = self.CheckAddPoint(id_dict, param_geodatabase, input_dataset_id,
-                                                                      species_dict, synonym_dict, synonym_species_dict,
-                                                                      file_line, field_dict, no_match_list, messages)
+                input_point_id, status, max_date = self.CheckAddPoint(id_dict, bad_dict, param_geodatabase,
+                                                                      input_dataset_id, species_dict, synonym_dict,
+                                                                      synonym_species_dict, file_line, field_dict,
+                                                                      no_match_list, messages)
                 # increment/report counts
                 count += 1
                 if count % 1000 == 0:
@@ -140,10 +144,9 @@ class ImportTabularDataTool:
                     inaccurate += 1
                 elif status == 'fossil':
                     fossils += 1
-                #elif status == 'duplicate':
-                #    duplicates += 1
+                elif status == 'bad_data':
+                    bad_data += 1
                 elif status == 'updated':
-                    #duplicates += 1
                     updates += 1
                 elif status == 'non-research':
                     non_research += 1
@@ -180,6 +183,7 @@ class ImportTabularDataTool:
             EBARUtils.displayMessage(messages, 'Geoprivacy=private (rejected) - ' + str(private))
             EBARUtils.displayMessage(messages, 'Non-research (rejected) - ' + str(non_research))
             EBARUtils.displayMessage(messages, 'Non-research (deleted) - ' + str(deleted))
+            EBARUtils.displayMessage(messages, 'Bad Data ignored - ' + str(bad_data))
             EBARUtils.displayMessage(messages, 'Duplicates updated - ' + str(updates))
             EBARUtils.displayMessage(messages, 'Imported without date - ' + str(bad_date))
             end_time = datetime.datetime.now()
@@ -190,7 +194,7 @@ class ImportTabularDataTool:
         infile.close()
         return
 
-    def CheckAddPoint(self, id_dict, geodatabase, input_dataset_id, species_dict, synonym_dict,
+    def CheckAddPoint(self, id_dict, bad_dict, geodatabase, input_dataset_id, species_dict, synonym_dict,
                       synonym_species_dict, file_line, field_dict, no_match_list, messages):
         """If point already exists, check if needs update; otherwise, add"""
         # check for species
@@ -338,6 +342,10 @@ class ImportTabularDataTool:
         if field_dict['quality_grade']:
             quality_grade = file_line[field_dict['quality_grade']]
 
+        # check for existing bad data with same unique_id within the dataset source
+        if unique_id_species in bad_dict:
+            return None, 'bad_data', None
+
         # check for existing point with same unique_id within the dataset source
         delete = False
         update = False
@@ -456,15 +464,15 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_raw_data_file = arcpy.Parameter()
-    param_raw_data_file.value = 'C:/Users/rgree/Downloads/BGC_GNWT_CollarandSurveyLocations_19000101to20201231_Subset3.csv'
+    param_raw_data_file.value = 'C:/GIS/EBAR/NCC/NCC_Merge_GBIF_test.csv'
     param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'NWT Other TEST'
+    param_dataset_name.value = 'NCC GBIF BadData Test'
     param_dataset_source = arcpy.Parameter()
-    param_dataset_source.value = 'Other'
+    param_dataset_source.value = 'NCC_GBIF'
     param_date_received = arcpy.Parameter()
-    param_date_received.value = 'October 21, 2021'
+    param_date_received.value = 'November 15, 2021'
     param_restrictions = arcpy.Parameter()
-    param_restrictions.value = 'Restricted EBAR'
+    param_restrictions.value = 'Non-restricted'
     parameters = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_source,
                   param_date_received, param_restrictions]
     itd.runImportTabularDataTool(parameters, None)

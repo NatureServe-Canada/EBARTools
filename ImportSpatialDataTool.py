@@ -254,7 +254,9 @@ class ImportSpatialDataTool:
         # read existing unique IDs into dict
         EBARUtils.displayMessage(messages, 'Reading existing unique IDs')
         id_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, table_name_prefix, dataset_source_id,
-                                                       feature_class_type)
+                                                       feature_class_type, False)
+        bad_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, table_name_prefix, dataset_source_id,
+                                                       feature_class_type, True)
 
         # make temp copy of features being imported so that it is geodatabase format
         EBARUtils.displayMessage(messages, 'Copying features to temporary feature class')
@@ -280,11 +282,12 @@ class ImportSpatialDataTool:
         # loop to check/add species and flag duplicates
         overall_count = 0
         added = 0
+        bad_data = 0
         duplicates = 0
         inaccurate = 0
         no_coords = 0
         no_species_match = 0
-        bad_date = 0
+        no_date = 0
         species_updates = 0
         no_match_list = []
         subnation = None
@@ -298,7 +301,7 @@ class ImportSpatialDataTool:
                 if overall_count % 1000 == 0:
                     EBARUtils.displayMessage(messages, 'Subnation, species, ' + \
                                              'coordinates and duplicates pre-processed ' + str(overall_count))
-                # ignore_imp: 0=Add, 1=Ignore(species, coords), 2=Duplicate/Update
+                # ignore_imp: 0=Add, 1=Ignore(species, coords, bad), 2=Duplicate/Update
                 ignore_imp = 0
                 # check for species
                 species_id = None
@@ -336,6 +339,10 @@ class ImportSpatialDataTool:
                         if str(uid_raw) in id_dict:
                             duplicates += 1
                             ignore_imp = 2
+                        # check for existing bad
+                        if str(uid_raw) in bad_dict:
+                            bad_data += 1
+                            ignore_imp = 1
                 # save
                 values = [row[field_dict['DatasetSourceUniqueID']], row[field_dict['scientific_name']], species_id,
                           synonym_id, ignore_imp, row['SHAPE@']]
@@ -439,7 +446,7 @@ class ImportSpatialDataTool:
                                 max_date = EBARUtils.extractDate(row[field_dict['max_date']].strip())
                         cursor.updateRow([row[field_dict['max_date']], max_date])
                         if not max_date:
-                            bad_date += 1
+                            no_date += 1
                     if row:
                         del row
                 EBARUtils.displayMessage(messages, 'Max Date pre-processed ' + str(loop_count))
@@ -575,13 +582,14 @@ class ImportSpatialDataTool:
         EBARUtils.displayMessage(messages, 'Summary:')
         EBARUtils.displayMessage(messages, 'Processed - ' + str(overall_count))
         EBARUtils.displayMessage(messages, 'Added - ' + str(added))
+        EBARUtils.displayMessage(messages, 'Bad Data ignored - ' + str(bad_data))
         EBARUtils.displayMessage(messages, 'Duplicates updated - ' + str(duplicates))
         EBARUtils.displayMessage(messages, 'Records with no species match - ' + str(no_species_match))
         EBARUtils.displayMessage(messages, 'No coordinates - ' + str(no_coords))
         EBARUtils.displayMessage(messages,
                                  'Accuracy worse than ' + str(EBARUtils.worst_accuracy) + ' m - ' + str(inaccurate))
         if field_dict['max_date']:
-            EBARUtils.displayMessage(messages, 'Imported without date - ' + str(bad_date))
+            EBARUtils.displayMessage(messages, 'Imported without date - ' + str(no_date))
         else:
             EBARUtils.displayMessage(messages, 'Imported without date - ' + str(overall_count - no_species_match - 
                                                                                 no_coords - inaccurate))
@@ -601,15 +609,15 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_import_feature_class = arcpy.Parameter()
-    param_import_feature_class.value = 'C:/GIS/EBAR/CDN_CDC_Data/Quebec/EO_S_v2021-06-17.shp'
+    param_import_feature_class.value = 'C:/GIS/EBAR/US_CDC_Data/Nature_Serve/EBAR_EOs_NJ_OH_supplement_20200305.shp'
     param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'Quebec EOs'
+    param_dataset_name.value = 'NJ OH Supplement BadData Test'
     param_dataset_source = arcpy.Parameter()
-    param_dataset_source.value = 'QC Element Occurrences'
+    param_dataset_source.value = 'US Element Occurrences'
     param_date_received = arcpy.Parameter()
-    param_date_received.value = 'June 17, 2021'
+    param_date_received.value = 'November 15, 2021'
     param_restrictions = arcpy.Parameter()
-    param_restrictions.value = 'Restricted'
+    param_restrictions.value = 'Restricted EBAR'
     parameters = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_source,
                   param_date_received, param_restrictions]
     isd.runImportSpatialDataTool(parameters, None)

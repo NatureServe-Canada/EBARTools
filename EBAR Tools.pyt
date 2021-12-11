@@ -29,6 +29,7 @@ import ImportVisitsTool
 import SummarizeDownloadsTool
 import PublishRangeMapTool
 import PublishRangeMapSetsTool
+import FlagBadDataUsingIDTool
 import EBARUtils
 import datetime
 import locale
@@ -44,7 +45,8 @@ class Toolbox(object):
         self.tools = [ImportTabularData, ImportSpatialData, GenerateRangeMap, ListElementNationalIDs,
                       SyncSpeciesListBiotics, AddSynonyms, ImportExternalRangeReview, SyncSpeciesListKBA,
                       BuildEBARDownloadTable, BuildBulkDownloadTable, ExportInputData, FlagBadDataUsingRange,
-                      DeleteRangeMap, ImportVisits, SummarizeDownloads, PublishRangeMap, PublishRangeMapSets]
+                      DeleteRangeMap, ImportVisits, SummarizeDownloads, PublishRangeMap, PublishRangeMapSets,
+                      FlagBadDataUsingID]
 
 
 class ImportTabularData(object):
@@ -1180,4 +1182,88 @@ class PublishRangeMapSets(object):
         """The source code of the tool."""
         prms = PublishRangeMapSetsTool.PublishRangeMapSetsTool()
         prms.runPublishRangeMapSetsTool(parameters, messages)
+        return
+
+
+class FlagBadDataUsingID(object):
+    def __init__(self):
+        """Define the tool (tool name is the name of the class)."""
+        self.label = 'Flag Bad Data Using ID'
+        self.description = 'Flag bad input data using an InputPoint/Line/PolygonID'
+        self.canRunInBackground = True
+
+    def getParameterInfo(self):
+        """Define parameter definitions"""
+        # Geodatabase
+        param_geodatabase = arcpy.Parameter(
+            displayName='Geodatabase',
+            name='geodatabase',
+            datatype='DEWorkspace',
+            parameterType='Required',
+            direction='Input')
+        param_geodatabase.filter.list = ['Local Database', 'Remote Database']
+
+        # Input Point ID
+        param_input_point_id = arcpy.Parameter(
+            displayName='Input Point ID',
+            name='input_point_id',
+            datatype='GPLong',
+            parameterType='Optional',
+            direction='Input')
+
+        # Input Line ID
+        param_input_line_id = arcpy.Parameter(
+            displayName='Input Line ID',
+            name='input_line_id',
+            datatype='GPLong',
+            parameterType='Optional',
+            direction='Input')
+
+        # Input Polygon ID
+        param_input_polygon_id = arcpy.Parameter(
+            displayName='Input Polygon ID',
+            name='input_polygon_id',
+            datatype='GPLong',
+            parameterType='Optional',
+            direction='Input')
+
+        # Justification
+        param_justification = arcpy.Parameter(
+            displayName='Justification',
+            name='justification',
+            datatype='GPString',
+            parameterType='Optional',
+            direction='Input')
+
+        # Undo
+        param_undo = arcpy.Parameter(
+            displayName='Undo',
+            name='undo',
+            datatype='GPBoolean',
+            parameterType='Required',
+            direction='Input')
+        param_undo.value = 'false'
+
+        params = [param_geodatabase, param_input_point_id, param_input_line_id, param_input_polygon_id,
+                  param_justification, param_undo]
+        return params
+
+    def isLicensed(self):
+        """Set whether tool is licensed to execute."""
+        return True
+
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal validation is performed.  This method is
+        called whenever a parameter has been changed."""
+        return
+
+    def updateMessages(self, parameters):
+        """Modify the messages created by internal validation for each tool parameter.  This method is called
+        after internal validation."""
+        return
+
+    def execute(self, parameters, messages):
+        """The source code of the tool."""
+        fbdui = FlagBadDataUsingIDTool.FlagBadDataUsingIDTool()
+        fbdui.runFlagBadDataUsingIDTool(parameters, messages)
         return

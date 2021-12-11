@@ -346,7 +346,7 @@ def checkSpecies(scientific_name, geodatabase):
     return species_id, author_name
 
 
-def readDatasetSourceUniqueIDs(geodatabase, table_name_prefix, dataset_source_id, feature_class_type):
+def readDatasetSourceUniqueIDs(geodatabase, table_name_prefix, dataset_source_id, feature_class_type, bad):
     """read existing unique ids for dataset source into dict and return"""
     # different feature class for each type
     if feature_class_type in ('Polygon', 'MultiPatch'):
@@ -355,14 +355,20 @@ def readDatasetSourceUniqueIDs(geodatabase, table_name_prefix, dataset_source_id
         feature_class = 'InputPoint'
     else: # Polyline
         feature_class = 'InputLine'
-    arcpy.MakeFeatureLayer_management(geodatabase + '/' + feature_class, 'feature_layer')
-    spatial_id_field = table_name_prefix + feature_class + '.' + feature_class + 'ID'
+    id_field = feature_class + 'ID'
+    feature_layer = 'feature_layer'
+    # also used to load bad records
+    if bad:
+        feature_layer += 'bad_' + feature_layer
+        feature_class = 'Bad' + feature_class
+    arcpy.MakeFeatureLayer_management(geodatabase + '/' + feature_class, feature_layer)
+    spatial_id_field = table_name_prefix + feature_class + '.' + id_field
     source_id_field = table_name_prefix + feature_class + '.DatasetSourceUniqueID'
     species_id_field = table_name_prefix + feature_class + '.SpeciesID'
     # join to Dataset and read IDs
-    arcpy.AddJoin_management('feature_layer', 'InputDatasetID', geodatabase + '/InputDataset', 'InputDatasetID')
+    arcpy.AddJoin_management(feature_layer, 'InputDatasetID', geodatabase + '/InputDataset', 'InputDatasetID')
     unique_ids_dict = {}
-    with arcpy.da.SearchCursor('feature_layer',
+    with arcpy.da.SearchCursor(feature_layer,
                                [spatial_id_field, source_id_field, species_id_field],
                                'InputDataset.DatasetSourceID = ' + str(dataset_source_id)) as cursor:
         for row in searchCursor(cursor):
@@ -955,8 +961,9 @@ def inputSelectAndBuffer(geodatabase, input_features, range_map_id, table_name_p
                              input_features + 'ID')
     arcpy.SelectLayerByAttribute_management(input_features + '_layer', 'REMOVE_FROM_SELECTION', table_name_prefix +
                                             'InputFeedback.ExcludeFromRangeMapID = ' + str(range_map_id))
-    arcpy.SelectLayerByAttribute_management(input_features + '_layer', 'REMOVE_FROM_SELECTION', table_name_prefix +
-                                            'InputFeedback.BadData = 1')
+    # BadData now moved to separate tables
+    # arcpy.SelectLayerByAttribute_management(input_features + '_layer', 'REMOVE_FROM_SELECTION', table_name_prefix +
+    #                                         'InputFeedback.BadData = 1')
     arcpy.RemoveJoin_management(input_features + '_layer', table_name_prefix + 'InputFeedback')
 
     # buffer

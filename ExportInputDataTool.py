@@ -99,15 +99,18 @@ class ExportInputDataTool:
 
         # process bad points, lines and polygons
         EBARUtils.displayMessage(messages, 'Processing bad points')
-        arcpy.MakeFeatureLayer_management(param_geodatabase + '/xb_InputPoint', 'bad_points')
+        arcpy.MakeFeatureLayer_management(param_geodatabase + '/BadInputPoint', 'bad_points')
+        #arcpy.MakeFeatureLayer_management(param_geodatabase + '/xb_InputPoint', 'bad_points')
         self.processFeatureClass('bad_points', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
                                  'BadEBARPoints', md)
         EBARUtils.displayMessage(messages, 'Processing bad lines')
-        arcpy.MakeFeatureLayer_management(param_geodatabase + '/xb_InputLine', 'bad_lines')
+        arcpy.MakeFeatureLayer_management(param_geodatabase + '/BadInputLine', 'bad_lines')
+        #arcpy.MakeFeatureLayer_management(param_geodatabase + '/xb_InputLine', 'bad_lines')
         self.processFeatureClass('bad_lines', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
                                  'BadEBARLines', md)
         EBARUtils.displayMessage(messages, 'Processing bad EBAR polygons')
-        arcpy.MakeFeatureLayer_management(param_geodatabase + '/xb_InputPolygon', 'bad_ebar_polygons')
+        arcpy.MakeFeatureLayer_management(param_geodatabase + '/BadInputPolygon', 'bad_ebar_polygons')
+        #arcpy.MakeFeatureLayer_management(param_geodatabase + '/xb_InputPolygon', 'bad_ebar_polygons')
         self.processFeatureClass('bad_ebar_polygons', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
                                  'BadEBARPolygons', md)
         #EBARUtils.displayMessage(messages, 'Processing bad Other polygons')
