@@ -57,6 +57,12 @@ class ImportSpatialDataTool:
         # determine type of feature class
         desc = arcpy.Describe(param_import_feature_class)
         feature_class_type = desc.shapeType
+        if feature_class_type in ('Polygon', 'MultiPatch'):
+            destination = param_geodatabase + '/InputPolygon'
+        elif feature_class_type in ('Point', 'Multipoint'):
+            destination = param_geodatabase + '/InputPoint'
+        else: # Polyline
+            destination = param_geodatabase + '/InputLine'
 
         # populate fixed field mappings
         field_dict = {}
@@ -500,14 +506,6 @@ class ImportSpatialDataTool:
                         if field_dict[key]:
                             field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict[key], key,
                                                                                 type_dict[key]))
-
-                # append
-                if feature_class_type in ('Polygon', 'MultiPatch'):
-                    destination = param_geodatabase + '/InputPolygon'
-                elif feature_class_type in ('Point', 'Multipoint'):
-                    destination = param_geodatabase + '/InputPoint'
-                else: # Polyline
-                    destination = param_geodatabase + '/InputLine'
                 arcpy.Append_management('import_features', destination, 'NO_TEST', field_mappings)
 
             # update duplicates
