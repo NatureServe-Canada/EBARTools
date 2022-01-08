@@ -81,17 +81,16 @@ class ImportVisitsTool:
                     EBARUtils.displayMessage(messages, 'Processed ' + str(count))
                 if sf_missing:
                     sf_missings += 1
-                elif duplicate:
+                if duplicate:
                     duplicates += 1
-                else:
-                    if date_missing:
-                        date_missings += 1
-                    if id_missing:
-                        id_missings += 1
-                    if max_date_update:
-                        max_date_updates += 1
-                    if min_date_update:
-                        min_date_updates += 1
+                if date_missing:
+                    date_missings += 1
+                if id_missing:
+                    id_missings += 1
+                if max_date_update:
+                    max_date_updates += 1
+                if min_date_update:
+                    min_date_updates += 1
         except:
             # output error messages in exception so that summary of processing thus far gets displayed in finally
             EBARUtils.displayMessage(messages, '\nERROR processing file row ' + str(count + 1))
