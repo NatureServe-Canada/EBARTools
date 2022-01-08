@@ -124,7 +124,7 @@ class ImportVisitsTool:
         return
 
     def CheckAddVisit(self, geodatabase, file_line, subnation):
-        """Add visit if it doesn't already exist"""
+        """Add visit if it doesn't already exist and related feature dates if needed"""
 
         # return flag defaults
         duplicate = False
@@ -163,56 +163,56 @@ class ImportVisitsTool:
                 if row:
                     del row
 
-        if not duplicate:
-            # check InputPoint/Line/Polygon with same sf_id and subnation for dates and get ID
-            input_point_id = None
-            input_line_id = None
-            input_polygon_id = None
-            for input_table in ('/InputPoint', '/InputLine', '/InputPolygon'):
-                fields = ['MaxDate', 'MinDate']
-                if input_table == '/InputPoint':
-                    fields.append('InputPointID')
-                elif input_table == '/InputLine':
-                    fields.append('InputLineID')
-                elif input_table == '/InputPolygon':
-                    fields.append('InputPolygonID')
-                with arcpy.da.UpdateCursor(geodatabase + input_table, fields,
-                                           'SFID = ' + str(sf_id) + " AND Subnation = '" + subnation + "'") as cursor:
-                    row = None
-                    for row in EBARUtils.updateCursor(cursor):
-                        id_missing = False
-                        # get ID
-                        if input_table == '/InputPoint':
-                            input_point_id = row['InputPointID']
-                        elif input_table == '/InputLine':
-                            input_line_id = row['InputLineID']
-                        elif input_table == '/InputPolygon':
-                            input_polygon_id = row['InputPolygonID']
-                        # check dates
-                        if visit_date:
-                            max_date = row['MaxDate']
-                            min_date = row['MinDate']
-                            # only update max_date if visit_date is greater
-                            if not max_date or visit_date > max_date:
-                                max_date_update = True
-                                max_date = visit_date
-                            # only update min_date if visit_date is less, and different than max_date
-                            if not min_date or visit_date < min_date:
-                                if visit_date < max_date:
-                                    min_date_update = True
-                                    min_date = visit_date
-                            if max_date_update or min_date_update:
-                                values = [max_date, min_date]
-                                if input_table == '/InputPoint':
-                                    values.append(input_point_id)
-                                elif input_table == '/InputLine':
-                                    values.append(input_line_id)
-                                elif input_table == '/InputPolygon':
-                                    values.append(input_polygon_id)
-                                cursor.updateRow(values)
-                    if row:
-                        del row
+        # check InputPoint/Line/Polygon with same sf_id and subnation for dates and get ID
+        input_point_id = None
+        input_line_id = None
+        input_polygon_id = None
+        for input_table in ('/InputPoint', '/InputLine', '/InputPolygon'):
+            fields = ['MaxDate', 'MinDate']
+            if input_table == '/InputPoint':
+                fields.append('InputPointID')
+            elif input_table == '/InputLine':
+                fields.append('InputLineID')
+            elif input_table == '/InputPolygon':
+                fields.append('InputPolygonID')
+            with arcpy.da.UpdateCursor(geodatabase + input_table, fields,
+                                        'SFID = ' + str(sf_id) + " AND Subnation = '" + subnation + "'") as cursor:
+                row = None
+                for row in EBARUtils.updateCursor(cursor):
+                    id_missing = False
+                    # get ID
+                    if input_table == '/InputPoint':
+                        input_point_id = row['InputPointID']
+                    elif input_table == '/InputLine':
+                        input_line_id = row['InputLineID']
+                    elif input_table == '/InputPolygon':
+                        input_polygon_id = row['InputPolygonID']
+                    # check dates
+                    if visit_date:
+                        max_date = row['MaxDate']
+                        min_date = row['MinDate']
+                        # only update max_date if visit_date is greater
+                        if not max_date or visit_date > max_date:
+                            max_date_update = True
+                            max_date = visit_date
+                        # only update min_date if visit_date is less, and different than max_date
+                        if not min_date or visit_date < min_date:
+                            if visit_date < max_date:
+                                min_date_update = True
+                                min_date = visit_date
+                        if max_date_update or min_date_update:
+                            values = [max_date, min_date]
+                            if input_table == '/InputPoint':
+                                values.append(input_point_id)
+                            elif input_table == '/InputLine':
+                                values.append(input_line_id)
+                            elif input_table == '/InputPolygon':
+                                values.append(input_polygon_id)
+                            cursor.updateRow(values)
+                if row:
+                    del row
 
+        if not duplicate:
             # add
             with arcpy.da.InsertCursor(geodatabase + '/Visit', ['SFID', 'Subnation', 'VisitDate', 'VisitNotes',
                                                                 'VisitedBy', 'Detected', 'InputPointId',

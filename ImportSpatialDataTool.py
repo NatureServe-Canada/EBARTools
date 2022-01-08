@@ -256,7 +256,7 @@ class ImportSpatialDataTool:
         id_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, table_name_prefix, dataset_source_id,
                                                        feature_class_type, False)
         bad_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, table_name_prefix, dataset_source_id,
-                                                       feature_class_type, True)
+                                                        feature_class_type, True)
 
         # make temp copy of features being imported so that it is geodatabase format
         EBARUtils.displayMessage(messages, 'Copying features to temporary feature class')
