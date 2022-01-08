@@ -488,29 +488,28 @@ class ImportSpatialDataTool:
 
             # select for appending
             arcpy.SelectLayerByAttribute_management('import_features', where_clause='ignore_imp = 0')
-            result = arcpy.GetCount_management('import_features')
-            added = result[0]
+            added = int(str(arcpy.GetCount_management('import_features')))
+            if added > 0:
+                # append to InputPolygon/Point/Line
+                EBARUtils.displayMessage(messages, 'Appending features')
+                # map fields
+                field_mappings = arcpy.FieldMappings()
+                for key in field_dict:
+                    # exclude fields that were used for preprocessing
+                    if key not in ['scientific_name', 'S_RANK', 'ROUNDED_S_RANK', 'EST_DATA_SENS', 'EST_DATASEN_CAT',
+                                'min_date', 'max_date', 'SHAPE@']:
+                        if field_dict[key]:
+                            field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict[key], key,
+                                                                                type_dict[key]))
 
-            # append to InputPolygon/Point/Line
-            EBARUtils.displayMessage(messages, 'Appending features')
-            # map fields
-            field_mappings = arcpy.FieldMappings()
-            for key in field_dict:
-                # exclude fields that were used for preprocessing
-                if key not in ['scientific_name', 'S_RANK', 'ROUNDED_S_RANK', 'EST_DATA_SENS', 'EST_DATASEN_CAT',
-                               'min_date', 'max_date', 'SHAPE@']:
-                    if field_dict[key]:
-                        field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict[key], key,
-                                                                            type_dict[key]))
-
-            # append
-            if feature_class_type in ('Polygon', 'MultiPatch'):
-                destination = param_geodatabase + '/InputPolygon'
-            elif feature_class_type in ('Point', 'Multipoint'):
-                destination = param_geodatabase + '/InputPoint'
-            else: # Polyline
-                destination = param_geodatabase + '/InputLine'
-            arcpy.Append_management('import_features', destination, 'NO_TEST', field_mappings)
+                # append
+                if feature_class_type in ('Polygon', 'MultiPatch'):
+                    destination = param_geodatabase + '/InputPolygon'
+                elif feature_class_type in ('Point', 'Multipoint'):
+                    destination = param_geodatabase + '/InputPoint'
+                else: # Polyline
+                    destination = param_geodatabase + '/InputLine'
+                arcpy.Append_management('import_features', destination, 'NO_TEST', field_mappings)
 
             # update duplicates
             if duplicates > 0:
