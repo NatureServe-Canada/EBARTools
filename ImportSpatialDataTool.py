@@ -303,6 +303,10 @@ class ImportSpatialDataTool:
                                              'coordinates and duplicates pre-processed ' + str(overall_count))
                 # ignore_imp: 0=Add, 1=Ignore(species, coords, bad), 2=Duplicate/Update
                 ignore_imp = 0
+                # handle case where integer gets read as float with decimals
+                uid_raw = row[field_dict['DatasetSourceUniqueID']]
+                if isinstance(uid_raw, float):
+                    uid_raw = int(uid_raw)
                 # check for species
                 species_id = None
                 synonym_id = None
@@ -331,11 +335,6 @@ class ImportSpatialDataTool:
                         ignore_imp = 1
                     else:
                         # check for duplicates
-                        # handle case where integer gets read as float with decimals
-                        uid_raw = row[field_dict['DatasetSourceUniqueID']]
-                        if isinstance(uid_raw, float):
-                            uid_raw = int(uid_raw)
-                        #if str(uid_raw) + ' - ' + str(species_id) in id_dict:
                         if str(uid_raw) in id_dict:
                             duplicates += 1
                             ignore_imp = 2
@@ -351,7 +350,7 @@ class ImportSpatialDataTool:
                 cursor.updateRow(values)
                 if ignore_imp == 0:
                     # add to id_dict with fake id (because InputPoint/Line/PolygonID doesn't exist yet)
-                    id_dict[row[field_dict['DatasetSourceUniqueID']]] = 0
+                    id_dict[str(uid_raw)] = 0
             if overall_count > 0:
                 del row
                 ## index ignore_imp to improve performance
