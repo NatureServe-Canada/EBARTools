@@ -98,6 +98,9 @@ class PublishRangeMapSetsTool:
         md.accessConstraints = 'Publicly shareable under CC BY 4.0 (<a href=' + \
             '"https://creativecommons.org/licenses/by/4.0/">https://creativecommons.org/licenses/by/4.0/</a>)'
 
+        # use EBAR BIOTICS table if can't get taxon API
+        arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/4', 'biotics_view')
+
         # loop all RangeMap records where IncludeInDownloadTable is populated and Publish=1
         arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/11', 'range_map_view',
                                        'IncludeInDownloadTable IN (1, 2, 3, 4) AND Publish = 1')
@@ -126,7 +129,8 @@ class PublishRangeMapSetsTool:
                            'L4BIOTICS_ELEMENT_NATIONAL.GLOBAL_UNIQUE_IDENTIFIER',
                            'L11RangeMap.RangeMapScope',
                            'L11RangeMap.RangeMapID',
-                           'L11RangeMap.IncludeInDownloadTable'], where_clause)):
+                           'L11RangeMap.IncludeInDownloadTable',
+                           'L4BIOTICS_ELEMENT_NATIONAL.SpeciesID'], where_clause)):
             if row[0] + ' - ' + row[1] != category_taxagroup:
                 # new category_taxagroup
                 if category_taxagroup != '':
@@ -161,8 +165,9 @@ class PublishRangeMapSetsTool:
             # set range map attributes
             range_map_ids.append(str(row[8]))
             global_unique_id = row[6].replace('-', '.')
+            arcpy.SelectLayerByAttribute_management('biotics_view', 'NEW_SELECTION', 'SpeciesID = ' + str(row[10]))
             attributes_dict[str(row[8])] = EBARUtils.getTaxonAttributes(global_unique_id, element_global_id, row[8],
-                                                                            messages)
+                                                                        messages)
 
             # don't include spatial data for data deficient, partially reviewed and low star rating
             if row[9] == 1:
