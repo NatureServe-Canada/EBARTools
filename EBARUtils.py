@@ -960,7 +960,8 @@ def inputSelectAndBuffer(geodatabase, input_features, range_map_id, table_name_p
     arcpy.AddJoin_management(input_features + '_layer', input_features + 'ID', geodatabase + '/InputFeedback',
                              input_features + 'ID')
     arcpy.SelectLayerByAttribute_management(input_features + '_layer', 'REMOVE_FROM_SELECTION', table_name_prefix +
-                                            'InputFeedback.ExcludeFromRangeMapID = ' + str(range_map_id))
+                                            'InputFeedback.ExcludeFromRangeMapID = ' + str(range_map_id) +
+                                            'OR InputFeedback.ExcludeFromAllRangeMaps = 1')
     # BadData now moved to separate tables
     # arcpy.SelectLayerByAttribute_management(input_features + '_layer', 'REMOVE_FROM_SELECTION', table_name_prefix +
     #                                         'InputFeedback.BadData = 1')
