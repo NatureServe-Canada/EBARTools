@@ -17,6 +17,7 @@ import EBARUtils
 import arcpy
 import datetime
 
+
 class FlagBadDataUsingIDTool:
     """Flag bad input data using an InputPoint/Line/PolygonID"""
     def __init__(self):
