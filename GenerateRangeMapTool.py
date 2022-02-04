@@ -822,11 +822,11 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                 if search_row:
                     del search_row
 
-        # count expert reviews and calcuate average star rating
+        # count expert reviews and and compile reviewer details (if publishable)
         EBARUtils.displayMessage(messages, 'Summarizing Expert Reviews')
         completed_expert_reviews = 0
-        null_rating_reviews = 0
-        star_rating_sum = 0
+        #null_rating_reviews = 0
+        #star_rating_sum = 0
         experts_comments = []
         experts = []
         anonymous_count = 0
@@ -837,10 +837,10 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                 row = None
                 for row in EBARUtils.searchCursor(cursor):
                     completed_expert_reviews += 1
-                    if row['OverallStarRating']:
-                        star_rating_sum += row['OverallStarRating']
-                    else:
-                        null_rating_reviews += 1
+                    # if row['OverallStarRating']:
+                    #     star_rating_sum += row['OverallStarRating']
+                    # else:
+                    #     null_rating_reviews += 1
                     # get expert name and publish settings to populate reviewer comments
                     with arcpy.da.SearchCursor(param_geodatabase + '/Expert',
                                                ['ExpertName', 'PublishName', 'PublishComments'],
@@ -900,9 +900,9 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     if not first:
                         summary += ', '
                     summary += str(anonymous_count) + ' Anonymous'
-                if completed_expert_reviews - null_rating_reviews > 0:
-                    summary += ' (average star rating = ' + str(star_rating_sum /
-                                                                (completed_expert_reviews - null_rating_reviews)) + ')'
+                # if completed_expert_reviews - null_rating_reviews > 0:
+                #     summary += ' (average star rating = ' + str(star_rating_sum /
+                #                                                 (completed_expert_reviews - null_rating_reviews)) + ')'
                 reviewer_comments = ''
                 for expert_comment in experts_comments:
                     if len(reviewer_comments) > 0:

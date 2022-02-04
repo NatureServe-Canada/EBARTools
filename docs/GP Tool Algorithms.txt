@@ -74,7 +74,7 @@ GenerateRangeMap
 	get overall input counts by source
 	create RangeMapInput records from Non-restricted [or Allowed by jurisdiction] for overlay display in EBAR Reviewer
 	get synonyms used
-	count expert reviews and calcuate average star rating
+	count expert reviews and compile reviewer details (if publishable)
 	update RangeMap metadata
 	
 ImportExternalRangeReview(species, secondary, version, stage, external_range_table, presence_field, review_label, jurisdictions_covered, username)
