@@ -30,7 +30,8 @@ import SummarizeDownloadsTool
 import PublishRangeMapTool
 import PublishRangeMapSetsTool
 import FlagBadDataUsingIDTool
-import ReportInputFeedbackTool
+import RecordInputFeedbackTool
+import DeleteInputFeedbackTool
 import EBARUtils
 import datetime
 import locale
@@ -47,7 +48,7 @@ class Toolbox(object):
                       SyncSpeciesListBiotics, AddSynonyms, ImportExternalRangeReview, SyncSpeciesListKBA,
                       BuildEBARDownloadTable, BuildBulkDownloadTable, ExportInputData, FlagBadDataUsingRange,
                       DeleteRangeMap, ImportVisits, SummarizeDownloads, PublishRangeMap, PublishRangeMapSets,
-                      FlagBadDataUsingID, ReportInputFeedback]
+                      FlagBadDataUsingID, RecordInputFeedback, DeleteInputFeedback]
 
 
 class ImportTabularData(object):
@@ -1270,10 +1271,10 @@ class FlagBadDataUsingID(object):
         return
 
 
-class ReportInputFeedback(object):
+class RecordInputFeedback(object):
     def __init__(self):
         """Define the tool (tool name is the name of the class)."""
-        self.label = 'Report Input Feedback'
+        self.label = 'Record Input Feedback'
         self.description = 'Add or remove records from the InputFeedback table'
         self.canRunInBackground = True
 
@@ -1345,17 +1346,8 @@ class ReportInputFeedback(object):
             parameterType='Optional',
             direction='Input')
 
-        # Undo
-        param_undo = arcpy.Parameter(
-            displayName='Undo',
-            name='undo',
-            datatype='GPBoolean',
-            parameterType='Required',
-            direction='Input')
-        param_undo.value = 'false'
-
         params = [param_geodatabase, param_input_point_id, param_input_line_id, param_input_polygon_id, param_notes,
-                  param_exclude_from_range_map_id, param_exclude_from_all_range_maps, param_justification, param_undo]
+                  param_exclude_from_range_map_id, param_exclude_from_all_range_maps, param_justification]
         return params
 
     def isLicensed(self):
@@ -1374,6 +1366,56 @@ class ReportInputFeedback(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        rif = ReportInputFeedbackTool.ReportInputFeedbackTool()
-        rif.runReportInputFeedbackTool(parameters, messages)
+        rif = RecordInputFeedbackTool.RecordInputFeedbackTool()
+        rif.runRecordInputFeedbackTool(parameters, messages)
+        return
+
+
+class DeleteInputFeedback(object):
+    def __init__(self):
+        """Define the tool (tool name is the name of the class)."""
+        self.label = 'Delete Input Feedback'
+        self.description = 'Delete an existing record from the InputFeedback table'
+        self.canRunInBackground = True
+
+    def getParameterInfo(self):
+        """Define parameter definitions"""
+        # Geodatabase
+        param_geodatabase = arcpy.Parameter(
+            displayName='Geodatabase',
+            name='geodatabase',
+            datatype='DEWorkspace',
+            parameterType='Required',
+            direction='Input')
+        param_geodatabase.filter.list = ['Local Database', 'Remote Database']
+
+        # Input Feedback ID
+        param_input_feedback_id = arcpy.Parameter(
+            displayName='Input Feedback ID',
+            name='input_feedback_id',
+            datatype='GPLong',
+            parameterType='Required',
+            direction='Input')
+
+        params = [param_geodatabase, param_input_feedback_id]
+        return params
+
+    def isLicensed(self):
+        """Set whether tool is licensed to execute."""
+        return True
+
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal validation is performed.  This method is
+        called whenever a parameter has been changed."""
+        return
+
+    def updateMessages(self, parameters):
+        """Modify the messages created by internal validation for each tool parameter.  This method is called
+        after internal validation."""
+        return
+
+    def execute(self, parameters, messages):
+        """The source code of the tool."""
+        dif = DeleteInputFeedbackTool.DeleteInputFeedbackTool()
+        dif.runDeleteInputFeedbackTool(parameters, messages)
         return

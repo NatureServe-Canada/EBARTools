@@ -100,6 +100,7 @@ class FlagBadDataUsingIDTool:
                 return
             # delete InputFeedback record, append to input, delete bad
             EBARUtils.displayMessage(messages, 'Deleting InputFeedback and appending Input record')
+            EBARUtils.deleteRows(param_geodatabase + '/InputFeedback', 'if_view', 'Bad' + id_field + ' = ' + id_value)
             with arcpy.da.UpdateCursor(param_geodatabase + '/InputFeedback',
                                        [id_field], 'Bad' + id_field + ' = ' + id_value) as update_cursor:
                 update_row = None
@@ -128,13 +129,13 @@ if __name__ == '__main__':
     param_input_point_id = arcpy.Parameter()
     param_input_point_id.value = None
     param_input_line_id = arcpy.Parameter()
-    param_input_line_id.value = '40'
+    param_input_line_id.value = '41'
     param_input_polygon_id = arcpy.Parameter()
     param_input_polygon_id.value = None
     param_justification = arcpy.Parameter()
     param_justification.value = 'Test rationale'
     param_undo = arcpy.Parameter()
-    param_undo.value = 'false'
+    param_undo.value = 'true'
     parameters = [param_geodatabase, param_input_point_id, param_input_line_id, param_input_polygon_id,
                   param_justification, param_undo]
     fbdui.runFlagBadDataUsingIDTool(parameters, None)
