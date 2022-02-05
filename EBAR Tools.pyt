@@ -1275,7 +1275,7 @@ class RecordInputFeedback(object):
     def __init__(self):
         """Define the tool (tool name is the name of the class)."""
         self.label = 'Record Input Feedback'
-        self.description = 'Add or remove records from the InputFeedback table'
+        self.description = 'Add a record to the InputFeedback table'
         self.canRunInBackground = True
 
     def getParameterInfo(self):

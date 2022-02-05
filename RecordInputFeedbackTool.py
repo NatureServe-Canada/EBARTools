@@ -5,7 +5,7 @@
 # © NatureServe Canada 2022 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 # Program: RecordInputFeedbackTool.py
-# ArcGIS Python tool for adding or removing records from the InputFeedback table
+# ArcGIS Python tool for adding a record to the InputFeedback table
 
 # Notes:
 # - Normally called from EBAR Tools.pyt, unless doing interactive debugging
@@ -19,7 +19,7 @@ import datetime
 
 
 class RecordInputFeedbackTool:
-    """Add or remove records from the InputFeedback table"""
+    """Add a record to the InputFeedback table"""
     def __init__(self):
         pass
 
