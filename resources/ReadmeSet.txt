@@ -31,7 +31,7 @@ RangeVersion - EBAR version number
 RangeStage - EBAR stage within the version (e.g. Auto-generated, Expert reviewed)
 RangeDate - date generated
 RangeMapScope - geographic scope (e.g. N=Canadian, A=North American, G=Global)
-RangeMetadata - numbers of input records by source, and count and average star rating of expert reviews
+RangeMetadata - numbers of input records by source, and count and details (if publishable) of expert reviews
 RangeMapNotes - details on the species name(s)
 RangeMapComments - additional notes
 SynonymsUsed - a list of the synonyms, if any, for the primary species

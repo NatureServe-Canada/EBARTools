@@ -366,14 +366,15 @@ if __name__ == '__main__':
     #                     1133,1134,1135,1136,1137,1138,1139,1140,1142,1143,1144,1145,1146,1147,1149,1151,1152,1153,
     #                     1154,1155,1156,1157,1158,1179,1184,1187,1190,1223,1225,1227,1231,1233,1241,1243,1254,1258,
     #                     1261,1283,1296,1729,1737,1739,1747,1752,1780,1823,1840,1861,1871,1875,1878,1880]
-    #for id in spatial_batch_ids:
-    #    # hard code parameters for debugging
-    #    param_range_map_id = arcpy.Parameter()
-    #    param_range_map_id.value = str(id)
-    #    param_spatial = arcpy.Parameter()
-    #    param_spatial.value = 'true'
-    #    parameters = [param_range_map_id, param_spatial]
-    #    prm.runPublishRangeMapTool(parameters, None)
+    spatial_batch_ids = [1880]
+    for id in spatial_batch_ids:
+       # hard code parameters for debugging
+       param_range_map_id = arcpy.Parameter()
+       param_range_map_id.value = str(id)
+       param_spatial = arcpy.Parameter()
+       param_spatial.value = 'true'
+       parameters = [param_range_map_id, param_spatial]
+       prm.runPublishRangeMapTool(parameters, None)
     
     #non_spatial_batch_ids = [1806,645,684,704,1100,1150,1456,1500,1732,1733,1735,1750,1755,1758,1759,1760,1762,1763,
     #                         1764,1765,1766,1767,1768,1774,1776,1778,1779,1782,1786,1788,1789,1791,1793,1796,1797,
@@ -382,12 +383,11 @@ if __name__ == '__main__':
     #                         1847,1848,1850,1851,1852,1853,1854,1855,1857,1860,1863,1864,1872,1876,1896,623,629,644,
     #                         646,671,705,717,718,721,722,723,864,1086,1088,1095,1099,1101,1132,1163,1181,1239,1242,
     #                         1266,1731,1738,1740,1742,1744,1745,1751,1753,1757,1769,1795,1820,1821,1877]
-    non_spatial_batch_ids = [1880]
-    for id in non_spatial_batch_ids:
-        # hard code parameters for debugging
-        param_range_map_id = arcpy.Parameter()
-        param_range_map_id.value = str(id)
-        param_spatial = arcpy.Parameter()
-        param_spatial.value = 'true'
-        parameters = [param_range_map_id, param_spatial]
-        prm.runPublishRangeMapTool(parameters, None)
+    # for id in non_spatial_batch_ids:
+    #     # hard code parameters for debugging
+    #     param_range_map_id = arcpy.Parameter()
+    #     param_range_map_id.value = str(id)
+    #     param_spatial = arcpy.Parameter()
+    #     param_spatial.value = 'false'
+    #     parameters = [param_range_map_id, param_spatial]
+    #     prm.runPublishRangeMapTool(parameters, None)
