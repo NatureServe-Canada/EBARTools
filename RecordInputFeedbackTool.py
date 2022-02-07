@@ -127,7 +127,7 @@ if __name__ == '__main__':
     param_input_point_id = arcpy.Parameter()
     param_input_point_id.value = None
     param_input_line_id = arcpy.Parameter()
-    param_input_line_id.value = '42'
+    param_input_line_id.value = '43'
     param_input_polygon_id = arcpy.Parameter()
     param_input_polygon_id.value = None
     param_notes = arcpy.Parameter()
