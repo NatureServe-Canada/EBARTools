@@ -164,9 +164,9 @@ class PublishRangeMapSetsTool:
 
             # set range map attributes
             range_map_ids.append(str(row[8]))
-            global_unique_id = row[6].replace('-', '.')
+            #global_unique_id = row[6].replace('-', '.')
             arcpy.SelectLayerByAttribute_management('biotics_view', 'NEW_SELECTION', 'SpeciesID = ' + str(row[10]))
-            attributes_dict[str(row[8])] = EBARUtils.getTaxonAttributes(global_unique_id, element_global_id, row[8],
+            attributes_dict[str(row[8])] = EBARUtils.getTaxonAttributes(row[6], element_global_id, row[8],
                                                                         messages)
 
             # don't include spatial data for data deficient, partially reviewed and low star rating
