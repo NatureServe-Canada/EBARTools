@@ -64,6 +64,7 @@ class SyncSpeciesListBioticsTool:
                           'N_RANK_REVIEW_DATE',
                           'BCD_STYLE_N_RANK',
                           'SARA_STATUS',
+                          'SARA_STATUS_DATE',
                           'COSEWIC_ID',
                           'COSEWIC_STATUS',
                           'COSEWIC_DATE',
@@ -234,6 +235,9 @@ class SyncSpeciesListBioticsTool:
                     added += 1
             count += 1
 
+        # calculate NSX_URL
+        arcpy.CalculateField_management(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', 'NSX_URL',
+                                        "'https://explorer.natureserve.org/Taxon/' + !GLOBAL_UNIQUE_IDENTIFIER!")
         # summary and end time
         EBARUtils.displayMessage(messages, 'Summary:')
         EBARUtils.displayMessage(messages, 'Processed - ' + str(count))
@@ -251,6 +255,6 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_csv = arcpy.Parameter()
-    param_csv.value = 'C:/Users/rgree/Downloads/rgreene_1643910636702.csv'
+    param_csv.value = 'C:/GIS/EBAR/EBARTools/samples/BioticsSpeciesExample.csv'
     parameters = [param_geodatabase, param_csv]
     ssl.runSyncSpeciesListBioticsTool(parameters, None)
