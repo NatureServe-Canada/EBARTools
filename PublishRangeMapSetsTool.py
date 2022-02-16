@@ -115,9 +115,9 @@ class PublishRangeMapSetsTool:
             where_clause = "L4BIOTICS_ELEMENT_NATIONAL.CATEGORY = '" + param_category + "'"
         if param_taxagroup:
             if where_clause:
-                where_clause += "AND L4BIOTICS_ELEMENT_NATIONAL.TAX_GROUP = '" + param_taxagroup + "'"
+                where_clause += "AND L4BIOTICS_ELEMENT_NATIONAL.TAX_GROUP = '" + param_taxagroup.replace("'", "''") + "'"
             else:
-                where_clause = "L4BIOTICS_ELEMENT_NATIONAL.TAX_GROUP = '" + param_taxagroup + "'"
+                where_clause = "L4BIOTICS_ELEMENT_NATIONAL.TAX_GROUP = '" + param_taxagroup.replace("'", "''") + "'"
         row = None
         for row in sorted(arcpy.da.SearchCursor('range_map_view',
                           ['L4BIOTICS_ELEMENT_NATIONAL.CATEGORY',
@@ -189,10 +189,10 @@ class PublishRangeMapSetsTool:
 if __name__ == '__main__':
     prms = PublishRangeMapSetsTool()
     param_category = arcpy.Parameter()
-    #param_category.value = 'Invertebrate Animal'
-    param_category.value = None
+    param_category.value = 'Vascular Plant'
+    #param_category.value = None
     param_taxagroup = arcpy.Parameter()
-    #param_taxagroup.value = 'Bee Flies'
-    param_taxagroup.value = None
+    param_taxagroup.value = "Adder's-tongues, Grapeferns, and Moonworts"
+    #param_taxagroup.value = None
     parameters = [param_category, param_taxagroup]
     prms.runPublishRangeMapSetsTool(parameters, None)
