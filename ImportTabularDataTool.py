@@ -402,7 +402,7 @@ class ImportTabularDataTool:
         # IndividualCount
         individual_count = None
         if field_dict['individual_count']:
-            if file_line[field_dict['individual_count']] not in ('NA', ''):
+            if file_line[field_dict['individual_count']] not in ('NA', 'X', ''):
                 individual_count = int(file_line[field_dict['individual_count']])
 
         # Geoprivacy
@@ -420,6 +420,12 @@ class ImportTabularDataTool:
         # other_time = datetime.datetime.now() - other_start
         # EBARUtils.displayMessage(messages, 'Other Fields: ' + str(other_time))
 
+        # BreedingAndBehaviourCode
+        breeding_code = None
+        if field_dict['breeding_code']:
+            if file_line[field_dict['breeding_code']] not in ('NA', ''):
+                breeding_code = file_line[field_dict['breeding_code']]
+
         # ## NT perf debug
         # save_start = datetime.datetime.now()
         # update or insert
@@ -427,12 +433,13 @@ class ImportTabularDataTool:
             with arcpy.da.UpdateCursor(geodatabase + '/InputPoint',
                                        ['SHAPE@XY', 'InputDatasetID', 'URI', 'License', 'SpeciesID', 'SynonymID',
                                         'MaxDate', 'CoordinatesObscured', 'Accuracy', 'IndividualCount', 'Geoprivacy',
-                                        'TaxonGeoprivacy'],
+                                        'TaxonGeoprivacy', 'BreedingAndBehaviourCode'],
                                         "InputPointID = " + str(id_dict[unique_id_species])) as cursor:
                 row = None
                 for row in EBARUtils.updateCursor(cursor):
                     cursor.updateRow([output_point, input_dataset_id, uri, license, species_id, synonym_id, max_date,
-                                      coordinates_obscured, accuracy, individual_count, geoprivacy, taxon_geoprivacy])
+                                      coordinates_obscured, accuracy, individual_count, geoprivacy, taxon_geoprivacy,
+                                      breeding_code])
                 if row:
                     del row
             # ## NT perf debug
@@ -443,12 +450,12 @@ class ImportTabularDataTool:
             # insert, set new id and return
             point_fields = ['SHAPE@XY', 'InputDatasetID', 'DatasetSourceUniqueID', 'URI', 'License', 'SpeciesID',
                             'SynonymID', 'MaxDate', 'CoordinatesObscured', 'Accuracy', 'IndividualCount', 'Geoprivacy',
-                                        'TaxonGeoprivacy']
+                            'TaxonGeoprivacy', 'BreedingAndBehaviourCode']
             with arcpy.da.InsertCursor(geodatabase + '/InputPoint', point_fields) as cursor:
                 object_id = cursor.insertRow([output_point, input_dataset_id,
                                               str(file_line[field_dict['unique_id']]), uri, license, species_id,
                                               synonym_id, max_date, coordinates_obscured, accuracy, individual_count,
-                                              geoprivacy, taxon_geoprivacy])
+                                              geoprivacy, taxon_geoprivacy, breeding_code])
             input_point_id = EBARUtils.getUniqueID(geodatabase + '/InputPoint', 'InputPointID', object_id)
             id_dict[unique_id_species] = input_point_id
             # ## NT perf debug
@@ -464,13 +471,14 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_raw_data_file = arcpy.Parameter()
-    param_raw_data_file.value = 'C:/GIS/EBAR/NCC/NCC_Merge_GBIF_test.csv'
+    param_raw_data_file.value = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/eBird/' + \
+        'eBird_filtered_Aechmophorus_occidentalis.csv'
     param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'NCC GBIF BadData Test'
+    param_dataset_name.value = 'eBird Test'
     param_dataset_source = arcpy.Parameter()
-    param_dataset_source.value = 'NCC_GBIF'
+    param_dataset_source.value = 'eBird'
     param_date_received = arcpy.Parameter()
-    param_date_received.value = 'November 15, 2021'
+    param_date_received.value = 'March 2, 2022'
     param_restrictions = arcpy.Parameter()
     param_restrictions.value = 'Non-restricted'
     parameters = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_source,

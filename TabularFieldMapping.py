@@ -28,7 +28,8 @@ gbif_fields = {'quality_grade': None,
                'basis_of_record': 'basisOfRecord',
                'individual_count': 'individualCount',
                'geoprivacy': None,
-               'taxon_geoprivacy': None}
+               'taxon_geoprivacy': None,
+               'breeding_code': None}
 
 ncc_gbif_fields = {'quality_grade': None,
                    'unique_id': 'gbifID',
@@ -50,7 +51,8 @@ ncc_gbif_fields = {'quality_grade': None,
                    'basis_of_record': 'basisOfRec',
                    'individual_count': None,
                    'geoprivacy': None,
-                   'taxon_geoprivacy': None}
+                   'taxon_geoprivacy': None,
+                   'breeding_code': None}
 
 vertnet_fields = {'quality_grade': None,
                   'unique_id': 'occurrenceid',
@@ -72,7 +74,8 @@ vertnet_fields = {'quality_grade': None,
                   'basis_of_record': 'basisofrecord',
                   'individual_count': 'individualcount',
                   'geoprivacy': None,
-                  'taxon_geoprivacy': None}
+                  'taxon_geoprivacy': None,
+                  'breeding_code': None}
 
 #ecoengine_fields = {'quality_grade': None,
 #                    'unique_id': 'key',
@@ -94,7 +97,8 @@ vertnet_fields = {'quality_grade': None,
 #                    'basis_of_record': 'observation_type',
 #                    'individual_count': None,
 #                    'geoprivacy': None,
-#                    'taxon_geoprivacy': None}
+#                    'taxon_geoprivacy': None,
+#                    'breeding_code': None}
 
 inaturalistorg_fields = {'quality_grade': 'quality_grade',
                          'unique_id': 'id',
@@ -116,7 +120,8 @@ inaturalistorg_fields = {'quality_grade': 'quality_grade',
                          'basis_of_record': None,
                          'individual_count': None,
                          'geoprivacy': 'geoprivacy',
-                         'taxon_geoprivacy': 'taxon_geoprivacy'}
+                         'taxon_geoprivacy': 'taxon_geoprivacy',
+                         'breeding_code': None}
 
 inaturalistca_fields = {'quality_grade': 'quality_grade',
                         'unique_id': 'id',
@@ -138,7 +143,8 @@ inaturalistca_fields = {'quality_grade': 'quality_grade',
                         'basis_of_record': None,
                         'individual_count': None,
                         'geoprivacy': 'geoprivacy',
-                        'taxon_geoprivacy': 'taxon_geoprivacy'}
+                        'taxon_geoprivacy': 'taxon_geoprivacy',
+                        'breeding_code': None}
 
 bison_fields = {'quality_grade': None,
                 'unique_id': 'occurrenceID',
@@ -160,7 +166,8 @@ bison_fields = {'quality_grade': None,
                 'basis_of_record': 'basisOfRecord',
                 'individual_count': None,
                 'geoprivacy': None,
-                'taxon_geoprivacy': None}
+                'taxon_geoprivacy': None,
+                'breeding_code': None}
 
 canadensys_fields = {'quality_grade': None,
                      'unique_id': 'occurrenceID',
@@ -182,7 +189,8 @@ canadensys_fields = {'quality_grade': None,
                      'basis_of_record': 'basisOfRecord',
                      'individual_count': 'individualCount',
                      'geoprivacy': None,
-                     'taxon_geoprivacy': None}
+                     'taxon_geoprivacy': None,
+                     'breeding_code': None}
 
 ncc_endemics_fields = {'quality_grade': None,
                        'unique_id': 'OBJECTID',
@@ -204,7 +212,8 @@ ncc_endemics_fields = {'quality_grade': None,
                        'basis_of_record': None,
                        'individual_count': None,
                        'geoprivacy': None,
-                       'taxon_geoprivacy': None}
+                       'taxon_geoprivacy': None,
+                       'breeding_code': None}
 
 idigbio_fields = {'quality_grade': None,
                   'unique_id': 'etag',
@@ -226,7 +235,8 @@ idigbio_fields = {'quality_grade': None,
                   'basis_of_record': 'basisofrecord',
                   'individual_count': 'individualcount',
                   'geoprivacy': None,
-                  'taxon_geoprivacy': None}
+                  'taxon_geoprivacy': None,
+                  'breeding_code': None}
 
 bbna_fields = {'quality_grade': None,
                'unique_id': 'BBNA.code',
@@ -248,7 +258,31 @@ bbna_fields = {'quality_grade': None,
                'basis_of_record': None,
                'individual_count': None,
                'geoprivacy': None,
-               'taxon_geoprivacy': None}
+               'taxon_geoprivacy': None,
+               'breeding_code': None}
+
+ebird_fields = {'quality_grade': None,
+                'unique_id': 'global_unique_identifier',
+                'uri': None,
+                'license': None,
+                'scientific_name': 'scientific_name',
+                'longitude': 'longitude',
+                'latitude': 'latitude',
+                'srs': None,
+                'coordinates_obscured': None,
+                'private_longitude': None,
+                'private_latitude': None,
+                'accuracy': None,
+                'private_accuracy': None,
+                'year': None,
+                'month': None,
+                'day': None,
+                'date': 'observation_date',
+                'basis_of_record': None,
+                'individual_count': 'observation_count',
+                'geoprivacy': None,
+                'taxon_geoprivacy': None,
+                'breeding_code': 'breeding_bird_atlas_code'}
 
 other_fields = {'quality_grade': None,
                 'unique_id': 'originalID',
@@ -270,7 +304,8 @@ other_fields = {'quality_grade': None,
                 'basis_of_record': None,
                 'individual_count': 'individualsCount',
                 'geoprivacy': None,
-                'taxon_geoprivacy': None}
+                'taxon_geoprivacy': None,
+                'breeding_code': None}
 
 tabular_field_mapping_dict = {'GBIF': gbif_fields,
                               'NCC_GBIF': ncc_gbif_fields,
@@ -283,4 +318,5 @@ tabular_field_mapping_dict = {'GBIF': gbif_fields,
                               'NCCEndemics': ncc_endemics_fields,
                               'iDigBio': idigbio_fields,
                               'Bumble Bees of North America': bbna_fields,
+                              'eBird': ebird_fields,
                               'Other': other_fields}
