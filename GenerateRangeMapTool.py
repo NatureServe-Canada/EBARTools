@@ -865,6 +865,10 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                 if row:
                     del row
 
+        # set UsageType from input data
+
+        # apply UsageType from reviews
+        
         # update RangeMap metadata
         EBARUtils.displayMessage(messages, 'Updating Range Map record with Overall Summary')
         with arcpy.da.UpdateCursor('range_map_view',

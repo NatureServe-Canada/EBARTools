@@ -1295,7 +1295,8 @@ class RecordInputFeedback(object):
             name='input_point_id',
             datatype='GPLong',
             parameterType='Optional',
-            direction='Input')
+            direction='Input',
+            multiValue=True)
 
         # Input Line ID
         param_input_line_id = arcpy.Parameter(
@@ -1303,7 +1304,8 @@ class RecordInputFeedback(object):
             name='input_line_id',
             datatype='GPLong',
             parameterType='Optional',
-            direction='Input')
+            direction='Input',
+            multiValue=True)
 
         # Input Polygon ID
         param_input_polygon_id = arcpy.Parameter(
@@ -1311,7 +1313,8 @@ class RecordInputFeedback(object):
             name='input_polygon_id',
             datatype='GPLong',
             parameterType='Optional',
-            direction='Input')
+            direction='Input',
+            multiValue=True)
 
         # Notes
         param_notes = arcpy.Parameter(
@@ -1395,7 +1398,8 @@ class DeleteInputFeedback(object):
             name='input_feedback_id',
             datatype='GPLong',
             parameterType='Required',
-            direction='Input')
+            direction='Input',
+            multiValue=True)
 
         params = [param_geodatabase, param_input_feedback_id]
         return params

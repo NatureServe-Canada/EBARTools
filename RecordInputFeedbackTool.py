@@ -5,7 +5,7 @@
 # © NatureServe Canada 2022 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 # Program: RecordInputFeedbackTool.py
-# ArcGIS Python tool for adding a record to the InputFeedback table
+# ArcGIS Python tool for adding one or more records to the InputFeedback table
 
 # Notes:
 # - Normally called from EBAR Tools.pyt, unless doing interactive debugging
@@ -19,7 +19,7 @@ import datetime
 
 
 class RecordInputFeedbackTool:
-    """Add a record to the InputFeedback table"""
+    """Add one or more records to the InputFeedback table"""
     def __init__(self):
         pass
 
@@ -50,23 +50,23 @@ class RecordInputFeedbackTool:
             id_count += 1
             input_table = param_geodatabase + '/InputPoint'
             id_field = 'InputPointID'
-            id_value = param_input_point_id
+            id_values = param_input_point_id.split(';')
         if param_input_line_id:
             id_count += 1
             input_table = param_geodatabase + '/InputLine'
             id_field = 'InputLineID'
-            id_value = param_input_line_id
+            id_values = param_input_line_id.split(';')
         if param_input_polygon_id:
             id_count += 1
             input_table = param_geodatabase + '/InputPolygon'
             id_field = 'InputPolygonID'
-            id_value = param_input_polygon_id
+            id_values = param_input_polygon_id.split(';')
         if id_count == 0:
-            EBARUtils.displayMessage(messages, 'ERROR: Please provide one ID')
+            EBARUtils.displayMessage(messages, 'ERROR: Please provide one type of ID')
             # terminate with error
             return
         if id_count > 1:
-            EBARUtils.displayMessage(messages, 'ERROR: Please provide only one ID')
+            EBARUtils.displayMessage(messages, 'ERROR: Please provide only one type of ID')
             # terminate with error
             return
         # need notes, or one exclude option plus justication, or one exclude option
@@ -91,23 +91,25 @@ class RecordInputFeedbackTool:
                 return
 
         # check for record
-        arcpy.MakeFeatureLayer_management(input_table, 'input_layer', id_field + ' = ' + id_value)
-        result = arcpy.GetCount_management('input_layer')
-        if int(result[0]) == 0:
-            EBARUtils.displayMessage(messages, 'ERROR: input record with specified ID not found')
-            # terminate with error
-            return
+        for id_value in id_values:
+            arcpy.MakeFeatureLayer_management(input_table, 'input_layer', id_field + ' = ' + id_value)
+            result = arcpy.GetCount_management('input_layer')
+            if int(result[0]) == 0:
+                EBARUtils.displayMessage(messages, 'ERROR: input record with ID ' + id_value + ' not found')
+                # terminate with error
+                return
 
-        # create InputFeedback record
-        EBARUtils.displayMessage(messages, 'Saving InputFeedback record')
+        # create InputFeedback record(s)
+        EBARUtils.displayMessage(messages, 'Saving InputFeedback record(s)')
         exclude_from_all_range_maps = False
         if param_exclude_from_all_range_maps == 'true':
             exclude_from_all_range_maps = True
         with arcpy.da.InsertCursor(param_geodatabase + '/InputFeedback',
                                     [id_field, 'InputFeedbackNotes', 'ExcludeFromRangeMapID',
                                     'ExcludeFromAllRangeMaps', 'Justification']) as insert_cursor:
-            insert_cursor.insertRow([id_value, param_notes, param_exclude_from_range_map_id,
-                                        exclude_from_all_range_maps, param_justification])
+            for id_value in id_values:
+                insert_cursor.insertRow([id_value, param_notes, param_exclude_from_range_map_id,
+                                         exclude_from_all_range_maps, param_justification])
         del insert_cursor
 
         # end time

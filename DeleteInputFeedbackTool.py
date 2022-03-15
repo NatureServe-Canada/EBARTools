@@ -5,7 +5,7 @@
 # © NatureServe Canada 2022 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 # Program: DeleteInputFeedbackTool.py
-# ArcGIS Python tool for deleting an existing record from the InputFeedback table
+# ArcGIS Python tool for deleting one or more records from the InputFeedback table
 
 # Notes:
 # - Normally called from EBAR Tools.pyt, unless doing interactive debugging
@@ -19,7 +19,7 @@ import datetime
 
 
 class DeleteInputFeedbackTool:
-    """Delete an existing record from the InputFeedback table"""
+    """Delete one or more records from the InputFeedback table"""
     def __init__(self):
         pass
 
@@ -38,26 +38,26 @@ class DeleteInputFeedbackTool:
         EBARUtils.displayMessage(messages, 'Processing parameters')
         param_geodatabase = parameters[0].valueAsText
         param_input_feedback_id = parameters[1].valueAsText
+        id_values = param_input_feedback_id.split(';')
 
         # check for record
-        where_clause = 'InputFeedbackID = ' + str(param_input_feedback_id)
-        arcpy.MakeTableView_management(param_geodatabase + '/InputFeedback', 'feedback_view',
-                                       where_clause=where_clause)
-        result = arcpy.GetCount_management('feedback_view')
-        if int(result[0]) == 0:
-            EBARUtils.displayMessage(messages, 'ERROR: InputFeedback record with specified ID not found')
-            # terminate with error
-            return
-
-        # delete
-        delete_count = EBARUtils.deleteRows(param_geodatabase + '/InputFeedback', 'if_view', where_clause)
-        if delete_count == 0:
-            EBARUtils.displayMessage(messages, 'ERROR: InputFeedback record failed unexpectedly')
-            # terminate with error
-            return
-        EBARUtils.displayMessage(messages, str(delete_count) + ' InputFeedback record deleted')
+        for id_value in id_values:
+            where_clause = 'InputFeedbackID = ' + id_value
+            arcpy.MakeTableView_management(param_geodatabase + '/InputFeedback', 'feedback_view',
+                                        where_clause=where_clause)
+            result = arcpy.GetCount_management('feedback_view')
+            if int(result[0]) == 0:
+                EBARUtils.displayMessage(messages, 'ERROR: InputFeedback record with ID ' + id_value + ' not found')
+                # terminate with error
+                return
+            # delete
+            delete_count = EBARUtils.deleteRows(param_geodatabase + '/InputFeedback', 'if_view', where_clause)
+            if delete_count == 0:
+                EBARUtils.displayMessage(messages, 'ERROR: InputFeedback record failed unexpectedly')
+                # terminate with error
+                return
+            EBARUtils.displayMessage(messages, ' InputFeedback record ' + id_value + ' deleted')
         
-
         # end time
         end_time = datetime.datetime.now()
         EBARUtils.displayMessage(messages, 'End time: ' + str(end_time))

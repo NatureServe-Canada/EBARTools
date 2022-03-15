@@ -99,16 +99,22 @@ class FlagBadDataUsingIDTool:
                 # terminate with error
                 return
             # delete InputFeedback record, append to input, delete bad
-            EBARUtils.displayMessage(messages, 'Deleting InputFeedback and appending Input record')
+            EBARUtils.displayMessage(messages, 'Deleting InputFeedback and re-adding Input record')
             EBARUtils.deleteRows(param_geodatabase + '/InputFeedback', 'if_view', 'Bad' + id_field + ' = ' + id_value)
-            with arcpy.da.UpdateCursor(param_geodatabase + '/InputFeedback',
-                                       [id_field], 'Bad' + id_field + ' = ' + id_value) as update_cursor:
-                update_row = None
-                for update_row in update_cursor:
-                    update_cursor.deleteRow()
-                if update_row:
-                    del update_row
-            arcpy.Append_management('bad_input_layer', input_table, 'TEST')
+            fields = []
+            desc = arcpy.Describe('bad_input_layer')
+            for field in desc.fields:
+                if field.name.lower() not in ('objectid', 'inputpointid', ' globalid', 'created_user', 'created_date',
+                                              'last_edited_user', 'last_edited_date'):
+                    fields.append(field.name)
+            values = []
+            with arcpy.da.SearchCursor('bad_input_layer', fields) as cursor:
+                for row in EBARUtils.searchCursor(cursor):
+                    for field in fields:
+                        values.append(row[field])
+            del row, cursor
+            with arcpy.da.InsertCursor(input_table, fields) as insert_cursor:
+                insert_cursor.insertRow(values)
             EBARUtils.displayMessage(messages, 'Deleting Bad record')
             arcpy.DeleteRows_management('bad_input_layer')
 
