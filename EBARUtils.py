@@ -1101,3 +1101,25 @@ def updateSubnationalSpeciesFields(geodatabase, subnation_code, subnational_spec
         if count > 0:
             del row
     return count
+
+
+def appendUsingCursor(append_from, append_to):
+    """imitate arcpy.Append using insert cursor for better performance"""
+    fields = []
+    desc = arcpy.Describe(append_from)
+    for field in desc.fields:
+        # exclude fields automatically set by ArcGIS
+        if field.name.lower() not in ('OBJECTID', 'InputPointID', 'InputPolygonID', 'InputLineID', 'globalid',
+                                      'created_user', 'created_date', 'last_edited_user', 'last_edited_date'):
+            if field.name.lower() == 'shape':
+                fields.append('SHAPE@')
+            fields.append(field.name)
+    values = []
+    with arcpy.da.SearchCursor(append_from, fields) as cursor:
+        for row in searchCursor(cursor):
+            for field in fields:
+                values.append(row[field])
+    del row, cursor
+    with arcpy.da.InsertCursor(append_to, fields) as insert_cursor:
+        insert_cursor.insertRow(values)
+    del insert_cursor

@@ -82,12 +82,34 @@ class FlagBadDataUsingIDTool:
                 EBARUtils.displayMessage(messages, 'ERROR: input record with specified ID not found')
                 # terminate with error
                 return
+            # check for related records
+            arcpy.MakeTableView_management(param_geodatabase + '/Visit', 'visit_view', id_field + ' = ' + id_value)
+            result = arcpy.GetCount_management('visit_view')
+            if int(result[0]) > 0:
+                EBARUtils.displayMessage(messages, 'ERROR: related Visit record prevents flagging')
+                # terminate with error
+                return
+            arcpy.MakeTableView_management(param_geodatabase + '/InputFeedback', 'input_feedback_view',
+                                              id_field + ' = ' + id_value)
+            result = arcpy.GetCount_management('input_feedback_view')
+            if int(result[0]) > 0:
+                EBARUtils.displayMessage(messages, 'ERROR: related InputFeedback record prevents flagging')
+                # terminate with error
+                return
+            arcpy.MakeTableView_management(param_geodatabase + '/SecondaryInput', 'secondary_input_view',
+                                              id_field + ' = ' + id_value)
+            result = arcpy.GetCount_management('secondary_input_view')
+            if int(result[0]) > 0:
+                EBARUtils.displayMessage(messages, 'ERROR: related SecondaryInput record prevents flagging')
+                # terminate with error
+                return
             # create InputFeedback record, append to bad, delete input
             EBARUtils.displayMessage(messages, 'Saving InputFeedback and appending Bad record')
             with arcpy.da.InsertCursor(param_geodatabase + '/InputFeedback',
                                        ['Bad' + id_field, 'Justification']) as insert_cursor:
                 insert_cursor.insertRow([id_value, param_justification])
-            arcpy.Append_management('input_layer', bad_table, 'TEST')
+            #arcpy.Append_management('input_layer', bad_table, 'TEST')
+            EBARUtils.appendUsingCursor('input_layer', bad_table)
             EBARUtils.displayMessage(messages, 'Deleting original Input record')
             arcpy.DeleteRows_management('input_layer')
         else:
@@ -101,20 +123,7 @@ class FlagBadDataUsingIDTool:
             # delete InputFeedback record, append to input, delete bad
             EBARUtils.displayMessage(messages, 'Deleting InputFeedback and re-adding Input record')
             EBARUtils.deleteRows(param_geodatabase + '/InputFeedback', 'if_view', 'Bad' + id_field + ' = ' + id_value)
-            fields = []
-            desc = arcpy.Describe('bad_input_layer')
-            for field in desc.fields:
-                if field.name.lower() not in ('objectid', 'inputpointid', ' globalid', 'created_user', 'created_date',
-                                              'last_edited_user', 'last_edited_date'):
-                    fields.append(field.name)
-            values = []
-            with arcpy.da.SearchCursor('bad_input_layer', fields) as cursor:
-                for row in EBARUtils.searchCursor(cursor):
-                    for field in fields:
-                        values.append(row[field])
-            del row, cursor
-            with arcpy.da.InsertCursor(input_table, fields) as insert_cursor:
-                insert_cursor.insertRow(values)
+            EBARUtils.appendUsingCursor('bad_input_layer', input_table)
             EBARUtils.displayMessage(messages, 'Deleting Bad record')
             arcpy.DeleteRows_management('bad_input_layer')
 
@@ -135,13 +144,13 @@ if __name__ == '__main__':
     param_input_point_id = arcpy.Parameter()
     param_input_point_id.value = None
     param_input_line_id = arcpy.Parameter()
-    param_input_line_id.value = '41'
+    param_input_line_id.value = '46'
     param_input_polygon_id = arcpy.Parameter()
     param_input_polygon_id.value = None
     param_justification = arcpy.Parameter()
     param_justification.value = 'Test rationale'
     param_undo = arcpy.Parameter()
-    param_undo.value = 'true'
+    param_undo.value = 'false'
     parameters = [param_geodatabase, param_input_point_id, param_input_line_id, param_input_polygon_id,
                   param_justification, param_undo]
     fbdui.runFlagBadDataUsingIDTool(parameters, None)
