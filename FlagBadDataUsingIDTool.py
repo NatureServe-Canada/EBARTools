@@ -108,7 +108,6 @@ class FlagBadDataUsingIDTool:
             with arcpy.da.InsertCursor(param_geodatabase + '/InputFeedback',
                                        ['Bad' + id_field, 'Justification']) as insert_cursor:
                 insert_cursor.insertRow([id_value, param_justification])
-            #arcpy.Append_management('input_layer', bad_table, 'TEST')
             EBARUtils.appendUsingCursor('input_layer', bad_table)
             EBARUtils.displayMessage(messages, 'Deleting original Input record')
             arcpy.DeleteRows_management('input_layer')

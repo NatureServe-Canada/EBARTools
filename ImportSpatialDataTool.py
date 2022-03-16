@@ -502,7 +502,7 @@ class ImportSpatialDataTool:
                 for key in field_dict:
                     # exclude fields that were used for preprocessing
                     if key not in ['scientific_name', 'S_RANK', 'ROUNDED_S_RANK', 'EST_DATA_SENS', 'EST_DATASEN_CAT',
-                                'min_date', 'max_date', 'SHAPE@']:
+                                   'min_date', 'max_date', 'SHAPE@']:
                         if field_dict[key]:
                             field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict[key], key,
                                                                                 type_dict[key]))

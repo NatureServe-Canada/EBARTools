@@ -1113,13 +1113,14 @@ def appendUsingCursor(append_from, append_to):
                                       'created_user', 'created_date', 'last_edited_user', 'last_edited_date'):
             if field.name.lower() == 'shape':
                 fields.append('SHAPE@')
-            fields.append(field.name)
-    values = []
+            else:
+                fields.append(field.name)
     with arcpy.da.SearchCursor(append_from, fields) as cursor:
         for row in searchCursor(cursor):
+            values = []
             for field in fields:
                 values.append(row[field])
+            with arcpy.da.InsertCursor(append_to, fields) as insert_cursor:
+                insert_cursor.insertRow(values)
+            del insert_cursor
     del row, cursor
-    with arcpy.da.InsertCursor(append_to, fields) as insert_cursor:
-        insert_cursor.insertRow(values)
-    del insert_cursor

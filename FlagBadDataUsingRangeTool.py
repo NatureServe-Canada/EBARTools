@@ -101,7 +101,8 @@ class FlagBadDataUsingRangeTool:
                                                  str(range_map_id)])
                 del row
             # append to Bad and delete original
-            arcpy.Append_management('original_points', param_geodatabase + '/BadInputPoint', 'TEST')
+            #arcpy.Append_management('original_points', param_geodatabase + '/BadInputPoint', 'TEST')
+            EBARUtils.appendUsingCursor('original_points', param_geodatabase + '/BadInputPoint')
             EBARUtils.displayMessage(messages, 'Deleting original points')
             arcpy.DeleteRows_management('original_points')
 
@@ -134,7 +135,8 @@ class FlagBadDataUsingRangeTool:
                                                  str(range_map_id)])
                 del row
             # append to Bad and delete original
-            arcpy.Append_management('original_lines', param_geodatabase + '/BadInputLine', 'TEST')
+            #arcpy.Append_management('original_lines', param_geodatabase + '/BadInputLine', 'TEST')
+            EBARUtils.appendUsingCursor('original_lines', param_geodatabase + '/BadInputLine')
             EBARUtils.displayMessage(messages, 'Deleting original lines')
             arcpy.DeleteRows_management('original_lines')
 
@@ -165,7 +167,8 @@ class FlagBadDataUsingRangeTool:
                                                      str(range_map_id)])
                     del row
                 # append to Bad and delete original
-                arcpy.Append_management(input_polygon_layer, param_geodatabase + '/BadInputPolygon', 'TEST')
+                #arcpy.Append_management(input_polygon_layer, param_geodatabase + '/BadInputPolygon', 'TEST')
+                EBARUtils.appendUsingCursor(input_polygon_layer, param_geodatabase + '/BadInputPolygon')
                 EBARUtils.displayMessage(messages, 'Deleting original polygons')
                 arcpy.DeleteRows_management(input_polygon_layer)
 
@@ -195,6 +198,6 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_range_map_id = arcpy.Parameter()
-    param_range_map_id.value = '80'
+    param_range_map_id.value = '34'
     parameters = [param_geodatabase, param_range_map_id]
     fbdur.runFlagBadDataUsingRangeTool(parameters, None)
