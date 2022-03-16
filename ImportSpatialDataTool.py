@@ -497,16 +497,20 @@ class ImportSpatialDataTool:
             if added > 0:
                 # append to InputPolygon/Point/Line
                 EBARUtils.displayMessage(messages, 'Appending features')
-                # map fields
-                field_mappings = arcpy.FieldMappings()
-                for key in field_dict:
-                    # exclude fields that were used for preprocessing
-                    if key not in ['scientific_name', 'S_RANK', 'ROUNDED_S_RANK', 'EST_DATA_SENS', 'EST_DATASEN_CAT',
-                                   'min_date', 'max_date', 'SHAPE@']:
-                        if field_dict[key]:
-                            field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict[key], key,
-                                                                                type_dict[key]))
-                arcpy.Append_management('import_features', destination, 'NO_TEST', field_mappings)
+                # # map fields
+                # field_mappings = arcpy.FieldMappings()
+                # for key in field_dict:
+                #     # exclude fields that were used for preprocessing
+                #     if key not in ['scientific_name', 'S_RANK', 'ROUNDED_S_RANK', 'EST_DATA_SENS', 'EST_DATASEN_CAT',
+                #                    'min_date', 'max_date', 'SHAPE@']:
+                #         if field_dict[key]:
+                #             field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict[key], key,
+                #                                                                 type_dict[key]))
+                # arcpy.Append_management('import_features', destination, 'NO_TEST', field_mappings)
+                skip_fields_lower = ['scientific_name', 's_rank', 'rounded_s_rank', 'est_data_sens', 'est_datasen_cat',
+                                     'min_date', 'max_date']
+                EBARUtils.appendUsingCursor('import_features', destination, field_dict=field_dict,
+                                            skip_fields_lower=skip_fields_lower)
 
             # update duplicates
             if duplicates > 0:

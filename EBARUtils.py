@@ -1103,24 +1103,48 @@ def updateSubnationalSpeciesFields(geodatabase, subnation_code, subnational_spec
     return count
 
 
-def appendUsingCursor(append_from, append_to):
+def appendUsingCursor(append_from, append_to, field_dict=None, skip_fields_lower=None):
     """imitate arcpy.Append using insert cursor for better performance"""
-    fields = []
-    desc = arcpy.Describe(append_from)
-    for field in desc.fields:
-        # exclude fields automatically set by ArcGIS
-        if field.name.lower() not in ('OBJECTID', 'InputPointID', 'InputPolygonID', 'InputLineID', 'globalid',
-                                      'created_user', 'created_date', 'last_edited_user', 'last_edited_date'):
-            if field.name.lower() == 'shape':
-                fields.append('SHAPE@')
-            else:
-                fields.append(field.name)
-    with arcpy.da.SearchCursor(append_from, fields) as cursor:
+    if not skip_fields_lower:
+        skip_fields_lower = []
+    # always exclude fields automatically set by ArcGIS
+    skip_fields_lower.append('objectid')
+    skip_fields_lower.append('inputpointID')
+    skip_fields_lower.append('inputpolygonid')
+    skip_fields_lower.append('inputlineid')
+    skip_fields_lower.append('globalid')
+    skip_fields_lower.append('created_user')
+    skip_fields_lower.append('created_date')
+    skip_fields_lower.append('last_edited_user')
+    skip_fields_lower.append('last_edited_date')
+    # build list of fields
+    from_fields = []
+    to_fields = []
+    if field_dict:
+        # use dict to map source fields to destination fields
+        for key in field_dict:
+            if not key.lower() in skip_fields_lower:
+                if field_dict[key]:
+                    from_fields.append(field_dict[key])
+                    to_fields.append(key)
+    else:
+        # same fields in source and destination
+        desc = arcpy.Describe(append_from)
+        for field in desc.fields:
+            if field.name.lower() not in skip_fields_lower:
+                if field.name.lower() == 'shape':
+                    from_fields.append('SHAPE@')
+                else:
+                    from_fields.append(field.name)
+        to_fields = from_fields
+    # insert
+    with arcpy.da.SearchCursor(append_from, from_fields) as cursor:
         for row in searchCursor(cursor):
+            # build list of values
             values = []
-            for field in fields:
+            for field in from_fields:
                 values.append(row[field])
-            with arcpy.da.InsertCursor(append_to, fields) as insert_cursor:
+            with arcpy.da.InsertCursor(append_to, to_fields) as insert_cursor:
                 insert_cursor.insertRow(values)
             del insert_cursor
     del row, cursor
