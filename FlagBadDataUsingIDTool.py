@@ -122,7 +122,14 @@ class FlagBadDataUsingIDTool:
             # delete InputFeedback record, append to input, delete bad
             EBARUtils.displayMessage(messages, 'Deleting InputFeedback and re-adding Input record')
             EBARUtils.deleteRows(param_geodatabase + '/InputFeedback', 'if_view', 'Bad' + id_field + ' = ' + id_value)
-            EBARUtils.appendUsingCursor('bad_input_layer', input_table)
+            # don't copy back the id field; a new one will be generated
+            if param_input_point_id:
+                skip_fields_lower = ['inputpointid']
+            if param_input_line_id:
+                skip_fields_lower = ['inputlineid']
+            if param_input_polygon_id:
+                skip_fields_lower = ['inputpolygonid']
+            EBARUtils.appendUsingCursor('bad_input_layer', input_table, skip_fields_lower=skip_fields_lower)
             EBARUtils.displayMessage(messages, 'Deleting Bad record')
             arcpy.DeleteRows_management('bad_input_layer')
 
@@ -141,15 +148,15 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_input_point_id = arcpy.Parameter()
-    param_input_point_id.value = None
+    param_input_point_id.value = '336354'
     param_input_line_id = arcpy.Parameter()
-    param_input_line_id.value = '46'
+    param_input_line_id.value = None
     param_input_polygon_id = arcpy.Parameter()
     param_input_polygon_id.value = None
     param_justification = arcpy.Parameter()
     param_justification.value = 'Test rationale'
     param_undo = arcpy.Parameter()
-    param_undo.value = 'false'
+    param_undo.value = 'true'
     parameters = [param_geodatabase, param_input_point_id, param_input_line_id, param_input_polygon_id,
                   param_justification, param_undo]
     fbdui.runFlagBadDataUsingIDTool(parameters, None)

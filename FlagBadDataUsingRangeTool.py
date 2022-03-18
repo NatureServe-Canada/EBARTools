@@ -99,7 +99,8 @@ class FlagBadDataUsingRangeTool:
                                                ['BadInputPointID', 'InputFeedbackNotes']) as insert_cursor:
                         insert_cursor.insertRow([row['InputPointID'], 'Not in range with RangeMapID ' +
                                                  str(range_map_id)])
-                del row
+                    del insert_cursor
+                del row, cursor
             # append to Bad and delete original
             #arcpy.Append_management('original_points', param_geodatabase + '/BadInputPoint', 'TEST')
             EBARUtils.appendUsingCursor('original_points', param_geodatabase + '/BadInputPoint')
@@ -133,7 +134,8 @@ class FlagBadDataUsingRangeTool:
                                                ['BadInputLineID', 'InputFeedbackNotes']) as insert_cursor:
                         insert_cursor.insertRow([row['InputLineID'], 'Not in range with RangeMapID ' +
                                                  str(range_map_id)])
-                del row
+                    del insert_cursor
+                del row, cursor
             # append to Bad and delete original
             #arcpy.Append_management('original_lines', param_geodatabase + '/BadInputLine', 'TEST')
             EBARUtils.appendUsingCursor('original_lines', param_geodatabase + '/BadInputLine')
@@ -165,7 +167,8 @@ class FlagBadDataUsingRangeTool:
                                                    ['BadInputPolygonID', 'InputFeedbackNotes']) as insert_cursor:
                             insert_cursor.insertRow([row['InputPolygonID'], 'Not in range with RangeMapID ' +
                                                      str(range_map_id)])
-                    del row
+                        del insert_cursor
+                    del row, cursor
                 # append to Bad and delete original
                 #arcpy.Append_management(input_polygon_layer, param_geodatabase + '/BadInputPolygon', 'TEST')
                 EBARUtils.appendUsingCursor(input_polygon_layer, param_geodatabase + '/BadInputPolygon')

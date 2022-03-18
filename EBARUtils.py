@@ -1109,10 +1109,8 @@ def appendUsingCursor(append_from, append_to, field_dict=None, skip_fields_lower
         skip_fields_lower = []
     # always exclude fields automatically set by ArcGIS
     skip_fields_lower.append('objectid')
-    skip_fields_lower.append('inputpointID')
-    skip_fields_lower.append('inputpolygonid')
-    skip_fields_lower.append('inputlineid')
     skip_fields_lower.append('globalid')
+    skip_fields_lower.append('globalid_1')
     skip_fields_lower.append('created_user')
     skip_fields_lower.append('created_date')
     skip_fields_lower.append('last_edited_user')
