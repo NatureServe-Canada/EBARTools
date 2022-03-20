@@ -737,59 +737,59 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                  param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', 'SpeciesID', 'KEEP_COMMON')
         arcpy.AddJoin_management('all_inputs_layer', 'SynonymID',
                                  param_geodatabase + '/Synonym', 'SynonymID', 'KEEP_ALL')
-        # field_mappings = arcpy.FieldMappings()
-        # field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
-        #                                                     table_name_prefix + temp_all_inputs + '.RangeMapID',
-        #                                                     'RangeMapID', 'LONG'))
-        # field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer', table_name_prefix + \
-        #                                                     temp_all_inputs + '.OriginalGeometryType',
-        #                                                     'OriginalGeometryType', 'TEXT'))
-        # field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer', table_name_prefix + \
-        #                                                     'BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME',
-        #                                                     'NationalScientificName', 'TEXT'))
-        # field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
-        #                                                     table_name_prefix + 'Synonym.SynonymName',
-        #                                                     'SynonymName', 'TEXT'))
-        # field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
-        #                                                     table_name_prefix + 'DatasetSource.DatasetSourceName',
-        #                                                     'DatasetSourceName', 'TEXT'))
-        # field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
-        #                                                     table_name_prefix + 'DatasetSource.DatasetType',
-        #                                                     'DatasetType', 'TEXT'))
-        # field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
-        #                                                     table_name_prefix + temp_all_inputs + '.Accuracy',
-        #                                                     'Accuracy', 'LONG'))
-        # field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
-        #                                                     table_name_prefix + temp_all_inputs + '.MaxDate',
-        #                                                     'MaxDate', 'DATE'))
-        # field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer', table_name_prefix + \
-        #                                                     temp_all_inputs + '.CoordinatesObscured',
-        #                                                     'CoordinatesObscured', 'SHORT'))
-        # field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
-        #                                                     table_name_prefix + temp_all_inputs + '.EORank',
-        #                                                     'EORank', 'TEXT'))
-        # field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
-        #                                                     table_name_prefix + temp_all_inputs + '.URI',
-        #                                                     'URI', 'TEXT'))
-        # field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer', table_name_prefix + \
-        #                                                     temp_all_inputs + '.DatasetSourceUniqueID',
-        #                                                     'DatasetSourceUniqueID', 'TEXT'))
-        # arcpy.Append_management('all_inputs_layer', param_geodatabase + '/RangeMapInput', 'NO_TEST', field_mappings)
-        field_dict = {}
-        field_dict['RangeMapID'] = table_name_prefix + temp_all_inputs + '.RangeMapID'
-        field_dict['OriginalGeometryType'] = table_name_prefix + temp_all_inputs + '.OriginalGeometryType'
-        field_dict['NationalScientificName'] = table_name_prefix + 'BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME'
-        field_dict['SynonymName'] = table_name_prefix + 'Synonym.SynonymName'
-        field_dict['DatasetSourceName'] = table_name_prefix + 'DatasetSource.DatasetSourceName'
-        field_dict['DatasetType'] = table_name_prefix + 'DatasetSource.DatasetType'
-        field_dict['Accuracy'] = table_name_prefix + temp_all_inputs + '.Accuracy'
-        field_dict['MaxDate'] = table_name_prefix + temp_all_inputs + '.MaxDate'
-        field_dict['CoordinatesObscured'] = temp_all_inputs + '.CoordinatesObscured'
-        field_dict['EORank'] = table_name_prefix + temp_all_inputs + '.EORank'
-        field_dict['URI'] = table_name_prefix + temp_all_inputs + '.URI'
-        field_dict['DatasetSourceUniqueID'] = temp_all_inputs + '.DatasetSourceUniqueID'
-        field_dict['SHAPE@'] = 'SHAPE@'
-        EBARUtils.appendUsingCursor('all_inputs_layer', param_geodatabase + '/RangeMapInput', field_dict=field_dict)
+        field_mappings = arcpy.FieldMappings()
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
+                                                            table_name_prefix + temp_all_inputs + '.RangeMapID',
+                                                            'RangeMapID', 'LONG'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer', table_name_prefix + \
+                                                            temp_all_inputs + '.OriginalGeometryType',
+                                                            'OriginalGeometryType', 'TEXT'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer', table_name_prefix + \
+                                                            'BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME',
+                                                            'NationalScientificName', 'TEXT'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
+                                                            table_name_prefix + 'Synonym.SynonymName',
+                                                            'SynonymName', 'TEXT'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
+                                                            table_name_prefix + 'DatasetSource.DatasetSourceName',
+                                                            'DatasetSourceName', 'TEXT'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
+                                                            table_name_prefix + 'DatasetSource.DatasetType',
+                                                            'DatasetType', 'TEXT'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
+                                                            table_name_prefix + temp_all_inputs + '.Accuracy',
+                                                            'Accuracy', 'LONG'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
+                                                            table_name_prefix + temp_all_inputs + '.MaxDate',
+                                                            'MaxDate', 'DATE'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer', table_name_prefix + \
+                                                            temp_all_inputs + '.CoordinatesObscured',
+                                                            'CoordinatesObscured', 'SHORT'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
+                                                            table_name_prefix + temp_all_inputs + '.EORank',
+                                                            'EORank', 'TEXT'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
+                                                            table_name_prefix + temp_all_inputs + '.URI',
+                                                            'URI', 'TEXT'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer', table_name_prefix + \
+                                                            temp_all_inputs + '.DatasetSourceUniqueID',
+                                                            'DatasetSourceUniqueID', 'TEXT'))
+        arcpy.Append_management('all_inputs_layer', param_geodatabase + '/RangeMapInput', 'NO_TEST', field_mappings)
+        # field_dict = {}
+        # field_dict['RangeMapID'] = table_name_prefix + temp_all_inputs + '.RangeMapID'
+        # field_dict['OriginalGeometryType'] = table_name_prefix + temp_all_inputs + '.OriginalGeometryType'
+        # field_dict['NationalScientificName'] = table_name_prefix + 'BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME'
+        # field_dict['SynonymName'] = table_name_prefix + 'Synonym.SynonymName'
+        # field_dict['DatasetSourceName'] = table_name_prefix + 'DatasetSource.DatasetSourceName'
+        # field_dict['DatasetType'] = table_name_prefix + 'DatasetSource.DatasetType'
+        # field_dict['Accuracy'] = table_name_prefix + temp_all_inputs + '.Accuracy'
+        # field_dict['MaxDate'] = table_name_prefix + temp_all_inputs + '.MaxDate'
+        # field_dict['CoordinatesObscured'] = table_name_prefix + temp_all_inputs + '.CoordinatesObscured'
+        # field_dict['EORank'] = table_name_prefix + temp_all_inputs + '.EORank'
+        # field_dict['URI'] = table_name_prefix + temp_all_inputs + '.URI'
+        # field_dict['DatasetSourceUniqueID'] = table_name_prefix + temp_all_inputs + '.DatasetSourceUniqueID'
+        # field_dict['SHAPE@'] = 'SHAPE@'
+        # EBARUtils.appendUsingCursor('all_inputs_layer', param_geodatabase + '/RangeMapInput', field_dict=field_dict)
         arcpy.RemoveJoin_management('all_inputs_layer', table_name_prefix + 'Synonym')
         arcpy.RemoveJoin_management('all_inputs_layer', table_name_prefix + 'BIOTICS_ELEMENT_NATIONAL')
 
