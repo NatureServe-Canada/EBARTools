@@ -82,27 +82,21 @@ class FlagBadDataUsingIDTool:
                 EBARUtils.displayMessage(messages, 'ERROR: input record with specified ID not found')
                 # terminate with error
                 return
+
             # check for related records
-            arcpy.MakeTableView_management(param_geodatabase + '/Visit', 'visit_view', id_field + ' = ' + id_value)
-            result = arcpy.GetCount_management('visit_view')
-            if int(result[0]) > 0:
+            if EBARUtils.checkInputRelatedRecords(param_geodatabase + '/Visit', id_field + ' = ' + id_value):
                 EBARUtils.displayMessage(messages, 'ERROR: related Visit record prevents flagging')
                 # terminate with error
                 return
-            arcpy.MakeTableView_management(param_geodatabase + '/InputFeedback', 'input_feedback_view',
-                                              id_field + ' = ' + id_value)
-            result = arcpy.GetCount_management('input_feedback_view')
-            if int(result[0]) > 0:
+            if EBARUtils.checkInputRelatedRecords(param_geodatabase + '/InputFeedback', id_field + ' = ' + id_value):
                 EBARUtils.displayMessage(messages, 'ERROR: related InputFeedback record prevents flagging')
                 # terminate with error
                 return
-            arcpy.MakeTableView_management(param_geodatabase + '/SecondaryInput', 'secondary_input_view',
-                                              id_field + ' = ' + id_value)
-            result = arcpy.GetCount_management('secondary_input_view')
-            if int(result[0]) > 0:
+            if EBARUtils.checkInputRelatedRecords(param_geodatabase + '/SecondaryInput', id_field + ' = ' + id_value):
                 EBARUtils.displayMessage(messages, 'ERROR: related SecondaryInput record prevents flagging')
                 # terminate with error
                 return
+
             # create InputFeedback record, append to bad, delete input
             EBARUtils.displayMessage(messages, 'Saving InputFeedback and appending Bad record')
             with arcpy.da.InsertCursor(param_geodatabase + '/InputFeedback',
@@ -119,6 +113,7 @@ class FlagBadDataUsingIDTool:
                 EBARUtils.displayMessage(messages, 'ERROR: bad record with specified ID not found')
                 # terminate with error
                 return
+
             # delete InputFeedback record, append to input, delete bad
             EBARUtils.displayMessage(messages, 'Deleting InputFeedback and re-adding Input record')
             EBARUtils.deleteRows(param_geodatabase + '/InputFeedback', 'if_view', 'Bad' + id_field + ' = ' + id_value)
@@ -148,15 +143,15 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_input_point_id = arcpy.Parameter()
-    param_input_point_id.value = '336354'
+    param_input_point_id.value = None
     param_input_line_id = arcpy.Parameter()
     param_input_line_id.value = None
     param_input_polygon_id = arcpy.Parameter()
-    param_input_polygon_id.value = None
+    param_input_polygon_id.value = '2679'
     param_justification = arcpy.Parameter()
     param_justification.value = 'Test rationale'
     param_undo = arcpy.Parameter()
-    param_undo.value = 'true'
+    param_undo.value = 'false'
     parameters = [param_geodatabase, param_input_point_id, param_input_line_id, param_input_polygon_id,
                   param_justification, param_undo]
     fbdui.runFlagBadDataUsingIDTool(parameters, None)

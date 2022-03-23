@@ -1146,3 +1146,14 @@ def appendUsingCursor(append_from, append_to, field_dict=None, skip_fields_lower
                 insert_cursor.insertRow(values)
             del insert_cursor
     del row, cursor
+
+
+def checkInputRelatedRecords(table, where_clause):
+    """check for input related records in Visit, InputFeedback and SecondaryInput tables"""
+    arcpy.MakeTableView_management(table, 'check_view', where_clause)
+    result = arcpy.GetCount_management('check_view')
+    arcpy.Delete_management('check_view')
+    if int(result[0]) > 0:
+        return True
+    return False
+    
