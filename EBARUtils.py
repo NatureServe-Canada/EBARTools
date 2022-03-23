@@ -21,6 +21,8 @@ import csv
 import requests
 import json
 
+from xarray import where
+
 
 # shared folders and addresses
 resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
@@ -1157,3 +1159,15 @@ def checkInputRelatedRecords(table, where_clause):
         return True
     return False
     
+
+def checkSFEO(geodatabase, input_table, id_field, id_value):
+    """check if the record is an SF or EO"""
+    where_clause = 'DatasetSourceID = (SELECT DatasetSourceID FROM InputDataset WHERE InputDatasetID = ' + \
+        '(SELECT InputDatasetID FROM ' + input_table + ' WHERE ' + id_field + ' = ' + id_value + '))'
+    ret = False
+    with arcpy.da.SearchCursor(geodatabase + '/DatasetSource', ['DatasetType'], where_clause) as cursor:
+        for row in searchCursor(cursor):
+            if row['DatasetType'] in ('Element Occurrences', 'Source Features'):
+                ret = True
+    del row, cursor
+    return ret

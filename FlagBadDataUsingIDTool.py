@@ -83,6 +83,12 @@ class FlagBadDataUsingIDTool:
                 # terminate with error
                 return
 
+            # check for SF or EO
+            if EBARUtils.checkSFEO(param_geodatabase, input_table.rsplit('/')[-1], id_field, id_value):
+                EBARUtils.displayMessage(messages, 'ERROR: Source Features and Element Occurrences cannot be flagged')
+                # terminate with error
+                return
+
             # check for related records
             if EBARUtils.checkInputRelatedRecords(param_geodatabase + '/Visit', id_field + ' = ' + id_value):
                 EBARUtils.displayMessage(messages, 'ERROR: related Visit record prevents flagging')
@@ -147,7 +153,7 @@ if __name__ == '__main__':
     param_input_line_id = arcpy.Parameter()
     param_input_line_id.value = None
     param_input_polygon_id = arcpy.Parameter()
-    param_input_polygon_id.value = '2679'
+    param_input_polygon_id.value = '24753'
     param_justification = arcpy.Parameter()
     param_justification.value = 'Test rationale'
     param_undo = arcpy.Parameter()
