@@ -46,7 +46,7 @@ FlagBadDataUsingRange()
 		[select any that don't intersect]
 			create InputFeedback record with BadData flag
 		
-GenerateRangeMap
+GenerateRangeMap(species, secondary, version, stage, scope, jurisdictions_covered, custom_polygons_covered)
 	check for species (primary and secondary)
 	check for RangeMap record (species/version/stage/[scope])
 		if exists, confirm no reviews completed or in progress nor range map published
@@ -60,7 +60,7 @@ GenerateRangeMap
 		buffer [different for points/lines/polygons]
 	merge buffers
 	determine historical (eo ranks, when available, override dates - fake the date to accomplish this)
-	pairwise intersect buffers and ecoshape polygons
+	pairwise intersect buffers and ecoshape polygons, applying jurisdictions_covered and custom_polygons_covered
 	get max date by type per ecoshape
 	create RangeMapEcoshape records based on dataset type and max date
 	get ecoshape input counts by dataset
@@ -73,8 +73,8 @@ GenerateRangeMap
 	create RangeMapEcoshapeInputDataset records based on summary
 	get overall input counts by source
 	create RangeMapInput records from Non-restricted [or Allowed by jurisdiction] for overlay display in EBAR Reviewer
-	get synonyms used
-	count expert reviews and compile reviewer details (if publishable)
+	get synonyms including authors
+	count expert reviews and calcuate average star rating
 	update RangeMap metadata
 	
 ImportExternalRangeReview(species, secondary, version, stage, external_range_table, presence_field, review_label, jurisdictions_covered, username)
