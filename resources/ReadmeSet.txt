@@ -1,5 +1,5 @@
 Ecosystem-based Automated Range (EBAR) ZIP package for selected species category / taxa group
-© NatureServe Canada 2020 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+ï¿½ NatureServe Canada 2020 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 This ZIP package should contain the following files:
 - EBARxxxxx.pdf (map and metadata for EBAR for each species within category / taxa group)
@@ -34,7 +34,7 @@ RangeMapScope - geographic scope (e.g. N=Canadian, A=North American, G=Global)
 RangeMetadata - numbers of input records by source, and count and details (if publishable) of expert reviews
 RangeMapNotes - details on the species name(s)
 RangeMapComments - additional notes
-SynonymsUsed - a list of the synonyms, if any, for the primary species
+SynonymsUsed - a list of the synonyms, if any, for the primary species under which the input data used was imported
 ELEMENT_NATIONAL_ID - NatureServe Biotics national unique identifier
 ELEMENT_GLOBAL_ID - NatureServe Biotics global unique identifier
 ELEMENT_CODE - NatureServe Biotics element identifier

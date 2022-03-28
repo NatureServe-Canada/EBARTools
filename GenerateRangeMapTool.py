@@ -97,29 +97,26 @@ class GenerateRangeMapTool:
         species_ids = str(species_id)
         secondary_ids = []
         secondary_names = ''
+        # now contains only synonyms, not secondary species
         synonyms_used = ''
         if param_secondary:
             for secondary in param_secondary:
-                #secondary_id, short_citation = EBARUtils.checkSpecies(secondary.lower(), param_geodatabase)
                 secondary_id, author_name = EBARUtils.checkSpecies(secondary.lower(), param_geodatabase)
                 if not secondary_id:
                     EBARUtils.displayMessage(messages, 'ERROR: Secondary species not found')
                     # terminate with error
                     return
-                    #raise arcpy.ExecuteError
                 species_ids += ',' + str(secondary_id)
                 if secondary_id in secondary_ids:
                     EBARUtils.displayMessage(messages, 'ERROR: Same secondary species specified more than once')
                     # terminate with error
                     return
-                    #raise arcpy.ExecuteError
                 secondary_ids.append(secondary_id)
                 if len(secondary_names) > 0:
                     secondary_names += ', '
-                    synonyms_used += ', '
-                #secondary_names += secondary + short_citation
+                    #synonyms_used += ', '
                 secondary_names += '<i>' + secondary + '</i> ' + author_name
-                synonyms_used += secondary
+                #synonyms_used += secondary
 
         # check for range map record and add if necessary
         EBARUtils.displayMessage(messages, 'Checking for existing Range Map')
@@ -813,7 +810,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                         synonym_ids.append(search_row[id_field_name])
             if search_row:
                 del search_row
-        # get synonym names for IDs and combine with secondary names
+        # get synonym names for IDs (no longer combined with secondary names)
+        synonym_authors = ''
         if len(synonym_ids) > 0:
             #with arcpy.da.SearchCursor(param_geodatabase + '/Synonym', ['SynonymName', 'SHORT_CITATION_AUTHOR',
             #                                                            'SHORT_CITATION_YEAR'],
@@ -822,19 +820,17 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                        'SynonymID IN (' + ','.join(map(str, synonym_ids)) + ')') as search_cursor:
                 search_row = None
                 for search_row in EBARUtils.searchCursor(search_cursor):
-                    if len(secondary_names) > 0:
-                        secondary_names += ', '
+                    if len(synonyms_used) > 0:
+                        #secondary_names += ', '
                         synonyms_used += ', '
+                        synonym_authors += ', '
                     #secondary_names += search_row['SynonymName']
-                    secondary_names += '<i>' + search_row['SynonymName'] + '</i>'
+                    #secondary_names += '<i>' + search_row['SynonymName'] + '</i>'
                     synonyms_used += search_row['SynonymName']
-                    #if search_row['SHORT_CITATION_AUTHOR']:
-                    #    secondary_names += ' (' + search_row['SHORT_CITATION_AUTHOR']
-                    #    if search_row['SHORT_CITATION_YEAR']:
-                    #        secondary_names += ', ' + str(int(search_row['SHORT_CITATION_YEAR']))
-                    #    secondary_names += ')'
+                    synonym_authors += '<i>' + search_row['SynonymName'] + '</i>'
                     if search_row['AUTHOR_NAME']:
-                        secondary_names += ' ' + search_row['AUTHOR_NAME']
+                        #secondary_names += ' ' + search_row['AUTHOR_NAME']
+                        synonym_authors += ' ' + search_row['AUTHOR_NAME']
                 if search_row:
                     del search_row
 
@@ -929,9 +925,11 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                         reviewer_comments += '<br>'
                     reviewer_comments += expert_comment
                 # Notes
-                notes = 'Primary Species Name - ' + param_species
+                notes = 'Primary Species - ' + param_species
                 if len(secondary_names) > 0:
-                    notes += '; Synonyms - ' + secondary_names
+                    notes += '; Secondary Species - ' + secondary_names
+                if len(synonym_authors) > 0:
+                    notes += '; Synonyms - ' + synonym_authors
                 update_cursor.updateRow([summary, datetime.datetime.now(), notes, scope, synonyms_used,
                                          reviewer_comments])
 
@@ -974,14 +972,14 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_species = arcpy.Parameter()
-    param_species.value = 'Micranthes spicata' #Acalypta cooleyi' #Bombus suckleyi
+    param_species.value = 'Navarretia intertexta ssp. propinqua' #'Acalypta cooleyi' #Bombus suckleyi #'Micranthes spicata'
     param_secondary = arcpy.Parameter()
     param_secondary.value = None
-    #param_secondary.value = "'Abronia latifolia'" #"'Dodia tarandus';'Dodia verticalis'"
+    param_secondary.value = "'Schistochilopsis incisa var. opacifolia'" #"'Dodia tarandus';'Dodia verticalis'"
     param_version = arcpy.Parameter()
     param_version.value = '1.0'
     param_stage = arcpy.Parameter()
-    param_stage.value = 'Expert reviewed test00'
+    param_stage.value = 'Auto-generated' #'Expert reviewed test00'
     param_scope = arcpy.Parameter()
     param_scope.value = None
     #param_scope.value = 'Canadian'
