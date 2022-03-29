@@ -75,6 +75,7 @@ class GenerateRangeMapTool:
             param_jurisdictions_list = param_jurisdictions_list.split(';')
             jur_ids_comma = EBARUtils.buildJurisdictionList(param_geodatabase, param_jurisdictions_list)
         param_custom_polygons_covered = parameters[7].valueAsText
+        param_differentiate_usage_type = parameters[8].valueAsText
 
         # use passed geodatabase as workspace (still seems to go to default geodatabase)
         arcpy.env.workspace = param_geodatabase
@@ -133,9 +134,9 @@ class GenerateRangeMapTool:
         candidate_secondary_match_count = {}
         arcpy.AddJoin_management('range_map_view', 'RangeMapID',
                                  param_geodatabase + '/SecondarySpecies', 'RangeMapID', 'KEEP_ALL')
+        row = None
         with arcpy.da.SearchCursor('range_map_view', [table_name_prefix + 'RangeMap.RangeMapID',
                                                       table_name_prefix + 'SecondarySpecies.SpeciesID']) as cursor:
-            row = None
             for row in EBARUtils.searchCursor(cursor):
                 if row[table_name_prefix + 'RangeMap.RangeMapID'] not in match_candidate:
                     match_candidate.append(row[table_name_prefix + 'RangeMap.RangeMapID'])
@@ -147,8 +148,9 @@ class GenerateRangeMapTool:
                 if row[table_name_prefix + 'SecondarySpecies.SpeciesID']:
                     # secondary count
                     candidate_secondary_count[row[table_name_prefix + 'RangeMap.RangeMapID']] += 1
-            if row:
-                del row
+        if row:
+            del row
+        del cursor
         arcpy.RemoveJoin_management('range_map_view', table_name_prefix + 'SecondarySpecies')
         # check candidates for secondary match
         for candidate in match_candidate:
@@ -158,9 +160,9 @@ class GenerateRangeMapTool:
                 prev_range_map_ids = ','.join(map(str, prev_range_map))
         if len(prev_range_map_ids) > 0:
             # check prev for matching version and stage
+            row = None
             with arcpy.da.SearchCursor('range_map_view', ['RangeMapID', 'RangeVersion', 'RangeStage'],
                                        'RangeMapID IN (' + prev_range_map_ids + ')') as cursor:
-                row = None
                 for row in EBARUtils.searchCursor(cursor):
                     if (row['RangeVersion'] == param_version and row['RangeStage'] == param_stage):
                         # range map to be generated already exists
@@ -170,7 +172,10 @@ class GenerateRangeMapTool:
                     if row['RangeVersion'] != param_version:
                         # also remove from list of range maps to be used later for applying reviews
                         prev_range_map.remove(row['RangeMapID'])
-            prev_range_map_ids = ','.join(map(str, prev_range_map)) 
+            prev_range_map_ids = ','.join(map(str, prev_range_map))
+            if row:
+                del row
+            del cursor
 
         if range_map_id:
             arcpy.SelectLayerByAttribute_management('range_map_view', 'NEW_SELECTION',
@@ -193,103 +198,51 @@ class GenerateRangeMapTool:
                 EBARUtils.displayMessage(messages, 'ERROR: Range Map has been published')
                 return
 
-            ## check for completed Reviews or Reviews in progress
-            #review_found = False
-            #review_completed = False
-            #ecoshape_review = False
-            ## use multi-table joins
-            #arcpy.AddJoin_management('range_map_view', 'RangeMapID',
-            #                          param_geodatabase + '/Review', 'RangeMapID', 'KEEP_COMMON')
-            ## check for completed reviews, and if so terminate
-            #with arcpy.da.SearchCursor('range_map_view', [table_name_prefix + 'Review.DateCompleted']) as cursor:
-            #    for row in EBARUtils.searchCursor(cursor):
-            #        review_found = True
-            #        if row[table_name_prefix + 'Review.DateCompleted']:
-            #            review_completed = True
-            #            break
-            #    if review_found:
-            #        del row
-            #if review_completed:
-            #    EBARUtils.displayMessage(messages, 'ERROR: Range Map already exists with completed Review(s)')
-            #    # terminate with error
-            #    return
-            #    #raise arcpy.ExecuteError
-
-            ## check for reviews in progress, and if so terminate
-            #if review_found:
-            #    arcpy.AddJoin_management('range_map_view', table_name_prefix + 'Review.ReviewID',
-            #                             param_geodatabase + '/EcoshapeReview', 'ReviewID', 'KEEP_COMMON')
-            #    with arcpy.da.SearchCursor('range_map_view',
-            #                               [table_name_prefix + 'EcoshapeReview.ReviewID']) as cursor:
-            #        for row in EBARUtils.searchCursor(cursor):
-            #            ecoshape_review = True
-            #            break
-            #        if ecoshape_review:
-            #            del row
-            #    if ecoshape_review:
-            #        EBARUtils.displayMessage(messages, 'ERROR: Range Map already exists with Review(s) in progress')
-            #        # terminate with error
-            #        return
-            #        #raise arcpy.ExecuteError
-
-            #    arcpy.RemoveJoin_management('range_map_view', table_name_prefix + 'EcoshapeReview')
-            #arcpy.RemoveJoin_management('range_map_view', table_name_prefix + 'Review')
-
-            ## check if published, and if so terminate
-            #with arcpy.da.SearchCursor('range_map_view', ['IncludeInDownloadTable', 'RangeMapScope']) as cursor:
-            #    published = False
-            #    for row in EBARUtils.searchCursor(cursor):
-            #        if (row['IncludeInDownloadTable'] in [1, 2, 3, 4]) and (row['RangeMapScope'] == scope):
-            #            published = True
-            #            break
-            #    if published:
-            #        del row
-            #if published:
-            #    EBARUtils.displayMessage(messages, 'ERROR: Range Map already published')
-            #    # terminate with error
-            #    return
-            #    #raise arcpy.ExecuteError
-
             # no reviews completed or in progress, so delete any existing related records
             EBARUtils.displayMessage(messages, 'Range Map already exists with but with no Review(s) completed or in '
                                                'progress, so existing related records will be deleted')
             # consider replacing the following code blocks with select then Delete Rows tools
+            rme_row = None
             with arcpy.da.SearchCursor(param_geodatabase + '/RangeMapEcoshape', ['RangeMapEcoshapeID'],
                                        'RangeMapID = ' + str(range_map_id)) as rme_cursor:
                 for rme_row in EBARUtils.searchCursor(rme_cursor):
+                    rmeid_row = None
                     with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshapeInputDataset',
                                                ['RangeMapEcoshpInputDatasetID'],
                                                 'RangeMapEcoshapeID = ' + \
                                                 str(rme_row['RangeMapEcoshapeID'])) as rmeid_cursor:
-                        rmeid_row = None
                         for rmeid_row in EBARUtils.updateCursor(rmeid_cursor):
                             rmeid_cursor.deleteRow()
-                        if rmeid_row:
-                            del rmeid_row
+                    if rmeid_row:
+                        del rmeid_row
+                    del rmeid_cursor
+            rme_row = None
             with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape', ['RangeMapEcoshapeID'],
                                        'RangeMapID = ' + str(range_map_id)) as rme_cursor:
-                rme_row = None
                 for rme_row in EBARUtils.updateCursor(rme_cursor):
                     rme_cursor.deleteRow()
-                if rme_row:
-                    del rme_row
-                    EBARUtils.displayMessage(messages, 'Existing Range Map Ecoshape records deleted')
+            if rme_row:
+                del rme_row
+                EBARUtils.displayMessage(messages, 'Existing Range Map Ecoshape records deleted')
+            del rme_cursor
+            es_row = None
             with arcpy.da.UpdateCursor(param_geodatabase + '/SecondarySpecies', ['SecondarySpeciesID'],
                                        'RangeMapID = ' + str(range_map_id)) as es_cursor:
-                es_row = None
                 for es_row in EBARUtils.updateCursor(es_cursor):
                     es_cursor.deleteRow()
-                if es_row:
-                    del es_row
-                    EBARUtils.displayMessage(messages, 'Existing Secondary Species records deleted')
+            if es_row:
+                del es_row
+                EBARUtils.displayMessage(messages, 'Existing Secondary Species records deleted')
+            del es_cursor
+            rmi_row = None
             with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapInput', ['OBJECTID'],
                                        'RangeMapID = ' + str(range_map_id)) as rmi_cursor:
-                rmi_row = None
                 for rmi_row in EBARUtils.updateCursor(rmi_cursor):
                     rmi_cursor.deleteRow()
-                if rmi_row:
-                    del rmi_row
-                    EBARUtils.displayMessage(messages, 'Existing Range Map Input records deleted')
+            if rmi_row:
+                del rmi_row
+                EBARUtils.displayMessage(messages, 'Existing Range Map Input records deleted')
+            del rmi_cursor
 
         else:
             arcpy.SelectLayerByAttribute_management('range_map_view', 'CLEAR_SELECTION')
@@ -302,6 +255,7 @@ class GenerateRangeMapTool:
                     notes += '; Synonyms - ' + secondary_names
                 object_id = cursor.insertRow([species_id, param_version, param_stage, datetime.datetime.now(),
                                               notes, 0, scope, synonyms_used])
+            del cursor
             range_map_id = EBARUtils.getUniqueID(param_geodatabase + '/RangeMap', 'RangeMapID', object_id)
             EBARUtils.displayMessage(messages, 'Range Map record created')
 
@@ -313,6 +267,7 @@ class GenerateRangeMapTool:
                     #secondary_id, short_citation = EBARUtils.checkSpecies(secondary, param_geodatabase)
                     secondary_id, author_name = EBARUtils.checkSpecies(secondary, param_geodatabase)
                     cursor.insertRow([range_map_id, secondary_id])
+            del cursor
             EBARUtils.displayMessage(messages, 'Secondary Species records created')
 
         # select all points for species and buffer
@@ -400,29 +355,6 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         arcpy.AddIndex_management(temp_pairwise_intersect, 'InputDatasetID', 'idid_idx')
         arcpy.MakeFeatureLayer_management(temp_pairwise_intersect, 'pairwise_intersect_layer')
 
-        ## calculate proportion buffer per ecoshape piece based on size of full buffer
-        #EBARUtils.displayMessage(messages, 'Calculating Proportion of Polygon per Ecoshape')
-        ## calculate total size of pieces for each buffer (will not equal original buffer size if outside ecoshapes)
-        #EBARUtils.checkAddField('pairwise_intersect_layer', 'PolygonPropn', 'FLOAT')
-        ## calculate total size of buffer (will not equal original buffer size if it extends outside ecoshapes)
-        #if arcpy.Exists('TempTotalArea'):
-        #    arcpy.Delete_management('TempTotalArea')
-        #arcpy.Statistics_analysis('pairwise_intersect_layer', 'TempTotalArea', [['Shape_Area', 'SUM']],
-        #                          'FID_TempAllInputs')
-        #arcpy.AddJoin_management('pairwise_intersect_layer', 'FID_TempAllInputs', 'TempTotalArea',
-        #                         'FID_TempAllInputs')
-        #arcpy.CalculateField_management('pairwise_intersect_layer', 'TempPairwiseIntersect.PolygonPropn',
-        #                                '!TempPairwiseIntersect.Shape_Area! / !TempTotalArea.SUM_Shape_Area!',
-        #                                'PYTHON3')
-        #arcpy.RemoveJoin_management('pairwise_intersect_layer', 'TempTotalArea')
-
-        ## get max date and buffer proportion per ecoshape
-        #EBARUtils.displayMessage(messages, 'Determining Maximum Polygon Proportion and Date per Ecoshape')
-        #if arcpy.Exists('TempEcoshapeMaxPolygon'):
-        #    arcpy.Delete_management('TempEcoshapeMaxPolygon')
-        #arcpy.Statistics_analysis('pairwise_intersect_layer', 'TempEcoshapeMaxPolygon',
-        #                          [['PolygonPropn', 'MAX'], ['TempDate', 'MAX']], 'EcoshapeID')
-
         # get max date by type per ecoshape
         EBARUtils.displayMessage(messages, 'Determining Maximum Date per Ecoshape and DatasetType')
         temp_ecoshape_max_polygon = 'TempEcoshapeMaxPolygon' + str(start_time.year) + str(start_time.month) + \
@@ -442,18 +374,11 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         with arcpy.da.InsertCursor(param_geodatabase + '/RangeMapEcoshape',
                                    ['RangeMapID', 'EcoshapeID', 'Presence']) as insert_cursor:
             input_found = False
-            #with arcpy.da.SearchCursor(temp_ecoshape_max_polygon,
-            #                           ['EcoshapeID', 'MAX_PolygonPropn', 'MAX_TempDate']) as search_cursor:
-            #with arcpy.da.SearchCursor(temp_ecoshape_max_polygon,
-            #                           [temp_pairwise_intersect + '_EcoshapeID', 'DatasetSource_DatasetType',
-            #                            'MAX_' + temp_pairwise_intersect + '_TempDate'],
-            #                            sql_clause=(None, 'ORDER BY ' + temp_pairwise_intersect + \
-            #                                '_EcoshapeID')) as search_cursor:
             # kludge because arc ends up with different field names under Enterprise gdb after joining
             field_names = [f.name for f in arcpy.ListFields(temp_ecoshape_max_polygon) if f.aliasName in
-                            ['EcoshapeID', 'DatasetType',
-                             'MAX_' + table_name_prefix + temp_pairwise_intersect + '.tempdate',
-                             'MAX_' + table_name_prefix + temp_pairwise_intersect + '.TempDate']]
+                           ['EcoshapeID', 'DatasetType',
+                            'MAX_' + table_name_prefix + temp_pairwise_intersect + '.tempdate',
+                            'MAX_' + table_name_prefix + temp_pairwise_intersect + '.TempDate']]
             id_field_name = [f.name for f in arcpy.ListFields(temp_ecoshape_max_polygon) if f.aliasName ==
                              'EcoshapeID'][0]
             with arcpy.da.SearchCursor(temp_ecoshape_max_polygon, field_names,
@@ -487,10 +412,10 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     # save final ecoshape
                     insert_cursor.insertRow([range_map_id, ecoshape_id, presence])
                     del row
+            del search_cursor
+        del insert_cursor
         if not input_found:
             EBARUtils.displayMessage(messages, 'WARNING: No inputs/buffers overlap ecoshapes')
-            ## terminate
-            #return
 
         # get ecoshape input counts by dataset
         EBARUtils.displayMessage(messages, 'Counting Ecoshape Inputs by Dataset')
@@ -521,11 +446,11 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             arcpy.AddJoin_management('ecoshape_review_view', 'EcoshapeID', param_geodatabase + '/Ecoshape', 'EcoshapeID')
             arcpy.AddJoin_management('ecoshape_review_view', 'ReviewID', param_geodatabase + '/Review', 'ReviewID')
         # loop existing range map ecoshapes
+        update_row = None
         with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape',
                                    ['EcoshapeID', 'RangeMapEcoshapeID', 'RangeMapID', 'Presence',
                                     'RangeMapEcoshapeNotes', 'MigrantStatus'],
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
-            update_row = None
             for update_row in EBARUtils.updateCursor(update_cursor):
                 # check for ecoshape "remove" reviews
                 remove = False
@@ -540,6 +465,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                str(update_row['EcoshapeID'])) as search_cursor:
                         for search_row in EBARUtils.searchCursor(search_cursor):
                             remove = True
+                    del search_cursor
                 if remove:
                     del search_row
                     update_cursor.deleteRow()
@@ -550,20 +476,22 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                    ['DatasetSourceName', 'DatasetType', 'FREQUENCY', 'frequency']]
                     id_field_name = [f.name for f in arcpy.ListFields(temp_ecoshape_countby_source) if f.aliasName ==
                                      'EcoshapeID'][0]
+                    summary = ''
                     with arcpy.da.SearchCursor(temp_ecoshape_countby_source, field_names,
                                                id_field_name + ' = ' + str(update_row['EcoshapeID'])) as search_cursor:
-                        summary = ''
                         presence = update_row['Presence']
                         migrant_status = update_row['MigrantStatus']
                         for search_row in EBARUtils.searchCursor(search_cursor):
                             if len(summary) > 0:
                                 summary += ', '
                             summary += str(search_row[field_names[2]]) + ' ' + search_row[field_names[0]]
-                        if len(summary) > 0:
-                            del search_row
+                    if len(summary) > 0:
+                        del search_row
+                    del search_cursor
                     summary = 'Input records - ' + summary
                     # check for ecoshape "update" reviews
                     if len(prev_range_map_ids) > 0:
+                        search_row = None
                         with arcpy.da.SearchCursor('ecoshape_review_view',
                                                    [table_name_prefix + 'EcoshapeReview.Markup',
                                                     table_name_prefix + 'EcoshapeReview.EcoshapeReviewNotes',
@@ -576,7 +504,6 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                    "EcoshapeReview.Markup IN ('P', 'X', 'H') AND "  + table_name_prefix + \
                                                    'EcoshapeReview.EcoshapeID = ' + \
                                                    str(update_row['EcoshapeID'])) as search_cursor:
-                            search_row = None
                             for search_row in EBARUtils.searchCursor(search_cursor):
                                 presence = search_row[table_name_prefix + 'EcoshapeReview.Markup']
                                 migrant_status = search_row[table_name_prefix + 'EcoshapeReview.MigrantStatus']
@@ -601,12 +528,15 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                         summary += '<br>' + expert_comment
                                     if expert_comment:
                                         del expert_row
-                            if search_row:
-                                del search_row
+                        if search_row:
+                            del search_row
+                        del search_cursor
                     update_cursor.updateRow([update_row['EcoshapeID'], update_row['RangeMapEcoshapeID'],
                                              update_row['RangeMapID'], presence, summary, migrant_status])
-            if update_row:
-                del update_row
+        if update_row:
+            del update_row
+        del update_cursor
+
         # loop review records and check for need to add
         if len(prev_range_map_ids) > 0:
             condition = table_name_prefix + 'Review.RangeMapID IN (' + \
@@ -614,22 +544,20 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                 'Review.UseForMapGen = 1 AND ' + table_name_prefix + \
                 'EcoshapeReview.UseForMapGen = 1 AND ' + table_name_prefix + \
                 "EcoshapeReview.Markup IN ('P', 'X', 'H')"
-            #if scope == 'N':
-            #    condition += ' AND ' + table_name_prefix + 'Ecoshape.JurisdictionID IN ' + national_jur_ids
-            #if param_jurisdictions_covered:
-            #    condition += ' AND ' + table_name_prefix + 'Ecoshape.JurisdictionID IN ' + jur_ids_comma
             if scope == 'N' or param_jurisdictions_covered or param_custom_polygons_covered:
                 ecoshape_ids_comma = '('
+                search_row = None
                 with arcpy.da.SearchCursor('ecoshape_layer', ['EcoshapeID']) as search_cursor:
-                    search_row = None
                     for search_row in EBARUtils.searchCursor(search_cursor):
                         if len(ecoshape_ids_comma) > 1:
                             ecoshape_ids_comma += ', '
                         ecoshape_ids_comma += str(search_row['EcoshapeID'])
-                    if search_row:
-                        del search_row
+                if search_row:
+                    del search_row
+                del search_cursor
                 ecoshape_ids_comma += ')'
                 condition += ' AND ' + table_name_prefix + 'EcoshapeReview.EcoshapeID IN ' + ecoshape_ids_comma
+            search_row = None
             with arcpy.da.SearchCursor('ecoshape_review_view',
                                        [table_name_prefix + 'EcoshapeReview.EcoshapeID',
                                         table_name_prefix + 'EcoshapeReview.Markup',
@@ -637,14 +565,13 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                         table_name_prefix + 'EcoshapeReview.Username',
                                         table_name_prefix + 'EcoshapeReview.MigrantStatus'],
                                        condition) as search_cursor:
-                search_row = None
                 for search_row in EBARUtils.searchCursor(search_cursor):
                     # check for ecoshape
                     add = True
                     with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape', ['EcoshapeID'],
-                                               'RangeMapID = ' + str(range_map_id) + ' AND EcoshapeID = ' + \
-                                                   str(search_row[table_name_prefix + \
-                                                   'EcoshapeReview.EcoshapeID'])) as update_cursor:
+                                               'RangeMapID = ' + str(range_map_id) + ' AND EcoshapeID = ' +
+                                               str(search_row[table_name_prefix +
+                                               'EcoshapeReview.EcoshapeID'])) as update_cursor:
                         for update_row in EBARUtils.updateCursor(update_cursor):
                             add = False
                     if not add:
@@ -679,14 +606,16 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                      search_row[table_name_prefix + 'EcoshapeReview.Markup'],
                                                      notes,
                                                      search_row[table_name_prefix + 'EcoshapeReview.MigrantStatus']])
-                if search_row:
-                    del search_row
+                    del update_cursor
+            if search_row:
+                del search_row
+            del search_cursor
 
         # create RangeMapEcoshapeInputDataset records based on summary
         EBARUtils.displayMessage(messages, 'Creating Range Map Ecoshape Input Dataset records')
+        rme_row = None
         with arcpy.da.SearchCursor(param_geodatabase + '/RangeMapEcoshape', ['RangeMapEcoshapeID', 'EcoshapeID'],
                                    'RangeMapID = ' + str(range_map_id)) as rme_cursor:
-            rme_row = None
             for rme_row in EBARUtils.searchCursor(rme_cursor):
                 with arcpy.da.SearchCursor(temp_ecoshape_countby_dataset,
                                             ['EcoshapeID', 'InputDatasetID', 'FREQUENCY'],
@@ -698,11 +627,74 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                    ['RangeMapEcoshapeID', 'InputDatasetID',
                                                     'InputDataSummary']) as insert_cursor:
                             insert_cursor.insertRow([rme_row['RangeMapEcoshapeID'], row['InputDatasetID'], summary])
-                    if row:
-                        del row
-            if rme_row:
-                del rme_row
+                if row:
+                    del row
+                del search_cursor
+        if rme_row:
+            del rme_row
+        del rme_cursor
 
+        # migratory
+        if param_differentiate_usage_type == 'true':
+            # set UsageType from input data
+            EBARUtils.displayMessage(messages, 'Applying Breeding and Behaviour Codes to set UsageType')
+
+            # get BBCode domain values
+            domains = arcpy.da.ListDomains(param_geodatabase)
+            for domain in domains:
+                if domain.name == 'BreedingAndBehaviourCode':
+                    bbc_domain_values = domain.codedValues
+
+            # summarize all input records by ecoshape
+            usage_type_stats = param_geodatabase + '/TempUTSTats' + str(start_time.year) + str(start_time.month) + \
+                str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
+            arcpy.Statistics_analysis(temp_pairwise_intersect, usage_type_stats, [['EcoshapeID', 'COUNT']],
+                                      ['EcoshapeID', 'BreedingAndBehaviourCode'])
+            row = None
+            with arcpy.da.SearchCursor(usage_type_stats, ['EcoshapeID', 'BreedingAndBehaviourCode'],
+                                       sql_clause=(None, 'ORDER BY EcoshapeID')) as cursor:
+                prev_ecoshape_id = None
+                usage_type = None
+                for row in EBARUtils.searchCursor(cursor):
+                    if row['EcoshapeID'] != prev_ecoshape_id:
+                        if prev_ecoshape_id and usage_type:
+                            # save previous
+                            update_row = None
+                            with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape', ['UsageType'],
+                                                       'RangeMapID = ' + str(range_map_id) + ' AND EcoshapeID = ' +
+                                                       str(prev_ecoshape_id)) as update_cursor:
+                                for update_row in EBARUtils.updateCursor(update_cursor):
+                                    update_cursor.updateRow([usage_type])
+                            if update_row:
+                                del update_row
+                            del update_cursor
+                        # reset for new ecoshape
+                        prev_ecoshape_id = row['EcoshapeID']
+                        usage_type = None
+                    # any confirmation in ecoshape prevails
+                    if row['BreedingAndBehaviourCode']:
+                        if 'Confirmed' in bbc_domain_values[row['BreedingAndBehaviourCode']]:
+                            usage_type = 'B'
+                        elif ('Probable' in bbc_domain_values[row['BreedingAndBehaviourCode']] or
+                            'Possible' in bbc_domain_values[row['BreedingAndBehaviourCode']]) and usage_type != 'B':
+                            usage_type = 'P'
+            if row:
+                if prev_ecoshape_id and usage_type:
+                    # save final
+                    update_row = None
+                    with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape', ['UsageType'],
+                                                'RangeMapID = ' + str(range_map_id) + ' AND EcoshapeID = ' +
+                                                str(prev_ecoshape_id)) as update_cursor:
+                        for update_row in EBARUtils.updateCursor(update_cursor):
+                            update_cursor.updateRow([usage_type])
+                    if update_row:
+                        del update_row
+                    del update_cursor
+                del row
+            del cursor
+
+            # apply UsageType from reviews
+        
         # get overall input counts by source
         EBARUtils.displayMessage(messages, 'Counting Overall Inputs by Dataset Source')
         # select only those within ecoshapes
@@ -802,23 +794,21 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         synonym_ids = []
         # kludge because arc ends up with different field names under Enterprise gdb after joining
         id_field_name = [f.name for f in arcpy.ListFields(temp_unique_synonyms) if f.aliasName in ['SynonymID']][0]
+        search_row = None
         with arcpy.da.SearchCursor(temp_unique_synonyms, [id_field_name]) as search_cursor:
-            search_row = None
             for search_row in EBARUtils.searchCursor(search_cursor):
                 if search_row[id_field_name]:
                     if search_row[id_field_name] not in synonym_ids:
                         synonym_ids.append(search_row[id_field_name])
-            if search_row:
-                del search_row
+        if search_row:
+            del search_row
+        del search_cursor
         # get synonym names for IDs (no longer combined with secondary names)
         synonym_authors = ''
         if len(synonym_ids) > 0:
-            #with arcpy.da.SearchCursor(param_geodatabase + '/Synonym', ['SynonymName', 'SHORT_CITATION_AUTHOR',
-            #                                                            'SHORT_CITATION_YEAR'],
-            #                           'SynonymID IN (' + ','.join(map(str, synonym_ids)) + ')') as search_cursor:
+            search_row = None
             with arcpy.da.SearchCursor(param_geodatabase + '/Synonym', ['SynonymName', 'AUTHOR_NAME'],
                                        'SynonymID IN (' + ','.join(map(str, synonym_ids)) + ')') as search_cursor:
-                search_row = None
                 for search_row in EBARUtils.searchCursor(search_cursor):
                     if len(synonyms_used) > 0:
                         #secondary_names += ', '
@@ -831,8 +821,9 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     if search_row['AUTHOR_NAME']:
                         #secondary_names += ' ' + search_row['AUTHOR_NAME']
                         synonym_authors += ' ' + search_row['AUTHOR_NAME']
-                if search_row:
-                    del search_row
+            if search_row:
+                del search_row
+            del search_cursor
 
         # count expert reviews and and compile reviewer details (if publishable)
         EBARUtils.displayMessage(messages, 'Summarizing Expert Reviews')
@@ -843,10 +834,10 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         experts = []
         anonymous_count = 0
         if len(prev_range_map_ids) > 0:
+            row = None
             with arcpy.da.SearchCursor(param_geodatabase + '/Review', ['OverallStarRating', 'ReviewNotes', 'Username'],
                                        'RangeMapID IN (' + prev_range_map_ids +
                                        ') AND DateCompleted IS NOT NULL AND UseForMapGen = 1') as cursor:
-                row = None
                 for row in EBARUtils.searchCursor(cursor):
                     completed_expert_reviews += 1
                     # if row['OverallStarRating']:
@@ -854,10 +845,10 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     # else:
                     #     null_rating_reviews += 1
                     # get expert name and publish settings to populate reviewer comments
+                    expert_comment = None
                     with arcpy.da.SearchCursor(param_geodatabase + '/Expert',
                                                ['ExpertName', 'PublishName', 'PublishComments'],
                                                "Username = '" + row['Username'] + "'") as expert_cursor:
-                        expert_comment = None
                         for expert_row in EBARUtils.searchCursor(expert_cursor):
                             if expert_row['PublishName']:
                                 expert_name =  expert_row['ExpertName']
@@ -872,17 +863,16 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                             else:
                                 expert_comment += 'Unpublished'
                             experts_comments.append(expert_comment)
-                        if expert_comment:
-                            del expert_row
-                if row:
-                    del row
+                    if expert_comment:
+                        del expert_row
+                    del expert_cursor
+            if row:
+                del row
+            del cursor
 
-        # set UsageType from input data
-
-        # apply UsageType from reviews
-        
         # update RangeMap metadata
         EBARUtils.displayMessage(messages, 'Updating Range Map record with Overall Summary')
+        update_row = None
         with arcpy.da.UpdateCursor('range_map_view',
                                    ['RangeMetadata', 'RangeDate', 'RangeMapNotes', 'RangeMapScope', 'SynonymsUsed',
                                     'ReviewerComments'],
@@ -893,17 +883,17 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                 # kludge because arc ends up with different field names under Enterprise gdb after joining
                 field_names = [f.name for f in arcpy.ListFields(temp_overall_countby_source) if f.aliasName in
                                ['DatasetSourceName', 'FREQUENCY', 'frequency']]
+                summary = ''
                 with arcpy.da.SearchCursor(temp_overall_countby_source, field_names) as search_cursor:
-                    summary = ''
                     for search_row in EBARUtils.searchCursor(search_cursor):
                         if len(summary) > 0:
                             summary += ', '
                         summary += str(search_row[field_names[1]]) + ' ' + search_row[field_names[0]]
-                    if len(summary) > 0:
-                        del search_row
+                if len(summary) > 0:
+                    del search_row
+                del search_cursor
                 summary = 'Input Records - ' + summary
                 # expert reviews
-                #summary += '; Expert Reviews - ' + str(completed_expert_reviews)
                 summary += '; Expert Reviews - '
                 first = True
                 for expert_name in experts:
@@ -916,9 +906,6 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     if not first:
                         summary += ', '
                     summary += str(anonymous_count) + ' Anonymous'
-                # if completed_expert_reviews - null_rating_reviews > 0:
-                #     summary += ' (average star rating = ' + str(star_rating_sum /
-                #                                                 (completed_expert_reviews - null_rating_reviews)) + ')'
                 reviewer_comments = ''
                 for expert_comment in experts_comments:
                     if len(reviewer_comments) > 0:
@@ -932,6 +919,9 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     notes += '; Synonyms - ' + synonym_authors
                 update_cursor.updateRow([summary, datetime.datetime.now(), notes, scope, synonyms_used,
                                          reviewer_comments])
+        if update_row:
+            del update_row
+        del update_cursor
 
         # temp clean-up
         if arcpy.Exists(temp_unique_synonyms):
@@ -952,6 +942,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             arcpy.Delete_management(temp_point_buffer)
         if arcpy.Exists(temp_restrictions):
             arcpy.Delete_management(temp_restrictions)
+        if arcpy.Exists(usage_type_stats):
+            arcpy.Delete_management(usage_type_stats)
         # trouble deleting on server only due to locks; could be layer?
         #if param_geodatabase[-4:].lower() == '.gdb':
         #    if arcpy.Exists(temp_all_inputs):
@@ -972,10 +964,10 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_species = arcpy.Parameter()
-    param_species.value = 'Navarretia intertexta ssp. propinqua' #'Acalypta cooleyi' #Bombus suckleyi #'Micranthes spicata'
+    param_species.value = 'Aechmophorus occidentalis' #'Acalypta cooleyi' #Bombus suckleyi #'Micranthes spicata'
     param_secondary = arcpy.Parameter()
     param_secondary.value = None
-    param_secondary.value = "'Schistochilopsis incisa var. opacifolia'" #"'Dodia tarandus';'Dodia verticalis'"
+    #param_secondary.value = "'Schistochilopsis incisa var. opacifolia'" #"'Dodia tarandus';'Dodia verticalis'"
     param_version = arcpy.Parameter()
     param_version.value = '1.0'
     param_stage = arcpy.Parameter()
@@ -989,6 +981,8 @@ if __name__ == '__main__':
     param_custom_polygons_covered = arcpy.Parameter()
     param_custom_polygons_covered.value = None
     #param_custom_polygons_covered.value = 'C:/GIS/EBAR/EBARServer.gdb/Custom'
+    param_differentiate_usage_type = arcpy.Parameter()
+    param_differentiate_usage_type.value = 'true'
     parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
-                  param_jurisdictions_covered, param_custom_polygons_covered]
+                  param_jurisdictions_covered, param_custom_polygons_covered, param_differentiate_usage_type]
     grm.runGenerateRangeMapTool(parameters, None)

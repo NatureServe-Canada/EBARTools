@@ -330,8 +330,17 @@ class GenerateRangeMap(object):
             direction='Input')
         param_custom_polygons_covered.filter.list = ['Polygon', 'MultiPatch']
 
+        # Differentiate Usage Type
+        param_differentiate_usage_type = arcpy.Parameter(
+            displayName='Differentiate Usage Type',
+            name='differentiate_usage_type',
+            datatype='GPBoolean',
+            parameterType='Required',
+            direction='Input')
+        param_differentiate_usage_type.value = 'false'
+
         params = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
-                  param_jurisdictions_covered, param_custom_polygons_covered]
+                  param_jurisdictions_covered, param_custom_polygons_covered, param_differentiate_usage_type]
         return params
 
     def isLicensed(self):
