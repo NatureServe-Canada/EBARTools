@@ -237,7 +237,7 @@ class ImportExternalRangeReviewTool:
                 # check for different presence values
                 if external_ecoshape_dict[external_ecoshape_id] != range_ecoshape_dict[external_ecoshape_id]:
                     # additions only also includes the case of "upgrading" ecoshape to Present
-                    if param_additions_only == 'false' or external_ecoshape_dict[external_ecoshape_id] == 'p':
+                    if param_additions_only == 'false' or external_ecoshape_dict[external_ecoshape_id] == 'P':
                         # create review change record
                         with arcpy.da.InsertCursor(param_geodatabase + '/EcoshapeReview',
                                                    ['EcoshapeID', 'ReviewID', 'RemovalReason', 'EcoshapeReviewNotes',
