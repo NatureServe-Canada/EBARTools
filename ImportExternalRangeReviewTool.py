@@ -65,6 +65,7 @@ class ImportExternalRangeReviewTool:
             param_jurisdictions_list = param_jurisdictions_covered.replace("'", '')
             param_jurisdictions_list = param_jurisdictions_list.split(';')
         param_username = parameters[9].valueAsText
+        param_additions_only = parameters[10].valueAsText
         # use passed geodatabase as workspace (still seems to go to default geodatabase)
         arcpy.env.workspace = param_geodatabase
 
@@ -235,14 +236,16 @@ class ImportExternalRangeReviewTool:
             if external_ecoshape_id in range_ecoshape_dict:
                 # check for different presence values
                 if external_ecoshape_dict[external_ecoshape_id] != range_ecoshape_dict[external_ecoshape_id]:
-                    # create review change record
-                    with arcpy.da.InsertCursor(param_geodatabase + '/EcoshapeReview',
-                                               ['EcoshapeID', 'ReviewID', 'RemovalReason', 'EcoshapeReviewNotes',
-                                                'UseForMapGen', 'Markup', 'Username']) as cursor:
-                        object_id = cursor.insertRow([external_ecoshape_id, review_id, None,
-                                                      'In ' + param_review_label, 1,
-                                                      external_ecoshape_dict[external_ecoshape_id], param_username])
-                    change_count += 1
+                    # additions only also includes the case of "upgrading" ecoshape to Present
+                    if param_additions_only == 'false' or external_ecoshape_dict[external_ecoshape_id] == 'p':
+                        # create review change record
+                        with arcpy.da.InsertCursor(param_geodatabase + '/EcoshapeReview',
+                                                   ['EcoshapeID', 'ReviewID', 'RemovalReason', 'EcoshapeReviewNotes',
+                                                    'UseForMapGen', 'Markup', 'Username']) as cursor:
+                            object_id = cursor.insertRow([external_ecoshape_id, review_id, None,
+                                                        'In ' + param_review_label, 1,
+                                                        external_ecoshape_dict[external_ecoshape_id], param_username])
+                        change_count += 1
             else:
                 # create review add record
                 with arcpy.da.InsertCursor(param_geodatabase + '/EcoshapeReview',
@@ -253,16 +256,17 @@ class ImportExternalRangeReviewTool:
                 add_count += 1
 
         # loop all existing
-        EBARUtils.displayMessage(messages, 'Processing existing Range Ecoshapes')
-        for range_ecoshape_id in range_ecoshape_dict:
-            if range_ecoshape_id not in external_ecoshape_dict:
-                # create review remove record
-                with arcpy.da.InsertCursor(param_geodatabase + '/EcoshapeReview',
-                                           ['EcoshapeID', 'ReviewID', 'RemovalReason', 'EcoshapeReviewNotes',
-                                            'UseForMapGen', 'Markup', 'Username']) as cursor:
-                    object_id = cursor.insertRow([range_ecoshape_id, review_id, 'O', 'Not in ' + param_review_label,
-                                                  1, 'R', param_username])
-                remove_count+= 1
+        if param_additions_only == 'false':
+            EBARUtils.displayMessage(messages, 'Processing existing Range Ecoshapes')
+            for range_ecoshape_id in range_ecoshape_dict:
+                if range_ecoshape_id not in external_ecoshape_dict:
+                    # create review remove record
+                    with arcpy.da.InsertCursor(param_geodatabase + '/EcoshapeReview',
+                                            ['EcoshapeID', 'ReviewID', 'RemovalReason', 'EcoshapeReviewNotes',
+                                             'UseForMapGen', 'Markup', 'Username']) as cursor:
+                        object_id = cursor.insertRow([range_ecoshape_id, review_id, 'O',
+                                                      'Not in ' + param_review_label, 1, 'R', param_username])
+                    remove_count+= 1
 
         # summary and end time
         EBARUtils.displayMessage(messages, str(change_count) + ' EcoshapeReview records created for changing')
@@ -303,7 +307,9 @@ if __name__ == '__main__':
     #param_jurisdictions_covered.value = "'British Columbia'"
     param_username = arcpy.Parameter()
     param_username.value = 'ryan'
+    param_additions_only = arcpy.Parameter()
+    param_additions_only.value = 'true'
     parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage,
                   param_external_range_table, param_presence_field, param_review_label, param_jurisdictions_covered,
-                  param_username]
+                  param_username, param_additions_only]
     ierr.runImportExternalRangeReviewTool(parameters, None)

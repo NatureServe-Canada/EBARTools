@@ -648,9 +648,18 @@ class ImportExternalRangeReview(object):
             parameterType='Required',
             direction='Input')
 
+        # Additions Only
+        param_additions_only = arcpy.Parameter(
+            displayName='Additions Only',
+            name='additions_only',
+            datatype='GPBoolean',
+            parameterType='Required',
+            direction='Input')
+        param_additions_only.value = 'false'
+
         params = [param_geodatabase, param_species, param_secondary, param_version, param_stage,
                   param_external_range_table, param_presence_field, param_review_label, param_jurisdictions_covered,
-                  param_username]
+                  param_username, param_additions_only]
         return params
 
     def isLicensed(self):

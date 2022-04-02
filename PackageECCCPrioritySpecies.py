@@ -128,7 +128,7 @@ class PackageECCCPrioritySpeciesTool:
                            'L4BIOTICS_ELEMENT_NATIONAL.SpeciesID'], where_clause)):
             processed += 1
 
-            # copy pdf
+            # copy pdf 
             EBARUtils.displayMessage(messages, 'Range Map ID: ' + str(row[8]))
             element_global_id = str(row[5])
             if row[7] == 'N':
