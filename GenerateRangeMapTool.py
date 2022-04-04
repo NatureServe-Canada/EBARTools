@@ -683,8 +683,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     # save final
                     update_row = None
                     with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape', ['UsageType'],
-                                                'RangeMapID = ' + str(range_map_id) + ' AND EcoshapeID = ' +
-                                                str(prev_ecoshape_id)) as update_cursor:
+                                               'RangeMapID = ' + str(range_map_id) + ' AND EcoshapeID = ' +
+                                               str(prev_ecoshape_id)) as update_cursor:
                         for update_row in EBARUtils.updateCursor(update_cursor):
                             update_cursor.updateRow([usage_type])
                     if update_row:
@@ -694,6 +694,38 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             del cursor
 
             # apply UsageType from reviews
+            if len(prev_range_map_ids) > 0:
+                EBARUtils.displayMessage(messages, 'Applying UsageType from Reviews')
+                # loop all reviews
+                search_row = None
+                with arcpy.da.SearchCursor('ecoshape_review_view',
+                                            [table_name_prefix + 'EcoshapeReview.UsageTypeMarkup',
+                                             table_name_prefix + 'EcoshapeReview.EcoshapeID',
+                                             table_name_prefix + 'Review.RangeMapID'],
+                                            table_name_prefix + 'Review.RangeMapID IN (' +
+                                            prev_range_map_ids + ') AND ' + table_name_prefix +
+                                            'Review.UseForMapGen = 1 AND ' + table_name_prefix +
+                                            'EcoshapeReview.UseForMapGen = 1 AND ' + table_name_prefix +
+                                            'EcoshapeReview.UsageTypeMarkup IS NOT NULL') as search_cursor:
+                    for search_row in EBARUtils.searchCursor(search_cursor):
+                        # compare to range map
+                        update_row = None
+                        with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape', ['UsageType'],
+                                                   'RangeMapID = ' + str(search_row[table_name_prefix +
+                                                   'Review.RangeMapID']) + ' AND EcoshapeID = ' +
+                                                   str(search_row[table_name_prefix +
+                                                    'EcoshapeReview.EcoshapeID'])) as update_cursor:
+                            for update_row in EBARUtils.updateCursor(update_cursor):
+                                if (search_row[table_name_prefix + 'EcoshapeReview.UsageTypeMarkup'] !=
+                                    update_row['UsageType']):
+                                    update_cursor.updateRow([search_row[table_name_prefix +
+                                                                        'EcoshapeReview.UsageTypeMarkup']])
+                        if update_row:
+                            del update_row
+                        del update_cursor
+                if search_row:
+                    del search_row
+                del search_cursor
         
         # get overall input counts by source
         EBARUtils.displayMessage(messages, 'Counting Overall Inputs by Dataset Source')
@@ -971,7 +1003,7 @@ if __name__ == '__main__':
     param_version = arcpy.Parameter()
     param_version.value = '1.0'
     param_stage = arcpy.Parameter()
-    param_stage.value = 'Auto-generated' #'Expert reviewed test00'
+    param_stage.value = 'Expert reviewed test00' # 'Auto-generated'
     param_scope = arcpy.Parameter()
     param_scope.value = None
     #param_scope.value = 'Canadian'
