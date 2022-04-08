@@ -961,9 +961,36 @@ def inputSelectAndBuffer(geodatabase, input_features, range_map_id, table_name_p
     # remove excluded points from selection
     arcpy.AddJoin_management(input_features + '_layer', input_features + 'ID', geodatabase + '/InputFeedback',
                              input_features + 'ID')
-    arcpy.SelectLayerByAttribute_management(input_features + '_layer', 'REMOVE_FROM_SELECTION', table_name_prefix +
-                                            'InputFeedback.ExcludeFromRangeMapID = ' + str(range_map_id) +
-                                            'OR InputFeedback.ExcludeFromAllRangeMaps = 1')
+    #arcpy.SelectLayerByAttribute_management(input_features + '_layer', 'REMOVE_FROM_SELECTION', table_name_prefix +
+    #                                        'InputFeedback.ExcludeFromRangeMapID = ' + str(range_map_id) +
+    #                                        ' OR ' + table_name_prefix + 'InputFeedback.ExcludeFromAllRangeMaps = 1')
+    # line above does not always behave as expected against enterprise gdb, probably due to outer join!
+    # build list of excluded records
+    excluded_ids = ''
+    with arcpy.da.SearchCursor(input_features + '_layer',
+                               [table_name_prefix + input_features + '.' + input_features + 'ID',
+                                table_name_prefix + 'InputFeedback.ExcludeFromRangeMapID',
+                                table_name_prefix + 'InputFeedback.ExcludeFromAllRangeMaps']) as cursor:
+        row = None
+        for row in searchCursor(cursor):
+            exclude = False
+            if row[table_name_prefix + 'InputFeedback.ExcludeFromRangeMapID']:
+                if row[table_name_prefix + 'InputFeedback.ExcludeFromRangeMapID'] == range_map_id:
+                    exclude = True
+            if row[table_name_prefix + 'InputFeedback.ExcludeFromAllRangeMaps']:
+                if row[table_name_prefix + 'InputFeedback.ExcludeFromAllRangeMaps'] == 1:
+                    exclude = True
+            if exclude:
+                if len(excluded_ids) > 0:
+                    excluded_ids += ','
+                excluded_ids += str(row[table_name_prefix + input_features + '.' + input_features + 'ID'])
+    if row:
+        del row
+    del cursor
+    if len(excluded_ids) > 0:
+        arcpy.SelectLayerByAttribute_management(input_features + '_layer', 'REMOVE_FROM_SELECTION',
+                                                table_name_prefix + input_features + '.' + input_features + 'ID IN (' +
+                                                excluded_ids + ')')
     # BadData now moved to separate tables
     # arcpy.SelectLayerByAttribute_management(input_features + '_layer', 'REMOVE_FROM_SELECTION', table_name_prefix +
     #                                         'InputFeedback.BadData = 1')

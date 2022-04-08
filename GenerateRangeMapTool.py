@@ -635,6 +635,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         del rme_cursor
 
         # migratory
+        usage_type_stats = param_geodatabase + '/TempUTSTats' + str(start_time.year) + str(start_time.month) + \
+            str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
         if param_differentiate_usage_type == 'true':
             # set UsageType from input data
             EBARUtils.displayMessage(messages, 'Applying Breeding and Behaviour Codes to set UsageType')
@@ -646,8 +648,6 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     bbc_domain_values = domain.codedValues
 
             # summarize all input records by ecoshape
-            usage_type_stats = param_geodatabase + '/TempUTSTats' + str(start_time.year) + str(start_time.month) + \
-                str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
             arcpy.Statistics_analysis(temp_pairwise_intersect, usage_type_stats, [['EcoshapeID', 'COUNT']],
                                       ['EcoshapeID', 'BreedingAndBehaviourCode'])
             row = None
@@ -676,7 +676,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                         if 'Confirmed' in bbc_domain_values[row['BreedingAndBehaviourCode']]:
                             usage_type = 'B'
                         elif ('Probable' in bbc_domain_values[row['BreedingAndBehaviourCode']] or
-                            'Possible' in bbc_domain_values[row['BreedingAndBehaviourCode']]) and usage_type != 'B':
+                              'Possible' in bbc_domain_values[row['BreedingAndBehaviourCode']]) and usage_type != 'B':
                             usage_type = 'P'
             if row:
                 if prev_ecoshape_id and usage_type:
@@ -711,10 +711,9 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                         # compare to range map
                         update_row = None
                         with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape', ['UsageType'],
-                                                   'RangeMapID = ' + str(search_row[table_name_prefix +
-                                                   'Review.RangeMapID']) + ' AND EcoshapeID = ' +
-                                                   str(search_row[table_name_prefix +
-                                                    'EcoshapeReview.EcoshapeID'])) as update_cursor:
+                                                   'RangeMapID = ' + str(range_map_id) + ' AND EcoshapeID = ' +
+                                                   str(search_row[table_name_prefix + 'EcoshapeReview.EcoshapeID'])
+                                                   ) as update_cursor:
                             for update_row in EBARUtils.updateCursor(update_cursor):
                                 if (search_row[table_name_prefix + 'EcoshapeReview.UsageTypeMarkup'] !=
                                     update_row['UsageType']):
