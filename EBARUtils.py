@@ -987,14 +987,11 @@ def inputSelectAndBuffer(geodatabase, input_features, range_map_id, table_name_p
     if row:
         del row
     del cursor
+    arcpy.RemoveJoin_management(input_features + '_layer', table_name_prefix + 'InputFeedback')
     if len(excluded_ids) > 0:
         arcpy.SelectLayerByAttribute_management(input_features + '_layer', 'REMOVE_FROM_SELECTION',
                                                 table_name_prefix + input_features + '.' + input_features + 'ID IN (' +
                                                 excluded_ids + ')')
-    # BadData now moved to separate tables
-    # arcpy.SelectLayerByAttribute_management(input_features + '_layer', 'REMOVE_FROM_SELECTION', table_name_prefix +
-    #                                         'InputFeedback.BadData = 1')
-    arcpy.RemoveJoin_management(input_features + '_layer', table_name_prefix + 'InputFeedback')
 
     # buffer
     if desc.shapeType == 'Point':
