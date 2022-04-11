@@ -153,10 +153,11 @@ class PublishRangeMapTool:
         # get range map data from database
         EBARUtils.displayMessage(messages, 'Getting RangeMap data from database')
         range_map_scope = None
+        differentiate_usage_type = False
         with arcpy.da.SearchCursor('range_map_view',
                                     ['SpeciesID', 'RangeVersion', 'RangeStage', 'RangeDate', 'RangeMapScope',
                                      'RangeMapNotes', 'RangeMetadata', 'RangeMapComments',
-                                     'IncludeInDownloadTable']) as cursor:
+                                     'IncludeInDownloadTable', 'DifferentiateUsageType']) as cursor:
             for row in EBARUtils.searchCursor(cursor):
                 pdf_html = pdf_html.replace('[RangeMap.RangeDate]', row['RangeDate'].strftime('%B %d, %Y'))
                 pdf_html = pdf_html.replace('[RangeMap.RangeVersion]', row['RangeVersion'])
@@ -176,8 +177,11 @@ class PublishRangeMapTool:
                 if len(comment) == 0:
                     comment = 'None'
                 pdf_html = pdf_html.replace('[RangeMap.RangeMapComments]', comment)
-            if range_map_scope:
-                del row
+                if row['DifferentiateUsageType']:
+                    differentiate_usage_type = True
+        if range_map_scope:
+            del row
+        del cursor
 
         # insert fixed list of reviewers by taxa
         EBARUtils.displayMessage(messages, 'Inserting ReviewersByTaxa file')
@@ -228,6 +232,9 @@ class PublishRangeMapTool:
         polygon_layer.definitionQuery = 'rangemapid = ' + param_range_map_id
         table_layer = map.listTables('rangemap')[0]
         table_layer.definitionQuery = 'rangemapid = ' + param_range_map_id
+        if not differentiate_usage_type:
+            usage_type_layer = map.listLayers('usagetype')[0]
+            usage_type_layer.visible = False
         layout = aprx.listLayouts('range map landscape terrain watermark')[0]
         map_frame = layout.listElements('mapframe_element')[0]
         extent = map_frame.getLayerExtent(polygon_layer, False, True)
@@ -363,13 +370,13 @@ if __name__ == '__main__':
     # spatial_batch_ids = [2341,2339,2340,2342,2344,2322,2323,2325,2326,2327,2328,2329,2330,2331,2332,2333,2334,2335,
     #                      2336,2337,2338,2324,1283,2315,2237,2240,2239,2238,2313,2311,2241,2308,2306,2307,2309,2305,
     #                      2356,2357,2358,2363,2367,2368,2369,2370,2359,2360,2361,2362,2364,2365,2366]
-    spatial_batch_ids = [1880]
+    spatial_batch_ids = [2615, 2366]
     for id in spatial_batch_ids:
        # hard code parameters for debugging
        param_range_map_id = arcpy.Parameter()
        param_range_map_id.value = str(id)
        param_spatial = arcpy.Parameter()
-       param_spatial.value = 'true'
+       param_spatial.value = 'false'
        parameters = [param_range_map_id, param_spatial]
        prm.runPublishRangeMapTool(parameters, None)
     
