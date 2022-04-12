@@ -1,11 +1,12 @@
 Ecosystem-based Automated Range (EBAR) ZIP package for selected species
-� NatureServe Canada 2020 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+Copyright NatureServe Canada 2022 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 This ZIP package should contain the following files:
 - EBARxxxxx.pdf (map and metadata for EBAR for selected species)
 - EBARMethods.pdf (background information on range map production, ecoshape sources and related topics)
 - Ecoshape.* (files comprising polygons shapefile of original ecoshapes for EBAR for selected species)
 - EcoshapeOverview.* (files comprising polygons shapefile of generalized ecoshapes for EBAR for selected species)
+- UsageType.* (if applicable, files comprising polygons shapefile of usage type, of generalized ecoshapes for EBAR for selected species)
 - RangeMap.csv (table of species and range attributes for EBAR for selected species)
 - RangeMapEcoshape.csv (table of per-ecoshape attributes for EBAR for selected species)
 - Jurisdiction.csv (table of jurisdictions)
@@ -13,9 +14,11 @@ This ZIP package should contain the following files:
 - EXARxxxxx.mapx (ArcGIS Pro map file referencing the data files above, with appropriate joins)
 - EBARxxxxxEcoshape.lyrx (ArcGIS Pro layer file, with suggested symbology and appropriate joins, referencing the original ecoshapes)
 - EBARxxxxxEcoshapeOverview.lyrx (ArcGIS Pro layer file, with suggested symbology and appropriate joins, referencing the generalized ecoshapes)
+- EBARxxxxxUsageType.lyrx (if applicable, ArcGIS Pro layer file, with suggested symbology and approrpriate joins, referencing usage type of generalized ecoshapes)
 - EBARxxxxx.mxd (ArcMap project file referencing the data files above)
 - EBARxxxxxEcoshape.lyr (ArcMap layer file, with suggested symbology and appropriate joins, referencing the original ecoshapes)
 - EBARxxxxxEcoshapeOverview.lyr (ArcMap layer file, with suggested symbology and appropriate joins, referencing the generalized ecoshapes)
+- EBARxxxxxUsageType.lyr (ArcMap layer file, with suggested symbology and approrpriate joins, referencing usage type of generalized ecoshapes)
 [where xxxxx is the ELEMENT_GLOBAL_ID of the selected species]
 
 The included data files are related as follows:
@@ -34,6 +37,7 @@ RangeMetadata - numbers of input records by source, and count and details (if pu
 RangeMapNotes - details on the species name(s)
 RangeMapComments - additional notes
 SynonymsUsed - a list of the synonyms, if any, for the primary species under which the input data used was imported
+DifferentiateUsageType - 1 if the UsageType (Breeding, Possible Breeding, Migration) is differentiated per Ecoshape
 ELEMENT_NATIONAL_ID - NatureServe Biotics national unique identifier
 ELEMENT_GLOBAL_ID - NatureServe Biotics global unique identifier
 ELEMENT_CODE - NatureServe Biotics element identifier

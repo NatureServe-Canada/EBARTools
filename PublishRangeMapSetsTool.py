@@ -52,6 +52,7 @@ class PublishRangeMapSetsTool:
             # copy ArcMap template
             EBARUtils.displayMessage(messages, 'Copying ArcMap template')
             shutil.copyfile(EBARUtils.resources_folder + '/EBAR.mxd', zip_folder + '/EBAR ' + category_taxagroup + '.mxd')
+            shutil.copyfile(EBARUtils.resources_folder + '/UsageType.lyr', zip_folder + '/UsageType.lyr')
             shutil.copyfile(EBARUtils.resources_folder + '/EcoshapeOverview.lyr', zip_folder + '/EcoshapeOverview.lyr')
             shutil.copyfile(EBARUtils.resources_folder + '/Ecoshape.lyr', zip_folder + '/Ecoshape.lyr')
 
@@ -130,7 +131,8 @@ class PublishRangeMapSetsTool:
                            'L11RangeMap.RangeMapScope',
                            'L11RangeMap.RangeMapID',
                            'L11RangeMap.IncludeInDownloadTable',
-                           'L4BIOTICS_ELEMENT_NATIONAL.SpeciesID'], where_clause)):
+                           'L4BIOTICS_ELEMENT_NATIONAL.SpeciesID',
+                           'L11RangeMap.DifferentiateUsageType'], where_clause)):
             if row[0] + ' - ' + row[1] != category_taxagroup:
                 # new category_taxagroup
                 if category_taxagroup != '':
@@ -174,7 +176,10 @@ class PublishRangeMapSetsTool:
                 only_deficient_partial = False
                 # update ArcGIS Pro template
                 EBARUtils.displayMessage(messages, 'Updating ArcGIS Pro template')
-                EBARUtils.updateArcGISProTemplate(zip_folder, element_global_id, md, row[8])
+                differentiate_usage_type = False
+                if row[11]:
+                    differentiate_usage_type = True
+                EBARUtils.updateArcGISProTemplate(zip_folder, element_global_id, md, row[8], differentiate_usage_type)
 
         if row:
             # final category_taxagroup

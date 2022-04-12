@@ -539,6 +539,8 @@ def ExportRangeMapToCSV(range_map_view, range_map_ids, attributes_dict, output_f
     field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.ReviewerComments', 'ReviewerComments',
                                               'TEXT'))
     field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.SynonymsUsed', 'SynonymsUsed', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.DifferentiateUsageType',
+                                              'DifferentiateUsageType', 'TEXT'))
     field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.ELEMENT_NATIONAL_ID',
                                               'ELEMENT_NATIONAL_ID', 'LONG'))
     field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.ELEMENT_GLOBAL_ID',
@@ -618,6 +620,7 @@ def ExportRangeMapEcoshapesToCSV(range_map_ecoshape_view, range_map_ids, output_
     field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'RangeMapID', 'RangeMapID', 'LONG'))
     field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'EcoshapeID', 'EcoshapeID', 'LONG'))
     field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'Presence', 'Presence', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'UsageType', 'UsageType', 'TEXT'))
     field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'RangeMapEcoshapeNotes',
                                               'RangeMapEcoshapeNotes', 'TEXT'))
     arcpy.TableToTable_conversion(range_map_ecoshape_view, output_folder, 'RangeMapEcoshape.csv',
@@ -808,7 +811,7 @@ def getTaxonAttributes(global_unique_id, element_global_id, range_map_id, messag
     return attributes_dict
 
 
-def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_id):
+def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_id, differentiate_usage_type):
     """update ArcGIS Pro template for passed element_global_id"""
     # copy template and set project and map properties
     shutil.copyfile(resources_folder + '/EBARTemplate.aprx', zip_folder + '/EBAR' + element_global_id + '.aprx')
@@ -818,6 +821,18 @@ def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_i
     map = aprx.listMaps('EBARTemplate')[0]
     map.name = 'EBAR' + element_global_id
     # set layer metadata and properties, saving each to a layer file
+    usage_type_layer = map.listLayers('EBARTemplateUsageType')[0]
+    if differentiate_usage_type:
+        usage_type_layer_md = usage_type_layer.metadata
+        metadata.title = 'EBAR UsageType.shp'
+        metadata.summary = 'Polygons shapefile of usage type for generalized ecoshapes for EBAR for selected species'
+        usage_type_layer_md.copy(metadata)
+        usage_type_layer_md.save()
+        usage_type_layer.name = 'EBAR' + element_global_id + 'UsageType'
+        usage_type_layer.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
+        usage_type_layer.saveACopy(zip_folder + '/EBAR' + element_global_id + 'UsageType.lyrx')
+    else:
+        map.removeLayer(usage_type_layer)
     ecoshape_overview_layer =  map.listLayers('EBARTemplateEcoshapeOverview')[0]
     ecoshape_overview_layer_md = ecoshape_overview_layer.metadata
     metadata.title = 'EBAR EcoshapeOverview.shp'

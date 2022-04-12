@@ -16,6 +16,7 @@
 #import sys
 #import locale
 from attr import fields_dict
+from numpy import diff
 import EBARUtils
 import arcpy
 import datetime
@@ -76,6 +77,9 @@ class GenerateRangeMapTool:
             jur_ids_comma = EBARUtils.buildJurisdictionList(param_geodatabase, param_jurisdictions_list)
         param_custom_polygons_covered = parameters[7].valueAsText
         param_differentiate_usage_type = parameters[8].valueAsText
+        differentiate_usage_type = None
+        if param_differentiate_usage_type == 'true':
+            differentiate_usage_type = 1
 
         # use passed geodatabase as workspace (still seems to go to default geodatabase)
         arcpy.env.workspace = param_geodatabase
@@ -249,12 +253,13 @@ class GenerateRangeMapTool:
             # create RangeMap record
             with arcpy.da.InsertCursor('range_map_view',
                                        ['SpeciesID', 'RangeVersion', 'RangeStage', 'RangeDate', 'RangeMapNotes',
-                                        'IncludeInEBARReviewer', 'RangeMapScope', 'SynonymsUsed']) as cursor:
+                                        'IncludeInEBARReviewer', 'RangeMapScope', 'SynonymsUsed',
+                                        'DifferentiateUsageType']) as cursor:
                 notes = 'Primary Species Name - ' + param_species
                 if len(secondary_names) > 0:
                     notes += '; Synonyms - ' + secondary_names
                 object_id = cursor.insertRow([species_id, param_version, param_stage, datetime.datetime.now(),
-                                              notes, 0, scope, synonyms_used])
+                                              notes, 0, scope, synonyms_used, differentiate_usage_type])
             del cursor
             range_map_id = EBARUtils.getUniqueID(param_geodatabase + '/RangeMap', 'RangeMapID', object_id)
             EBARUtils.displayMessage(messages, 'Range Map record created')
@@ -906,7 +911,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         update_row = None
         with arcpy.da.UpdateCursor('range_map_view',
                                    ['RangeMetadata', 'RangeDate', 'RangeMapNotes', 'RangeMapScope', 'SynonymsUsed',
-                                    'ReviewerComments'],
+                                    'ReviewerComments', 'DifferentiateUsageType'],
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
             for update_row in update_cursor:
                 # Metadata
@@ -949,7 +954,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                 if len(synonym_authors) > 0:
                     notes += '; Synonyms - ' + synonym_authors
                 update_cursor.updateRow([summary, datetime.datetime.now(), notes, scope, synonyms_used,
-                                         reviewer_comments])
+                                         reviewer_comments, differentiate_usage_type])
         if update_row:
             del update_row
         del update_cursor
@@ -995,14 +1000,14 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_species = arcpy.Parameter()
-    param_species.value = 'Aechmophorus occidentalis' #'Acalypta cooleyi' #Bombus suckleyi #'Micranthes spicata'
+    param_species.value = 'Acalypta cooleyi' #'Aechmophorus occidentalis' #Bombus suckleyi #'Micranthes spicata'
     param_secondary = arcpy.Parameter()
     param_secondary.value = None
     #param_secondary.value = "'Schistochilopsis incisa var. opacifolia'" #"'Dodia tarandus';'Dodia verticalis'"
     param_version = arcpy.Parameter()
     param_version.value = '1.0'
     param_stage = arcpy.Parameter()
-    param_stage.value = 'Expert reviewed test00' # 'Auto-generated'
+    param_stage.value = 'Auto-generated TEST' # 'Expert reviewed test00' 
     param_scope = arcpy.Parameter()
     param_scope.value = None
     #param_scope.value = 'Canadian'

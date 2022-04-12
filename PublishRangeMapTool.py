@@ -322,12 +322,15 @@ class PublishRangeMapTool:
 
             # update ArcGIS Pro template
             EBARUtils.displayMessage(messages, 'Updating ArcGIS Pro template')
-            EBARUtils.updateArcGISProTemplate(zip_folder, element_global_id, md, param_range_map_id)
+            EBARUtils.updateArcGISProTemplate(zip_folder, element_global_id, md, param_range_map_id, differentiate_usage_type)
 
             # copy ArcMap template
             EBARUtils.displayMessage(messages, 'Copying ArcMap template')
             shutil.copyfile(EBARUtils.resources_folder + '/EBAR.mxd',
                             zip_folder + '/EBAR' + element_global_id + '.mxd')
+            if differentiate_usage_type:
+                shutil.copyfile(EBARUtils.resources_folder + '/UsageType.lyr',
+                                zip_folder + '/EBAR' + element_global_id + 'UsageType.lyr')
             shutil.copyfile(EBARUtils.resources_folder + '/EcoshapeOverview.lyr',
                             zip_folder + '/EBAR' + element_global_id + 'EcoshapeOverview.lyr')
             shutil.copyfile(EBARUtils.resources_folder + '/Ecoshape.lyr',
@@ -370,22 +373,22 @@ if __name__ == '__main__':
     # spatial_batch_ids = [2341,2339,2340,2342,2344,2322,2323,2325,2326,2327,2328,2329,2330,2331,2332,2333,2334,2335,
     #                      2336,2337,2338,2324,1283,2315,2237,2240,2239,2238,2313,2311,2241,2308,2306,2307,2309,2305,
     #                      2356,2357,2358,2363,2367,2368,2369,2370,2359,2360,2361,2362,2364,2365,2366]
-    spatial_batch_ids = [2615, 2366]
-    for id in spatial_batch_ids:
-       # hard code parameters for debugging
-       param_range_map_id = arcpy.Parameter()
-       param_range_map_id.value = str(id)
-       param_spatial = arcpy.Parameter()
-       param_spatial.value = 'false'
-       parameters = [param_range_map_id, param_spatial]
-       prm.runPublishRangeMapTool(parameters, None)
+    # spatial_batch_ids = [2366]
+    # for id in spatial_batch_ids:
+    #    # hard code parameters for debugging
+    #    param_range_map_id = arcpy.Parameter()
+    #    param_range_map_id.value = str(id)
+    #    param_spatial = arcpy.Parameter()
+    #    param_spatial.value = 'true'
+    #    parameters = [param_range_map_id, param_spatial]
+    #    prm.runPublishRangeMapTool(parameters, None)
     
-    # non_spatial_batch_ids = [1758,2314,2312,2310]
-    # for id in non_spatial_batch_ids:
-    #     # hard code parameters for debugging
-    #     param_range_map_id = arcpy.Parameter()
-    #     param_range_map_id.value = str(id)
-    #     param_spatial = arcpy.Parameter()
-    #     param_spatial.value = 'false'
-    #     parameters = [param_range_map_id, param_spatial]
-    #     prm.runPublishRangeMapTool(parameters, None)
+    non_spatial_batch_ids = [2395]
+    for id in non_spatial_batch_ids:
+        # hard code parameters for debugging
+        param_range_map_id = arcpy.Parameter()
+        param_range_map_id.value = str(id)
+        param_spatial = arcpy.Parameter()
+        param_spatial.value = 'false'
+        parameters = [param_range_map_id, param_spatial]
+        prm.runPublishRangeMapTool(parameters, None)
