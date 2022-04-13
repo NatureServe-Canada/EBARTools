@@ -68,6 +68,7 @@ objectid - ArcGIS unique identifier
 RangeMapID - EBAR foreign key relating to the appropriate RangeMap record
 EcoshapeID - EBAR foreign key relating to the appropriate Ecoshape/EcoshapeOverview record
 Presence - the category of species presence in the Ecoshape (P=Present, X=Presence Expected, H=Historical, see metadata PDF for definitions)
+UsageType - the species usage type in the Ecoshape (B=Breeding, P=Possible Breeding, M=Migration, see metadata PDF for definitions)
 RangeMapEcoshapeNotes - numbers of input records by source
 
 Jurisdiction fields:

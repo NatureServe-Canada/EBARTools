@@ -614,7 +614,9 @@ def ExportRangeMapToCSV(range_map_view, range_map_ids, attributes_dict, output_f
 
 def ExportRangeMapEcoshapesToCSV(range_map_ecoshape_view, range_map_ids, output_folder, output_csv, metadata):
     """create csv for range map ecoshape"""
-    where_clause = 'RangeMapID IN (' + ','.join(range_map_ids) + ')'
+    where_clause = None
+    if range_map_ids:
+        where_clause = 'RangeMapID IN (' + ','.join(range_map_ids) + ')'
     arcpy.MakeTableView_management(ebar_feature_service + '/12', range_map_ecoshape_view, where_clause)
     field_mappings = arcpy.FieldMappings()
     field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'RangeMapID', 'RangeMapID', 'LONG'))
@@ -635,21 +637,25 @@ def ExportRangeMapEcoshapesToCSV(range_map_ecoshape_view, range_map_ids, output_
     range_map_ecoshape_md.save()
 
 
-def ExportEcoshapesToShapefile(ecoshape_layer, range_map_ecoshape_view, output_folder, output_shapefile, metadata):
+def ExportEcoshapesToShapefile(ecoshape_layer, range_map_ecoshape_view, output_folder, output_shapefile, metadata,
+                               export_all):
     """create shapefile for ecoshapes"""
     arcpy.MakeFeatureLayer_management(ebar_feature_service + '/3', ecoshape_layer)
-    arcpy.AddJoin_management(ecoshape_layer, 'EcoshapeID', range_map_ecoshape_view, 'EcoshapeID')
+    prefix = ''
+    if not export_all:
+        arcpy.AddJoin_management(ecoshape_layer, 'EcoshapeID', range_map_ecoshape_view, 'EcoshapeID')
+        prefix = 'L3Ecoshape.'
     field_mappings = arcpy.FieldMappings()
-    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, 'L3Ecoshape.EcoshapeID', 'EcoshapeID', 'LONG'))
-    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, 'L3Ecoshape.JurisdictionID', 'JurisID', 'LONG'))
-    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, 'L3Ecoshape.EcoshapeName', 'EcoName', 'TEXT'))
-    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, 'L3Ecoshape.ParentEcoregion', 'ParentEco', 'TEXT'))
-    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, 'L3Ecoshape.ParentEcoregionFR', 'ParentEcoF', 'TEXT'))
-    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, 'L3Ecoshape.Ecozone', 'Ecozone', 'TEXT'))
-    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, 'L3Ecoshape.EcozoneFR', 'EcozoneFR', 'TEXT'))
-    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, 'L3Ecoshape.MosaicVersion', 'MosaicVer', 'TEXT'))
-    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, 'L3Ecoshape.TerrestrialArea', 'TerrArea', 'DOUBLE'))
-    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, 'L3Ecoshape.TotalArea', 'TotalArea', 'DOUBLE'))
+    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, prefix + 'EcoshapeID', 'EcoshapeID', 'LONG'))
+    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, prefix + 'JurisdictionID', 'JurisID', 'LONG'))
+    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, prefix + 'EcoshapeName', 'EcoName', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, prefix + 'ParentEcoregion', 'ParentEco', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, prefix + 'ParentEcoregionFR', 'ParentEcoF', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, prefix + 'Ecozone', 'Ecozone', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, prefix + 'EcozoneFR', 'EcozoneFR', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, prefix + 'MosaicVersion', 'MosaicVer', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, prefix + 'TerrestrialArea', 'TerrArea', 'DOUBLE'))
+    field_mappings.addFieldMap(createFieldMap(ecoshape_layer, prefix + 'TotalArea', 'TotalArea', 'DOUBLE'))
     arcpy.FeatureClassToFeatureClass_conversion(ecoshape_layer, output_folder, output_shapefile,
                                                 field_mapping=field_mappings)
     ecoshape_md = arcpy.metadata.Metadata(output_folder + '/' + output_shapefile)
@@ -660,30 +666,33 @@ def ExportEcoshapesToShapefile(ecoshape_layer, range_map_ecoshape_view, output_f
 
 
 def ExportEcoshapeOverviewsToShapefile(ecoshape_overview_layer, range_map_ecoshape_view, output_folder,
-                                       output_shapefile, metadata):
+                                       output_shapefile, metadata, export_all):
     """create shapefile for overview ecoshapes"""
     arcpy.MakeFeatureLayer_management(ebar_feature_service + '/22', ecoshape_overview_layer)
-    arcpy.AddJoin_management(ecoshape_overview_layer, 'EcoshapeID', range_map_ecoshape_view, 'EcoshapeID')
+    prefix = ''
+    if not export_all:
+        arcpy.AddJoin_management(ecoshape_overview_layer, 'EcoshapeID', range_map_ecoshape_view, 'EcoshapeID')
+        prefix = 'L22EcoshapeOverview.'
     field_mappings = arcpy.FieldMappings()
-    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, 'L22EcoshapeOverview.EcoshapeID',
+    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, prefix + 'EcoshapeID',
                                               'EcoshapeID', 'LONG'))
-    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, 'L22EcoshapeOverview.JurisdictionID',
+    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, prefix + 'JurisdictionID',
                                               'JurisID', 'LONG'))
-    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, 'L22EcoshapeOverview.EcoshapeName',
+    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, prefix + 'EcoshapeName',
                                               'EcoName', 'TEXT'))
-    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, 'L22EcoshapeOverview.ParentEcoregion',
+    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, prefix + 'ParentEcoregion',
                                               'ParentEco', 'TEXT'))
-    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, 'L22EcoshapeOverview.ParentEcoregionFR',
+    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, prefix + 'ParentEcoregionFR',
                                               'ParentEcoF', 'TEXT'))
-    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, 'L22EcoshapeOverview.Ecozone',
+    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, prefix + 'Ecozone',
                                               'Ecozone', 'TEXT'))
-    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, 'L22EcoshapeOverview.EcozoneFR',
+    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, prefix + 'EcozoneFR',
                                               'EcozoneFR', 'TEXT'))
-    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, 'L22EcoshapeOverview.MosaicVersion',
+    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, prefix + 'MosaicVersion',
                                               'MosaicVer', 'TEXT'))
-    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, 'L22EcoshapeOverview.TerrestrialArea',
+    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, prefix + 'TerrestrialArea',
                                               'TerrArea', 'DOUBLE'))
-    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, 'L22EcoshapeOverview.TotalArea',
+    field_mappings.addFieldMap(createFieldMap(ecoshape_overview_layer, prefix + 'TotalArea',
                                               'TotalArea', 'DOUBLE'))
     arcpy.FeatureClassToFeatureClass_conversion(ecoshape_overview_layer, output_folder, output_shapefile,
                                                 field_mapping=field_mappings)

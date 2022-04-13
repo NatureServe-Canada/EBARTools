@@ -41,13 +41,13 @@ class PublishRangeMapSetsTool:
             EBARUtils.displayMessage(messages, 'Exporting Ecoshape polygons to shapefile')
             EBARUtils.ExportEcoshapesToShapefile('ecoshape_layer' + category_taxagroup,
                                                  'range_map_ecoshape_view' + category_taxagroup, zip_folder, 
-                                                 'Ecoshape.shp', metadata)
+                                                 'Ecoshape.shp', metadata, False)
 
             # export overview ecoshapes
             EBARUtils.displayMessage(messages, 'Exporting EcoshapeOverview polygons to shapefile')
             EBARUtils.ExportEcoshapeOverviewsToShapefile('ecoshape_overview_layer' + category_taxagroup,
                                                          'range_map_ecoshape_view' + category_taxagroup, zip_folder, 
-                                                         'EcoshapeOverview.shp', metadata)
+                                                         'EcoshapeOverview.shp', metadata, False)
 
             # copy ArcMap template
             EBARUtils.displayMessage(messages, 'Copying ArcMap template')
