@@ -312,13 +312,13 @@ class PublishRangeMapTool:
             EBARUtils.displayMessage(messages, 'Exporting Ecoshape polygons to shapefile')
             EBARUtils.ExportEcoshapesToShapefile('ecoshape_layer' + param_range_map_id,
                                                  'range_map_ecoshape_view' + param_range_map_id, zip_folder, 
-                                                 'Ecoshape.shp', md)
+                                                 'Ecoshape.shp', md, False)
 
             # export overview ecoshapes
             EBARUtils.displayMessage(messages, 'Exporting EcoshapeOverview polygons to shapefile')
             EBARUtils.ExportEcoshapeOverviewsToShapefile('ecoshape_overview_layer' + param_range_map_id,
                                                          'range_map_ecoshape_view' + param_range_map_id, zip_folder, 
-                                                         'EcoshapeOverview.shp', md)
+                                                         'EcoshapeOverview.shp', md, False)
 
             # update ArcGIS Pro template
             EBARUtils.displayMessage(messages, 'Updating ArcGIS Pro template')
