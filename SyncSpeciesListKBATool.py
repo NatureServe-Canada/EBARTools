@@ -272,9 +272,9 @@ if __name__ == '__main__':
 
     # Hard-coded parameters for debugging
     param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value = 'C:\\GIS_Processing\\KBA\\Scripts\\GITHUB\\EBARDev.gdb'
+    param_geodatabase.value = 'C:\\GIS_Processing\\KBA\\Scripts\\EBAR_GITHUB\\EBARDev.gdb'
     param_csv = arcpy.Parameter()
-    param_csv.value = 'C:\\GIS_Processing\\KBA\\Scripts\\GITHUB\\EBARTools\\SpeciesElementsExample.csv'
+    param_csv.value = 'C:\\GIS_Processing\\KBA\\Scripts\\EBAR_GITHUB\\EBARTools\\SpeciesElementsExample.csv'
     parameters = [param_geodatabase, param_csv]
 
     sslkba.runSyncSpeciesListKBATool(parameters, None)
