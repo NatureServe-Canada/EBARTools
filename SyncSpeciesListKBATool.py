@@ -1,8 +1,8 @@
 # encoding: utf-8
 
-# Project: Ecosytem-based Automated Range Mapping (EBAR) & Key Biodiversity Areas (KBA)
-# Credits: Meg Southee, Randal Greene, Christine Terwissen
-# © NatureServe Canada 2020 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+# Project: Key Biodiversity Areas (KBA) Canada
+# Credits: Meg Southee, Randal Greene
+# © WCS Canada / NatureServe Canada 2020 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 # Program: SyncSpeciesListKBATool.py
 # ArcGIS Python tool to synchronize the Species table with the Biotics table in the EBAR-KBA database.
@@ -40,20 +40,12 @@ class SyncSpeciesListKBATool:
         # Use os library to access the folder that contains the csv file
         root_dir = os.path.dirname(param_csv)
 
-        # # WHEN THIS IS RUN FROM THE PORTAL, IT WRITES THE OUTPUT CSV TO A FOLDER ON THE SERVER.
-        # # Debugging message
-        # EBARUtils.displayMessage(messages, 'Output csv location: ' + root_dir)
-        #
-        # # Create output csv file to write the skipped element_national_id values
-        # outfile_name = root_dir + "\\output_skipped_element_national_ids.csv"
-        # outfile = open(outfile_name, 'w')
-
         # Assign variables
         line_count = 1
         processed = 0
         skipped_no_id = 0
         skipped = 0
-        id_list = []
+        skipped_id_list = []
         species_fields = ["SpeciesID",
                           "KBATrigger",
                           "RemainingKBAPotential",
@@ -236,7 +228,7 @@ class SyncSpeciesListKBATool:
                     #                                                                                               element_national_id))
 
                     # Append element_national id value to id_list
-                    id_list.append(element_national_id)
+                    skipped_id_list.append(element_national_id)
 
                     # Increase counter for skipped records
                     skipped += 1
@@ -244,14 +236,8 @@ class SyncSpeciesListKBATool:
             # Increase counter for the lines read in the input csv file
             line_count += 1
 
-        # # Write skipped element_national_id values to output file using a comma to separate them
-        # outfile.write(','.join(map(str, id_list)))
-
         # Close the input csv file
         infile.close()
-
-        # # Close the outut csv file
-        # outfile.close()
 
         # Print tool summary and output messages
         EBARUtils.displayMessage(messages, 'Summary:')
@@ -260,8 +246,8 @@ class SyncSpeciesListKBATool:
         EBARUtils.displayMessage(messages, 'Records skipped (no Element_National_ID) - ' + str(skipped_no_id))
         EBARUtils.displayMessage(messages, 'Records skipped (no match to Biotics table) - ' + str(skipped))
         EBARUtils.displayMessage(messages, 'List of Element_National_ID values with no match in Biotics table:')
-        EBARUtils.displayMessage(messages, ','.join(map(str, id_list)))
-        # EBARUtils.displayMessage(messages, 'The above list of values are also recorded here {}'.format(outfile_name))
+        # Write skipped element_national_id values using a comma to separate them
+        EBARUtils.displayMessage(messages, ','.join(map(str, skipped_id_list)))
 
         return
 
