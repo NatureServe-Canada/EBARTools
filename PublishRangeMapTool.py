@@ -83,10 +83,10 @@ class PublishRangeMapTool:
         endemism_type = 'None'
         arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/19', 'species_view',
                                        'SpeciesID = ' + str(species_id))
-        with arcpy.da.SearchCursor('species_view', ['Endemism_Type']) as cursor:
+        with arcpy.da.SearchCursor('species_view', ['Endemism']) as cursor:
             for row in EBARUtils.searchCursor(cursor):
-                if row['Endemism_Type']:
-                    endemism_type = row['Endemism_Type']
+                if row['Endemism']:
+                    endemism_type = row['Endemism']
             del row
         pdf_html = pdf_html.replace('[Species.Endemism_Type]', endemism_type)
 
