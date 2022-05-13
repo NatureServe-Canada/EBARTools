@@ -125,7 +125,7 @@ class SyncSpeciesListKBATool:
                           "EBAR_NA_MapID",
                           "EBAR_N_MapID",
                           "EBAR_MapID_GlobalAssessments",
-                          "EBAR_MapID_NationalAssessments",
+                          "EBAR_MapID_NationalAssessment",
                           "Endemism",
                           "IUCN_Name",
                           "Range_G_IUCN_Breeding",
