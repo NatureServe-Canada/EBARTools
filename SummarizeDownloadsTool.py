@@ -46,10 +46,10 @@ class SummarizeDownloadsTool:
                 # search/count .zip and add to stats
                 year_month_species_zips[year_month] += log_text.count('.zip')
                 # search/count taxa downloads and update stats
-                taxa_pdfs = log_text.count('All PDFs.zip')
+                taxa_pdfs = log_text.count('All+PDFs.zip')
                 year_month_taxa_pdfs[year_month] += taxa_pdfs
                 year_month_species_pdfs[year_month] -= taxa_pdfs
-                taxa_zips = log_text.count('All Data.zip')
+                taxa_zips = log_text.count('All+Data.zip')
                 year_month_taxa_zips[year_month] += taxa_zips
                 year_month_species_pdfs[year_month] -= taxa_zips
             file_count +=1
