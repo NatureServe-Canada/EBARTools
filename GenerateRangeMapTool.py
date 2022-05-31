@@ -678,11 +678,10 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                         usage_type = None
                     # any confirmation in ecoshape prevails
                     if row['BreedingAndBehaviourCode']:
-                        if ('Confirmed' in bbc_domain_values[row['BreedingAndBehaviourCode']] or
-                            'Probable' in bbc_domain_values[row['BreedingAndBehaviourCode']]):
+                        if 'Confirmed' in bbc_domain_values[row['BreedingAndBehaviourCode']]:
                             usage_type = 'B'
-                        elif ('Possible' in bbc_domain_values[row['BreedingAndBehaviourCode']]
-                              and usage_type != 'B'):
+                        elif ('Probable' in bbc_domain_values[row['BreedingAndBehaviourCode']] or
+                              'Possible' in bbc_domain_values[row['BreedingAndBehaviourCode']]) and usage_type != 'B':
                             usage_type = 'P'
             if row:
                 if prev_ecoshape_id and usage_type:
