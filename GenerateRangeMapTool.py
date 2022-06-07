@@ -616,6 +616,13 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                 del search_row
             del search_cursor
 
+        # remove from pairwise intersect any inputs not in final ecoshapes
+        EBARUtils.displayMessage(messages, 'Removing any Inputs not in final Ecoshapes')
+        where_clause = 'EcoshapeID IN (SELECT EcoshapeID FROM RangeMapEcoshape WHERE RangeMapID = ' + \
+            str(range_map_id) + ')'
+        arcpy.SelectLayerByAttribute_management('ecoshape_layer', 'NEW_SELECTION', where_clause)
+        arcpy.SelectLayerByLocation_management('pairwise_intersect_layer', 'INTERSECT', 'ecoshape_layer')
+
         # create RangeMapEcoshapeInputDataset records based on summary
         EBARUtils.displayMessage(messages, 'Creating Range Map Ecoshape Input Dataset records')
         rme_row = None
@@ -640,7 +647,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         del rme_cursor
 
         # migratory
-        usage_type_stats = param_geodatabase + '/TempUTSTats' + str(start_time.year) + str(start_time.month) + \
+        usage_type_stats = param_geodatabase + '/TempUTStats' + str(start_time.year) + str(start_time.month) + \
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
         if param_differentiate_usage_type == 'true':
             # set UsageType from input data
@@ -653,7 +660,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     bbc_domain_values = domain.codedValues
 
             # summarize all input records by ecoshape
-            arcpy.Statistics_analysis(temp_pairwise_intersect, usage_type_stats, [['EcoshapeID', 'COUNT']],
+            arcpy.Statistics_analysis('pairwise_intersect_layer', usage_type_stats, [['EcoshapeID', 'COUNT']],
                                       ['EcoshapeID', 'BreedingAndBehaviourCode'])
             row = None
             with arcpy.da.SearchCursor(usage_type_stats, ['EcoshapeID', 'BreedingAndBehaviourCode'],
@@ -733,15 +740,14 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         
         # get overall input counts by source
         EBARUtils.displayMessage(messages, 'Counting Overall Inputs by Dataset Source')
-        # select only those within ecoshapes
-        arcpy.AddJoin_management('all_inputs_layer', 'InputDatasetID',
+        arcpy.AddJoin_management('pairwise_intersect_layer', 'InputDatasetID',
                                  param_geodatabase + '/InputDataset', 'InputDatasetID', 'KEEP_COMMON')
-        arcpy.AddJoin_management('all_inputs_layer', 'DatasetSourceID',
+        arcpy.AddJoin_management('pairwise_intersect_layer', 'DatasetSourceID',
                                  param_geodatabase + '/DatasetSource', 'DatasetSourceID', 'KEEP_COMMON')
-        arcpy.SelectLayerByLocation_management('all_inputs_layer', 'INTERSECT', 'ecoshape_layer')
         temp_overall_countby_source = 'TempOverallCountBySource' + str(start_time.year) + str(start_time.month) + \
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
-        arcpy.Statistics_analysis('all_inputs_layer', temp_overall_countby_source, [['InputDatasetID', 'COUNT']],
+        arcpy.Statistics_analysis('pairwise_intersect_layer', temp_overall_countby_source,
+                                  [['InputDatasetID','COUNT']],
                                   [table_name_prefix + 'DatasetSource.DatasetSourceName'])
 
         # create RangeMapInput records from Non-restricted for overlay display in EBAR Reviewer
@@ -750,82 +756,68 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
         arcpy.TableToTable_conversion(param_geodatabase + '/RestrictedJurisdictionSpecies', param_geodatabase,
                                       temp_restrictions, 'SpeciesID IN (' + species_ids + ')')
-        arcpy.AddJoin_management('all_inputs_layer', table_name_prefix + 'DatasetSource.CDCJurisdictionID',
+        arcpy.AddJoin_management('pairwise_intersect_layer', table_name_prefix + 'DatasetSource.CDCJurisdictionID',
                                  param_geodatabase + '/' + temp_restrictions, 'CDCJurisdictionID', 'KEEP_ALL')
-        arcpy.SelectLayerByAttribute_management('all_inputs_layer', 'SUBSET_SELECTION',
+        arcpy.SelectLayerByAttribute_management('pairwise_intersect_layer', 'SUBSET_SELECTION',
                                                 '(' + table_name_prefix + "InputDataset.Restrictions = 'N') OR" +
                                                 '(' + table_name_prefix + "InputDataset.Restrictions = 'R' AND " +
                                                 table_name_prefix + "DatasetSource.RestrictionBySpecies = 1 AND " +
                                                 table_name_prefix + "DatasetSource.CDCJurisdictionID IS NOT NULL AND " +
                                                 table_name_prefix + temp_restrictions + '.SpeciesID IS NULL)')
-        arcpy.AddJoin_management('all_inputs_layer', 'SpeciesID',
+        arcpy.AddJoin_management('pairwise_intersect_layer', 'SpeciesID',
                                  param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', 'SpeciesID', 'KEEP_COMMON')
-        arcpy.AddJoin_management('all_inputs_layer', 'SynonymID',
+        arcpy.AddJoin_management('pairwise_intersect_layer', 'SynonymID',
                                  param_geodatabase + '/Synonym', 'SynonymID', 'KEEP_ALL')
         field_mappings = arcpy.FieldMappings()
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
-                                                            table_name_prefix + temp_all_inputs + '.RangeMapID',
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
+                                                            table_name_prefix + temp_pairwise_intersect + '.RangeMapID',
                                                             'RangeMapID', 'LONG'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer', table_name_prefix + \
-                                                            temp_all_inputs + '.OriginalGeometryType',
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer', table_name_prefix + \
+                                                            temp_pairwise_intersect + '.OriginalGeometryType',
                                                             'OriginalGeometryType', 'TEXT'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer', table_name_prefix + \
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer', table_name_prefix + \
                                                             'BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME',
                                                             'NationalScientificName', 'TEXT'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
                                                             table_name_prefix + 'Synonym.SynonymName',
                                                             'SynonymName', 'TEXT'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
                                                             table_name_prefix + 'DatasetSource.DatasetSourceName',
                                                             'DatasetSourceName', 'TEXT'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
                                                             table_name_prefix + 'DatasetSource.DatasetType',
                                                             'DatasetType', 'TEXT'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
-                                                            table_name_prefix + temp_all_inputs + '.Accuracy',
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
+                                                            table_name_prefix + temp_pairwise_intersect + '.Accuracy',
                                                             'Accuracy', 'LONG'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
-                                                            table_name_prefix + temp_all_inputs + '.MaxDate',
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
+                                                            table_name_prefix + temp_pairwise_intersect + '.MaxDate',
                                                             'MaxDate', 'DATE'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer', table_name_prefix + \
-                                                            temp_all_inputs + '.CoordinatesObscured',
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer', table_name_prefix + \
+                                                            temp_pairwise_intersect + '.CoordinatesObscured',
                                                             'CoordinatesObscured', 'SHORT'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
-                                                            table_name_prefix + temp_all_inputs + '.EORank',
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
+                                                            table_name_prefix + temp_pairwise_intersect + '.EORank',
                                                             'EORank', 'TEXT'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer',
-                                                            table_name_prefix + temp_all_inputs + '.URI',
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
+                                                            table_name_prefix + temp_pairwise_intersect + '.URI',
                                                             'URI', 'TEXT'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('all_inputs_layer', table_name_prefix + \
-                                                            temp_all_inputs + '.DatasetSourceUniqueID',
+        field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer', table_name_prefix + \
+                                                            temp_pairwise_intersect + '.DatasetSourceUniqueID',
                                                             'DatasetSourceUniqueID', 'TEXT'))
-        arcpy.Append_management('all_inputs_layer', param_geodatabase + '/RangeMapInput', 'NO_TEST', field_mappings)
-        # field_dict = {}
-        # field_dict['RangeMapID'] = table_name_prefix + temp_all_inputs + '.RangeMapID'
-        # field_dict['OriginalGeometryType'] = table_name_prefix + temp_all_inputs + '.OriginalGeometryType'
-        # field_dict['NationalScientificName'] = table_name_prefix + 'BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME'
-        # field_dict['SynonymName'] = table_name_prefix + 'Synonym.SynonymName'
-        # field_dict['DatasetSourceName'] = table_name_prefix + 'DatasetSource.DatasetSourceName'
-        # field_dict['DatasetType'] = table_name_prefix + 'DatasetSource.DatasetType'
-        # field_dict['Accuracy'] = table_name_prefix + temp_all_inputs + '.Accuracy'
-        # field_dict['MaxDate'] = table_name_prefix + temp_all_inputs + '.MaxDate'
-        # field_dict['CoordinatesObscured'] = table_name_prefix + temp_all_inputs + '.CoordinatesObscured'
-        # field_dict['EORank'] = table_name_prefix + temp_all_inputs + '.EORank'
-        # field_dict['URI'] = table_name_prefix + temp_all_inputs + '.URI'
-        # field_dict['DatasetSourceUniqueID'] = table_name_prefix + temp_all_inputs + '.DatasetSourceUniqueID'
-        # field_dict['SHAPE@'] = 'SHAPE@'
-        # EBARUtils.appendUsingCursor('all_inputs_layer', param_geodatabase + '/RangeMapInput', field_dict=field_dict)
-        arcpy.RemoveJoin_management('all_inputs_layer', table_name_prefix + 'Synonym')
-        arcpy.RemoveJoin_management('all_inputs_layer', table_name_prefix + 'BIOTICS_ELEMENT_NATIONAL')
+        arcpy.Append_management('pairwise_intersect_layer', param_geodatabase + '/RangeMapInput', 'NO_TEST',
+                                field_mappings)
+        arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'Synonym')
+        arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'BIOTICS_ELEMENT_NATIONAL')
 
         # get synonyms used
         EBARUtils.displayMessage(messages, 'Documenting Synonyms used')
         temp_unique_synonyms = 'TempUniqueSynonyms' + str(start_time.year) + str(start_time.month) + \
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
-        arcpy.Statistics_analysis('all_inputs_layer', temp_unique_synonyms, [['InputDatasetID', 'COUNT']],
-                                  [table_name_prefix + temp_all_inputs + '.SynonymID'])
-        arcpy.RemoveJoin_management('all_inputs_layer', table_name_prefix + 'DatasetSource')
-        arcpy.RemoveJoin_management('all_inputs_layer', table_name_prefix + 'InputDataset')
+        arcpy.Statistics_analysis('pairwise_intersect_layer', temp_unique_synonyms, [['InputDatasetID', 'COUNT']],
+                                  [table_name_prefix + temp_pairwise_intersect + '.SynonymID'])
+        arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'DatasetSource')
+        arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'InputDataset')
         # build list of unique IDs
         synonym_ids = []
         # kludge because arc ends up with different field names under Enterprise gdb after joining
@@ -1000,7 +992,7 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_species = arcpy.Parameter()
-    param_species.value = 'Acalypta cooleyi' #'Aechmophorus occidentalis' #Bombus suckleyi #'Micranthes spicata'
+    param_species.value = 'Micranthes spicata' #'Aechmophorus occidentalis' #Bombus suckleyi #'Micranthes spicata'
     param_secondary = arcpy.Parameter()
     param_secondary.value = None
     #param_secondary.value = "'Schistochilopsis incisa var. opacifolia'" #"'Dodia tarandus';'Dodia verticalis'"
@@ -1018,7 +1010,7 @@ if __name__ == '__main__':
     param_custom_polygons_covered.value = None
     #param_custom_polygons_covered.value = 'C:/GIS/EBAR/EBARServer.gdb/Custom'
     param_differentiate_usage_type = arcpy.Parameter()
-    param_differentiate_usage_type.value = 'true'
+    param_differentiate_usage_type.value = 'false'
     parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
                   param_jurisdictions_covered, param_custom_polygons_covered, param_differentiate_usage_type]
     grm.runGenerateRangeMapTool(parameters, None)
