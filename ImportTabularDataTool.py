@@ -178,7 +178,7 @@ class ImportTabularDataTool:
             EBARUtils.displayMessage(messages, 'No coordinates (rejected) - ' + str(no_coords))
             EBARUtils.displayMessage(messages,
                                      'Accuracy worse than ' + str(EBARUtils.worst_accuracy) +
-                                     ' m (rehected) - ' + str(inaccurate))
+                                     ' m (rejected) - ' + str(inaccurate))
             EBARUtils.displayMessage(messages, 'Fossils (rejected) - ' + str(fossils))
             EBARUtils.displayMessage(messages, 'Geoprivacy=private (rejected) - ' + str(private))
             EBARUtils.displayMessage(messages, 'Non-research (rejected) - ' + str(non_research))
