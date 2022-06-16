@@ -282,7 +282,7 @@ ebird_fields = {'quality_grade': None,
                 'individual_count': 'observation_count',
                 'geoprivacy': None,
                 'taxon_geoprivacy': None,
-                'breeding_code': 'breeding_bird_atlas_code'}
+                'breeding_code': 'breeding_code'}
 
 other_fields = {'quality_grade': None,
                 'unique_id': 'originalID',
