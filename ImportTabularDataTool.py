@@ -471,14 +471,13 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_raw_data_file = arcpy.Parameter()
-    param_raw_data_file.value = 'C:/Users/rgree/OneDrive/EBAR/Data Mining/Online_Platforms/eBird/' + \
-        'eBird_filtered_Aechmophorus_occidentalis.csv'
+    param_raw_data_file.value = 'C:/GIS/EBAR/BBA/BC Highest Breeding Evidence/bc_naturecounts_hbe.csv'
     param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'eBird Test'
+    param_dataset_name.value = 'BBA Test'
     param_dataset_source = arcpy.Parameter()
-    param_dataset_source.value = 'eBird'
+    param_dataset_source.value = 'Breeding Bird Atlas'
     param_date_received = arcpy.Parameter()
-    param_date_received.value = 'March 2, 2022'
+    param_date_received.value = 'May 25, 2022'
     param_restrictions = arcpy.Parameter()
     param_restrictions.value = 'Non-restricted'
     parameters = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_source,

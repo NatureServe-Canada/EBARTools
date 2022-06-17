@@ -992,7 +992,7 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_species = arcpy.Parameter()
-    param_species.value = 'Micranthes spicata' #'Aechmophorus occidentalis' #Bombus suckleyi #'Micranthes spicata'
+    param_species.value = 'Olive-sided Flycatcher' #'Aechmophorus occidentalis' #Bombus suckleyi #'Micranthes spicata'
     param_secondary = arcpy.Parameter()
     param_secondary.value = None
     #param_secondary.value = "'Schistochilopsis incisa var. opacifolia'" #"'Dodia tarandus';'Dodia verticalis'"
