@@ -261,7 +261,7 @@ bbna_fields = {'quality_grade': None,
                'taxon_geoprivacy': None,
                'breeding_code': None}
 
-ebird_fields = {'quality_grade': None,
+ebird_fields = {'quality_grade': 'approved',
                 'unique_id': 'global_unique_identifier',
                 'uri': None,
                 'license': None,

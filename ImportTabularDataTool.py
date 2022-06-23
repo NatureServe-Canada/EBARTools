@@ -351,7 +351,7 @@ class ImportTabularDataTool:
         update = False
         if unique_id_species in id_dict:
             # already exists
-            if quality_grade != 'research':
+            if quality_grade not in ('research', '1', 'TRUE'):
                 # delete it because it has been downgraded
                 with arcpy.da.UpdateCursor(geodatabase + '/InputPoint',
                                            ['InputPointID', 'InputDatasetID', 'SpeciesID'],
