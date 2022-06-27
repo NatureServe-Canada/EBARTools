@@ -349,5 +349,5 @@ tabular_field_mapping_dict = {'GBIF': gbif_fields,
                               'ON Breeding Bird Atlas': bba_fields,
                               'QC Breeding Bird Atlas': bba_fields,
                               'Maritimes Breeding Bird Atlas': bba_fields,
-                              'NL Breeding Bird Atlas': bba_fields,
+                              'NF Breeding Bird Atlas': bba_fields,
                               'Other': other_fields}
