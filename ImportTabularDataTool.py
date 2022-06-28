@@ -351,7 +351,7 @@ class ImportTabularDataTool:
         update = False
         if unique_id_species in id_dict:
             # already exists
-            if quality_grade not in ('research', '1', 'TRUE'):
+            if quality_grade.lower() not in ('research', '1', 'true'):
                 # delete it because it has been downgraded
                 with arcpy.da.UpdateCursor(geodatabase + '/InputPoint',
                                            ['InputPointID', 'InputDatasetID', 'SpeciesID'],
@@ -381,7 +381,7 @@ class ImportTabularDataTool:
             #    return id_dict[unique_id_species], 'duplicate', None
 
         # don't add non research grade
-        if quality_grade != 'research':
+        if quality_grade.lower() not in ('research', '1', 'true'):
             return None, 'non-research', None
         # ## NT perf debug
         # date_fossil_grade_time = datetime.datetime.now() - date_fossil_grade_start
