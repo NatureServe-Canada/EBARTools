@@ -119,7 +119,8 @@ class ImportSpatialDataTool:
                                                                           'LocUncertaintyDistUnitField',
                                                                           'LocUseClassField',
                                                                           'IndependentSFField',
-                                                                          'UnsuitableHabExcludedField'],
+                                                                          'UnsuitableHabExcludedField',
+                                                                          'BreedingAndBehaviourCodeField'],
                                    "DatasetSourceName = '" + param_dataset_source + "'") as cursor:
             row = None
             for row in EBARUtils.searchCursor(cursor):
@@ -167,6 +168,7 @@ class ImportSpatialDataTool:
                 field_dict['LocUseClass'] = row['LocUseClassField']
                 field_dict['IndependentSF'] = row['IndependentSFField']
                 field_dict['UnsuitableHabExcluded'] = row['UnsuitableHabExcludedField']
+                field_dict['BreedingAndBehaviourCode'] = row['BreedingAndBehaviourCodeField']
                 if feature_class_type in ('Polygon', 'MultiPatch'):
                     field_dict['EORank'] = row['EORankField']
                     field_dict['EOData'] = row['EODataField']
@@ -238,6 +240,7 @@ class ImportSpatialDataTool:
         type_dict['LocUseClass'] = 'TEXT'
         type_dict['IndependentSF'] = 'TEXT'
         type_dict['UnsuitableHabExcluded'] = 'TEXT'
+        type_dict['BreedingAndBehaviourCode'] = 'TEXT'
 
         # encode restriction using domain
         param_restrictions = EBARUtils.encodeRestriction(param_geodatabase, param_restrictions)
@@ -612,15 +615,15 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_import_feature_class = arcpy.Parameter()
-    param_import_feature_class.value = 'C:/GIS/EBAR/US_CDC_Data/Nature_Serve/EBAR_EOs_NJ_OH_supplement_20200305.shp'
+    param_import_feature_class.value = 'C:/GIS/EBAR/EBAR4.gdb/sk_sfpt_merge'
     param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'NJ OH Supplement BadData Test'
+    param_dataset_name.value = 'Saskatchewan Source Feature Points'
     param_dataset_source = arcpy.Parameter()
-    param_dataset_source.value = 'US Element Occurrences'
+    param_dataset_source.value = 'SK Source Feature Points'
     param_date_received = arcpy.Parameter()
-    param_date_received.value = 'November 15, 2021'
+    param_date_received.value = 'July 21, 2022'
     param_restrictions = arcpy.Parameter()
-    param_restrictions.value = 'Restricted EBAR'
+    param_restrictions.value = 'Non-restricted'
     parameters = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_source,
                   param_date_received, param_restrictions]
     isd.runImportSpatialDataTool(parameters, None)

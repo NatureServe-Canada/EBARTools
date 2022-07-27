@@ -229,8 +229,8 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_raw_data_file = arcpy.Parameter()
-    param_raw_data_file.value = 'C:/GIS/EBAR/CDN_CDC_Data/Yukon/Yukon_visit_data_nonsensitive.csv'
+    param_raw_data_file.value = 'C:/Users/rgree/OneDrive/EBAR_Sensitive_Material/CDN_CDC_Data/Saskatchewan/DataCut_2022/Visits/rgreene_1658852892837.csv'
     param_subnation = arcpy.Parameter()
-    param_subnation.value = 'YT'
+    param_subnation.value = 'SK'
     parameters = [param_geodatabase, param_raw_data_file, param_subnation]
     iv.runImportVisitsTool(parameters, None)
