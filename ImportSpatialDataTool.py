@@ -120,7 +120,8 @@ class ImportSpatialDataTool:
                                                                           'LocUseClassField',
                                                                           'IndependentSFField',
                                                                           'UnsuitableHabExcludedField',
-                                                                          'BreedingAndBehaviourCodeField'],
+                                                                          'BreedingAndBehaviourCodeField',
+                                                                          'IndividualCountField'],
                                    "DatasetSourceName = '" + param_dataset_source + "'") as cursor:
             row = None
             for row in EBARUtils.searchCursor(cursor):
@@ -169,6 +170,7 @@ class ImportSpatialDataTool:
                 field_dict['IndependentSF'] = row['IndependentSFField']
                 field_dict['UnsuitableHabExcluded'] = row['UnsuitableHabExcludedField']
                 field_dict['BreedingAndBehaviourCode'] = row['BreedingAndBehaviourCodeField']
+                field_dict['IndividualCount'] = row['IndividualCountField']
                 if feature_class_type in ('Polygon', 'MultiPatch'):
                     field_dict['EORank'] = row['EORankField']
                     field_dict['EOData'] = row['EODataField']
@@ -241,6 +243,7 @@ class ImportSpatialDataTool:
         type_dict['IndependentSF'] = 'TEXT'
         type_dict['UnsuitableHabExcluded'] = 'TEXT'
         type_dict['BreedingAndBehaviourCode'] = 'TEXT'
+        type_dict['IndividualCount'] = 'LONG'
 
         # encode restriction using domain
         param_restrictions = EBARUtils.encodeRestriction(param_geodatabase, param_restrictions)
@@ -294,6 +297,7 @@ class ImportSpatialDataTool:
         bad_data = 0
         duplicates = 0
         inaccurate = 0
+        individual_count_0 = 0
         no_coords = 0
         no_species_match = 0
         no_date = 0
@@ -304,6 +308,8 @@ class ImportSpatialDataTool:
                   'ignore_imp', 'SHAPE@']
         if field_dict['Subnation']:
             fields.append(field_dict['Subnation'])
+        if field_dict['IndividualCount']:
+            fields.append(field_dict['IndividualCount'])
         with arcpy.da.UpdateCursor('import_features', fields) as cursor:
             for row in EBARUtils.updateCursor(cursor):
                 overall_count += 1
@@ -338,6 +344,11 @@ class ImportSpatialDataTool:
                     else:
                         species_id = synonym_species_id_dict[row[field_dict['scientific_name']].lower()]
                         synonym_id = synonym_id_dict[row[field_dict['scientific_name']].lower()]
+                    # check count
+                    if field_dict['IndividualCount']:
+                        if row[field_dict['IndividualCount']] == 0:
+                            individual_count_0 += 1
+                            ignore_imp = 1
                     # check coordinates
                     if not row['SHAPE@']:
                         no_coords += 1
@@ -389,8 +400,7 @@ class ImportSpatialDataTool:
             EBARUtils.displayMessage(messages, 'Accuracy pre-processed ' + str(loop_count))
 
         # other pre-processing (that doesn't result in ignoring input rows)
-        #if overall_count - duplicates - no_species_match - no_coords - inaccurate > 0:
-        if overall_count - no_species_match - no_coords - inaccurate > 0:
+        if overall_count - no_species_match - individual_count_0 - no_coords - inaccurate > 0:
             # loop to set eo rank
             if feature_class_type in ('Polygon', 'MultiPatch'):
                 if field_dict['EORank']:
@@ -590,7 +600,8 @@ class ImportSpatialDataTool:
         EBARUtils.displayMessage(messages, 'Added - ' + str(added))
         EBARUtils.displayMessage(messages, 'Bad Data ignored - ' + str(bad_data))
         EBARUtils.displayMessage(messages, 'Duplicates updated - ' + str(duplicates))
-        EBARUtils.displayMessage(messages, 'Records with no species match - ' + str(no_species_match))
+        EBARUtils.displayMessage(messages, 'No species match - ' + str(no_species_match))
+        EBARUtils.displayMessage(messages, 'Individual Count 0 - ' + str(individual_count_0))
         EBARUtils.displayMessage(messages, 'No coordinates - ' + str(no_coords))
         EBARUtils.displayMessage(messages,
                                  'Accuracy worse than ' + str(EBARUtils.worst_accuracy) + ' m - ' + str(inaccurate))
@@ -598,7 +609,8 @@ class ImportSpatialDataTool:
             EBARUtils.displayMessage(messages, 'Imported without date - ' + str(no_date))
         else:
             EBARUtils.displayMessage(messages, 'Imported without date - ' + str(overall_count - no_species_match - 
-                                                                                no_coords - inaccurate))
+                                                                                no_coords - no_species_match -
+                                                                                inaccurate))
         EBARUtils.displayMessage(messages, 'Species records updated - ' + str(species_updates))
         end_time = datetime.datetime.now()
         EBARUtils.displayMessage(messages, 'End time: ' + str(end_time))

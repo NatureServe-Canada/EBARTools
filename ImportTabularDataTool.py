@@ -124,6 +124,7 @@ class ImportTabularDataTool:
         non_research = 0
         deleted = 0
         private = 0
+        individual_count_0 = 0
         bad_date = 0
         try:
             for file_line in reader:
@@ -155,6 +156,8 @@ class ImportTabularDataTool:
                     deleted += 1
                 elif status == 'private':
                     private += 1
+                elif status == 'individual_count_0':
+                    individual_count_0 += 1
                 if status in ('new', 'updated') and not max_date:
                     bad_date += 1
         except:
@@ -181,6 +184,7 @@ class ImportTabularDataTool:
                                      ' m (rejected) - ' + str(inaccurate))
             EBARUtils.displayMessage(messages, 'Fossils (rejected) - ' + str(fossils))
             EBARUtils.displayMessage(messages, 'Geoprivacy=private (rejected) - ' + str(private))
+            EBARUtils.displayMessage(messages, 'IndividualCount=0 (rejected) - ' + str(individual_count_0))
             EBARUtils.displayMessage(messages, 'Non-research (rejected) - ' + str(non_research))
             EBARUtils.displayMessage(messages, 'Non-research (deleted) - ' + str(deleted))
             EBARUtils.displayMessage(messages, 'Bad Data ignored - ' + str(bad_data))
@@ -404,6 +408,8 @@ class ImportTabularDataTool:
         if field_dict['individual_count']:
             if file_line[field_dict['individual_count']] not in ('NA', 'X', ''):
                 individual_count = int(file_line[field_dict['individual_count']])
+        if individual_count == 0:
+            return None, 'individual_count_0', None
 
         # Geoprivacy
         geoprivacy = None
