@@ -367,6 +367,8 @@ class ImportSpatialDataTool:
                           synonym_id, ignore_imp, row['SHAPE@']]
                 if field_dict['Subnation']:
                     values.append(subnation)
+                if field_dict['IndividualCount']:
+                    values.append(row[field_dict['IndividualCount']])
                 cursor.updateRow(values)
                 if ignore_imp == 0:
                     # add to id_dict with fake id (because InputPoint/Line/PolygonID doesn't exist yet)
