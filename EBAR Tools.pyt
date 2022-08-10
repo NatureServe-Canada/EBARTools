@@ -623,12 +623,28 @@ class ImportExternalRangeReview(object):
             parameterType='Optional',
             direction='Input')
 
+        # UsageType Field
+        param_usagetype_field = arcpy.Parameter(
+            displayName='UsageType Field',
+            name='usagetype_field',
+            datatype='GPString',
+            parameterType='Optional',
+            direction='Input')
+
         # Review Label
         param_review_label = arcpy.Parameter(
             displayName='Review Label',
             name='review_label',
             datatype='GPString',
             parameterType='Required',
+            direction='Input')
+
+        # Overall Review Notes
+        param_overall_review_notes = arcpy.Parameter(
+            displayName='Overall Review Notes',
+            name='overall_review_notes',
+            datatype='GPString',
+            parameterType='Optional',
             direction='Input')
 
         # Jurisdictions Covered
@@ -658,8 +674,8 @@ class ImportExternalRangeReview(object):
         param_additions_only.value = 'false'
 
         params = [param_geodatabase, param_species, param_secondary, param_version, param_stage,
-                  param_external_range_table, param_presence_field, param_review_label, param_jurisdictions_covered,
-                  param_username, param_additions_only]
+                  param_external_range_table, param_presence_field, param_usagetype_field, param_review_label,
+                  param_overall_review_notes, param_jurisdictions_covered, param_username, param_additions_only]
         return params
 
     def isLicensed(self):
