@@ -114,7 +114,7 @@ class ImportTabularDataTool:
                 bbc_domain_values = domain.codedValues
                 bbc_domain_values_lower = {}
                 for bbc_domain_value in bbc_domain_values:
-                    bbc_domain_values_lower[bbc_domain_value.lower()] = bbc_domain_values[bbc_domain_values]
+                    bbc_domain_values_lower[bbc_domain_value.lower()] = bbc_domain_values[bbc_domain_value]
 
         # try to open data file as a csv
         infile = io.open(param_raw_data_file, 'r', encoding='mbcs') # mbcs encoding is Windows ANSI
@@ -503,13 +503,13 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_raw_data_file = arcpy.Parameter()
-    param_raw_data_file.value = 'C:/GIS/EBAR/BBA/BC Highest Breeding Evidence/bc_naturecounts_hbe.csv'
+    param_raw_data_file.value = 'C:/GIS/EBAR/BBA/QC Northern/naturecounts_data.csv'
     param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'BBA Test'
+    param_dataset_name.value = 'QC Northen BBA Test'
     param_dataset_source = arcpy.Parameter()
-    param_dataset_source.value = 'Breeding Bird Atlas'
+    param_dataset_source.value = 'QC Breeding Bird Atlas'
     param_date_received = arcpy.Parameter()
-    param_date_received.value = 'May 25, 2022'
+    param_date_received.value = 'July 20, 2022'
     param_restrictions = arcpy.Parameter()
     param_restrictions.value = 'Non-restricted'
     parameters = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_source,

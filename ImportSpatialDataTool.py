@@ -61,7 +61,7 @@ class ImportSpatialDataTool:
                 bbc_domain_values = domain.codedValues
                 bbc_domain_values_lower = {}
                 for bbc_domain_value in bbc_domain_values:
-                    bbc_domain_values_lower[bbc_domain_value.lower()] = bbc_domain_values[bbc_domain_values]
+                    bbc_domain_values_lower[bbc_domain_value.lower()] = bbc_domain_values[bbc_domain_value]
 
         # determine type of feature class
         desc = arcpy.Describe(param_import_feature_class)
@@ -505,7 +505,7 @@ class ImportSpatialDataTool:
                                     EBARUtils.displayMessage(messages, 'Warning: Bad Breeding and Behaviour Code ' +
                                                              row[field_dict['BreedingAndBehaviourCode']])
                             else:
-                                cursor.updateRow(row[field_dict['BreedingAndBehaviourCode']].strip())
+                                cursor.updateRow([row[field_dict['BreedingAndBehaviourCode']].strip()])
 
                     if row:
                         del row
