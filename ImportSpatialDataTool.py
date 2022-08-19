@@ -499,10 +499,10 @@ class ImportSpatialDataTool:
                             if (row[field_dict['BreedingAndBehaviourCode']].lower().strip() not in
                                 bbc_domain_values_lower):
                                 cursor.updateRow([None])
-                                bbc_bad += 0
+                                bbc_bad += 1
                                 if row[field_dict['BreedingAndBehaviourCode']] not in bad_bbcs_list:
                                     bad_bbcs_list.append(row[field_dict['BreedingAndBehaviourCode']])
-                                    EBARUtils.displayMessage(messages, 'Warning: Bad Breeding and Behaviour Code ' +
+                                    EBARUtils.displayMessage(messages, 'WARNING: Bad Breeding and Behaviour Code ' +
                                                              row[field_dict['BreedingAndBehaviourCode']])
                             else:
                                 cursor.updateRow([row[field_dict['BreedingAndBehaviourCode']].strip()])
