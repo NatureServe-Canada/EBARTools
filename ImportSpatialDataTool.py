@@ -54,6 +54,15 @@ class ImportSpatialDataTool:
         # get table name prefix (needed for joined tables and feature classes in enterprise geodatabases)
         table_name_prefix = EBARUtils.getTableNamePrefix(param_geodatabase)
 
+        # get bbc domain values
+        domains = arcpy.da.ListDomains(param_geodatabase)
+        for domain in domains:
+            if domain.name == 'BreedingAndBehaviourCode':
+                bbc_domain_values = domain.codedValues
+                bbc_domain_values_lower = {}
+                for bbc_domain_value in bbc_domain_values:
+                    bbc_domain_values_lower[bbc_domain_value.lower()] = bbc_domain_values[bbc_domain_values]
+
         # determine type of feature class
         desc = arcpy.Describe(param_import_feature_class)
         feature_class_type = desc.shapeType
@@ -474,6 +483,34 @@ class ImportSpatialDataTool:
                         del row
                 EBARUtils.displayMessage(messages, 'Max Date pre-processed ' + str(loop_count))
 
+            # check bb codes
+            if field_dict['BreedingAndBehaviourCode']:
+                loop_count = 0
+                bbc_bad = 0
+                bad_bbcs_list = []
+                with arcpy.da.UpdateCursor('import_features', [field_dict['BreedingAndBehaviourCode']],
+                                           'ignore_imp <> 1') as cursor:
+                    row = None
+                    for row in EBARUtils.updateCursor(cursor):
+                        loop_count += 1
+                        if loop_count % 1000 == 0:
+                            EBARUtils.displayMessage(messages, 'BB Codes pre-processed ' + str(loop_count))
+                        if row[field_dict['BreedingAndBehaviourCode']]:
+                            if (row[field_dict['BreedingAndBehaviourCode']].lower().strip() not in
+                                bbc_domain_values_lower):
+                                cursor.updateRow([None])
+                                bbc_bad += 0
+                                if row[field_dict['BreedingAndBehaviourCode']] not in bad_bbcs_list:
+                                    bad_bbcs_list.append(row[field_dict['BreedingAndBehaviourCode']])
+                                    EBARUtils.displayMessage(messages, 'Warning: Bad Breeding and Behaviour Code ' +
+                                                             row[field_dict['BreedingAndBehaviourCode']])
+                            else:
+                                cursor.updateRow(row[field_dict['BreedingAndBehaviourCode']].strip())
+
+                    if row:
+                        del row
+                EBARUtils.displayMessage(messages, 'BB Codes pre-processed ' + str(loop_count))
+
             # pre-process subnational species fields
             if subnation:
                 # read all subnational fields per species
@@ -607,6 +644,7 @@ class ImportSpatialDataTool:
         EBARUtils.displayMessage(messages, 'No coordinates - ' + str(no_coords))
         EBARUtils.displayMessage(messages,
                                  'Accuracy worse than ' + str(EBARUtils.worst_accuracy) + ' m - ' + str(inaccurate))
+        EBARUtils.displayMessage(messages, 'Imported without bad breeding and behaviour code - ' + str(bbc_bad))
         if field_dict['max_date']:
             EBARUtils.displayMessage(messages, 'Imported without date - ' + str(no_date))
         else:

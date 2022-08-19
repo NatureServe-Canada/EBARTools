@@ -107,6 +107,15 @@ class ImportTabularDataTool:
         bad_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, table_name_prefix, dataset_source_id,
                                                         'Point', True)
 
+        # get bbc domain values
+        domains = arcpy.da.ListDomains(param_geodatabase)
+        for domain in domains:
+            if domain.name == 'BreedingAndBehaviourCode':
+                bbc_domain_values = domain.codedValues
+                bbc_domain_values_lower = {}
+                for bbc_domain_value in bbc_domain_values:
+                    bbc_domain_values_lower[bbc_domain_value.lower()] = bbc_domain_values[bbc_domain_values]
+
         # try to open data file as a csv
         infile = io.open(param_raw_data_file, 'r', encoding='mbcs') # mbcs encoding is Windows ANSI
         reader = csv.DictReader(infile)
@@ -125,14 +134,18 @@ class ImportTabularDataTool:
         deleted = 0
         private = 0
         individual_count_0 = 0
+        bad_bbc = 0
+        bad_bbcs_list = []
         bad_date = 0
         try:
             for file_line in reader:
                 # check/add point for current line
-                input_point_id, status, max_date = self.CheckAddPoint(id_dict, bad_dict, param_geodatabase,
-                                                                      input_dataset_id, species_dict, synonym_dict,
-                                                                      synonym_species_dict, file_line, field_dict,
-                                                                      no_match_list, messages)
+                input_point_id, status, max_date, bbc_bad = self.CheckAddPoint(id_dict, bad_dict, param_geodatabase,
+                                                                               input_dataset_id, species_dict, 
+                                                                               synonym_dict, synonym_species_dict,
+                                                                               file_line, field_dict, no_match_list,
+                                                                               bbc_domain_values_lower, bad_bbcs_list,
+                                                                               messages)
                 # increment/report counts
                 count += 1
                 if count % 1000 == 0:
@@ -158,6 +171,8 @@ class ImportTabularDataTool:
                     private += 1
                 elif status == 'individual_count_0':
                     individual_count_0 += 1
+                if bbc_bad:
+                    bad_bbc += 1
                 if status in ('new', 'updated') and not max_date:
                     bad_date += 1
         except:
@@ -189,6 +204,7 @@ class ImportTabularDataTool:
             EBARUtils.displayMessage(messages, 'Non-research (deleted) - ' + str(deleted))
             EBARUtils.displayMessage(messages, 'Bad Data ignored - ' + str(bad_data))
             EBARUtils.displayMessage(messages, 'Duplicates updated - ' + str(updates))
+            EBARUtils.displayMessage(messages, 'Imported without bad breeding and behaviour code - ' + str(bad_bbc))
             EBARUtils.displayMessage(messages, 'Imported without date - ' + str(bad_date))
             end_time = datetime.datetime.now()
             EBARUtils.displayMessage(messages, 'End time: ' + str(end_time))
@@ -199,8 +215,10 @@ class ImportTabularDataTool:
         return
 
     def CheckAddPoint(self, id_dict, bad_dict, geodatabase, input_dataset_id, species_dict, synonym_dict,
-                      synonym_species_dict, file_line, field_dict, no_match_list, messages):
+                      synonym_species_dict, file_line, field_dict, no_match_list, bbc_domain_values_lower,
+                      bad_bbcs_list, messages):
         """If point already exists, check if needs update; otherwise, add"""
+        bad_bbc = False
         # check for species
         # ## NT perf debug
         # species_start = datetime.datetime.now()
@@ -209,14 +227,14 @@ class ImportTabularDataTool:
                 no_match_list.append('[None]')
                 EBARUtils.displayMessage(messages,
                                          'WARNING: No match for species [None]')
-            return None, 'no_species_match', None
+            return None, 'no_species_match', None, bad_bbc
         if (file_line[field_dict['scientific_name']].lower() not in species_dict and
             file_line[field_dict['scientific_name']].lower() not in synonym_dict):
             if file_line[field_dict['scientific_name']] not in no_match_list:
                 no_match_list.append(file_line[field_dict['scientific_name']])
                 EBARUtils.displayMessage(messages,
                                          'WARNING: No match for species ' + file_line[field_dict['scientific_name']])
-            return None, 'no_species_match', None
+            return None, 'no_species_match', None, bad_bbc
         else:
             synonym_id = None
             if file_line[field_dict['scientific_name']].lower() in species_dict:
@@ -287,7 +305,7 @@ class ImportTabularDataTool:
                 arcpy.SpatialReference(EBARUtils.srs_dict['North America Albers Equal Area Conic']))
             output_point = output_geometry.lastPoint
         if not output_point:
-            return None, 'no_coords', None
+            return None, 'no_coords', None, bad_bbc
 
         # Accuracy
         accuracy = None
@@ -339,7 +357,7 @@ class ImportTabularDataTool:
         # reject fossils records
         if field_dict['basis_of_record']:
             if file_line[field_dict['basis_of_record']].lower() in ('fossil_specimen', 'fossil', 'fossilspecimen'):
-                return None, 'fossil', None
+                return None, 'fossil', None, bad_bbc
 
         # grade
         quality_grade = 'research'
@@ -348,7 +366,7 @@ class ImportTabularDataTool:
 
         # check for existing bad data with same unique_id within the dataset source
         if unique_id_species in bad_dict:
-            return None, 'bad_data', None
+            return None, 'bad_data', None, bad_bbc
 
         # check for existing point with same unique_id within the dataset source
         delete = False
@@ -367,7 +385,7 @@ class ImportTabularDataTool:
                         cursor.deleteRow()
                     if row:
                         del row
-                    return id_dict[unique_id_species], 'deleted', None
+                    return id_dict[unique_id_species], 'deleted', None, bad_bbc
             else:
                 update = True
             #if private_coords:
@@ -382,11 +400,11 @@ class ImportTabularDataTool:
 
             #if not update:
             #    # existing record that does not need to be updated
-            #    return id_dict[unique_id_species], 'duplicate', None
+            #    return id_dict[unique_id_species], 'duplicate', None, bad_bbc
 
         # don't add non research grade
         if quality_grade.lower() not in ('research', '1', 'true'):
-            return None, 'non-research', None
+            return None, 'non-research', None, bad_bbc
         # ## NT perf debug
         # date_fossil_grade_time = datetime.datetime.now() - date_fossil_grade_start
         # EBARUtils.displayMessage(messages, 'Date, Fossil, Grade, Uniqueness: ' + str(date_fossil_grade_time))
@@ -409,14 +427,14 @@ class ImportTabularDataTool:
             if file_line[field_dict['individual_count']] not in ('NA', 'X', ''):
                 individual_count = int(file_line[field_dict['individual_count']])
         if individual_count == 0:
-            return None, 'individual_count_0', None
+            return None, 'individual_count_0', None, bad_bbc
 
         # Geoprivacy
         geoprivacy = None
         if field_dict['geoprivacy']:
             geoprivacy = file_line[field_dict['geoprivacy']]
             if geoprivacy == 'private':
-                return None, 'private', None
+                return None, 'private', None, bad_bbc
 
         # TaxonGeoprivacy
         taxon_geoprivacy = None
@@ -429,8 +447,16 @@ class ImportTabularDataTool:
         # BreedingAndBehaviourCode
         breeding_code = None
         if field_dict['breeding_code']:
-            if file_line[field_dict['breeding_code']] not in ('NA', ''):
-                breeding_code = file_line[field_dict['breeding_code']]
+            #if file_line[field_dict['breeding_code']] not in ('NA', ''):
+            if file_line[field_dict['breeding_code']]:
+                if file_line[field_dict['breeding_code']].lower().strip() in bbc_domain_values_lower:
+                    breeding_code = file_line[field_dict['breeding_code']].strip()
+                else:
+                    if file_line[field_dict['breeding_code']] not in bad_bbcs_list:
+                        bad_bbcs_list.append(file_line[field_dict['breeding_code']])
+                        EBARUtils.displayMessage(messages, 'Warning: Bad Breeding and Behaviour Code ' +
+                                                file_line[field_dict['breeding_code']])
+                    bad_bbc = True
 
         # ## NT perf debug
         # save_start = datetime.datetime.now()
@@ -451,7 +477,7 @@ class ImportTabularDataTool:
             # ## NT perf debug
             # save_time = datetime.datetime.now() - save_start
             # EBARUtils.displayMessage(messages, 'Save: ' + str(save_time))
-            return id_dict[unique_id_species], 'updated', max_date
+            return id_dict[unique_id_species], 'updated', max_date, bad_bbc
         else:
             # insert, set new id and return
             point_fields = ['SHAPE@XY', 'InputDatasetID', 'DatasetSourceUniqueID', 'URI', 'License', 'SpeciesID',
@@ -467,7 +493,7 @@ class ImportTabularDataTool:
             # ## NT perf debug
             # save_time = datetime.datetime.now() - save_start
             # EBARUtils.displayMessage(messages, 'Save: ' + str(save_time))
-            return input_point_id, 'new', max_date
+            return input_point_id, 'new', max_date, bad_bbc
 
 
 # controlling process

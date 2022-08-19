@@ -658,6 +658,9 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             for domain in domains:
                 if domain.name == 'BreedingAndBehaviourCode':
                     bbc_domain_values = domain.codedValues
+                    bbc_domain_values_lower = {}
+                    for bbc_domain_value in bbc_domain_values:
+                        bbc_domain_values_lower[bbc_domain_value.lower()] = bbc_domain_values[bbc_domain_value]
 
             # summarize all input records by ecoshape
             arcpy.Statistics_analysis('pairwise_intersect_layer', usage_type_stats, [['EcoshapeID', 'COUNT']],
@@ -685,10 +688,11 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                         usage_type = None
                     # any confirmation in ecoshape prevails
                     if row['BreedingAndBehaviourCode']:
-                        if 'Confirmed' in bbc_domain_values[row['BreedingAndBehaviourCode']]:
+                        bbc_lower = row['BreedingAndBehaviourCode'].lower()
+                        if 'Confirmed' in bbc_domain_values_lower[bbc_lower]:
                             usage_type = 'B'
-                        elif ('Probable' in bbc_domain_values[row['BreedingAndBehaviourCode']] or
-                              'Possible' in bbc_domain_values[row['BreedingAndBehaviourCode']]) and usage_type != 'B':
+                        elif ('Probable' in bbc_domain_values_lower[bbc_lower] or
+                              'Possible' in bbc_domain_values_lower[bbc_lower]) and usage_type != 'B':
                             usage_type = 'P'
             if row:
                 if prev_ecoshape_id and usage_type:
@@ -992,14 +996,14 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_species = arcpy.Parameter()
-    param_species.value = 'Contopus cooperi' #'Aechmophorus occidentalis' #Bombus suckleyi #'Micranthes spicata'
+    param_species.value = 'Aechmophorus occidentalis' #Bombus suckleyi #'Micranthes spicata'
     param_secondary = arcpy.Parameter()
     param_secondary.value = None
     #param_secondary.value = "'Schistochilopsis incisa var. opacifolia'" #"'Dodia tarandus';'Dodia verticalis'"
     param_version = arcpy.Parameter()
     param_version.value = '1.0'
     param_stage = arcpy.Parameter()
-    param_stage.value = 'Auto-generated TEST' # 'Expert reviewed test00' 
+    param_stage.value = 'Expert Reviewed testut' # 'Expert reviewed test00' 
     param_scope = arcpy.Parameter()
     param_scope.value = None
     #param_scope.value = 'Canadian'
@@ -1010,7 +1014,7 @@ if __name__ == '__main__':
     param_custom_polygons_covered.value = None
     #param_custom_polygons_covered.value = 'C:/GIS/EBAR/EBARServer.gdb/Custom'
     param_differentiate_usage_type = arcpy.Parameter()
-    param_differentiate_usage_type.value = 'false'
+    param_differentiate_usage_type.value = 'true'
     parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
                   param_jurisdictions_covered, param_custom_polygons_covered, param_differentiate_usage_type]
     grm.runGenerateRangeMapTool(parameters, None)
