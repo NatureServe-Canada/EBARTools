@@ -232,8 +232,10 @@ class PublishRangeMapTool:
         polygon_layer.definitionQuery = 'rangemapid = ' + param_range_map_id
         table_layer = map.listTables('rangemap')[0]
         table_layer.definitionQuery = 'rangemapid = ' + param_range_map_id
-        if not differentiate_usage_type:
-            usage_type_layer = map.listLayers('usagetype')[0]
+        usage_type_layer = map.listLayers('usagetype')[0]
+        if differentiate_usage_type:
+            usage_type_layer.definitionQuery = 'rangemapid = ' + param_range_map_id
+        else:
             usage_type_layer.visible = False
         layout = aprx.listLayouts('range map landscape terrain watermark')[0]
         map_frame = layout.listElements('mapframe_element')[0]
