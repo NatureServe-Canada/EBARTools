@@ -644,7 +644,8 @@ class ImportSpatialDataTool:
         EBARUtils.displayMessage(messages, 'No coordinates - ' + str(no_coords))
         EBARUtils.displayMessage(messages,
                                  'Accuracy worse than ' + str(EBARUtils.worst_accuracy) + ' m - ' + str(inaccurate))
-        EBARUtils.displayMessage(messages, 'Imported without bad breeding and behaviour code - ' + str(bbc_bad))
+        if field_dict['BreedingAndBehaviourCode']:
+            EBARUtils.displayMessage(messages, 'Imported without bad breeding and behaviour code - ' + str(bbc_bad))
         if field_dict['max_date']:
             EBARUtils.displayMessage(messages, 'Imported without date - ' + str(no_date))
         else:
