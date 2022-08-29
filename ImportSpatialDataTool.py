@@ -650,7 +650,7 @@ class ImportSpatialDataTool:
             EBARUtils.displayMessage(messages, 'Imported without date - ' + str(no_date))
         else:
             EBARUtils.displayMessage(messages, 'Imported without date - ' + str(overall_count - no_species_match - 
-                                                                                no_coords - no_species_match -
+                                                                                individual_count_0 - no_coords -
                                                                                 inaccurate))
         EBARUtils.displayMessage(messages, 'Species records updated - ' + str(species_updates))
         end_time = datetime.datetime.now()
