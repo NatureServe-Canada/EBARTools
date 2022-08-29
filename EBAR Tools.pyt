@@ -1076,7 +1076,7 @@ class ImportVisits(object):
             param_geodatabase = parameters[0].valueAsText
             subnation_list = []
             with arcpy.da.SearchCursor(param_geodatabase + '/Jurisdiction', ['JurisdictionName'],
-                                       "JurisdictionAbbreviation NOT IN ('AC', 'NL','US', 'MX')",
+                                       "JurisdictionAbbreviation NOT IN ('AC', 'NL', 'MX')",
                                        sql_clause=(None,'ORDER BY JurisdictionName')) as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     subnation_list.append(row['JurisdictionName'])
