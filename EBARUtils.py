@@ -140,7 +140,6 @@ subnation_dict = {'Alberta': 'AB',
                   'Prince Edward Island': 'PE',
                   'Quebec': 'QC',
                   'Saskatchewan': 'SK',
-                  'United States of America': 'US',
                   'Yukon Territory': 'YT'}
 
 
