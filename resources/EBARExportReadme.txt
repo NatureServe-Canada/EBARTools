@@ -15,7 +15,7 @@ The following rules were used when extracting data for export:
 - Exclude polygon datasets not associated with confirmed species presence, such as Critical Habitat, Range Estimate, Habitat Suitability, and Area of Occupancy
 - Exclude records marked as Bad Data (see description below)
 
-Individual records can be flagged as "Bad Data" by the EBAR team. This is done using an automated tool that compares a fully expert-reviewed range map with a high star rating to the underlying species data. Any species records (including their uncertainty distance buffers) that fall outside the reviewed range are flagged as Bad Data. Bad data was not included in exports of species and will not be included when generating range maps in future. The EBAR team has chosen to retain, rather than delete, bad data to avoid re-importing it in future. If you would like a copy of records flagged as "Bad Data" please contact the EBAR-KBA team at EBAR-KBA@natureserve.ca
+Individual records can be manually flagged as "Bad Data" by the EBAR team. Flagging is also done automatically using an algorithm that detects duplicates by Species, ObservationDate, and Location. Bad data is not included when generating range maps, but the EBAR team has chosen to retain, rather than delete, bad data to avoid re-importing it in future. Flagged data has been included in this zip package in the feature classes starting with "Bad."
 
 Each feature class has the following fields:
 ObjectID - ArcGIS unique identifier
