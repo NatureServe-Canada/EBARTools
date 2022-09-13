@@ -696,7 +696,7 @@ class ImportExternalRangeReview(object):
                     jur_list.append(row['JurisdictionName'])
                 if len(jur_list) > 0:
                     del row
-            parameters[8].filter.list = jur_list
+            parameters[10].filter.list = jur_list
         return
 
     def updateMessages(self, parameters):

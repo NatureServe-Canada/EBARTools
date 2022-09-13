@@ -214,8 +214,8 @@ class ImportExternalRangeReviewTool:
                                 presence = 'H'
                 else:
                     presence = 'P'
-                if presence:
-                    external_presence_dict[row['EcoshapeID']] = presence
+                #if presence:
+                external_presence_dict[row['EcoshapeID']] = presence
                 usagetype = None
                 if param_usagetype_field:
                     if row[param_usagetype_field]:
@@ -230,8 +230,8 @@ class ImportExternalRangeReviewTool:
                                 usagetype = 'M'
                             if row[param_usagetype_field].lower() in ('n', 'non-breeding'):
                                 usagetype = 'N' 
-                if usagetype:
-                    external_usagetype_dict[row['EcoshapeID']] = usagetype
+                #if usagetype:
+                external_usagetype_dict[row['EcoshapeID']] = usagetype
 
             if len(external_presence_dict) > 0:
                 del row
