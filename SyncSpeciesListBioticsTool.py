@@ -41,9 +41,10 @@ class SyncSpeciesListBioticsTool:
         # process all file lines
         EBARUtils.displayMessage(messages, 'Processing file lines')
         count = 0
+        updated = 0
         added = 0
         skipped = 0
-        # fields that are always sync'd, overwriting values on update
+        # fields that are sync'd whenever changed, overwriting values on update
         regular_fields = ['ELEMENT_GLOBAL_ID',
                           'ELEMENT_NATIONAL_ID',
                           'ELEMENT_CODE',
@@ -185,6 +186,8 @@ class SyncSpeciesListBioticsTool:
             element_national_id = int(float(file_line['ELEMENT_NATIONAL_ID']))
             EBARUtils.displayMessage(messages, 'ELEMENT_NATIONAL_ID: ' + str(element_national_id))
             if element_national_id in element_species_dict:
+                # update if changed
+                changed = False
                 with arcpy.da.UpdateCursor(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', all_fields,
                                            'ELEMENT_NATIONAL_ID = ' + str(element_national_id)) as update_cursor:
                     update_row = None
@@ -199,10 +202,16 @@ class SyncSpeciesListBioticsTool:
                                 else:
                                     # import value
                                     update_values.append(file_line[field])
+                                    if file_line[field] != update_row[field]:
+                                        changed = True
                             else:
                                 # import NULL
                                 update_values.append(None)
-                        update_cursor.updateRow(update_values)
+                                if update_row[field]:
+                                    changed = True
+                        if changed:
+                            updated += 1
+                            update_cursor.updateRow(update_values)
                     if update_row:
                         del update_row
             else:
@@ -242,6 +251,7 @@ class SyncSpeciesListBioticsTool:
         # summary and end time
         EBARUtils.displayMessage(messages, 'Summary:')
         EBARUtils.displayMessage(messages, 'Processed - ' + str(count))
+        EBARUtils.displayMessage(messages, 'Updated - ' + str(updated))
         EBARUtils.displayMessage(messages, 'Added - ' + str(added))
         EBARUtils.displayMessage(messages, 'Skipped - ' + str(skipped))
 

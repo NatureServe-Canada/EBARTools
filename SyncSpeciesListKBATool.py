@@ -43,6 +43,7 @@ class SyncSpeciesListKBATool:
         # Assign variables
         line_count = 1
         processed = 0
+        updated = 0
         skipped_no_id = 0
         skipped = 0
         skipped_id_list = []
@@ -134,8 +135,7 @@ class SyncSpeciesListKBATool:
                           "Range_N_IUCN_NonBreeding",
                           "Range_G_EBAR",
                           "Range_N_EBAR",
-                          "IsPotentialTrigger"
-                          ]
+                          "IsPotentialTrigger"]
 
         # Access the dictionary of existing element_national_id and species_id values (in Biotics table)
         element_species_dict = EBARUtils.readElementSpecies(param_geodatabase)
@@ -171,16 +171,16 @@ class SyncSpeciesListKBATool:
                                                                                "SpeciesID")]
 
                     # If the SpeciesID generated for the record (i.e. from Biotics) is in the Species table,
-                    # then update it
+                    # then update it if changed
                     if species_id in existing_values:
 
                         # # Message for debugging
                         # print("UPDATE RECORD")
 
                         # Access Species table with an UpdateCursor to update fields that have changed
+                        changed = False
                         with arcpy.da.UpdateCursor(param_geodatabase + '\\Species', species_fields,
-                                                   'SpeciesID = ' + str(
-                                                       species_id)) as update_cursor:
+                                                   'SpeciesID = ' + str(species_id)) as update_cursor:
 
                             update_row = None
                             for update_row in EBARUtils.updateCursor(update_cursor):
@@ -193,15 +193,24 @@ class SyncSpeciesListKBATool:
                                         update_values.append(species_id)
 
                                     elif len(file_line[field]) > 0:
+                                        # import value
                                         update_values.append(file_line[field])
+                                        if file_line[field] != update_row[field]:
+                                            changed = True
 
                                     else:
+                                        # import NULL
                                         update_values.append(None)
+                                        if update_row[field]:
+                                            changed = True
 
-                                update_cursor.updateRow(update_values)
+                                if changed:
+                                    update_cursor.updateRow(update_values)
+                                    updated += 1
 
                             if update_row:
                                 del update_row
+                            del update_cursor
 
                     # If the SpeciesID generated for the record (i.e. from Biotics) is NOT in the Species table,
                     # then insert it
@@ -254,6 +263,7 @@ class SyncSpeciesListKBATool:
         EBARUtils.displayMessage(messages, 'Summary:')
         EBARUtils.displayMessage(messages, 'Lines read - ' + str(line_count - 1))
         EBARUtils.displayMessage(messages, 'Records processed - ' + str(processed))
+        EBARUtils.displayMessage(messages, 'Records updated - ' + str(updated))
         EBARUtils.displayMessage(messages, 'Records skipped (no Element_National_ID) - ' + str(skipped_no_id))
         EBARUtils.displayMessage(messages, 'Records skipped (no match to Biotics table) - ' + str(skipped))
         EBARUtils.displayMessage(messages, 'List of Element_National_ID values with no match in Biotics table:')
