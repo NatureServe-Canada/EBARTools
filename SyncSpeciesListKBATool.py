@@ -177,12 +177,16 @@ class SyncSpeciesListKBATool:
                         # # Message for debugging
                         # print("UPDATE RECORD")
 
+                        # wrap updates to Species table to force editor tracking to work!
+                        edit = arcpy.da.Editor(param_geodatabase)
+                        edit.startEditing(with_undo=False, multiuser_mode=False)
+
                         # Access Species table with an UpdateCursor to update fields that have changed
                         changed = False
+                        update_row = None
                         with arcpy.da.UpdateCursor(param_geodatabase + '\\Species', species_fields,
                                                    'SpeciesID = ' + str(species_id)) as update_cursor:
 
-                            update_row = None
                             for update_row in EBARUtils.updateCursor(update_cursor):
                                 update_values = []
 
@@ -208,9 +212,13 @@ class SyncSpeciesListKBATool:
                                     update_cursor.updateRow(update_values)
                                     updated += 1
 
-                            if update_row:
-                                del update_row
-                            del update_cursor
+                        if update_row:
+                            del update_row
+                        del update_cursor
+
+                        # wrap updates to Species table to force editor tracking to work!
+                        edit.stopOperation()
+                        edit.stopEditing(save_changes=True)
 
                     # If the SpeciesID generated for the record (i.e. from Biotics) is NOT in the Species table,
                     # then insert it
