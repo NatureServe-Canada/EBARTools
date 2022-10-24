@@ -217,7 +217,8 @@ class SyncSpeciesListKBATool:
                         del update_cursor
 
                         # wrap updates to Species table to force editor tracking to work!
-                        edit.stopOperation()
+                        if changed:
+                            edit.stopOperation()
                         edit.stopEditing(save_changes=True)
 
                     # If the SpeciesID generated for the record (i.e. from Biotics) is NOT in the Species table,
