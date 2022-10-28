@@ -491,6 +491,8 @@ def createReplaceFolder(folder):
         # pause before trying to make the dir
         time.sleep(1)
     os.mkdir(folder)
+    # attempt to overcome GP service holding a hook into the folder
+    del folder
 
 
 def createZip(zip_folder, zip_output_file, only_include_extension):
@@ -512,6 +514,9 @@ def createZip(zip_folder, zip_output_file, only_include_extension):
             if include:
                 zipf.write(zip_folder_name + '/' + file)
     zipf.close()
+    # attempt to overcome GP service holding a hook into the folder
+    del zip_folder
+
 
 def addToZip(zip_output_file, new_file):
     """add a file to an existing zip"""
