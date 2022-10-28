@@ -98,7 +98,7 @@ class PublishRangeMapTool:
                                    ['NATIONAL_SCIENTIFIC_NAME', 'NATIONAL_ENGL_NAME', 'NATIONAL_FR_NAME',
                                     'ELEMENT_NATIONAL_ID', 'ELEMENT_GLOBAL_ID', 'ELEMENT_CODE', 
                                     'GLOBAL_UNIQUE_IDENTIFIER', 'G_JURIS_ENDEM_DESC', 'AUTHOR_NAME',
-                                    'FORMATTED_FULL_CITATION']) as cursor:
+                                    'FORMATTED_FULL_CITATION', 'COSEWIC_ID', 'COSEWIC_NAME']) as cursor:
             for row in EBARUtils.searchCursor(cursor):
                 pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME]',
                                             row['NATIONAL_SCIENTIFIC_NAME'])
@@ -125,10 +125,10 @@ class PublishRangeMapTool:
                 #global_unique_id = global_unique_id.replace('-', '.')
                 nsx_url = 'https://explorer.natureserve.org/Taxon/' + global_unique_id
                 pdf_html = pdf_html.replace('[NSE2.0_URL]', nsx_url)
-                #endemism = 'None'
-                #if row['G_JURIS_ENDEM_DESC']:
-                #    endemism = row['G_JURIS_ENDEM_DESC']
-                #pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.G_JURIS_ENDEM_DESC]', endemism)
+                pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.COSEWIC_NAME]',
+                                            row['COSEWIC_NAME'])
+                pdf_html = pdf_html.replace('[BIOTICS_ELEMENT_NATIONAL.COSEWIC_NAME]',
+                                            row['COSEWIC_NAME'])
             del row
 
         # get input references
