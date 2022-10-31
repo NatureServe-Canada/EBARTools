@@ -611,7 +611,7 @@ class ImportExternalRangeReview(object):
         param_external_range_table = arcpy.Parameter(
             displayName='External Range Table',
             name='external_range_table',
-            datatype='['GPTableView', 'GPFeatureLayer'],
+            datatype=['GPTableView', 'GPFeatureLayer'],
             parameterType='Required',
             direction='Input')
 
