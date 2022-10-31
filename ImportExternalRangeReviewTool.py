@@ -275,7 +275,7 @@ class ImportExternalRangeReviewTool:
                 # create review change record
                 with arcpy.da.InsertCursor(param_geodatabase + '/EcoshapeReview',
                                             ['EcoshapeID', 'ReviewID', 'RemovalReason', 'EcoshapeReviewNotes',
-                                            'UseForMapGen', 'Markup', 'UsageTypeMarkup' 'Username']) as cursor:
+                                             'UseForMapGen', 'Markup', 'UsageTypeMarkup', 'Username']) as cursor:
                     object_id = cursor.insertRow([external_ecoshape_id, review_id, None,
                                                   'In ' + param_review_label, 1, new_presence, new_usagetype,
                                                   param_username])
