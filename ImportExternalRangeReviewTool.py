@@ -220,16 +220,14 @@ class ImportExternalRangeReviewTool:
                 if param_usagetype_field:
                     if row[param_usagetype_field]:
                         if row[param_usagetype_field].lower() in ('b', 'breeding',
-                                                                  'p', 'possible breeding',
-                                                                  'm', 'migration',
-                                                                  'n', 'non-breeding'):
+                                                                  'p', 'possible breeding'):
                             usagetype = 'B'
                             if row[param_usagetype_field].lower() in ('p', 'possible breeding'):
                                 usagetype = 'P'
-                            if row[param_usagetype_field].lower() in ('m', 'migration'):
-                                usagetype = 'M'
-                            if row[param_usagetype_field].lower() in ('n', 'non-breeding'):
-                                usagetype = 'N' 
+                            # if row[param_usagetype_field].lower() in ('m', 'migration'):
+                            #     usagetype = 'M'
+                            # if row[param_usagetype_field].lower() in ('n', 'non-breeding'):
+                            #     usagetype = 'N' 
                 #if usagetype:
                 external_usagetype_dict[row['EcoshapeID']] = usagetype
 
