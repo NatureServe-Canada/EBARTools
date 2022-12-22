@@ -448,8 +448,10 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                  'Applying Reviews and summaries to Range Map Ecoshape records')
         if len(prev_range_map_ids) > 0:
             arcpy.MakeTableView_management(param_geodatabase + '/EcoshapeReview', 'ecoshape_review_view')
-            arcpy.AddJoin_management('ecoshape_review_view', 'EcoshapeID', param_geodatabase + '/Ecoshape', 'EcoshapeID')
-            arcpy.AddJoin_management('ecoshape_review_view', 'ReviewID', param_geodatabase + '/Review', 'ReviewID')
+            arcpy.AddJoin_management('ecoshape_review_view', 'EcoshapeID', param_geodatabase + '/Ecoshape',
+                                     'EcoshapeID', 'KEEP_COMMON')
+            arcpy.AddJoin_management('ecoshape_review_view', 'ReviewID', param_geodatabase + '/Review', 'ReviewID',
+                                     'KEEP_COMMON')
         # loop existing range map ecoshapes
         update_row = None
         with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape',
@@ -577,6 +579,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                'RangeMapID = ' + str(range_map_id) + ' AND EcoshapeID = ' +
                                                str(search_row[table_name_prefix +
                                                'EcoshapeReview.EcoshapeID'])) as update_cursor:
+                        # EBARUtils.displayMessage(messages, 'DEBUG - ' + str(search_row[table_name_prefix +
+                        #                                    'EcoshapeReview.EcoshapeID']))
                         for update_row in EBARUtils.updateCursor(update_cursor):
                             add = False
                     if not add:

@@ -829,22 +829,58 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
 
 # controlling process
 if __name__ == '__main__':
-    grm = GenerateRangeMapTool()
-    # hard code parameters for debugging
-    param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
-    param_species = arcpy.Parameter()
-    param_species.value = 'Muhlenbergia andina'
-    param_secondary = arcpy.Parameter()
-    param_secondary.value = None
-    #param_secondary.value = "'Abronia latifolia'"
-    #param_secondary.value = "'Dodia tarandus';'Dodia verticalis'"
-    param_version = arcpy.Parameter()
-    param_version.value = '1.0'
-    param_stage = arcpy.Parameter()
-    param_stage.value = 'Expert Reviewed'
-    param_scope = arcpy.Parameter()
-    #param_scope.value = 'Global'
-    param_scope.value = None
-    parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope]
-    grm.runGenerateRangeMapTool(parameters, None)
+    import smtplib
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
+
+    # # plain message
+    sender = 'ebar.kba.notices@gmail.com'
+    receivers = ['rgreene@natureserve.ca']
+    password = ''
+    server = 'smtp.gmail.com'
+    port = 587
+    # message = 'To: ' + ','.join(receivers) + '\r\n'
+    # message += 'Subject: Test message\r\n'
+    # message += 'This is another sample message'
+
+    # message with attachment
+    msg = MIMEMultipart()
+    msg['From'] = sender
+    msg['To'] = ','.join(receivers)
+    msg['Subject'] = 'Test message'
+    folder = 'C:/GIS/EBAR/LogFiles/'
+    filename = 'KBAPublishTool202212705543.txt'
+    attachment = open(folder + filename)
+    message = MIMEText(attachment.read())
+    attachment.close()
+    message.add_header('Content-Disposition', 'attachment', filename=filename)
+    msg.attach(message)
+
+    # send
+    smtp = smtplib.SMTP(server, port)
+    smtp.starttls()
+    smtp.login(sender, password)
+    #smtp.sendmail(sender, receivers, message)
+    smtp.sendmail(sender, receivers, msg.as_string())
+    smtp.quit()
+    print('Successfully sent email')
+
+    # grm = GenerateRangeMapTool()
+    # # hard code parameters for debugging
+    # param_geodatabase = arcpy.Parameter()
+    # param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
+    # param_species = arcpy.Parameter()
+    # param_species.value = 'Muhlenbergia andina'
+    # param_secondary = arcpy.Parameter()
+    # param_secondary.value = None
+    # #param_secondary.value = "'Abronia latifolia'"
+    # #param_secondary.value = "'Dodia tarandus';'Dodia verticalis'"
+    # param_version = arcpy.Parameter()
+    # param_version.value = '1.0'
+    # param_stage = arcpy.Parameter()
+    # param_stage.value = 'Expert Reviewed'
+    # param_scope = arcpy.Parameter()
+    # #param_scope.value = 'Global'
+    # param_scope.value = None
+    # parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope]
+    # grm.runGenerateRangeMapTool(parameters, None)

@@ -279,14 +279,26 @@ class ImportExternalRangeReviewTool:
                                                   param_username])
                 change_count += 1
             else:
-                # create review add record
-                with arcpy.da.InsertCursor(param_geodatabase + '/EcoshapeReview',
-                                           ['EcoshapeID', 'ReviewID', 'RemovalReason', 'EcoshapeReviewNotes',
-                                            'UseForMapGen', 'Markup', 'UsageTypeMarkup', 'Username']) as cursor:
-                    object_id = cursor.insertRow([external_ecoshape_id, review_id, None, 'In ' + param_review_label,
-                                                  1, external_presence_dict[external_ecoshape_id],
-                                                  external_usagetype_dict[external_ecoshape_id], param_username])
-                add_count += 1
+                check_row = None
+                if external_ecoshape_id:
+                    # check for matching ecoshape ID
+                    with arcpy.da.SearchCursor(param_geodatabase + '/Ecoshape', ['EcoshapeID'],
+                                               'EcoshapeID = ' + str(external_ecoshape_id)) as check_cursor:
+                        for check_row in check_cursor:
+                            pass
+                    del check_cursor
+                if check_row:
+                    # create review add record
+                    with arcpy.da.InsertCursor(param_geodatabase + '/EcoshapeReview',
+                                            ['EcoshapeID', 'ReviewID', 'RemovalReason', 'EcoshapeReviewNotes',
+                                                'UseForMapGen', 'Markup', 'UsageTypeMarkup', 'Username']) as cursor:
+                        object_id = cursor.insertRow([external_ecoshape_id, review_id, None, 'In ' + param_review_label,
+                                                    1, external_presence_dict[external_ecoshape_id],
+                                                    external_usagetype_dict[external_ecoshape_id], param_username])
+                    add_count += 1
+                    del check_row
+                else:
+                    EBARUtils.displayMessage(messages, 'WARNING - invalid external EcoshapeID ' + str(external_ecoshape_id))
         # handle case of ecoshape with usagetype markup but no presence markup
         for external_ecoshape_id in external_usagetype_dict:
             if external_ecoshape_id not in external_presence_dict:
