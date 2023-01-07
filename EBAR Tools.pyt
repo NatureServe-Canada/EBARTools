@@ -23,7 +23,7 @@ import SyncSpeciesListKBATool
 import BuildEBARDownloadTableTool
 import BuildBulkDownloadTableTool
 import ExportInputDataTool
-import FlagBadDataUsingRangeTool
+#import FlagBadDataUsingRangeTool
 import DeleteRangeMapTool
 import ImportVisitsTool
 import SummarizeDownloadsTool
@@ -46,7 +46,7 @@ class Toolbox(object):
         # List of tool classes associated with this toolbox
         self.tools = [ImportTabularData, ImportSpatialData, GenerateRangeMap, ListElementNationalIDs,
                       SyncSpeciesListBiotics, AddSynonyms, ImportExternalRangeReview, SyncSpeciesListKBA,
-                      BuildEBARDownloadTable, BuildBulkDownloadTable, ExportInputData, FlagBadDataUsingRange,
+                      BuildEBARDownloadTable, BuildBulkDownloadTable, ExportInputData, #FlagBadDataUsingRange,
                       DeleteRangeMap, ImportVisits, SummarizeDownloads, PublishRangeMap, PublishRangeMapSets,
                       FlagBadDataUsingID, RecordInputFeedback, DeleteInputFeedback]
 
