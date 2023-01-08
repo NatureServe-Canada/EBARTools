@@ -319,7 +319,7 @@ class ImportTabularDataTool:
                     accuracy = round(float(file_line[field_dict['accuracy']]))
             if accuracy:
                 if accuracy > EBARUtils.worst_accuracy:
-                    return None, 'inaccurate', None
+                    return None, 'inaccurate', None, bad_bbc
         else:
             # provided accuracy is not relevant for obscured data, estimate based on 0.2 degree square
             accuracy = EBARUtils.estimateAccuracy(input_point.Y, 0.2)
