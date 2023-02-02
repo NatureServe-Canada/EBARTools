@@ -49,7 +49,7 @@ class Toolbox(object):
                       SyncSpeciesListBiotics, AddSynonyms, ImportExternalRangeReview, SyncSpeciesListKBA,
                       BuildEBARDownloadTable, BuildBulkDownloadTable, ExportInputData, #FlagBadDataUsingRange,
                       DeleteRangeMap, ImportVisits, SummarizeDownloads, PublishRangeMap, PublishRangeMapSets,
-                      FlagBadDataUsingID, RecordInputFeedback, DeleteInputFeedback]
+                      FlagBadDataUsingID, RecordInputFeedback, DeleteInputFeedback, PrepareNSXProTransfer]
 
 
 class ImportTabularData(object):
@@ -902,7 +902,9 @@ class ExportInputData(object):
     def updateParameters(self, parameters):
         """Modify the values and properties of parameters before internal validation is performed.  This method is 
         called whenever a parameter has been changed."""
-        # build list of jurisdictions (exclude Atlantic Canadian jurisdictions because they are lumped as AC)
+        # build list of jurisdictions
+        # exclude Atlantic Canadian jurisdictions because they are lumped as AC
+        # exclude Canada because it is a special juridiction that does have polygons in JurisdictionBufferFull
         if parameters[0].altered and parameters[0].value:
             param_geodatabase = parameters[0].valueAsText
             jur_list = []
