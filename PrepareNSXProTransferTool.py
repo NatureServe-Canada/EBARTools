@@ -42,9 +42,12 @@ class PrepareNSXProTransferTool:
             EBARUtils.displayMessage(messages, 'Processing ' + spatial_input)
             # apply species susceptible to persecution and harm (STPH) exclusions then dataset inclusions
             # reset to NULLs in case rules/datasets have changed since last transfer
-            arcpy.CalculateField_management(param_geodatabase + '/' + spatial_input, 'NSXProTransfer', None)
-            arcpy.CalculateField_management(param_geodatabase + '/' + spatial_input, 'AllowedPrecisionSquareMiles',
-                                            None)
+            EBARUtils.displayMessage(messages, 'Resetting transfer fields')
+            arcpy.MakeTableView_management(param_geodatabase + '/' + spatial_input, 'input_view',
+                                           'NSXProTransfer IS NOT NULL OR AllowedPrecisionSquareMiles IS NOT NULL')
+            arcpy.CalculateField_management('input_view', 'NSXProTransfer', 'None')
+            arcpy.CalculateField_management('input_view', 'AllowedPrecisionSquareMiles', 'None')
+            arcpy.Delete_management('input_view')
 
             # jurisdiction-level rules are handled by prov/territory, with NF and LB separated
             jurs = ['BC', 'AB', 'SK', 'MB', 'ON', 'NB', 'PE', 'NS', 'NF', 'LB', 'NU', 'NT', 'YT']
@@ -56,8 +59,10 @@ class PrepareNSXProTransferTool:
 
             # process rules in five steps, keep coarsest of all rules and don't overrid previous exclude
             # 1. iNaturalist.ca Canada-wide STPHs
+            EBARUtils.displayMessage(messages, 'Applying iNaturalist.ca Canada-wide STPHs')
             row = None
-            with arcpy.da.SearchCursor('stph_view', ['SpeciesID', 'AllowedPrecisionSquareMiles'],
+            with arcpy.da.SearchCursor('stph_view', [table_name_prefix + 'SpeciesSTPH.SpeciesID',
+                                                     table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles'],
                                        table_name_prefix + "Jurisdiction.JurisdictionAbbreviation = 'CA' AND " +
                                        table_name_prefix + "SpeciesSTPH.ObscuredForiNatca = 'Y'") as cursor:
                 for row in EBARUtils.searchCursor(cursor):
@@ -69,8 +74,10 @@ class PrepareNSXProTransferTool:
             del cursor
 
             # 2. iNaturalist.ca by jurisdiction STPHs
+            EBARUtils.displayMessage(messages, 'Applying iNaturalist.ca by jurisdiction STPHs')
             row = None
-            with arcpy.da.SearchCursor('stph_view', ['SpeciesID', 'AllowedPrecisionSquareMiles'],
+            with arcpy.da.SearchCursor('stph_view', [table_name_prefix + 'SpeciesSTPH.SpeciesID',
+                                                     table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles'],
                                        table_name_prefix + "Jurisdiction.JurisdictionAbbreviation <> 'CA' AND " +
                                        table_name_prefix + "SpeciesSTPH.ObscuredForiNatca = 'Y'") as cursor:
                 for row in EBARUtils.searchCursor(cursor):
@@ -83,8 +90,10 @@ class PrepareNSXProTransferTool:
             del cursor
 
             # 3. NSC/CDC Canada-wide STPHs
+            EBARUtils.displayMessage(messages, 'Applying NSC/CDC Canada-wide STPHs')
             row = None
-            with arcpy.da.SearchCursor('stph_view', ['SpeciesID', 'AllowedPrecisionSquareMiles'],
+            with arcpy.da.SearchCursor('stph_view', [table_name_prefix + 'SpeciesSTPH.SpeciesID',
+                                                     table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles'],
                                        table_name_prefix + "Jurisdiction.JurisdictionAbbreviation = 'CA' AND " +
                                        table_name_prefix + "SpeciesSTPH.ObscuredForNSC = 'Y'") as cursor:
                 for row in EBARUtils.searchCursor(cursor):
@@ -96,8 +105,11 @@ class PrepareNSXProTransferTool:
             del cursor
 
             # 4. NSC/CDC by jurisdiction STPHs
+            EBARUtils.displayMessage(messages, 'Applying NSC/CDC by jurisdiction STPHs')
             row = None
-            with arcpy.da.SearchCursor('stph_view', ['SpeciesID', 'AllowedPrecisionSquareMiles'],
+            with arcpy.da.SearchCursor('stph_view', [table_name_prefix + 'SpeciesSTPH.SpeciesID',
+                                                     table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles',
+                                                     table_name_prefix + 'Jurisdiction.JurisdictionAbbreviation'],
                                        table_name_prefix + "Jurisdiction.JurisdictionAbbreviation <> 'CA' AND " +
                                        table_name_prefix + "SpeciesSTPH.ObscuredForNSC = 'Y'") as cursor:
                 for row in EBARUtils.searchCursor(cursor):
@@ -112,6 +124,7 @@ class PrepareNSXProTransferTool:
             arcpy.Delete_management('stph_view')
 
             # 5. EBAR provider permissions
+            EBARUtils.displayMessage(messages, 'Applying EBAR provider permissions')
             input_dataset_ids = []
             row = None
             with arcpy.da.SearchCursor(param_geodatabase + '/DatasetSource',
@@ -140,7 +153,7 @@ class PrepareNSXProTransferTool:
         if species_id:
             where = 'SpeciesID = ' + str(species_id) # + ' AND NSXProTransfer IS NULL'
         else:
-            where = 'InputDatasetID IN (' + ','.join(input_dataset_ids) + ')'
+            where = 'InputDatasetID IN (' + ','.join(map(str, input_dataset_ids)) + ')'
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/'+ spatial_input, 'input_lyr', where)
 
         # select by Location interesting jur(s) buffers
@@ -149,10 +162,10 @@ class PrepareNSXProTransferTool:
                                  'JurisdictionID', 'KEEP_COMMON')
         arcpy.SelectLayerByAttribute_management('jurbuffer_lyr', 'NEW_SELECTION',
                                                 table_name_prefix + 'Jurisdiction.JurisdictionAbbreviation IN (' +
-                                                ','.join(jurs) + ')')
+                                                "'{0}'".format("','".join(jurs)) + ')')
         arcpy.SelectLayerByLocation_management('input_lyr', 'INTERSECT', 'jurbuffer_lyr')
         update_row = None
-        with arcpy.da.updateCursor('input_lyr', ['NSXProTransfer', 'AllowedPrecisionSquareMiles']) as update_cursor:
+        with arcpy.da.UpdateCursor('input_lyr', ['NSXProTransfer', 'AllowedPrecisionSquareMiles']) as update_cursor:
             for update_row in EBARUtils.updateCursor(update_cursor):
                 update = False
                 # default to exclude
@@ -174,6 +187,9 @@ class PrepareNSXProTransferTool:
             del update_row
         del update_cursor
 
+        arcpy.Delete_management('jurbuffer_lyr')
+        arcpy.Delete_management('input_lyr')
+
 
 # controlling process
 if __name__ == '__main__':
@@ -182,4 +198,4 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     parameters = [param_geodatabase]
-    #pnpt.runPrepareNSXProTransferTool(parameters, None)
+    pnpt.runPrepareNSXProTransferTool(parameters, None)
