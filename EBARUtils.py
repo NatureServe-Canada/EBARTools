@@ -143,6 +143,14 @@ subnation_dict = {'Alberta': 'AB',
                   'Yukon Territory': 'YT'}
 
 
+# for emailNoticeWithAttachment below
+sender = 'ebar.kba.notices@gmail.com'
+receivers = ['rgreene@natureserve.ca', 'sstefanoff@natureserve.ca']
+password_file = 'C:/Users/Public/Documents/email/email.txt'
+server = 'smtp.gmail.com'
+port = 587
+
+
 def displayMessage(messages, msg):
     """Output message to arcpy message object or to Python standard output."""
     if messages:
@@ -1224,3 +1232,32 @@ def checkSFEO(geodatabase, input_table, id_field, id_value):
                 ret = True
     del row, cursor
     return ret
+
+
+def emailNoticeWithAttachment(subject, folder, filename):
+    import smtplib
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
+
+    # set up message and attachment
+    msg = MIMEMultipart()
+    msg['From'] = sender
+    msg['To'] = ','.join(receivers)
+    msg['Subject'] = subject
+    attachment = open(folder + filename)
+    message = MIMEText(attachment.read())
+    attachment.close()
+    message.add_header('Content-Disposition', 'attachment', filename=filename)
+    msg.attach(message)
+
+    # get password from file
+    pfile = open(password_file)
+    password = pfile.read()
+    pfile.close()
+
+    # send
+    smtp = smtplib.SMTP(server, port)
+    smtp.starttls()
+    smtp.login(sender, password)
+    smtp.sendmail(sender, receivers, msg.as_string())
+    smtp.quit()
