@@ -157,10 +157,16 @@ class PrepareNSXProTransferTool:
                 del row
             del cursor
 
-            # report counts
+            # record counts
             EBARUtils.displayMessage(messages, spatial_input + ' record counts:')
             for allowed_prec in sorted(count_dict.keys()):
                 EBARUtils.displayMessage(messages, str(allowed_prec) + ' sq. mile(s) - ' + str(count_dict[allowed_prec]))
+
+        # end time
+        end_time = datetime.datetime.now()
+        EBARUtils.displayMessage(messages, 'End time: ' + str(end_time))
+        elapsed_time = end_time - start_time
+        EBARUtils.displayMessage(messages, 'Elapsed time: ' + str(elapsed_time))
 
 
     def applyJurisdictionSpecies(self, param_geodatabase, table_name_prefix, spatial_input, jurs, species_id,
