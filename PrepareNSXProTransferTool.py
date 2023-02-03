@@ -160,7 +160,7 @@ class PrepareNSXProTransferTool:
             # report counts
             EBARUtils.displayMessage(messages, spatial_input + ' record counts:')
             for allowed_prec in sorted(count_dict.keys()):
-                EBARUtils.displayMessage(messages, str(allowed_prec) + ' sq. miles - ' + str(count_dict[allowed_prec]))
+                EBARUtils.displayMessage(messages, str(allowed_prec) + ' sq. mile(s) - ' + str(count_dict[allowed_prec]))
 
 
     def applyJurisdictionSpecies(self, param_geodatabase, table_name_prefix, spatial_input, jurs, species_id,
@@ -262,6 +262,6 @@ if __name__ == '__main__':
             EBARUtils.emailNoticeWithAttachment('Prepare NSX Pro Transfer tool error', folder, filename)
             EBARUtils.displayMessage(None, 'Error')
         else:
-            # email without log file
-            EBARUtils.emailNoticeWithAttachment('Prepare NSX Pro Transfer tool success', None, None)
+            # email log file
+            EBARUtils.emailNoticeWithAttachment('Prepare NSX Pro Transfer tool success', folder, filename)
             EBARUtils.displayMessage(None, 'Success')
