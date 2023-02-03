@@ -190,10 +190,11 @@ class PrepareNSXProTransferTool:
                     else:
                         update = True
                         allowed_prec = 0 # precise
-                    if allowed_precision_sq_miles > allowed_prec:
-                        # keep coarsest of all rules
+                    if allowed_precision_sq_miles != allowed_prec:
                         update = True
-                        allowed_prec = allowed_precision_sq_miles
+                        if allowed_precision_sq_miles > allowed_prec:
+                            # keep coarsest of all rules
+                            allowed_prec = allowed_precision_sq_miles
                     if update and allowed_prec < 200000000: # NS magic number for exclude
                         nsx_pro_transfer = 'Y'
                 if update:
