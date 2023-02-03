@@ -145,7 +145,7 @@ subnation_dict = {'Alberta': 'AB',
 
 # for emailNoticeWithAttachment below
 sender = 'ebar.kba.notices@gmail.com'
-receivers = ['rgreene@natureserve.ca', 'sstefanoff@natureserve.ca']
+receivers = ['rgreene@natureserve.ca', 'sstefanoff@natureserve.ca', 'maggie_woo@natureserve.org']
 password_file = 'C:/Users/Public/Documents/email/email.txt'
 server = 'smtp.gmail.com'
 port = 587
@@ -1244,11 +1244,12 @@ def emailNoticeWithAttachment(subject, folder, filename):
     msg['From'] = sender
     msg['To'] = ','.join(receivers)
     msg['Subject'] = subject
-    attachment = open(folder + filename)
-    message = MIMEText(attachment.read())
-    attachment.close()
-    message.add_header('Content-Disposition', 'attachment', filename=filename)
-    msg.attach(message)
+    if filename:
+        attachment = open(folder + filename)
+        message = MIMEText(attachment.read())
+        attachment.close()
+        message.add_header('Content-Disposition', 'attachment', filename=filename)
+        msg.attach(message)
 
     # get password from file
     pfile = open(password_file)

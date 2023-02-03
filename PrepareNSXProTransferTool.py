@@ -42,6 +42,10 @@ class PrepareNSXProTransferTool:
         # process points and polygons
         for spatial_input in ['InputPoint', 'InputPolygon']:
             EBARUtils.displayMessage(messages, 'Processing ' + spatial_input)
+
+            # record counts
+            count_dict = {}
+
             # apply species susceptible to persecution and harm (STPH) exclusions then dataset inclusions
             # reset to NULLs in case rules/datasets have changed since last transfer
             EBARUtils.displayMessage(messages, 'Resetting transfer fields')
@@ -70,7 +74,8 @@ class PrepareNSXProTransferTool:
                 for row in EBARUtils.searchCursor(cursor):
                     self.applyJurisdictionSpecies(param_geodatabase, table_name_prefix, spatial_input, jurs,
                                                   row[table_name_prefix + 'SpeciesSTPH.SpeciesID'], None,
-                                                  row[table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles'])
+                                                  row[table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles'],
+                                                  count_dict)
             if row:
                 del row
             del cursor
@@ -87,7 +92,8 @@ class PrepareNSXProTransferTool:
                     self.applyJurisdictionSpecies(param_geodatabase, table_name_prefix, spatial_input,
                                                   [row[table_name_prefix + 'Jurisdiction.JurisdictionAbbreviation']],
                                                   row[table_name_prefix + 'SpeciesSTPH.SpeciesID'], None,
-                                                  row[table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles'])
+                                                  row[table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles'],
+                                                  count_dict)
             if row:
                 del row
             del cursor
@@ -102,7 +108,8 @@ class PrepareNSXProTransferTool:
                 for row in EBARUtils.searchCursor(cursor):
                     self.applyJurisdictionSpecies(param_geodatabase, table_name_prefix, spatial_input, jurs,
                                                   row[table_name_prefix + 'SpeciesSTPH.SpeciesID'], None,
-                                                  row[table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles'])
+                                                  row[table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles'],
+                                                  count_dict)
             if row:
                 del row
             del cursor
@@ -119,7 +126,8 @@ class PrepareNSXProTransferTool:
                     self.applyJurisdictionSpecies(param_geodatabase, table_name_prefix, spatial_input,
                                                   [row[table_name_prefix + 'Jurisdiction.JurisdictionAbbreviation']],
                                                   row[table_name_prefix + 'SpeciesSTPH.SpeciesID'], None,
-                                                  row[table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles'])
+                                                  row[table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles'],
+                                                  count_dict)
             if row:
                 del row
             del cursor
@@ -144,13 +152,19 @@ class PrepareNSXProTransferTool:
                         del id_row
                     del id_cursor
                     self.applyJurisdictionSpecies(param_geodatabase, table_name_prefix, spatial_input, jurs, None,
-                                                  input_dataset_ids, row['AllowedPrecisionSquareMiles'])
+                                                  input_dataset_ids, row['AllowedPrecisionSquareMiles'], count_dict)
             if row:
                 del row
             del cursor
 
+            # report counts
+            EBARUtils.displayMessage(messages, spatial_input + ' record counts:')
+            for allowed_prec in sorted(count_dict.keys()):
+                EBARUtils.displayMessage(messages, str(allowed_prec) + ' sq. miles - ' + str(count_dict[allowed_prec]))
+
+
     def applyJurisdictionSpecies(self, param_geodatabase, table_name_prefix, spatial_input, jurs, species_id,
-                                 input_dataset_ids, allowed_precision_sq_miles):
+                                 input_dataset_ids, allowed_precision_sq_miles, count_dict):
         """apply rules for a single step"""
         # SpeciesID is provided for STPH exclusion/limit rules, InputDatasetIDs for inclusion rules
         if species_id:
@@ -199,6 +213,9 @@ class PrepareNSXProTransferTool:
                         nsx_pro_transfer = 'Y'
                 if update:
                     update_cursor.updateRow([nsx_pro_transfer, allowed_prec])
+                    if allowed_prec not in count_dict:
+                        count_dict[allowed_prec] = 0
+                    count_dict[allowed_prec] += 1
         if update_row:
             del update_row
         del update_cursor
@@ -212,7 +229,7 @@ if __name__ == '__main__':
     # redirect output to file
     dtnow = datetime.datetime.utcnow()
     folder = 'C:/GIS/EBAR/LogFiles/'
-    filename = 'KBASetTool' + str(dtnow.year) + str(dtnow.month) + str(dtnow.day) + \
+    filename = 'PrepareNSXProTransferTool' + str(dtnow.year) + str(dtnow.month) + str(dtnow.day) + \
         str(dtnow.hour) + str(dtnow.minute) + str(dtnow.second) + '.txt'
     logfile = open(folder + filename, 'w')
     sys.stdout = logfile
@@ -223,8 +240,8 @@ if __name__ == '__main__':
         pnpt = PrepareNSXProTransferTool()
         # hard code parameters for debugging
         param_geodatabase = arcpy.Parameter()
-        #param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
-        param_geodatabase.value = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde'
+        param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
+        #param_geodatabase.value = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde'
         parameters = [param_geodatabase]
         pnpt.runPrepareNSXProTransferTool(parameters, None)
     except:
@@ -242,7 +259,9 @@ if __name__ == '__main__':
         sys.stdout = sys.__stdout__
         if error:
             # email log file
-            EBARUtils.emailNoticeWithAttachment('Prepare NSX Pro Transfer tool failure', folder, filename)
+            EBARUtils.emailNoticeWithAttachment('Prepare NSX Pro Transfer tool error', folder, filename)
             EBARUtils.displayMessage(None, 'Error')
         else:
+            # email without log file
+            EBARUtils.emailNoticeWithAttachment('Prepare NSX Pro Transfer tool success', None, None)
             EBARUtils.displayMessage(None, 'Success')
