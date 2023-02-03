@@ -56,7 +56,7 @@ class PrepareNSXProTransferTool:
             arcpy.Delete_management('input_view')
 
             # jurisdiction-level rules are handled by prov/territory, with NF and LB separated
-            jurs = ['BC', 'AB', 'SK', 'MB', 'ON', 'NB', 'PE', 'NS', 'NF', 'LB', 'NU', 'NT', 'YT']
+            jurs = ['BC', 'AB', 'SK', 'MB', 'ON', 'QC', 'NB', 'PE', 'NS', 'NF', 'LB', 'NU', 'NT', 'YT']
 
             # join STPH table to jurisdiction
             arcpy.MakeTableView_management(param_geodatabase + '/SpeciesSTPH', 'stph_view')
