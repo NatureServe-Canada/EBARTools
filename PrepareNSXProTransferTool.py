@@ -219,9 +219,11 @@ class PrepareNSXProTransferTool:
                         nsx_pro_transfer = 'Y'
                 if update:
                     update_cursor.updateRow([nsx_pro_transfer, allowed_prec])
-                    if allowed_prec not in count_dict:
-                        count_dict[allowed_prec] = 0
-                    count_dict[allowed_prec] += 1
+                    if input_dataset_ids and allowed_prec < 200000000:
+                        # only count included records
+                        if allowed_prec not in count_dict:
+                            count_dict[allowed_prec] = 0
+                        count_dict[allowed_prec] += 1
         if update_row:
             del update_row
         del update_cursor
@@ -246,8 +248,8 @@ if __name__ == '__main__':
         pnpt = PrepareNSXProTransferTool()
         # hard code parameters for debugging
         param_geodatabase = arcpy.Parameter()
-        param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
-        #param_geodatabase.value = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde'
+        #param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
+        param_geodatabase.value = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde'
         parameters = [param_geodatabase]
         pnpt.runPrepareNSXProTransferTool(parameters, None)
     except:
