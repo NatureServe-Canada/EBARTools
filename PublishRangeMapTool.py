@@ -162,7 +162,7 @@ class PublishRangeMapTool:
         differentiate_usage_type = False
         with arcpy.da.SearchCursor('range_map_view',
                                     ['SpeciesID', 'RangeVersion', 'RangeStage', 'RangeDate', 'RangeMapScope',
-                                     'RangeMapNotes', 'RangeMetadata', 'RangeMapComments',
+                                     'RangeMapNotes', 'RangeMetadata', 'RangeMapComments', 'ReviewerComments',
                                      'IncludeInDownloadTable', 'DifferentiateUsageType']) as cursor:
             for row in EBARUtils.searchCursor(cursor):
                 pdf_html = pdf_html.replace('[RangeMap.RangeDate]', row['RangeDate'].strftime('%B %d, %Y'))
@@ -175,14 +175,20 @@ class PublishRangeMapTool:
                 comment = ''
                 if row['RangeMapComments']:
                     comment += row['RangeMapComments']
-                if row['IncludeInDownloadTable'] == 1:
-                    if len(comment) > 0:
-                        comment += '<br>'
-                    comment += '<a href="' + EBARUtils.download_url + '/EBAR' + element_global_id + \
-                        '.zip" target="_blank">Please see spatial data for reviewer comments</a>.'
                 if len(comment) == 0:
                     comment = 'None'
                 pdf_html = pdf_html.replace('[RangeMap.RangeMapComments]', comment)
+                reviewer_comment = ''
+                if row['ReviewerComments']:
+                    reviewer_comment += row['ReviewerComments']
+                if row['IncludeInDownloadTable'] == 1:
+                    if len(reviewer_comment) > 0:
+                        reviewer_comment += '<br>'
+                    reviewer_comment += '<a href="' + EBARUtils.download_url + '/EBAR' + element_global_id + \
+                        '.zip" target="_blank">Please see spatial data for Ecoshape-level reviewer comments</a>.'
+                if len(reviewer_comment) == 0:
+                    reviewer_comment = 'None'
+                pdf_html = pdf_html.replace('[RangeMap.ReviewerComments]', reviewer_comment)
                 if row['DifferentiateUsageType']:
                     differentiate_usage_type = True
         if range_map_scope:
