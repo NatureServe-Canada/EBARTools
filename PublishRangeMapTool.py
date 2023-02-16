@@ -160,6 +160,7 @@ class PublishRangeMapTool:
         EBARUtils.displayMessage(messages, 'Getting RangeMap data from database')
         range_map_scope = None
         differentiate_usage_type = False
+        row = None
         with arcpy.da.SearchCursor('range_map_view',
                                     ['SpeciesID', 'RangeVersion', 'RangeStage', 'RangeDate', 'RangeMapScope',
                                      'RangeMapNotes', 'RangeMetadata', 'RangeMapComments', 'ReviewerComments',
@@ -177,18 +178,26 @@ class PublishRangeMapTool:
                     comment += row['RangeMapComments']
                 if len(comment) == 0:
                     comment = 'None'
-                pdf_html = pdf_html.replace('[RangeMap.RangeMapComments]', comment)
-                reviewer_comment = ''
-                if row['ReviewerComments']:
-                    reviewer_comment += row['ReviewerComments']
                 if row['IncludeInDownloadTable'] == 1:
-                    if len(reviewer_comment) > 0:
-                        reviewer_comment += '<br>'
-                    reviewer_comment += '<a href="' + EBARUtils.download_url + '/EBAR' + element_global_id + \
+                    if len(comment) > 0:
+                        comment += '<br>'
+                    suffix = ''
+                    if range_map_scope == 'Canadian':
+                        suffix = 'N'
+                    comment += '<a href="' + EBARUtils.download_url + '/EBAR' + element_global_id + suffix + \
                         '.zip" target="_blank">Please see spatial data for Ecoshape-level reviewer comments</a>.'
-                if len(reviewer_comment) == 0:
-                    reviewer_comment = 'None'
-                pdf_html = pdf_html.replace('[RangeMap.ReviewerComments]', reviewer_comment)
+                pdf_html = pdf_html.replace('[RangeMap.RangeMapComments]', comment)
+                # reviewer_comment = ''
+                # if row['ReviewerComments']:
+                #     reviewer_comment += row['ReviewerComments']
+                # if row['IncludeInDownloadTable'] == 1:
+                #     if len(reviewer_comment) > 0:
+                #         reviewer_comment += '<br>'
+                #     reviewer_comment += '<a href="' + EBARUtils.download_url + '/EBAR' + element_global_id + \
+                #         '.zip" target="_blank">Please see spatial data for Ecoshape-level reviewer comments</a>.'
+                # if len(reviewer_comment) == 0:
+                #     reviewer_comment = 'None'
+                # pdf_html = pdf_html.replace('[RangeMap.ReviewerComments]', reviewer_comment)
                 if row['DifferentiateUsageType']:
                     differentiate_usage_type = True
         if range_map_scope:
