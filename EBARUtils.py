@@ -33,7 +33,7 @@ download_url = 'https://gis.natureserve.ca/download'
 #nsx_species_search_url = 'https://explorer.natureserve.org/api/data/search'
 nsx_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/'
 #log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
-log_folder = 'C:/GIS/EBAR/temp'
+log_folder = 'C:/GIS/EBAR/pub/download'
 
 
 # various services
@@ -1234,31 +1234,31 @@ def checkSFEO(geodatabase, input_table, id_field, id_value):
     return ret
 
 
-def emailNoticeWithAttachment(subject, folder, filename):
-    import smtplib
-    from email.mime.text import MIMEText
-    from email.mime.multipart import MIMEMultipart
+# def emailNoticeWithAttachment(subject, folder, filename):
+#     import smtplib
+#     from email.mime.text import MIMEText
+#     from email.mime.multipart import MIMEMultipart
 
-    # set up message and attachment
-    msg = MIMEMultipart()
-    msg['From'] = sender
-    msg['To'] = ','.join(receivers)
-    msg['Subject'] = subject
-    if filename:
-        attachment = open(folder + filename)
-        message = MIMEText(attachment.read())
-        attachment.close()
-        message.add_header('Content-Disposition', 'attachment', filename=filename)
-        msg.attach(message)
+#     # set up message and attachment
+#     msg = MIMEMultipart()
+#     msg['From'] = sender
+#     msg['To'] = ','.join(receivers)
+#     msg['Subject'] = subject
+#     if filename:
+#         attachment = open(folder + filename)
+#         message = MIMEText(attachment.read())
+#         attachment.close()
+#         message.add_header('Content-Disposition', 'attachment', filename=filename)
+#         msg.attach(message)
 
-    # get password from file
-    pfile = open(password_file)
-    password = pfile.read()
-    pfile.close()
+#     # get password from file
+#     pfile = open(password_file)
+#     password = pfile.read()
+#     pfile.close()
 
-    # send
-    smtp = smtplib.SMTP(server, port)
-    smtp.starttls()
-    smtp.login(sender, password)
-    smtp.sendmail(sender, receivers, msg.as_string())
-    smtp.quit()
+#     # send
+#     smtp = smtplib.SMTP(server, port)
+#     smtp.starttls()
+#     smtp.login(sender, password)
+#     smtp.sendmail(sender, receivers, msg.as_string())
+#     smtp.quit()

@@ -234,42 +234,49 @@ class PrepareNSXProTransferTool:
 
 # controlling process
 if __name__ == '__main__':
-    # redirect output to file
-    dtnow = datetime.datetime.utcnow()
-    folder = 'C:/GIS/EBAR/LogFiles/'
-    filename = 'PrepareNSXProTransferTool' + str(dtnow.year) + str(dtnow.month) + str(dtnow.day) + \
-        str(dtnow.hour) + str(dtnow.minute) + str(dtnow.second) + '.txt'
-    logfile = open(folder + filename, 'w')
-    sys.stdout = logfile
+    pnpt = PrepareNSXProTransferTool()
+    # hard code parameters for debugging
+    param_geodatabase = arcpy.Parameter()
+    param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
+    parameters = [param_geodatabase]
+    pnpt.runPrepareNSXProTransferTool(parameters, None)
 
-    # use try/except to flag errors that require email to be sent
-    error = False
-    try:
-        pnpt = PrepareNSXProTransferTool()
-        # hard code parameters for debugging
-        param_geodatabase = arcpy.Parameter()
-        #param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
-        param_geodatabase.value = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde'
-        parameters = [param_geodatabase]
-        pnpt.runPrepareNSXProTransferTool(parameters, None)
-    except:
-        error = True
-        tb = sys.exc_info()[2]
-        tbinfo = ''
-        for tbitem in traceback.format_tb(tb):
-            tbinfo += tbitem
-        pymsgs = 'Python ERROR:\nTraceback info:\n' + tbinfo + 'Error Info:\n' + str(sys.exc_info()[1])
-        EBARUtils.displayMessage(None, pymsgs)
-        arcmsgs = 'ArcPy ERROR:\n' + arcpy.GetMessages(2)
-        EBARUtils.displayMessage(None, arcmsgs)
-    finally:
-        logfile.close()
-        sys.stdout = sys.__stdout__
-        if error:
-            # email log file
-            EBARUtils.emailNoticeWithAttachment('Prepare NSX Pro Transfer tool error', folder, filename)
-            EBARUtils.displayMessage(None, 'Error')
-        else:
-            # email log file
-            EBARUtils.emailNoticeWithAttachment('Prepare NSX Pro Transfer tool success', folder, filename)
-            EBARUtils.displayMessage(None, 'Success')
+    # # redirect output to file
+    # dtnow = datetime.datetime.utcnow()
+    # folder = 'C:/GIS/EBAR/LogFiles/'
+    # filename = 'PrepareNSXProTransferTool' + str(dtnow.year) + str(dtnow.month) + str(dtnow.day) + \
+    #     str(dtnow.hour) + str(dtnow.minute) + str(dtnow.second) + '.txt'
+    # logfile = open(folder + filename, 'w')
+    # sys.stdout = logfile
+
+    # # use try/except to flag errors that require email to be sent
+    # error = False
+    # try:
+    #     pnpt = PrepareNSXProTransferTool()
+    #     # hard code parameters for debugging
+    #     param_geodatabase = arcpy.Parameter()
+    #     #param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
+    #     param_geodatabase.value = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde'
+    #     parameters = [param_geodatabase]
+    #     pnpt.runPrepareNSXProTransferTool(parameters, None)
+    # except:
+    #     error = True
+    #     tb = sys.exc_info()[2]
+    #     tbinfo = ''
+    #     for tbitem in traceback.format_tb(tb):
+    #         tbinfo += tbitem
+    #     pymsgs = 'Python ERROR:\nTraceback info:\n' + tbinfo + 'Error Info:\n' + str(sys.exc_info()[1])
+    #     EBARUtils.displayMessage(None, pymsgs)
+    #     arcmsgs = 'ArcPy ERROR:\n' + arcpy.GetMessages(2)
+    #     EBARUtils.displayMessage(None, arcmsgs)
+    # finally:
+    #     logfile.close()
+    #     sys.stdout = sys.__stdout__
+    #     if error:
+    #         # email log file
+    #         EBARUtils.emailNoticeWithAttachment('Prepare NSX Pro Transfer tool error', folder, filename)
+    #         EBARUtils.displayMessage(None, 'Error')
+    #     else:
+    #         # email log file
+    #         EBARUtils.emailNoticeWithAttachment('Prepare NSX Pro Transfer tool success', folder, filename)
+    #         EBARUtils.displayMessage(None, 'Success')
