@@ -989,7 +989,7 @@ def inputSelectAndBuffer(geodatabase, input_features, range_map_id, table_name_p
     if desc.shapeType == 'Polygon':
         where_clause += ' OR (' + table_name_prefix + 'DatasetSource.DatasetType = ' + \
                         "'Element Occurrences' AND " + table_name_prefix + input_features + \
-                        '.EORank IS NOT NULL)'
+                        ".EORank IS NOT NULL) OR DatasetSource.DatasetType = 'Range'"
     where_clause += '))'
     arcpy.SelectLayerByAttribute_management(input_features + '_layer', 'ADD_TO_SELECTION', where_clause)
     arcpy.RemoveJoin_management(input_features + '_layer', table_name_prefix + 'DatasetSource')
