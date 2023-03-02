@@ -408,7 +408,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     if row[field_names[2]]:
                         if ((row[field_names[1]] == 'Critical Habitat') or
                             (row[field_names[1]] in ['Element Occurrences', 'Source Features',
-                                                     'Species Observations'] and
+                                                     'Species Observations', 'Range'] and
                              (datetime.datetime.now().year - row[field_names[2]].year)
                              <= EBARUtils.age_for_historical)):
                             if presence in ['H', 'X']:
