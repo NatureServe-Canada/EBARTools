@@ -27,13 +27,13 @@ import json
 # shared folders and addresses
 resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
 temp_folder = 'C:/GIS/EBAR/temp'
-download_folder = 'C:/GIS/EBAR/pub/download'
-#download_folder = 'F:/download'
+#download_folder = 'C:/GIS/EBAR/pub/download'
+download_folder = 'F:/download'
 download_url = 'https://gis.natureserve.ca/download'
 #nsx_species_search_url = 'https://explorer.natureserve.org/api/data/search'
 nsx_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/'
-#log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
-log_folder = 'C:/GIS/EBAR/pub/download'
+log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
+#log_folder = 'C:/GIS/EBAR/temp'
 
 
 # various services
@@ -989,7 +989,7 @@ def inputSelectAndBuffer(geodatabase, input_features, range_map_id, table_name_p
     if desc.shapeType == 'Polygon':
         where_clause += ' OR (' + table_name_prefix + 'DatasetSource.DatasetType = ' + \
                         "'Element Occurrences' AND " + table_name_prefix + input_features + \
-                        ".EORank IS NOT NULL) OR DatasetSource.DatasetType = 'Range'"
+                        '.EORank IS NOT NULL) OR ' + table_name_prefix + "DatasetSource.DatasetType = 'Range'"
     where_clause += '))'
     arcpy.SelectLayerByAttribute_management(input_features + '_layer', 'ADD_TO_SELECTION', where_clause)
     arcpy.RemoveJoin_management(input_features + '_layer', table_name_prefix + 'DatasetSource')
