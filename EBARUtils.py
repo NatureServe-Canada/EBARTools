@@ -39,6 +39,7 @@ log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
 # various services
 ebar_feature_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/EBAR/FeatureServer'
 ebar_summary_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/Summary/FeatureServer'
+restricted_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/Restricted/FeatureServer'
 
 
 # lowest accuracy data added to database (metres, based on diagonal of 0.2 degrees square at equator)
@@ -1032,10 +1033,12 @@ def inputSelectAndBuffer(geodatabase, input_features, range_map_id, table_name_p
 
     # buffer
     if desc.shapeType == 'Point':
-        buffered_polygons = 'TempPointBuffer' + str(start_time.year) + str(start_time.month) + \
+        temp_points = 'TempPoints' + str(start_time.year) + str(start_time.month) + \
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
         # add and calculate field based on accuracy
-        checkAddField(input_features + '_layer', 'buffer', 'LONG')
+        #checkAddField(input_features + '_layer', 'buffer', 'LONG')
+        arcpy.CopyFeatures_management(input_features + '_layer', temp_points)
+        checkAddField(temp_points, 'buffer', 'LONG')
         code_block = '''
 def GetBuffer(accuracy):
     ret = accuracy
@@ -1044,8 +1047,14 @@ def GetBuffer(accuracy):
     elif ret <= 0:
         ret = ''' + str(default_buffer_size) + '''
     return ret'''
-        arcpy.CalculateField_management(input_features + '_layer', 'buffer', 'GetBuffer(!Accuracy!)', 'PYTHON3', code_block)
-        arcpy.Buffer_analysis(input_features + '_layer', buffered_polygons, 'buffer')
+        # arcpy.CalculateField_management(input_features + '_layer', 'buffer', 'GetBuffer(!Accuracy!)', 'PYTHON3', code_block)
+        arcpy.CalculateField_management(temp_points, 'buffer', 'GetBuffer(!Accuracy!)', 'PYTHON3', code_block)
+        buffered_polygons = 'TempPointBuffer' + str(start_time.year) + str(start_time.month) + \
+            str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
+        # arcpy.Buffer_analysis(input_features + '_layer', buffered_polygons, 'buffer')
+        arcpy.Buffer_analysis(temp_points, buffered_polygons, 'buffer')
+        if arcpy.Exists(temp_points):
+            arcpy.Delete_management(temp_points)
     elif desc.shapeType == 'Polyline':
         buffered_polygons = 'TempLineBuffer' + str(start_time.year) + str(start_time.month) + \
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
