@@ -1,7 +1,8 @@
 # import python packages
 import arcpy
-import arcpy.mp
+#import arcpy.mp
 import EBARUtils
+import PackageECCCPrioritySpecies
 
 
 class Toolbox(object):
@@ -22,14 +23,15 @@ class TestTool(object):
         self.canRunInBackground = True
 
     def getParameterInfo(self):
-        """Define parameter definitions"""
-        param_species_id = arcpy.Parameter(
-            displayName='Species ID',
-            name='species_id',
-            datatype='GPString',
-            parameterType='Required',
-            direction='Input')
-        params = [param_species_id]
+        # """Define parameter definitions"""
+        # param_species_id = arcpy.Parameter(
+        #     displayName='Species ID',
+        #     name='species_id',
+        #     datatype='GPString',
+        #     parameterType='Required',
+        #     direction='Input')
+        # params = [param_species_id]
+        params = []
         return params
 
     def isLicensed(self):
@@ -48,10 +50,10 @@ class TestTool(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        # make variables for parms
-        EBARUtils.displayMessage(messages, 'Processing parameters')
-        species_id = parameters[0].valueAsText
-        EBARUtils.displayMessage(messages, 'Species ID: ' + species_id)
+        ## make variables for parms
+        # EBARUtils.displayMessage(messages, 'Processing parameters')
+        # species_id = parameters[0].valueAsText
+        # EBARUtils.displayMessage(messages, 'Species ID: ' + species_id)
 
         # # current ArcPro Project
         # aprx = arcpy.mp.ArcGISProject("CURRENT")
@@ -66,15 +68,16 @@ class TestTool(object):
         #grp_lyr
 
         # make feature layers for species
-        point_lyr = arcpy.MakeFeatureLayer_management(EBARUtils.restricted_service + '/0', 'point_lyr',
-                                                      'SpeciesID = ' + str(species_id))
+        # point_lyr = arcpy.MakeFeatureLayer_management(EBARUtils.restricted_service + '/0', 'point_lyr',
+        #                                               'SpeciesID = ' + str(species_id))
         #if int(arcpy.GetCount_management(point_lyr).getOutput(0)) > 0:
             # grp_lyr.addLayer(point_lyr)
             #EBARUtils.displayMessage(messages, 'Records counted')
         # add to grp
         #map.addLayerToGroup(grp_lyr, point_lyr, 'BOTTOM')
 
+        peps = PackageECCCPrioritySpecies.PackageECCCPrioritySpeciesTool()
+        parameters = []
+        peps.runPackageECCCPrioritySpeciesTool(parameters, messages)
+
         return
-
-
-
