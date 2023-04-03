@@ -60,8 +60,8 @@ class PackageECCCPrioritySpeciesTool:
                             EBARUtils.download_folder + '/EBAR ECCC 2022-23 Species.zip', None)
         # EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/' +
         #                          'EBAR G1-3 High Quality.zip')
-        EBARUtils.createZip(zip_folder,
-                            EBARUtils.download_folder + '/EBAR G1-3 High Quality.zip', None)
+        # EBARUtils.createZip(zip_folder,
+        #                     EBARUtils.download_folder + '/EBAR G1-3 High Quality.zip', None)
 
         # create pdf zip
         EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/' +
