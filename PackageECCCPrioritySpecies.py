@@ -47,17 +47,17 @@ class PackageECCCPrioritySpeciesTool:
 
         # copy ArcMap template
         EBARUtils.displayMessage(messages, 'Copying ArcMap template')
-        shutil.copyfile(EBARUtils.resources_folder + '/EBAR.mxd', zip_folder + '/EBAR ECCC 2022-23 Species.mxd')
+        shutil.copyfile(EBARUtils.resources_folder + '/EBAR.mxd', zip_folder + '/EBAR_ECCC_2022-23_Species.mxd')
         #shutil.copyfile(EBARUtils.resources_folder + '/EBAR.mxd', zip_folder + '/EBAR G1-3 High Quality.mxd')
         shutil.copyfile(EBARUtils.resources_folder + '/UsageType.lyr', zip_folder + '/UsageType.lyr')
         shutil.copyfile(EBARUtils.resources_folder + '/EcoshapeOverview.lyr', zip_folder + '/EcoshapeOverview.lyr')
         shutil.copyfile(EBARUtils.resources_folder + '/Ecoshape.lyr', zip_folder + '/Ecoshape.lyr')
 
         # create spatial zip
-        # EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/' +
-        #                          'EBAR ECCC Priority Species.zip')
+        EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/' +
+                                 'EBAR_ECCC_2022-23_Species_All_Data.zip')
         EBARUtils.createZip(zip_folder,
-                            EBARUtils.download_folder + '/EBAR ECCC 2022-23 Species.zip', None)
+                            EBARUtils.download_folder + '/EBAR_ECCC_2022-23_Species_All_Data.zip', None)
         # EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/' +
         #                          'EBAR G1-3 High Quality.zip')
         # EBARUtils.createZip(zip_folder,
@@ -65,9 +65,9 @@ class PackageECCCPrioritySpeciesTool:
 
         # create pdf zip
         EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/' +
-                                 'EBAR ECCC 2022-23 Species - All PDFs.zip')
+                                 'EBAR_ECCC_2022-23_Species_All_PDFs.zip')
         EBARUtils.createZip(zip_folder,
-                            EBARUtils.download_folder + '/EBAR ECCC 2022-23 Species - All PDFs.zip','.pdf')
+                            EBARUtils.download_folder + '/EBAR_ECCC_2022-23_Species_All_PDFs.zip','.pdf')
         # EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/' +
         #                          'EBAR G1-3 High Quality - All PDFs.zip')
         # EBARUtils.createZip(zip_folder,
@@ -114,7 +114,7 @@ class PackageECCCPrioritySpeciesTool:
         #where_clause = "L19Species.ECCC_PrioritySpecies = 'Yes'"
 
         # make zip folder
-        zip_folder = EBARUtils.temp_folder + '/EBAR ECCC 2022-23 Species'
+        zip_folder = EBARUtils.temp_folder + '/EBAR_ECCC_2022-23_Species'
         #zip_folder = EBARUtils.temp_folder + '/EBAR G1-3 High Quality'
         EBARUtils.createReplaceFolder(zip_folder)
 
