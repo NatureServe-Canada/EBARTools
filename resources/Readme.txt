@@ -96,5 +96,5 @@ Disclaimer:
 - The absence of data in any geographic areas does not necessarily mean that a species is not present.
 - An ecoshape with a presence value does not necessarily mean that a species is present throughout the entire geographic area.
 
-Multiple species citation: NatureServe Canada. 2020. Ecosystem-based Automated Range (EBAR). Ottawa, Canada. Retrieved on [insert date] from [insert url]
-Single species citation: NatureServe Canada. 2020. [insert species name] Ecosystem-based Automated Range (EBAR). Ottawa, Canada. Retrieved on [insert date] from [insert url]
+Multiple species citation: NatureServe Canada. 2023. Ecosystem-based Automated Range (EBAR). Ottawa, Canada. Retrieved on [insert date] from [insert url]
+Single species citation: NatureServe Canada. 2023. Ecosystem-based Automated Range (EBAR) for [insert species name, version, stage, and scope]. Ottawa, Canada. Retrieved on [insert date] from [insert url]

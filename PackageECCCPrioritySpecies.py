@@ -114,7 +114,7 @@ class PackageECCCPrioritySpeciesTool:
         #where_clause = "L19Species.ECCC_PrioritySpecies = 'Yes'"
 
         # make zip folder
-        zip_folder = EBARUtils.temp_folder + '/EBAR_ECCC_2022-23_Species'
+        zip_folder = EBARUtils.temp_folder + '/EBAR_ECCC_2022-23_Species_All_Data'
         #zip_folder = EBARUtils.temp_folder + '/EBAR G1-3 High Quality'
         EBARUtils.createReplaceFolder(zip_folder)
 
@@ -137,7 +137,8 @@ class PackageECCCPrioritySpeciesTool:
                            'L11RangeMap.RangeMapScope',
                            'L11RangeMap.RangeMapID',
                            'L11RangeMap.IncludeInDownloadTable',
-                           'L4BIOTICS_ELEMENT_NATIONAL.SpeciesID'])):
+                           'L4BIOTICS_ELEMENT_NATIONAL.SpeciesID',
+                           'L11RangeMap.DifferentiateUsageType'])):
             processed += 1
 
             # copy pdf 
@@ -156,7 +157,10 @@ class PackageECCCPrioritySpeciesTool:
 
             # update ArcGIS Pro template
             EBARUtils.displayMessage(messages, 'Updating ArcGIS Pro template')
-            EBARUtils.updateArcGISProTemplate(zip_folder, element_global_id, md, row[8], False)
+            differentiate_usage_type = False
+            if row[11]:
+                differentiate_usage_type = True
+            EBARUtils.updateArcGISProTemplate(zip_folder, element_global_id, md, row[8], differentiate_usage_type)
 
         if row:
             self.processPackage(messages, range_map_ids, attributes_dict, zip_folder, md)
