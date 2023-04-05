@@ -638,11 +638,13 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                             'EcoshapeID = ' + str(rme_row['EcoshapeID'])) as search_cursor:
                     row = None
                     for row in EBARUtils.searchCursor(search_cursor):
-                        summary = str(row['FREQUENCY']) + ' input record(s)'
+                        #summary = str(row['FREQUENCY']) + ' input record(s)'
                         with arcpy.da.InsertCursor(param_geodatabase + '/RangeMapEcoshapeInputDataset',
                                                    ['RangeMapEcoshapeID', 'InputDatasetID',
-                                                    'InputDataSummary']) as insert_cursor:
-                            insert_cursor.insertRow([rme_row['RangeMapEcoshapeID'], row['InputDatasetID'], summary])
+                                                    'InputDataCount']) as insert_cursor:
+                                                    # 'InputDataSummary']) as insert_cursor:
+                            insert_cursor.insertRow([rme_row['RangeMapEcoshapeID'], row['InputDatasetID'],
+                                                     row['FREQUENCY']])
                 if row:
                     del row
                 del search_cursor
