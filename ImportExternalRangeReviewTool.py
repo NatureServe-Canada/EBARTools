@@ -220,14 +220,15 @@ class ImportExternalRangeReviewTool:
                 if param_usagetype_field:
                     if row[param_usagetype_field]:
                         if row[param_usagetype_field].lower() in ('b', 'breeding',
-                                                                  'p', 'possible breeding'):
+                                                                  'p', 'possible breeding',
+                                                                  'n', 'non-breeding', 'nonbreeding'):
                             usagetype = 'B'
                             if row[param_usagetype_field].lower() in ('p', 'possible breeding'):
                                 usagetype = 'P'
                             # if row[param_usagetype_field].lower() in ('m', 'migration'):
                             #     usagetype = 'M'
-                            # if row[param_usagetype_field].lower() in ('n', 'non-breeding'):
-                            #     usagetype = 'N' 
+                            if row[param_usagetype_field].lower() in ('n', 'non-breeding', 'nonbreeding'):
+                                usagetype = 'N' 
                 #if usagetype:
                 external_usagetype_dict[row['EcoshapeID']] = usagetype
 
@@ -239,7 +240,7 @@ class ImportExternalRangeReviewTool:
         with arcpy.da.InsertCursor(param_geodatabase + '/Review',
                                    ['RangeMapID', 'Username', 'DateCompleted', 'ReviewNotes',
                                     'UseForMapGen']) as cursor:
-            review_notes = param_review_label + ' auto-applied'
+            review_notes = param_review_label + ' imported'
             if param_overall_review_notes:
                 review_notes += ': ' + param_overall_review_notes
             object_id = cursor.insertRow([range_map_id, param_username, datetime.datetime.now(),
