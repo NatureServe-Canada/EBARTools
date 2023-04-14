@@ -68,13 +68,18 @@ class ImportExternalRangeReviewTool:
         # get table name prefix (needed for joined tables and feature classes in enterprise geodatabases)
         table_name_prefix = EBARUtils.getTableNamePrefix(param_geodatabase)
 
+        # check for at least one of presence and usagetype fields
+        if not param_presence_field and not param_usagetype_field:
+            # terminate with error
+            EBARUtils.displayMessage(messages, 'ERROR: Please provide Presence Field and/or UsageType Field')
+            return
+
         # check for species
         species_id, short_citation = EBARUtils.checkSpecies(param_species, param_geodatabase)
         if not species_id:
-            EBARUtils.displayMessage(messages, 'ERROR: Species not found')
             # terminate with error
+            EBARUtils.displayMessage(messages, 'ERROR: Species not found')
             return
-            #raise arcpy.ExecuteError
 
         # check for secondary species
         secondary_ids = []
@@ -82,15 +87,13 @@ class ImportExternalRangeReviewTool:
             for secondary in param_secondary:
                 secondary_id, short_citation = EBARUtils.checkSpecies(secondary, param_geodatabase)
                 if not secondary_id:
+                    # terminate with error
                     EBARUtils.displayMessage(messages, 'ERROR: Secondary species not found')
-                    # terminate with error
                     return
-                    #raise arcpy.ExecuteError
                 if secondary_id in secondary_ids:
-                    EBARUtils.displayMessage(messages, 'ERROR: Same secondary species specified more than once')
                     # terminate with error
+                    EBARUtils.displayMessage(messages, 'ERROR: Same secondary species specified more than once')
                     return
-                    #raise arcpy.ExecuteError
                 secondary_ids.append(secondary_id)
 
         # check for range map record
@@ -129,10 +132,9 @@ class ImportExternalRangeReviewTool:
                 candidate_secondary_count[candidate] == len(secondary_ids)):
                 range_map_id = candidate
         if not range_map_id:
-            EBARUtils.displayMessage(messages, 'ERROR: Range Map not found')
             # terminate with error
+            EBARUtils.displayMessage(messages, 'ERROR: Range Map not found')
             return
-            #raise arcpy.ExecuteError
 
         # check for username
         EBARUtils.displayMessage(messages, 'Checking for Username')
@@ -142,10 +144,9 @@ class ImportExternalRangeReviewTool:
             for row in EBARUtils.searchCursor(cursor):
                 pass
             if not row:
-                EBARUtils.displayMessage(messages, 'ERROR: Username must exist in Expert table')
                 # terminate with error
+                EBARUtils.displayMessage(messages, 'ERROR: Username must exist in Expert table')
                 return
-                #raise arcpy.ExecuteError
             else:
                 del row
 
@@ -161,79 +162,9 @@ class ImportExternalRangeReviewTool:
             if row:
                 del row
         if review_id:
-            EBARUtils.displayMessage(messages, 'ERROR: Review already exists for this Username and RangeMap')
             # terminate with error
+            EBARUtils.displayMessage(messages, 'ERROR: Review already exists for this Username and RangeMap')
             return
-            #raise arcpy.ExecuteError
-
-        # build list of jurisdiction ids
-        EBARUtils.displayMessage(messages, 'Building list of Jurisdictions')
-        jur_ids_comma = EBARUtils.buildJurisdictionList(param_geodatabase, param_jurisdictions_list)
-
-        # build dicst of RangeMapEcoshape Presence and UsageType for jurisdiction(s)
-        EBARUtils.displayMessage(messages, 'Building dictionary of RangeMapEcoshape Presence for Jurisdiction(s)')
-        arcpy.MakeTableView_management(param_geodatabase + '/RangeMapEcoshape', 'range_layer',
-                                       'RangeMapID = ' + str(range_map_id))
-        arcpy.AddJoin_management('range_layer', 'EcoshapeID', param_geodatabase + '/Ecoshape',
-                                 'EcoshapeID', 'KEEP_COMMON')
-        range_presence_dict = {}
-        range_usagetype_dict = {}
-        with arcpy.da.SearchCursor('range_layer', [table_name_prefix + 'Ecoshape.EcoshapeID',
-                                                   table_name_prefix + 'RangeMapEcoshape.Presence',
-                                                   table_name_prefix + 'RangeMapEcoshape.UsageType'],
-                                   table_name_prefix + 'Ecoshape.JurisdictionID IN ' + jur_ids_comma) as cursor:
-            for row in EBARUtils.searchCursor(cursor):
-                range_presence_dict[row[table_name_prefix + 'Ecoshape.EcoshapeID']] = \
-                    row[table_name_prefix + 'RangeMapEcoshape.Presence']
-                range_usagetype_dict[row[table_name_prefix + 'Ecoshape.EcoshapeID']] = \
-                    row[table_name_prefix + 'RangeMapEcoshape.UsageType']
-            if len(range_presence_dict) > 0:
-                del row
-
-        # build dicts of external ecoshape Presence and UsageType
-        EBARUtils.displayMessage(messages, 'Building dictionaries of External Ecoshape Presence and UsageType')
-        fields = ['EcoshapeID']
-        if param_presence_field:
-            fields.append(param_presence_field)
-        if param_usagetype_field:
-            fields.append(param_usagetype_field)
-        external_presence_dict = {}
-        external_usagetype_dict = {}
-        with arcpy.da.SearchCursor(param_external_range_table, fields) as cursor:
-            for row in EBARUtils.searchCursor(cursor):
-                presence = None
-                if param_presence_field:
-                    if row[param_presence_field]:
-                        if row[param_presence_field].lower() in ('p', 'present', 'presence',
-                                                                 'x', 'presence expected',
-                                                                 'h', 'historical'):
-                            presence = 'P'
-                            if row[param_presence_field].lower() in ('x', 'presence expected'):
-                                presence = 'X'
-                            if row[param_presence_field].lower() in ('h', 'historical'):
-                                presence = 'H'
-                else:
-                    presence = 'P'
-                #if presence:
-                external_presence_dict[row['EcoshapeID']] = presence
-                usagetype = None
-                if param_usagetype_field:
-                    if row[param_usagetype_field]:
-                        if row[param_usagetype_field].lower() in ('b', 'breeding',
-                                                                  'p', 'possible breeding',
-                                                                  'n', 'non-breeding', 'nonbreeding'):
-                            usagetype = 'B'
-                            if row[param_usagetype_field].lower() in ('p', 'possible breeding'):
-                                usagetype = 'P'
-                            # if row[param_usagetype_field].lower() in ('m', 'migration'):
-                            #     usagetype = 'M'
-                            if row[param_usagetype_field].lower() in ('n', 'non-breeding', 'nonbreeding'):
-                                usagetype = 'N' 
-                #if usagetype:
-                external_usagetype_dict[row['EcoshapeID']] = usagetype
-
-            if len(external_presence_dict) > 0:
-                del row
 
         # create Review record
         EBARUtils.displayMessage(messages, 'Creating Review record')
@@ -247,42 +178,102 @@ class ImportExternalRangeReviewTool:
                                           review_notes, 1])
         review_id = EBARUtils.getUniqueID(param_geodatabase + '/Review', 'ReviewID', object_id)
 
+        # build list of jurisdiction ids
+        EBARUtils.displayMessage(messages, 'Building list of Jurisdictions')
+        jur_ids_comma = EBARUtils.buildJurisdictionList(param_geodatabase, param_jurisdictions_list)
+
+        # build dicts of existing Presence and UsageType for jurisdiction(s)
+        EBARUtils.displayMessage(messages, 'Building dictionaries of existing Presence/UsageType for Jurisdiction(s)')
+        arcpy.MakeTableView_management(param_geodatabase + '/RangeMapEcoshape', 'range_layer',
+                                       'RangeMapID = ' + str(range_map_id))
+        arcpy.AddJoin_management('range_layer', 'EcoshapeID', param_geodatabase + '/Ecoshape',
+                                 'EcoshapeID', 'KEEP_COMMON')
+        range_presence_dict = {}
+        range_usagetype_dict = {}
+        with arcpy.da.SearchCursor('range_layer', [table_name_prefix + 'Ecoshape.EcoshapeID',
+                                                   table_name_prefix + 'RangeMapEcoshape.Presence',
+                                                   table_name_prefix + 'RangeMapEcoshape.UsageType'],
+                                   table_name_prefix + 'Ecoshape.JurisdictionID IN ' + jur_ids_comma) as cursor:
+            for row in EBARUtils.searchCursor(cursor):
+                range_presence_dict[row[table_name_prefix + 'Ecoshape.EcoshapeID']] = \
+                    row[table_name_prefix + 'RangeMapEcoshape.Presence']
+                # NULL UsageType is treated as non-breeding
+                usagetype = 'N'
+                if row[table_name_prefix + 'RangeMapEcoshape.UsageType']:
+                    usagetype = row[table_name_prefix + 'RangeMapEcoshape.UsageType']
+                range_usagetype_dict[row[table_name_prefix + 'Ecoshape.EcoshapeID']] = usagetype
+        if len(range_presence_dict) > 0:
+            del row
+        del cursor
+
+        # build dicts of external ecoshape Presence and UsageType
+        EBARUtils.displayMessage(messages, 'Building dictionaries of external Presence/UsageType')
+        external_presence_dict = {}
+        external_usagetype_dict = {}
+        if param_presence_field:
+            with arcpy.da.SearchCursor(param_external_range_table, ['EcoshapeID', param_presence_field]) as cursor:
+                for row in EBARUtils.searchCursor(cursor):
+                    # NULL Presence is ignored
+                    presence = None
+                    if row[param_presence_field]:
+                        if row[param_presence_field].lower() in ('p', 'present', 'presence',
+                                                                 'x', 'presence expected',
+                                                                 'h', 'historical'):
+                            presence = 'P'
+                            if row[param_presence_field].lower() in ('x', 'presence expected'):
+                                presence = 'X'
+                            if row[param_presence_field].lower() in ('h', 'historical'):
+                                presence = 'H'
+                    external_presence_dict[row['EcoshapeID']] = presence
+            if len(external_presence_dict) > 0:
+                del row
+        if param_usagetype_field:
+            with arcpy.da.SearchCursor(param_external_range_table, [['EcoshapeID'], param_usagetype_field]) as cursor:
+                for row in EBARUtils.searchCursor(cursor):
+                    # NULL UsageType is treated as non-breeding
+                    usagetype = 'N'
+                    if row[param_usagetype_field]:
+                        if row[param_usagetype_field].lower() in ('b', 'breeding',
+                                                                  'p', 'possible breeding',
+                                                                  'n', 'non-breeding', 'nonbreeding'):
+                            usagetype = 'B'
+                            if row[param_usagetype_field].lower() in ('p', 'possible breeding'):
+                                usagetype = 'P'
+                            if row[param_usagetype_field].lower() in ('n', 'non-breeding', 'nonbreeding'):
+                                usagetype = 'N'
+                    external_usagetype_dict[row['EcoshapeID']] = usagetype
+            if len(external_usagetype_dict) > 0:
+                del row
+        # build list of unique external ecoshape IDs because extneral could have presence and/or usagetype
+        external_ecoshape_ids = sorted(list(set(list(external_presence_dict.keys()) +
+                                                list(external_usagetype_dict.keys()))))
+
         # init counts
-        change_count = 0
         add_count = 0
+        change_count = 0
         remove_count = 0
 
+        # additions
+        EBARUtils.displayMessage(messages, 'Processing additions')
         # loop all external
-        EBARUtils.displayMessage(messages, 'Processing External Ecoshapes')
-        for external_ecoshape_id in external_presence_dict:
-            change = False
+        for external_ecoshape_id in external_ecoshape_ids:
+            add = False
             new_presence = None
             new_usagetype = None
-            if external_ecoshape_id in range_presence_dict:
-                # check for different presence values
-                if external_presence_dict[external_ecoshape_id] != range_presence_dict[external_ecoshape_id]:
-                    # additions also include the case of "upgrading" ecoshape to Present
-                    if param_additions_only == 'false' or external_presence_dict[external_ecoshape_id] == 'P':
-                        change = True
-                        new_presence = external_presence_dict[external_ecoshape_id]
-            if external_ecoshape_id in range_usagetype_dict:
-                # check for different usagetype values
-                if external_usagetype_dict[external_ecoshape_id] != range_usagetype_dict[external_ecoshape_id]:
-                    change = True
-                    new_usagetype = external_usagetype_dict[external_ecoshape_id]
-            if change:
-                # create review change record
-                with arcpy.da.InsertCursor(param_geodatabase + '/EcoshapeReview',
-                                            ['EcoshapeID', 'ReviewID', 'RemovalReason', 'EcoshapeReviewNotes',
-                                             'UseForMapGen', 'Markup', 'UsageTypeMarkup', 'Username']) as cursor:
-                    object_id = cursor.insertRow([external_ecoshape_id, review_id, None,
-                                                  'In ' + param_review_label, 1, new_presence, new_usagetype,
-                                                  param_username])
-                change_count += 1
-            else:
+            # check presence addition
+            if (param_presence_field and external_ecoshape_id not in range_presence_dict and
+                external_presence_dict[external_ecoshape_id]):
+                add = True
+                new_presence = external_presence_dict[external_ecoshape_id]
+            # check usagetype addition
+            if (param_usagetype_field and external_ecoshape_id not in range_usagetype_dict and
+                external_usagetype_dict[external_ecoshape_id]):
+                add = True
+                new_usagetype = external_usagetype_dict[external_ecoshape_id]
+            if add:
+                # check for valid ecoshape ID
                 check_row = None
                 if external_ecoshape_id:
-                    # check for matching ecoshape ID
                     with arcpy.da.SearchCursor(param_geodatabase + '/Ecoshape', ['EcoshapeID'],
                                                'EcoshapeID = ' + str(external_ecoshape_id)) as check_cursor:
                         for check_row in check_cursor:
@@ -291,48 +282,51 @@ class ImportExternalRangeReviewTool:
                 if check_row:
                     # create review add record
                     with arcpy.da.InsertCursor(param_geodatabase + '/EcoshapeReview',
-                                            ['EcoshapeID', 'ReviewID', 'RemovalReason', 'EcoshapeReviewNotes',
-                                                'UseForMapGen', 'Markup', 'UsageTypeMarkup', 'Username']) as cursor:
-                        object_id = cursor.insertRow([external_ecoshape_id, review_id, None, 'In ' + param_review_label,
-                                                    1, external_presence_dict[external_ecoshape_id],
-                                                    external_usagetype_dict[external_ecoshape_id], param_username])
+                                                ['EcoshapeID', 'ReviewID', 'RemovalReason', 'EcoshapeReviewNotes',
+                                                 'UseForMapGen', 'Markup', 'UsageTypeMarkup', 'Username']) as cursor:
+                        cursor.insertRow([external_ecoshape_id, review_id, None, 'In ' + param_review_label, 1,
+                                          new_presence, new_usagetype, param_username])
                     add_count += 1
+                    del cursor
                     del check_row
                 else:
-                    EBARUtils.displayMessage(messages, 'WARNING - invalid external EcoshapeID ' + str(external_ecoshape_id))
-        # handle case of ecoshape with usagetype markup but no presence markup
-        for external_ecoshape_id in external_usagetype_dict:
-            if external_ecoshape_id not in external_presence_dict:
+                    EBARUtils.displayMessage(messages,
+                                             'WARNING - invalid external EcoshapeID ' + str(external_ecoshape_id))
+
+        # changes
+        if param_additions_only == 'false':
+            EBARUtils.displayMessage(messages, 'Processing changes')
+            # loop all external
+            for external_ecoshape_id in external_ecoshape_ids:
                 change = False
                 new_presence = None
                 new_usagetype = None
-                if external_ecoshape_id in range_usagetype_dict:
-                    # check for different usagetype values
-                    if external_usagetype_dict[external_ecoshape_id] != range_usagetype_dict[external_ecoshape_id]:
-                        change = True
-                        new_usagetype = external_usagetype_dict[external_ecoshape_id]
+                # check presence change
+                if (param_presence_field and external_ecoshape_id in range_presence_dict and
+                    external_presence_dict[external_ecoshape_id] and
+                    external_presence_dict[external_ecoshape_id] != range_presence_dict[external_ecoshape_id]):
+                    change = True
+                    new_presence = external_presence_dict[external_ecoshape_id]
+                # check usagetype change
+                if (param_usagetype_field and external_ecoshape_id in range_usagetype_dict and
+                    external_usagetype_dict[external_ecoshape_id] and
+                    external_usagetype_dict[external_ecoshape_id] != range_usagetype_dict[external_ecoshape_id]):
+                    change = True
+                    new_usagetype = external_usagetype_dict[external_ecoshape_id]
                 if change:
                     # create review change record
                     with arcpy.da.InsertCursor(param_geodatabase + '/EcoshapeReview',
-                                                ['EcoshapeID', 'ReviewID', 'RemovalReason', 'EcoshapeReviewNotes',
+                                               ['EcoshapeID', 'ReviewID', 'RemovalReason', 'EcoshapeReviewNotes',
                                                 'UseForMapGen', 'Markup', 'UsageTypeMarkup', 'Username']) as cursor:
-                        object_id = cursor.insertRow([external_ecoshape_id, review_id, None,
-                                                    'In ' + param_review_label, 1, new_presence, new_usagetype,
-                                                    param_username])
+                        cursor.insertRow([external_ecoshape_id, review_id, None, 'In ' + param_review_label, 1,
+                                          new_presence, new_usagetype, param_username])
                     change_count += 1
-                else:
-                    # create review add record
-                    with arcpy.da.InsertCursor(param_geodatabase + '/EcoshapeReview',
-                                            ['EcoshapeID', 'ReviewID', 'RemovalReason', 'EcoshapeReviewNotes',
-                                                'UseForMapGen', 'Markup', 'UsageTypeMarkup', 'Username']) as cursor:
-                        object_id = cursor.insertRow([external_ecoshape_id, review_id, None, 'In ' + param_review_label,
-                                                    1, external_presence_dict[external_ecoshape_id],
-                                                    external_usagetype_dict[external_ecoshape_id], param_username])
-                    add_count += 1
+                    del cursor
 
-        # loop all existing
+        # removals
         if param_additions_only == 'false':
-            EBARUtils.displayMessage(messages, 'Processing existing Range Ecoshapes')
+            EBARUtils.displayMessage(messages, 'Processing Ecoshape removals')
+            # loop all existing
             for range_ecoshape_id in range_presence_dict:
                 if (range_ecoshape_id not in external_presence_dict and
                     range_ecoshape_id not in external_usagetype_dict):
@@ -340,8 +334,8 @@ class ImportExternalRangeReviewTool:
                     with arcpy.da.InsertCursor(param_geodatabase + '/EcoshapeReview',
                                             ['EcoshapeID', 'ReviewID', 'RemovalReason', 'EcoshapeReviewNotes',
                                              'UseForMapGen', 'Markup', 'Username']) as cursor:
-                        object_id = cursor.insertRow([range_ecoshape_id, review_id, 'O',
-                                                      'Not in ' + param_review_label, 1, 'R', param_username])
+                        cursor.insertRow([range_ecoshape_id, review_id, 'O', 'Not in ' + param_review_label, 1, 'R',
+                                          param_username])
                     remove_count+= 1
 
         # summary and end time

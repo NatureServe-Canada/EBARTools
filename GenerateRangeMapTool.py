@@ -739,11 +739,11 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                             for update_row in EBARUtils.updateCursor(update_cursor):
                                 if (search_row[table_name_prefix + 'EcoshapeReview.UsageTypeMarkup'] !=
                                     update_row['UsageType']):
-                                    new_usage_type = search_row[table_name_prefix + 'EcoshapeReview.UsageTypeMarkup']
-                                    if new_usage_type == 'N':
+                                    new_usagetype = search_row[table_name_prefix + 'EcoshapeReview.UsageTypeMarkup']
+                                    if new_usagetype == 'N':
                                         # non-breeding markup results in no UsageType
-                                        new_usage_type = None
-                                    update_cursor.updateRow([new_usage_type])
+                                        new_usagetype = None
+                                    update_cursor.updateRow([new_usagetype])
                         if update_row:
                             del update_row
                         del update_cursor

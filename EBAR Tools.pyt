@@ -608,7 +608,7 @@ class ImportExternalRangeReview(object):
             direction='Input')
         param_stage.value = 'Auto-generated'
 
-        # External Range Polygons
+        # External Range Table
         param_external_range_table = arcpy.Parameter(
             displayName='External Range Table',
             name='external_range_table',
