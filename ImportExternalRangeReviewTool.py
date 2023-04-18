@@ -224,11 +224,12 @@ class ImportExternalRangeReviewTool:
                                 presence = 'X'
                             if row[param_presence_field].lower() in ('h', 'historical'):
                                 presence = 'H'
-                    external_presence_dict[row['EcoshapeID']] = presence
+                    if row['EcoshapeID']:
+                        external_presence_dict[row['EcoshapeID']] = presence
             if len(external_presence_dict) > 0:
                 del row
         if param_usagetype_field:
-            with arcpy.da.SearchCursor(param_external_range_table, [['EcoshapeID'], param_usagetype_field]) as cursor:
+            with arcpy.da.SearchCursor(param_external_range_table, ['EcoshapeID', param_usagetype_field]) as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     # NULL UsageType is treated as non-breeding
                     usagetype = 'N'
@@ -241,7 +242,8 @@ class ImportExternalRangeReviewTool:
                                 usagetype = 'P'
                             if row[param_usagetype_field].lower() in ('n', 'non-breeding', 'nonbreeding'):
                                 usagetype = 'N'
-                    external_usagetype_dict[row['EcoshapeID']] = usagetype
+                    if row['EcoshapeID']:
+                        external_usagetype_dict[row['EcoshapeID']] = usagetype
             if len(external_usagetype_dict) > 0:
                 del row
         # build list of unique external ecoshape IDs because extneral could have presence and/or usagetype
