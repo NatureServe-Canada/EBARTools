@@ -105,14 +105,22 @@ class ImportTabularData(object):
         locale.setlocale(locale.LC_ALL, '')
         param_date_received.value = datetime.datetime.now().strftime('%x')
 
-        # Dataset Restrictions
+        # # Dataset Restrictions
+        # param_dataset_restrictions = arcpy.Parameter(
+        #     displayName='Dataset Restrictions',
+        #     name='dataset_restrictions',
+        #     datatype='GPString',
+        #     parameterType='Required',
+        #     direction='Input')
+        # param_dataset_restrictions.value = 'Non-restricted'
+        
+        # Sensitivity/Restriction Reason
         param_dataset_restrictions = arcpy.Parameter(
-            displayName='Dataset Restrictions',
-            name='dataset_restrictions',
+            displayName='Sensitivity/Restriction Reason',
+            name='sensitivity_restriction_reason',
             datatype='GPString',
-            parameterType='Required',
+            parameterType='Optional',
             direction='Input')
-        param_dataset_restrictions.value = 'Non-restricted'
         
         params = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_source,
                   param_date_received, param_dataset_restrictions]
@@ -129,12 +137,21 @@ class ImportTabularData(object):
         ## because filtered picklists cannot be dynamic when published to a geoprocessing service
         #if parameters[0].altered and parameters[0].value:
         #    parameters[3].filter.list = EBARUtils.readDatasetSources(parameters[0].valueAsText, "('T')")
+
+        # domains = arcpy.da.ListDomains(parameters[0].valueAsText)
+        # restrictions_list = []
+        # for domain in domains:
+        #     if domain.name == 'Restriction':
+        #         restrictions_list = list(domain.codedValues.values())
+        # parameters[5].filter.list = sorted(restrictions_list)
+        # return
+
         domains = arcpy.da.ListDomains(parameters[0].valueAsText)
-        restrictions_list = []
+        sensitivity_restriction_reason_list = []
         for domain in domains:
-            if domain.name == 'Restriction':
-                restrictions_list = list(domain.codedValues.values())
-        parameters[5].filter.list = sorted(restrictions_list)
+            if domain.name == 'SensitivityRestrictionReason':
+                sensitivity_restriction_reason_list = list(domain.codedValues.values())
+        parameters[5].filter.list = sorted(sensitivity_restriction_reason_list)
         return
 
     def updateMessages(self, parameters):

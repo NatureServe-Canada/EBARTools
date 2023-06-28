@@ -240,7 +240,7 @@ def getUniqueID(table, id_field, object_id):
     return unique_id
 
 
-def checkAddInputDataset(geodatabase, dataset_name, dataset_source_id, date_received, restrictions):
+def checkAddInputDataset(geodatabase, dataset_name, dataset_source_id, date_received, senstivity_restriction_reason): # restrictions):
     """If Dataset already exists (name, source, date), return id and true; otherwise, add and return id and false"""
     input_dataset_id = None
 
@@ -255,9 +255,11 @@ def checkAddInputDataset(geodatabase, dataset_name, dataset_source_id, date_rece
             return input_dataset_id, True
 
     # new
-    dataset_fields = ['DatasetName', 'DatasetSourceID', 'DateReceived', 'Restrictions']
+    # dataset_fields = ['DatasetName', 'DatasetSourceID', 'DateReceived', 'Restrictions']
+    dataset_fields = ['DatasetName', 'DatasetSourceID', 'DateReceived', 'SensitivityRestrictionReason']
     with arcpy.da.InsertCursor(geodatabase + '/InputDataset', dataset_fields) as cursor:
-        object_id = cursor.insertRow([dataset_name, dataset_source_id, date_received, restrictions])
+        # object_id = cursor.insertRow([dataset_name, dataset_source_id, date_received, restrictions])
+        object_id = cursor.insertRow([dataset_name, dataset_source_id, date_received, senstivity_restriction_reason])
     input_dataset_id = getUniqueID(geodatabase + '/InputDataset', 'InputDatasetID', object_id)
     return input_dataset_id, False
 
