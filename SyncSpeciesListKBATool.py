@@ -177,9 +177,9 @@ class SyncSpeciesListKBATool:
                         # # Message for debugging
                         # print("UPDATE RECORD")
 
-                        # wrap updates to Species table to force editor tracking to work!
-                        edit = arcpy.da.Editor(param_geodatabase)
-                        edit.startEditing(with_undo=False, multiuser_mode=False)
+                        # # wrap updates to Species table to force editor tracking to work!
+                        # edit = arcpy.da.Editor(param_geodatabase)
+                        # edit.startEditing(with_undo=False, multiuser_mode=False)
 
                         # Access Species table with an UpdateCursor to update fields that have changed
                         changed = False
@@ -216,10 +216,10 @@ class SyncSpeciesListKBATool:
                             del update_row
                         del update_cursor
 
-                        # wrap updates to Species table to force editor tracking to work!
-                        if changed:
-                            edit.stopOperation()
-                        edit.stopEditing(save_changes=True)
+                        # # wrap updates to Species table to force editor tracking to work!
+                        # if changed:
+                        #     edit.stopOperation()
+                        # edit.stopEditing(save_changes=True)
 
                     # If the SpeciesID generated for the record (i.e. from Biotics) is NOT in the Species table,
                     # then insert it
@@ -288,9 +288,9 @@ if __name__ == '__main__':
 
     # Hard-coded parameters for debugging
     param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value = 'C:\\GIS_Processing\\KBA\\Scripts\\EBAR_GITHUB\\EBARDev.gdb'
+    param_geodatabase.value = 'C:\\GIS\\EBAR\\EBARDev.gdb'
     param_csv = arcpy.Parameter()
-    param_csv.value = 'C:\\GIS_Processing\\KBA\\Scripts\\EBAR_GITHUB\\EBARTools\\SpeciesElementsExample.csv'
+    param_csv.value = 'C:\\Users\\rgree\\Downloads\\Species_2023-04-20.csv'
     parameters = [param_geodatabase, param_csv]
 
     sslkba.runSyncSpeciesListKBATool(parameters, None)

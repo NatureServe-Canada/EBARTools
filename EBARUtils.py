@@ -27,13 +27,13 @@ import json
 # shared folders and addresses
 resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
 temp_folder = 'C:/GIS/EBAR/temp'
-#download_folder = 'C:/GIS/EBAR/pub/download'
-download_folder = 'F:/download'
+download_folder = 'C:/GIS/EBAR/pub/download'
+#download_folder = 'F:/download'
 download_url = 'https://gis.natureserve.ca/download'
 #nsx_species_search_url = 'https://explorer.natureserve.org/api/data/search'
 nsx_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/'
-log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
-#log_folder = 'C:/GIS/EBAR/temp'
+#log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
+log_folder = 'C:/GIS/EBAR/temp'
 
 
 # various services
@@ -147,7 +147,7 @@ subnation_dict = {'Alberta': 'AB',
 # for emailNoticeWithAttachment below
 sender = 'ebar.kba.notices@gmail.com'
 receivers = ['rgreene@natureserve.ca', 'sstefanoff@natureserve.ca', 'maggie_woo@natureserve.org']
-password_file = 'C:/Users/Public/Documents/email/email.txt'
+password_file = 'C:/GIS/EBAR/email/email.txt'
 server = 'smtp.gmail.com'
 port = 587
 

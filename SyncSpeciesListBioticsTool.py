@@ -264,8 +264,8 @@ if __name__ == '__main__':
     ssl = SyncSpeciesListBioticsTool()
     # hard code parameters for debugging
     param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
+    param_geodatabase.value = 'C:/GIS/EBAR/EBARDev.gdb'
     param_csv = arcpy.Parameter()
-    param_csv.value = 'C:/Users/rgree/Downloads/rgreene_1659880502980.csv'
+    param_csv.value = 'C:/Users/rgree/Downloads/rgreene_1682020250213.csv'
     parameters = [param_geodatabase, param_csv]
     ssl.runSyncSpeciesListBioticsTool(parameters, None)
