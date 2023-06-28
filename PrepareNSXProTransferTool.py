@@ -139,7 +139,8 @@ class PrepareNSXProTransferTool:
             row = None
             with arcpy.da.SearchCursor(param_geodatabase + '/DatasetSource',
                                        ['DatasetSourceID', 'AllowedPrecisionSquareMiles'],
-                                       "NSXProTransfer='Y'") as cursor:
+                                       "PermitNSXProTransfer='Y'") as cursor:
+                                       #"NSXProTransfer='Y'") as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     # get InputDatasetIDs
                     input_dataset_ids = []
