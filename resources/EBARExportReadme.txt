@@ -38,7 +38,7 @@ NATIONAL_ENGL_NAME - Canadian English name for the species
 NATIONAL_FR_NAME - Canadian French name for the species
 SynonymName - synonym name, if the data was originally provided using this synonym
 DateReceived - date the the dataset was obtained from the provider
-Restrictions - N=Non-restricted; R=Restrictions apply to the record
+SensitivityRestrictionReason - the reason, if any, for sensitivity of or restrictions on the record
 DatasetName - label used by EBAR team to identify the dataset
 DatasetSourceName - the name of the dataset source
 DatasetSourceCitation - the citation of the dataset source, to be used for crediting the data provider
