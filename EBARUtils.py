@@ -475,15 +475,15 @@ def readDatasetSources(param_geodatabase, dataset_source_type):
     return source_list
 
 
-def encodeRestriction(geodatabase, restriction):
-    """encode restriction using domain"""
-    domains = arcpy.da.ListDomains(geodatabase)
-    for domain in domains:
-        if domain.name == 'Restriction':
-            for key in domain.codedValues.keys():
-                if domain.codedValues[key] == restriction:
-                    restriction = key
-    return restriction
+# def encodeRestriction(geodatabase, restriction):
+#     """encode restriction using domain"""
+#     domains = arcpy.da.ListDomains(geodatabase)
+#     for domain in domains:
+#         if domain.name == 'Restriction':
+#             for key in domain.codedValues.keys():
+#                 if domain.codedValues[key] == restriction:
+#                     restriction = key
+#     return restriction
 
 
 def getTableNamePrefix(geodatabase):
