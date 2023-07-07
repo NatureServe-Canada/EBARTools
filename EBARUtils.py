@@ -289,6 +289,18 @@ def readSpecies(geodatabase):
     return species_dict
 
 
+def readEcosystems(geodatabase):
+    """read existing ecosystem names and IDs into dict and return"""
+    ecosystems_dict = {}
+    with arcpy.da.SearchCursor(geodatabase + '/BIOTICS_ECOSYSTEM',
+                               ['IVC_SCIENTIFIC_NAME', 'EcosystemID']) as cursor:
+        for row in searchCursor(cursor):
+            ecosystems_dict[row['IVC_SCIENTIFIC_NAME'].lower()] = row['EcosystemID']
+        if len(ecosystems_dict) > 0:
+            del row
+    return ecosystems_dict
+
+
 def readSynonyms(geodatabase):
     """read existing synonyms and IDS into dict and return"""
     synonym_id_dict = {}
@@ -321,6 +333,18 @@ def readElementSpecies(geodatabase):
     if len(element_species_dict) > 0:
         del row
     return element_species_dict
+
+
+def readElementEcosystem(geodatabase):
+    """read existing element and ecosystem IDs into dict and return"""
+    element_ecosystem_dict = {}
+    with arcpy.da.SearchCursor(geodatabase + '/BIOTICS_ECOSYSTEM',
+                               ['ELEMENT_NATIONAL_ID', 'EcosystemID']) as cursor:
+        for row in searchCursor(cursor):
+            element_ecosystem_dict[row['ELEMENT_NATIONAL_ID']] = row['EcosystemID']
+    if len(element_ecosystem_dict) > 0:
+        del row
+    return element_ecosystem_dict
 
 
 def checkSpecies(scientific_name, geodatabase):
