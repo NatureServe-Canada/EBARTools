@@ -657,7 +657,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
         if param_differentiate_usage_type == 'true':
             # set UsageType from input data
-            EBARUtils.displayMessage(messages, 'Applying Breeding and Behaviour Codes to set UsageType')
+            EBARUtils.displayMessage(messages, 'Applying Breeding and Behaviour Codes and Location Use Class ' + \
+                                     'to set UsageType')
 
             # get BBCode domain values
             domains = arcpy.da.ListDomains(param_geodatabase)
@@ -669,10 +670,14 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                         bbc_domain_values_lower[bbc_domain_value.lower()] = bbc_domain_values[bbc_domain_value]
 
             # summarize all input records by ecoshape
+            # arcpy.Statistics_analysis('pairwise_intersect_layer', usage_type_stats, [['EcoshapeID', 'COUNT']],
+            #                           ['EcoshapeID', 'BreedingAndBehaviourCode'])
             arcpy.Statistics_analysis('pairwise_intersect_layer', usage_type_stats, [['EcoshapeID', 'COUNT']],
-                                      ['EcoshapeID', 'BreedingAndBehaviourCode'])
+                                      ['EcoshapeID', 'BreedingAndBehaviourCode', 'LocUseClass'])
             row = None
-            with arcpy.da.SearchCursor(usage_type_stats, ['EcoshapeID', 'BreedingAndBehaviourCode'],
+            # with arcpy.da.SearchCursor(usage_type_stats, ['EcoshapeID', 'BreedingAndBehaviourCode'],
+            #                            sql_clause=(None, 'ORDER BY EcoshapeID')) as cursor:
+            with arcpy.da.SearchCursor(usage_type_stats, ['EcoshapeID', 'BreedingAndBehaviourCode', 'LocUseClass'],
                                        sql_clause=(None, 'ORDER BY EcoshapeID')) as cursor:
                 prev_ecoshape_id = None
                 usage_type = None
@@ -692,7 +697,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                         # reset for new ecoshape
                         prev_ecoshape_id = row['EcoshapeID']
                         usage_type = None
-                    # any confirmation in ecoshape prevails
+                    # any BBC confirmation in ecoshape prevails
                     if row['BreedingAndBehaviourCode']:
                         bbc_lower = row['BreedingAndBehaviourCode'].lower()
                         if 'Confirmed' in bbc_domain_values_lower[bbc_lower]:
@@ -700,6 +705,11 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                         elif ('Probable' in bbc_domain_values_lower[bbc_lower] or
                               'Possible' in bbc_domain_values_lower[bbc_lower]) and usage_type != 'B':
                             usage_type = 'P'
+                    # relevant LUCs in ecoshape prevail
+                    if row['LocUseClass']:
+                        luc_lower = row['LocUseClass'].lower()
+                        if luc_lower in EBARUtils.breeding_land_use_classes and usage_type != 'B':
+                            usage_type = 'B'
             if row:
                 if prev_ecoshape_id and usage_type:
                     # save final

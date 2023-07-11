@@ -144,6 +144,15 @@ subnation_dict = {'Alberta': 'AB',
                   'Yukon Territory': 'YT'}
 
 
+# breeding land use classes
+breeding_land_use_classes = ['breeding',
+                             'maternity colony',
+                             'roost',
+                             'nesting area',
+                             'calving area',
+                             'nursery area']
+
+
 # for emailNoticeWithAttachment below
 sender = 'ebar.kba.notices@gmail.com'
 receivers = ['rgreene@natureserve.ca', 'sstefanoff@natureserve.ca', 'maggie_woo@natureserve.org']
