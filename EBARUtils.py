@@ -935,9 +935,10 @@ def buildJurisdictionList(geodatabase, jurisdictions_list):
     jur_name_dict = {}
     with arcpy.da.SearchCursor(geodatabase + '/Jurisdiction',
                                 ['JurisdictionID', 'JurisdictionName']) as cursor:
+        jur_not_provided = (len(jurisdictions_list) == 0)
         for row in searchCursor(cursor):
             jur_name_dict[row['JurisdictionName']] = row['JurisdictionID']
-            if len(jurisdictions_list) == 0:
+            if jur_not_provided:
                 # if not passed in, set to all jurisdictions
                 jurisdictions_list.append(row['JurisdictionName'])
         if len(jur_name_dict) > 0:
