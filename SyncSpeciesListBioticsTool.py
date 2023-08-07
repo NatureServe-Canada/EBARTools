@@ -188,7 +188,7 @@ class SyncSpeciesListBioticsTool:
             if element_national_id in element_species_dict:
                 # update if changed
                 changed = False
-                with arcpy.da.UpdateCursor(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', all_fields,
+                with arcpy.da.UpdateCursor(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', all_fields + ['NSX_URL'],
                                            'ELEMENT_NATIONAL_ID = ' + str(element_national_id)) as update_cursor:
                     update_row = None
                     for update_row in EBARUtils.updateCursor(update_cursor):
@@ -209,6 +209,10 @@ class SyncSpeciesListBioticsTool:
                                 update_values.append(None)
                                 if update_row[field]:
                                     changed = True
+                        # calc NSX_URL from GUID
+                        update_values.append('https://explorer.natureserve.org/Taxon/' +
+                                             file_line['GLOBAL_UNIQUE_IDENTIFIER'])
+
                         if changed:
                             updated += 1
                             update_cursor.updateRow(update_values)
@@ -230,7 +234,7 @@ class SyncSpeciesListBioticsTool:
                     species_id = EBARUtils.getUniqueID(param_geodatabase + '/Species', 'SpeciesID', object_id)
                     all_fields.append('SpeciesID')
                     with arcpy.da.InsertCursor(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
-                                               all_fields) as insert_cursor:
+                                               all_fields + ['NSX_URL']) as insert_cursor:
                         insert_values = []
                         for field in all_fields:
                             if field == 'SpeciesID':
@@ -239,15 +243,17 @@ class SyncSpeciesListBioticsTool:
                                 insert_values.append(file_line[field])
                             else:
                                 insert_values.append(None)
-                        #EBARUtils.displayMessage(messages, 'BIOTICS insert values: ' + str(insert_values))
+                        # calc NSX_URL from GUID
+                        insert_values.append('https://explorer.natureserve.org/Taxon/' +
+                                             file_line['GLOBAL_UNIQUE_IDENTIFIER'])
                         insert_cursor.insertRow(insert_values)
                     all_fields.remove('SpeciesID')
                     added += 1
             count += 1
 
-        # calculate NSX_URL
-        arcpy.CalculateField_management(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', 'NSX_URL',
-                                        "'https://explorer.natureserve.org/Taxon/' + !GLOBAL_UNIQUE_IDENTIFIER!")
+        # # calculate NSX_URL
+        # arcpy.CalculateField_management(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', 'NSX_URL',
+        #                                 "'https://explorer.natureserve.org/Taxon/' + !GLOBAL_UNIQUE_IDENTIFIER!")
         # summary and end time
         EBARUtils.displayMessage(messages, 'Summary:')
         EBARUtils.displayMessage(messages, 'Processed - ' + str(count))
@@ -264,8 +270,9 @@ if __name__ == '__main__':
     ssl = SyncSpeciesListBioticsTool()
     # hard code parameters for debugging
     param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value = 'C:/GIS/EBAR/EBARDev.gdb'
+    param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
+    #param_geodatabase.value = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde'
     param_csv = arcpy.Parameter()
-    param_csv.value = 'C:/Users/rgree/Downloads/rgreene_1682020250213.csv'
+    param_csv.value = 'C:/GIS/EBAR/EBARTools/Samples/BioticsSpeciesExample.csv'
     parameters = [param_geodatabase, param_csv]
     ssl.runSyncSpeciesListBioticsTool(parameters, None)
