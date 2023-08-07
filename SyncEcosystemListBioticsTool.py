@@ -176,6 +176,6 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBARDev2.gdb'
     param_csv = arcpy.Parameter()
-    param_csv.value = 'C:/Users/rgree/OneDrive/Customers/WCSC/Pipeline/Ecosystems/CNVC export KBA sample.csv'
+    param_csv.value = 'C:/Users/rgree/OneDrive/Customers/WCSC/Pipeline/Ecosystems/Alliances.csv'
     parameters = [param_geodatabase, param_csv]
     sel.runSyncEcosystemListBioticsTool(parameters, None)

@@ -668,13 +668,13 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_import_feature_class = arcpy.Parameter()
-    param_import_feature_class.value = 'C:/GIS/EBAR/EBAR4.gdb/sk_sfpt_merge'
+    param_import_feature_class.value = 'C:/GIS/EBAR/CDN_CDC_Data/British_Columbia/BIOT_OCCR_NON_SENS_AREA_SVW.gdb\WHSE_TERRESTRIAL_ECOLOGY_BIOT_OCCR_NON_SENS_AREA_SVW'
     param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'Saskatchewan Source Feature Points'
+    param_dataset_name.value = 'British Columbia Non-sensitive EOs'
     param_dataset_source = arcpy.Parameter()
-    param_dataset_source.value = 'SK Source Feature Points'
+    param_dataset_source.value = 'BC Element Occurrences'
     param_date_received = arcpy.Parameter()
-    param_date_received.value = 'July 21, 2022'
+    param_date_received.value = 'July 21, 2023'
     param_restrictions = arcpy.Parameter()
     param_restrictions.value = 'Non-restricted'
     parameters = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_source,

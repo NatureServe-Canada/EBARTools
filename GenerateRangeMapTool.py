@@ -1015,17 +1015,17 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
     param_species = arcpy.Parameter()
-    param_species.value = 'Aechmophorus occidentalis' #Bombus suckleyi #'Micranthes spicata'
+    param_species.value = 'Bidens amplissima' #'Aechmophorus occidentalis' #Bombus suckleyi #'Micranthes spicata'
     param_secondary = arcpy.Parameter()
     param_secondary.value = None
     #param_secondary.value = "'Schistochilopsis incisa var. opacifolia'" #"'Dodia tarandus';'Dodia verticalis'"
     param_version = arcpy.Parameter()
     param_version.value = '1.0'
     param_stage = arcpy.Parameter()
-    param_stage.value = 'Expert Reviewed testut' # 'Expert reviewed test00' 
+    param_stage.value = 'Auto-generated' # 'Expert reviewed test00' 
     param_scope = arcpy.Parameter()
-    param_scope.value = None
-    #param_scope.value = 'Canadian'
+    #param_scope.value = None
+    param_scope.value = 'Canadian'
     param_jurisdictions_covered = arcpy.Parameter()
     param_jurisdictions_covered.value = None
     #param_jurisdictions_covered.value = "'British Columbia'"
@@ -1033,7 +1033,7 @@ if __name__ == '__main__':
     param_custom_polygons_covered.value = None
     #param_custom_polygons_covered.value = 'C:/GIS/EBAR/EBARServer.gdb/Custom'
     param_differentiate_usage_type = arcpy.Parameter()
-    param_differentiate_usage_type.value = 'true'
+    param_differentiate_usage_type.value = None #'true'
     parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
                   param_jurisdictions_covered, param_custom_polygons_covered, param_differentiate_usage_type]
     grm.runGenerateRangeMapTool(parameters, None)
