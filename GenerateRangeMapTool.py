@@ -456,7 +456,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         update_row = None
         with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape',
                                    ['EcoshapeID', 'RangeMapEcoshapeID', 'RangeMapID', 'Presence',
-                                    'RangeMapEcoshapeNotes', 'MigrantStatus'],
+                                    'UsageType', 'RangeMapEcoshapeNotes', 'MigrantStatus'],
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
             for update_row in EBARUtils.updateCursor(update_cursor):
                 # check for ecoshape "remove" reviews
@@ -475,71 +475,82 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     del search_cursor
                 if remove:
                     del search_row
-                    update_cursor.deleteRow()
-                else:
-                    # update
-                    # kludge because arc ends up with different field names under Enterprise gdb after joining
-                    field_names = [f.name for f in arcpy.ListFields(temp_ecoshape_countby_source) if f.aliasName in
-                                   ['DatasetSourceName', 'DatasetType', 'FREQUENCY', 'frequency']]
-                    id_field_name = [f.name for f in arcpy.ListFields(temp_ecoshape_countby_source) if f.aliasName ==
-                                     'EcoshapeID'][0]
-                    summary = ''
-                    with arcpy.da.SearchCursor(temp_ecoshape_countby_source, field_names,
-                                               id_field_name + ' = ' + str(update_row['EcoshapeID'])) as search_cursor:
-                        presence = update_row['Presence']
-                        migrant_status = update_row['MigrantStatus']
+                    # keep removed ecoshapes, but without Presence or UsageType
+                    #update_cursor.deleteRow()
+                #else:
+                # update
+                # kludge because arc ends up with different field names under Enterprise gdb after joining
+                field_names = [f.name for f in arcpy.ListFields(temp_ecoshape_countby_source) if f.aliasName in
+                               ['DatasetSourceName', 'DatasetType', 'FREQUENCY', 'frequency']]
+                id_field_name = [f.name for f in arcpy.ListFields(temp_ecoshape_countby_source) if f.aliasName ==
+                                 'EcoshapeID'][0]
+                summary = ''
+                with arcpy.da.SearchCursor(temp_ecoshape_countby_source, field_names,
+                                           id_field_name + ' = ' + str(update_row['EcoshapeID'])) as search_cursor:
+                    presence = update_row['Presence']
+                    usage_type = update_row['UsageType']
+                    # keep removed ecoshapes, but without Presence or UsageType
+                    if remove:
+                        presence = None
+                        usage_type = None
+                    migrant_status = update_row['MigrantStatus']
+                    for search_row in EBARUtils.searchCursor(search_cursor):
+                        if len(summary) > 0:
+                            summary += ', '
+                        summary += str(search_row[field_names[2]]) + ' ' + search_row[field_names[0]]
+                if len(summary) > 0:
+                    del search_row
+                del search_cursor
+                summary = 'Input records - ' + summary
+                # check for ecoshape "update" reviews
+                if len(prev_range_map_ids) > 0:
+                    search_row = None
+                    with arcpy.da.SearchCursor('ecoshape_review_view',
+                                                [table_name_prefix + 'EcoshapeReview.Markup',
+                                                table_name_prefix + 'EcoshapeReview.EcoshapeReviewNotes',
+                                                table_name_prefix + 'EcoshapeReview.Username',
+                                                table_name_prefix + 'EcoshapeReview.MigrantStatus'],
+                                                table_name_prefix + 'Review.RangeMapID IN (' + \
+                                                prev_range_map_ids + ') AND ' + table_name_prefix + \
+                                                'Review.UseForMapGen = 1 AND ' + table_name_prefix + \
+                                                'EcoshapeReview.UseForMapGen = 1 AND ' + table_name_prefix + \
+                                                # keep removed ecoshapes, but without Presence or UsageType
+                                                #"EcoshapeReview.Markup IN ('P', 'X', 'H') AND "  + table_name_prefix + \
+                                                'EcoshapeReview.EcoshapeID = ' + \
+                                                str(update_row['EcoshapeID'])) as search_cursor:
                         for search_row in EBARUtils.searchCursor(search_cursor):
-                            if len(summary) > 0:
-                                summary += ', '
-                            summary += str(search_row[field_names[2]]) + ' ' + search_row[field_names[0]]
-                    if len(summary) > 0:
+                            presence = search_row[table_name_prefix + 'EcoshapeReview.Markup']
+                            # keep removed ecoshapes, but without Presence or UsageType
+                            if presence == 'R':
+                                presence = None
+                                usage_type = None
+                            migrant_status = search_row[table_name_prefix + 'EcoshapeReview.MigrantStatus']
+                            # get expert name and publish settings to populate reviewer comments
+                            with arcpy.da.SearchCursor(param_geodatabase + '/Expert',
+                                                        ['ExpertName', 'PublishName', 'PublishComments'],
+                                                        "Username = '" + search_row[table_name_prefix +
+                                                        'EcoshapeReview.Username'] + "'") as expert_cursor:
+                                expert_comment = None
+                                summary += '; Expert Ecoshape Review'
+                                for expert_row in EBARUtils.searchCursor(expert_cursor):
+                                    if expert_row['PublishName']:
+                                        expert_comment = expert_row['ExpertName']
+                                    else:
+                                        expert_comment = 'Anonymous'
+                                    expert_comment += ' Reviewer Comment - '
+                                    if expert_row['PublishComments']:
+                                        expert_comment += search_row[table_name_prefix + \
+                                            'EcoshapeReview.EcoshapeReviewNotes']
+                                    else:
+                                        expert_comment += 'Unpublished'
+                                    summary += '<br>' + expert_comment
+                                if expert_comment:
+                                    del expert_row
+                    if search_row:
                         del search_row
                     del search_cursor
-                    summary = 'Input records - ' + summary
-                    # check for ecoshape "update" reviews
-                    if len(prev_range_map_ids) > 0:
-                        search_row = None
-                        with arcpy.da.SearchCursor('ecoshape_review_view',
-                                                   [table_name_prefix + 'EcoshapeReview.Markup',
-                                                    table_name_prefix + 'EcoshapeReview.EcoshapeReviewNotes',
-                                                    table_name_prefix + 'EcoshapeReview.Username',
-                                                    table_name_prefix + 'EcoshapeReview.MigrantStatus'],
-                                                   table_name_prefix + 'Review.RangeMapID IN (' + \
-                                                   prev_range_map_ids + ') AND ' + table_name_prefix + \
-                                                   'Review.UseForMapGen = 1 AND ' + table_name_prefix + \
-                                                   'EcoshapeReview.UseForMapGen = 1 AND ' + table_name_prefix + \
-                                                   "EcoshapeReview.Markup IN ('P', 'X', 'H') AND "  + table_name_prefix + \
-                                                   'EcoshapeReview.EcoshapeID = ' + \
-                                                   str(update_row['EcoshapeID'])) as search_cursor:
-                            for search_row in EBARUtils.searchCursor(search_cursor):
-                                presence = search_row[table_name_prefix + 'EcoshapeReview.Markup']
-                                migrant_status = search_row[table_name_prefix + 'EcoshapeReview.MigrantStatus']
-                                # get expert name and publish settings to populate reviewer comments
-                                with arcpy.da.SearchCursor(param_geodatabase + '/Expert',
-                                                           ['ExpertName', 'PublishName', 'PublishComments'],
-                                                           "Username = '" + search_row[table_name_prefix +
-                                                           'EcoshapeReview.Username'] + "'") as expert_cursor:
-                                    expert_comment = None
-                                    summary += '; Expert Ecoshape Review'
-                                    for expert_row in EBARUtils.searchCursor(expert_cursor):
-                                        if expert_row['PublishName']:
-                                            expert_comment = expert_row['ExpertName']
-                                        else:
-                                            expert_comment = 'Anonymous'
-                                        expert_comment += ' Reviewer Comment - '
-                                        if expert_row['PublishComments']:
-                                            expert_comment += search_row[table_name_prefix + \
-                                                'EcoshapeReview.EcoshapeReviewNotes']
-                                        else:
-                                            expert_comment += 'Unpublished'
-                                        summary += '<br>' + expert_comment
-                                    if expert_comment:
-                                        del expert_row
-                        if search_row:
-                            del search_row
-                        del search_cursor
-                    update_cursor.updateRow([update_row['EcoshapeID'], update_row['RangeMapEcoshapeID'],
-                                             update_row['RangeMapID'], presence, summary, migrant_status])
+                update_cursor.updateRow([update_row['EcoshapeID'], update_row['RangeMapEcoshapeID'],
+                                         update_row['RangeMapID'], presence, usage_type, summary, migrant_status])
         if update_row:
             del update_row
         del update_cursor
@@ -686,11 +697,15 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                         if prev_ecoshape_id and usage_type:
                             # save previous
                             update_row = None
-                            with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape', ['UsageType'],
+                            with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape', ['Presence',
+                                                                                                 'UsageType'],
                                                        'RangeMapID = ' + str(range_map_id) + ' AND EcoshapeID = ' +
                                                        str(prev_ecoshape_id)) as update_cursor:
                                 for update_row in EBARUtils.updateCursor(update_cursor):
-                                    update_cursor.updateRow([usage_type])
+                                    # keep removed ecoshapes, but without Presence or UsageType
+                                    if not update_row['Presence']:
+                                        usage_type = None
+                                    update_cursor.updateRow([update_row['Presence'], usage_type])
                             if update_row:
                                 del update_row
                             del update_cursor
@@ -714,11 +729,14 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                 if prev_ecoshape_id and usage_type:
                     # save final
                     update_row = None
-                    with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape', ['UsageType'],
+                    with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape', ['Presence', 'UsageType'],
                                                'RangeMapID = ' + str(range_map_id) + ' AND EcoshapeID = ' +
                                                str(prev_ecoshape_id)) as update_cursor:
                         for update_row in EBARUtils.updateCursor(update_cursor):
-                            update_cursor.updateRow([usage_type])
+                            # keep removed ecoshapes, but without Presence or UsageType
+                            if not update_row['Presence']:
+                                usage_type = None
+                            update_cursor.updateRow([update_row['Presence'], usage_type])
                     if update_row:
                         del update_row
                     del update_cursor
@@ -742,7 +760,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     for search_row in EBARUtils.searchCursor(search_cursor):
                         # compare to range map
                         update_row = None
-                        with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape', ['UsageType'],
+                        with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape', ['Presence', 'UsageType'],
                                                    'RangeMapID = ' + str(range_map_id) + ' AND EcoshapeID = ' +
                                                    str(search_row[table_name_prefix + 'EcoshapeReview.EcoshapeID'])
                                                    ) as update_cursor:
@@ -753,7 +771,10 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                     if new_usagetype == 'N':
                                         # non-breeding markup results in no UsageType
                                         new_usagetype = None
-                                    update_cursor.updateRow([new_usagetype])
+                                    # keep removed ecoshapes, but without Presence or UsageType
+                                    if not update_row['Presence']:
+                                        new_usagetype = None
+                                    update_cursor.updateRow([update_row['Presence'], new_usagetype])
                         if update_row:
                             del update_row
                         del update_cursor
@@ -1020,7 +1041,7 @@ if __name__ == '__main__':
     param_secondary.value = None
     #param_secondary.value = "'Schistochilopsis incisa var. opacifolia'" #"'Dodia tarandus';'Dodia verticalis'"
     param_version = arcpy.Parameter()
-    param_version.value = '1.0'
+    param_version.value = '0.1'
     param_stage = arcpy.Parameter()
     param_stage.value = 'Auto-generated' # 'Expert reviewed test00' 
     param_scope = arcpy.Parameter()
