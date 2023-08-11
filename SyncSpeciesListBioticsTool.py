@@ -17,6 +17,7 @@ import arcpy
 import io
 import csv
 import EBARUtils
+import datetime
 
 
 class SyncSpeciesListBioticsTool:
@@ -202,7 +203,16 @@ class SyncSpeciesListBioticsTool:
                                 else:
                                     # import value
                                     update_values.append(file_line[field])
-                                    if file_line[field] != update_row[field]:
+                                    # all file_line fields are read as string, so convert as necessary
+                                    strval = file_line[field]
+                                    val = strval
+                                    if type(update_row[field]) is int:
+                                        val = int(float(file_line[field]))
+                                    elif type(update_row[field]) is float:
+                                        val = float(file_line[field])
+                                    elif type(update_row[field]) is datetime.datetime:
+                                        val = datetime.datetime.strptime(file_line[field], '%Y-%m-%d')
+                                    if val != update_row[field]:
                                         changed = True
                             else:
                                 # import NULL
@@ -270,9 +280,9 @@ if __name__ == '__main__':
     ssl = SyncSpeciesListBioticsTool()
     # hard code parameters for debugging
     param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
+    param_geodatabase.value = 'C:/GIS/EBAR/EBARDev2.gdb'
     #param_geodatabase.value = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde'
     param_csv = arcpy.Parameter()
-    param_csv.value = 'C:/GIS/EBAR/EBARTools/Samples/BioticsSpeciesExample.csv'
+    param_csv.value = 'C:/Users/rgree/Downloads/rgreene_1691752486334.csv' #'C:/GIS/EBAR/EBARTools/Samples/BioticsSpeciesExample.csv'
     parameters = [param_geodatabase, param_csv]
     ssl.runSyncSpeciesListBioticsTool(parameters, None)

@@ -19,6 +19,7 @@ import io
 import csv
 import os
 import EBARUtils
+import datetime
 
 
 class SyncSpeciesListKBATool:
@@ -145,7 +146,7 @@ class SyncSpeciesListKBATool:
         for file_line in reader:
 
             # If the csv record has no element_national_id, skip it
-            if file_line['ELEMENT_NATIONAL_ID'] is "":
+            if file_line['ELEMENT_NATIONAL_ID'] == "":
                 skipped_no_id += 1
 
                 # # Verbose messages for debugging
@@ -199,7 +200,16 @@ class SyncSpeciesListKBATool:
                                     elif len(file_line[field]) > 0:
                                         # import value
                                         update_values.append(file_line[field])
-                                        if file_line[field] != update_row[field]:
+                                        # all file_line fields are read as string, so convert as necessary
+                                        strval = file_line[field]
+                                        val = strval
+                                        if type(update_row[field]) is int:
+                                            val = int(float(file_line[field]))
+                                        elif type(update_row[field]) is float:
+                                            val = float(file_line[field])
+                                        elif type(update_row[field]) is datetime.datetime:
+                                            val = datetime.datetime.strptime(file_line[field], '%Y-%m-%d')
+                                        if val != update_row[field]:
                                             changed = True
 
                                     else:
@@ -288,9 +298,9 @@ if __name__ == '__main__':
 
     # Hard-coded parameters for debugging
     param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value = 'C:\\GIS\\EBAR\\EBARDev.gdb'
+    param_geodatabase.value = 'C:/GIS/EBAR/EBARDev2.gdb'
     param_csv = arcpy.Parameter()
-    param_csv.value = 'C:\\Users\\rgree\\Downloads\\Species_2023-04-20.csv'
+    param_csv.value = 'C:/Users/rgree/Downloads/TestY.csv'
     parameters = [param_geodatabase, param_csv]
 
     sslkba.runSyncSpeciesListKBATool(parameters, None)
