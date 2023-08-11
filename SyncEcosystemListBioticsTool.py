@@ -17,6 +17,7 @@ import arcpy
 import io
 import csv
 import EBARUtils
+import datetime
 
 
 class SyncEcosystemListBioticsTool:
@@ -113,7 +114,16 @@ class SyncEcosystemListBioticsTool:
                             if len(file_line[field]) > 0:
                                 # import value
                                 update_values.append(file_line[field])
-                                if file_line[field] != update_row[field]:
+                                # all file_line fields are read as string, so convert as necessary
+                                strval = file_line[field]
+                                val = strval
+                                if type(update_row[field]) is int:
+                                    val = int(float(file_line[field]))
+                                elif type(update_row[field]) is float:
+                                    val = float(file_line[field])
+                                elif type(update_row[field]) is datetime.datetime:
+                                    val = datetime.datetime.strptime(file_line[field], '%Y-%m-%d')
+                                if val != update_row[field]:
                                     changed = True
                             else:
                                 # import NULL
