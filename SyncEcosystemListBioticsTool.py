@@ -100,13 +100,13 @@ class SyncEcosystemListBioticsTool:
                           'N_ELEMENT_SUMMARY',
                           'SORT']
         for file_line in reader:
-            element_national_id = int(float(file_line['ELEMENT_NATIONAL_ID']))
-            EBARUtils.displayMessage(messages, 'ELEMENT_NATIONAL_ID: ' + str(element_national_id))
-            if element_national_id in element_ecosystem_dict:
+            element_global_id = int(float(file_line['ELEMENT_GLOBAL_ID']))
+            EBARUtils.displayMessage(messages, 'ELEMENT_GLOBAL_ID: ' + str(element_global_id))
+            if element_global_id in element_ecosystem_dict:
                 # update if changed
                 changed = False
                 with arcpy.da.UpdateCursor(param_geodatabase + '/BIOTICS_ECOSYSTEM', regular_fields,
-                                           'ELEMENT_NATIONAL_ID = ' + str(element_national_id)) as update_cursor:
+                                           'ELEMENT_GLOBAL_ID = ' + str(element_global_id)) as update_cursor:
                     update_row = None
                     for update_row in EBARUtils.updateCursor(update_cursor):
                         update_values = []
@@ -139,7 +139,7 @@ class SyncEcosystemListBioticsTool:
                 # create new Ecosystem and BIOTICS_ECOSYSTEM records
                 # first check for existing scientific name
                 if file_line['IVC_SCIENTIFIC_NAME'].lower() in ecosystems_dict:
-                    msg = 'WARNING: record with ELEMENT_NATIONAL_ID ' + str(element_national_id) + \
+                    msg = 'WARNING: record with ELEMENT_GLOBAL_ID ' + str(element_global_id) + \
                         ' skipped because it would create duplicate IVC_SCIENTIFIC_NAME ' + \
                         file_line['IVC_SCIENTIFIC_NAME']
                     EBARUtils.displayMessage(messages, msg)
