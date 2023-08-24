@@ -203,7 +203,7 @@ class GenerateRangeMapTool:
                 return
 
             # no reviews completed or in progress, so delete any existing related records
-            EBARUtils.displayMessage(messages, 'Range Map already exists with but with no Review(s) completed or in '
+            EBARUtils.displayMessage(messages, 'Range Map already exists but with no Review(s) completed or in '
                                                'progress, so existing related records will be deleted')
             # consider replacing the following code blocks with select then Delete Rows tools
             rme_row = None
@@ -812,45 +812,90 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                  param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', 'SpeciesID', 'KEEP_COMMON')
         arcpy.AddJoin_management('pairwise_intersect_layer', 'SynonymID',
                                  param_geodatabase + '/Synonym', 'SynonymID', 'KEEP_ALL')
-        field_mappings = arcpy.FieldMappings()
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
-                                                            table_name_prefix + temp_pairwise_intersect + '.RangeMapID',
-                                                            'RangeMapID', 'LONG'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer', table_name_prefix + \
-                                                            temp_pairwise_intersect + '.OriginalGeometryType',
-                                                            'OriginalGeometryType', 'TEXT'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer', table_name_prefix + \
-                                                            'BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME',
-                                                            'NationalScientificName', 'TEXT'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
-                                                            table_name_prefix + 'Synonym.SynonymName',
-                                                            'SynonymName', 'TEXT'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
-                                                            table_name_prefix + 'DatasetSource.DatasetSourceName',
-                                                            'DatasetSourceName', 'TEXT'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
-                                                            table_name_prefix + 'DatasetSource.DatasetType',
-                                                            'DatasetType', 'TEXT'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
-                                                            table_name_prefix + temp_pairwise_intersect + '.Accuracy',
-                                                            'Accuracy', 'LONG'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
-                                                            table_name_prefix + temp_pairwise_intersect + '.MaxDate',
-                                                            'MaxDate', 'DATE'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer', table_name_prefix + \
-                                                            temp_pairwise_intersect + '.CoordinatesObscured',
-                                                            'CoordinatesObscured', 'SHORT'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
-                                                            table_name_prefix + temp_pairwise_intersect + '.EORank',
-                                                            'EORank', 'TEXT'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
-                                                            table_name_prefix + temp_pairwise_intersect + '.URI',
-                                                            'URI', 'TEXT'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer', table_name_prefix + \
-                                                            temp_pairwise_intersect + '.DatasetSourceUniqueID',
-                                                            'DatasetSourceUniqueID', 'TEXT'))
-        arcpy.Append_management('pairwise_intersect_layer', param_geodatabase + '/RangeMapInput', 'NO_TEST',
-                                field_mappings)
+        #field_mappings = arcpy.FieldMappings()
+        # field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
+        #                                                     table_name_prefix + temp_pairwise_intersect + '.RangeMapID',
+        #                                                     'RangeMapID', 'LONG'))
+        # field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer', table_name_prefix + \
+        #                                                     temp_pairwise_intersect + '.OriginalGeometryType',
+        #                                                     'OriginalGeometryType', 'TEXT'))
+        # field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer', table_name_prefix + \
+        #                                                     'BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME',
+        #                                                     'NationalScientificName', 'TEXT'))
+        # field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
+        #                                                     table_name_prefix + 'Synonym.SynonymName',
+        #                                                     'SynonymName', 'TEXT'))
+        # field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
+        #                                                     table_name_prefix + 'DatasetSource.DatasetSourceName',
+        #                                                     'DatasetSourceName', 'TEXT'))
+        # field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
+        #                                                     table_name_prefix + 'DatasetSource.DatasetType',
+        #                                                     'DatasetType', 'TEXT'))
+        # field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
+        #                                                     table_name_prefix + temp_pairwise_intersect + '.Accuracy',
+        #                                                     'Accuracy', 'LONG'))
+        # field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
+        #                                                     table_name_prefix + temp_pairwise_intersect + '.MaxDate',
+        #                                                     'MaxDate', 'DATE'))
+        # field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer', table_name_prefix + \
+        #                                                     temp_pairwise_intersect + '.CoordinatesObscured',
+        #                                                     'CoordinatesObscured', 'SHORT'))
+        # field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
+        #                                                     table_name_prefix + temp_pairwise_intersect + '.EORank',
+        #                                                     'EORank', 'TEXT'))
+        # field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
+        #                                                     table_name_prefix + temp_pairwise_intersect + '.URI',
+        #                                                     'URI', 'TEXT'))
+        # field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer', table_name_prefix + \
+        #                                                     temp_pairwise_intersect + '.DatasetSourceUniqueID',
+        #                                                     'DatasetSourceUniqueID', 'TEXT'))
+        # arcpy.Append_management('pairwise_intersect_layer', param_geodatabase + '/RangeMapInput', 'NO_TEST',
+        #                         field_mappings)
+        # replace Append with cursors to overcome issue with only geometry, but not attribues, being appended
+        with arcpy.da.InsertCursor(param_geodatabase + '/RangeMapInput',
+                                    ['SHAPE@',
+                                     'RangeMapID',
+                                     'OriginalGeometryType',
+                                     'NationalScientificName',
+                                     'SynonymName',
+                                     'DatasetSourceName',
+                                     'DatasetType',
+                                     'Accuracy',
+                                     'MaxDate',
+                                     'CoordinatesObscured',
+                                     'EORank',
+                                     'DatasetSourceUniqueID']) as insert_cursor:
+            with arcpy.da.SearchCursor('pairwise_intersect_layer',
+                                       ['SHAPE@',
+                                        table_name_prefix + temp_pairwise_intersect + '.RangeMapID',
+                                        table_name_prefix + temp_pairwise_intersect + '.OriginalGeometryType',
+                                        table_name_prefix + 'BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME',
+                                        table_name_prefix + 'Synonym.SynonymName',
+                                        table_name_prefix + 'DatasetSource.DatasetSourceName',
+                                        table_name_prefix + 'DatasetSource.DatasetType',
+                                        table_name_prefix + temp_pairwise_intersect + '.Accuracy',
+                                        table_name_prefix + temp_pairwise_intersect + '.MaxDate',
+                                        table_name_prefix + temp_pairwise_intersect + '.CoordinatesObscured',
+                                        table_name_prefix + temp_pairwise_intersect + '.EORank',
+                                        table_name_prefix + temp_pairwise_intersect + '.DatasetSourceUniqueID']) as search_cursor:
+                search_row = None
+                for search_row in EBARUtils.searchCursor(search_cursor):
+                    insert_cursor.insertRow([search_row['SHAPE@'],
+                                             search_row[table_name_prefix + temp_pairwise_intersect + '.RangeMapID'],
+                                             search_row[table_name_prefix + temp_pairwise_intersect + '.OriginalGeometryType'],
+                                             search_row[table_name_prefix + 'BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME'],
+                                             search_row[table_name_prefix + 'Synonym.SynonymName'],
+                                             search_row[table_name_prefix + 'DatasetSource.DatasetSourceName'],
+                                             search_row[table_name_prefix + 'DatasetSource.DatasetType'],
+                                             search_row[table_name_prefix + temp_pairwise_intersect + '.Accuracy'],
+                                             search_row[table_name_prefix + temp_pairwise_intersect + '.MaxDate'],
+                                             search_row[table_name_prefix + temp_pairwise_intersect + '.CoordinatesObscured'],
+                                             search_row[table_name_prefix + temp_pairwise_intersect + '.EORank'],
+                                             search_row[table_name_prefix + temp_pairwise_intersect + '.DatasetSourceUniqueID']])
+                if search_row:
+                    del search_row
+                del search_cursor
+        del insert_cursor
         arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'Synonym')
         arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'BIOTICS_ELEMENT_NATIONAL')
 
@@ -1029,32 +1074,32 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         return
             
 
-# controlling process
-if __name__ == '__main__':
-    grm = GenerateRangeMapTool()
-    # hard code parameters for debugging
-    param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
-    param_species = arcpy.Parameter()
-    param_species.value = 'Bidens amplissima' #'Aechmophorus occidentalis' #Bombus suckleyi #'Micranthes spicata'
-    param_secondary = arcpy.Parameter()
-    param_secondary.value = None
-    #param_secondary.value = "'Schistochilopsis incisa var. opacifolia'" #"'Dodia tarandus';'Dodia verticalis'"
-    param_version = arcpy.Parameter()
-    param_version.value = '0.1'
-    param_stage = arcpy.Parameter()
-    param_stage.value = 'Auto-generated' # 'Expert reviewed test00' 
-    param_scope = arcpy.Parameter()
-    #param_scope.value = None
-    param_scope.value = 'Canadian'
-    param_jurisdictions_covered = arcpy.Parameter()
-    param_jurisdictions_covered.value = None
-    #param_jurisdictions_covered.value = "'British Columbia'"
-    param_custom_polygons_covered = arcpy.Parameter()
-    param_custom_polygons_covered.value = None
-    #param_custom_polygons_covered.value = 'C:/GIS/EBAR/EBARServer.gdb/Custom'
-    param_differentiate_usage_type = arcpy.Parameter()
-    param_differentiate_usage_type.value = None #'true'
-    parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
-                  param_jurisdictions_covered, param_custom_polygons_covered, param_differentiate_usage_type]
-    grm.runGenerateRangeMapTool(parameters, None)
+# # controlling process
+# if __name__ == '__main__':
+#     grm = GenerateRangeMapTool()
+#     # hard code parameters for debugging
+#     param_geodatabase = arcpy.Parameter()
+#     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
+#     param_species = arcpy.Parameter()
+#     param_species.value = 'Bidens amplissima' #'Aechmophorus occidentalis' #Bombus suckleyi #'Micranthes spicata'
+#     param_secondary = arcpy.Parameter()
+#     param_secondary.value = None
+#     #param_secondary.value = "'Schistochilopsis incisa var. opacifolia'" #"'Dodia tarandus';'Dodia verticalis'"
+#     param_version = arcpy.Parameter()
+#     param_version.value = '0.1'
+#     param_stage = arcpy.Parameter()
+#     param_stage.value = 'Auto-generated' # 'Expert reviewed test00' 
+#     param_scope = arcpy.Parameter()
+#     #param_scope.value = None
+#     param_scope.value = 'Canadian'
+#     param_jurisdictions_covered = arcpy.Parameter()
+#     param_jurisdictions_covered.value = None
+#     #param_jurisdictions_covered.value = "'British Columbia'"
+#     param_custom_polygons_covered = arcpy.Parameter()
+#     param_custom_polygons_covered.value = None
+#     #param_custom_polygons_covered.value = 'C:/GIS/EBAR/EBARServer.gdb/Custom'
+#     param_differentiate_usage_type = arcpy.Parameter()
+#     param_differentiate_usage_type.value = None #'true'
+#     parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
+#                   param_jurisdictions_covered, param_custom_polygons_covered, param_differentiate_usage_type]
+#     grm.runGenerateRangeMapTool(parameters, None)
