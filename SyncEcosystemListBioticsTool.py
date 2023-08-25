@@ -98,7 +98,13 @@ class SyncEcosystemListBioticsTool:
                           'G_CONCEPT_SENTENCE',
                           'G_ELEMENT_SUMMARY',
                           'N_ELEMENT_SUMMARY',
-                          'SORT']
+                          'SORT',
+                          'IVC_GROUP_KEY',
+                          'CNVC_GROUP_KEY',
+                          'IVC_GROUP_NAME',
+                          'CNVC_GROUP_ENGLISHNAME',
+                          'CNVC_ONLY_GROUP_ENGLISHNAME',
+                          'CNVC_GROUP_FRENCHNAME']
         for file_line in reader:
             element_global_id = int(float(file_line['ELEMENT_GLOBAL_ID']))
             EBARUtils.displayMessage(messages, 'ELEMENT_GLOBAL_ID: ' + str(element_global_id))
@@ -179,13 +185,13 @@ class SyncEcosystemListBioticsTool:
         return
 
 
-# controlling process
-if __name__ == '__main__':
-    sel = SyncEcosystemListBioticsTool()
-    # hard code parameters for debugging
-    param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value = 'C:/GIS/EBAR/EBARDev2.gdb'
-    param_csv = arcpy.Parameter()
-    param_csv.value = 'C:/Users/rgree/OneDrive/Customers/WCSC/Pipeline/Ecosystems/Alliances.csv'
-    parameters = [param_geodatabase, param_csv]
-    sel.runSyncEcosystemListBioticsTool(parameters, None)
+# # controlling process
+# if __name__ == '__main__':
+#     sel = SyncEcosystemListBioticsTool()
+#     # hard code parameters for debugging
+#     param_geodatabase = arcpy.Parameter()
+#     param_geodatabase.value = 'C:/GIS/EBAR/EBARDev2.gdb'
+#     param_csv = arcpy.Parameter()
+#     param_csv.value = 'C:/Users/rgree/OneDrive/Customers/WCSC/Pipeline/Ecosystems/Alliances.csv'
+#     parameters = [param_geodatabase, param_csv]
+#     sel.runSyncEcosystemListBioticsTool(parameters, None)
