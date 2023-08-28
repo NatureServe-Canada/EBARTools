@@ -779,7 +779,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         #                                         table_name_prefix + "DatasetSource.CDCJurisdictionID IS NOT NULL AND " +
         #                                         table_name_prefix + temp_restrictions + '.SpeciesID IS NULL)')
         arcpy.SelectLayerByAttribute_management('pairwise_intersect_layer', 'SUBSET_SELECTION',
-                                                table_name_prefix + "DatasetSource.PermitEBARReviewerApp = 'Y'")
+                                                '(' + table_name_prefix + "DatasetSource.PermitEBARReviewerApp = 'Y')" +
+                                                ' OR (' + table_name_prefix + "DatasetSource.PermitAll = 'Y')")
         arcpy.AddJoin_management('pairwise_intersect_layer', 'SpeciesID',
                                  param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', 'SpeciesID', 'KEEP_COMMON')
         arcpy.AddJoin_management('pairwise_intersect_layer', 'SynonymID',
