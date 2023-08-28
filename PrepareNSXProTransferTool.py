@@ -152,8 +152,9 @@ class PrepareNSXProTransferTool:
                     if id_row:
                         del id_row
                     del id_cursor
-                    self.applyJurisdictionSpecies(param_geodatabase, table_name_prefix, spatial_input, jurs, None,
-                                                  input_dataset_ids, row['AllowedPrecisionSquareMiles'], count_dict)
+                    if len(input_dataset_ids) > 0:
+                        self.applyJurisdictionSpecies(param_geodatabase, table_name_prefix, spatial_input, jurs, None,
+                                                      input_dataset_ids, row['AllowedPrecisionSquareMiles'], count_dict)
             if row:
                 del row
             del cursor
