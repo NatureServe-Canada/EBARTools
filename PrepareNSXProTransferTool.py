@@ -115,7 +115,7 @@ class PrepareNSXProTransferTool:
             del cursor
 
             # 4. NSC/CDC by jurisdiction STPHs
-            EBARUtils.displayMessage(messages, 'Applying NSC/CDC by Jurisdictional STPHs')
+            EBARUtils.displayMessage(messages, 'Applying NSC/CDC Jurisdictional STPHs')
             row = None
             with arcpy.da.SearchCursor('stph_view', [table_name_prefix + 'SpeciesSTPH.SpeciesID',
                                                      table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles',
@@ -139,7 +139,7 @@ class PrepareNSXProTransferTool:
             row = None
             with arcpy.da.SearchCursor(param_geodatabase + '/DatasetSource',
                                        ['DatasetSourceID', 'AllowedPrecisionSquareMiles'],
-                                       "PermitNSXProTransfer='Y'") as cursor:
+                                       "(PermitNSXProTransfer = 'Y') OR (PermitAll = 'Y')") as cursor:
                                        #"NSXProTransfer='Y'") as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     # get InputDatasetIDs
