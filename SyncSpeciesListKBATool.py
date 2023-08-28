@@ -292,15 +292,15 @@ class SyncSpeciesListKBATool:
         return
 
 
-# Controlling process
-if __name__ == '__main__':
-    sslkba = SyncSpeciesListKBATool()
+# # Controlling process
+# if __name__ == '__main__':
+#     sslkba = SyncSpeciesListKBATool()
 
-    # Hard-coded parameters for debugging
-    param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value = 'C:/GIS/EBAR/EBARDev2.gdb'
-    param_csv = arcpy.Parameter()
-    param_csv.value = 'C:/Users/rgree/Downloads/TestY.csv'
-    parameters = [param_geodatabase, param_csv]
+#     # Hard-coded parameters for debugging
+#     param_geodatabase = arcpy.Parameter()
+#     param_geodatabase.value = 'C:/GIS/EBAR/EBARDev2.gdb'
+#     param_csv = arcpy.Parameter()
+#     param_csv.value = 'C:/Users/rgree/Downloads/TestY.csv'
+#     parameters = [param_geodatabase, param_csv]
 
-    sslkba.runSyncSpeciesListKBATool(parameters, None)
+#     sslkba.runSyncSpeciesListKBATool(parameters, None)

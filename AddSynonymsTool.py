@@ -89,14 +89,13 @@ class AddSynonymsTool:
         return
 
 
-# controlling process
-if __name__ == '__main__':
-    ast = AddSynonymsTool()
-    # hard code parameters for debugging
-    param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
-    param_csv = arcpy.Parameter()
-    param_csv.value = 'C:/Users/rgree/Downloads/rgreene_1624976220408.csv'
-    parameters = [param_geodatabase, param_csv]
-    ast.runAddSynonymsTool(parameters, None)
-
+# # controlling process
+# if __name__ == '__main__':
+#     ast = AddSynonymsTool()
+#     # hard code parameters for debugging
+#     param_geodatabase = arcpy.Parameter()
+#     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
+#     param_csv = arcpy.Parameter()
+#     param_csv.value = 'C:/Users/rgree/Downloads/rgreene_1624976220408.csv'
+#     parameters = [param_geodatabase, param_csv]
+#     ast.runAddSynonymsTool(parameters, None)

@@ -57,13 +57,13 @@ class ListElementNationalIDsTool:
         return
 
 
-# controlling process
-if __name__ == '__main__':
-    leni = ListElementNationalIDsTool()
-    # hard code parameters for debugging
-    param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
-    #param_folder = arcpy.Parameter()
-    #param_folder.value='C:/GIS/EBAR'
-    parameters = [param_geodatabase]
-    leni.runListElementNationalIDsTool(parameters, None)
+# # controlling process
+# if __name__ == '__main__':
+#     leni = ListElementNationalIDsTool()
+#     # hard code parameters for debugging
+#     param_geodatabase = arcpy.Parameter()
+#     param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
+#     #param_folder = arcpy.Parameter()
+#     #param_folder.value='C:/GIS/EBAR'
+#     parameters = [param_geodatabase]
+#     leni.runListElementNationalIDsTool(parameters, None)

@@ -351,42 +351,42 @@ class ImportExternalRangeReviewTool:
         return
             
 
-# controlling process
-if __name__ == '__main__':
-    ierr = ImportExternalRangeReviewTool()
-    # hard code parameters for debugging
-    param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
-    param_species = arcpy.Parameter()
-    param_species.value = 'Bidens amplissima'
-    param_secondary = arcpy.Parameter()
-    param_secondary.value = None
-    #param_secondary.value = "'Dodia verticalis'"
-    #param_secondary.value = "'Dodia tarandus';'Dodia verticalis'"
-    param_version = arcpy.Parameter()
-    param_version.value = '1.0'
-    param_stage = arcpy.Parameter()
-    param_stage.value = 'Auto-generated'
-    param_external_range_table = arcpy.Parameter()
-    param_external_range_table.value = 'C:/GIS/EBAR/EBARServer.gdb/test'
-    param_presence_field = arcpy.Parameter()
-    param_presence_field.value = 'CONFIDENCE_CATEGORY_DESCRIPTION'
-    #param_presence_field.value = None
-    param_usagetype_field = arcpy.Parameter()
-    #param_usagetype_field.value = 'UsageTypeMarkup'
-    param_usagetype_field.value = None
-    param_review_label = arcpy.Parameter()
-    param_review_label.value = 'BC expert review'
-    param_overall_review_notes = arcpy.Parameter()
-    param_overall_review_notes.value = None # 'Additional notes, such as definitions and exceptions!'
-    param_jurisdictions_covered = arcpy.Parameter()
-    param_jurisdictions_covered.value = None
-    #param_jurisdictions_covered.value = "'Yukon Territory'"
-    param_username = arcpy.Parameter()
-    param_username.value = 'rgreenens'
-    param_additions_only = arcpy.Parameter()
-    param_additions_only.value = 'false'
-    parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage,
-                  param_external_range_table, param_presence_field, param_usagetype_field, param_review_label,
-                  param_overall_review_notes, param_jurisdictions_covered, param_username, param_additions_only]
-    ierr.runImportExternalRangeReviewTool(parameters, None)
+# # controlling process
+# if __name__ == '__main__':
+#     ierr = ImportExternalRangeReviewTool()
+#     # hard code parameters for debugging
+#     param_geodatabase = arcpy.Parameter()
+#     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
+#     param_species = arcpy.Parameter()
+#     param_species.value = 'Bidens amplissima'
+#     param_secondary = arcpy.Parameter()
+#     param_secondary.value = None
+#     #param_secondary.value = "'Dodia verticalis'"
+#     #param_secondary.value = "'Dodia tarandus';'Dodia verticalis'"
+#     param_version = arcpy.Parameter()
+#     param_version.value = '1.0'
+#     param_stage = arcpy.Parameter()
+#     param_stage.value = 'Auto-generated'
+#     param_external_range_table = arcpy.Parameter()
+#     param_external_range_table.value = 'C:/GIS/EBAR/EBARServer.gdb/test'
+#     param_presence_field = arcpy.Parameter()
+#     param_presence_field.value = 'CONFIDENCE_CATEGORY_DESCRIPTION'
+#     #param_presence_field.value = None
+#     param_usagetype_field = arcpy.Parameter()
+#     #param_usagetype_field.value = 'UsageTypeMarkup'
+#     param_usagetype_field.value = None
+#     param_review_label = arcpy.Parameter()
+#     param_review_label.value = 'BC expert review'
+#     param_overall_review_notes = arcpy.Parameter()
+#     param_overall_review_notes.value = None # 'Additional notes, such as definitions and exceptions!'
+#     param_jurisdictions_covered = arcpy.Parameter()
+#     param_jurisdictions_covered.value = None
+#     #param_jurisdictions_covered.value = "'Yukon Territory'"
+#     param_username = arcpy.Parameter()
+#     param_username.value = 'rgreenens'
+#     param_additions_only = arcpy.Parameter()
+#     param_additions_only.value = 'false'
+#     parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage,
+#                   param_external_range_table, param_presence_field, param_usagetype_field, param_review_label,
+#                   param_overall_review_notes, param_jurisdictions_covered, param_username, param_additions_only]
+#     ierr.runImportExternalRangeReviewTool(parameters, None)

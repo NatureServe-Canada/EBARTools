@@ -66,13 +66,13 @@ class DeleteInputFeedbackTool:
         return
 
 
-# controlling process
-if __name__ == '__main__':
-    dif = DeleteInputFeedbackTool()
-    # hard code parameters for debugging
-    param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
-    param_input_feedback_id = arcpy.Parameter()
-    param_input_feedback_id.value = 58218
-    parameters = [param_geodatabase, param_input_feedback_id]
-    dif.runDeleteInputFeedbackTool(parameters, None)
+# # controlling process
+# if __name__ == '__main__':
+#     dif = DeleteInputFeedbackTool()
+#     # hard code parameters for debugging
+#     param_geodatabase = arcpy.Parameter()
+#     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
+#     param_input_feedback_id = arcpy.Parameter()
+#     param_input_feedback_id.value = 58218
+#     parameters = [param_geodatabase, param_input_feedback_id]
+#     dif.runDeleteInputFeedbackTool(parameters, None)

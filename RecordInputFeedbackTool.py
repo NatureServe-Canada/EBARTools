@@ -120,29 +120,29 @@ class RecordInputFeedbackTool:
         return
 
 
-# controlling process
-if __name__ == '__main__':
-    rif = RecordInputFeedbackTool()
-    # hard code parameters for debugging
-    param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
-    param_input_point_id = arcpy.Parameter()
-    param_input_point_id.value = None
-    param_input_line_id = arcpy.Parameter()
-    param_input_line_id.value = '43'
-    param_input_polygon_id = arcpy.Parameter()
-    param_input_polygon_id.value = None
-    param_notes = arcpy.Parameter()
-    param_notes.value = 'Test note'
-    #aram_notes.value = None
-    param_exclude_from_range_map_id = arcpy.Parameter()
-    #param_exclude_from_range_map_id.value = '123'
-    param_exclude_from_range_map_id.value = None
-    param_exclude_from_all_range_maps = arcpy.Parameter()
-    param_exclude_from_all_range_maps.value = 'false'
-    param_justification = arcpy.Parameter()
-    param_justification.value = None
-    #param_justification.value = 'Test rationale'
-    parameters = [param_geodatabase, param_input_point_id, param_input_line_id, param_input_polygon_id, param_notes,
-                  param_exclude_from_range_map_id, param_exclude_from_all_range_maps, param_justification]
-    rif.runRecordInputFeedbackTool(parameters, None)
+# # controlling process
+# if __name__ == '__main__':
+#     rif = RecordInputFeedbackTool()
+#     # hard code parameters for debugging
+#     param_geodatabase = arcpy.Parameter()
+#     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
+#     param_input_point_id = arcpy.Parameter()
+#     param_input_point_id.value = None
+#     param_input_line_id = arcpy.Parameter()
+#     param_input_line_id.value = '43'
+#     param_input_polygon_id = arcpy.Parameter()
+#     param_input_polygon_id.value = None
+#     param_notes = arcpy.Parameter()
+#     param_notes.value = 'Test note'
+#     #aram_notes.value = None
+#     param_exclude_from_range_map_id = arcpy.Parameter()
+#     #param_exclude_from_range_map_id.value = '123'
+#     param_exclude_from_range_map_id.value = None
+#     param_exclude_from_all_range_maps = arcpy.Parameter()
+#     param_exclude_from_all_range_maps.value = 'false'
+#     param_justification = arcpy.Parameter()
+#     param_justification.value = None
+#     #param_justification.value = 'Test rationale'
+#     parameters = [param_geodatabase, param_input_point_id, param_input_line_id, param_input_polygon_id, param_notes,
+#                   param_exclude_from_range_map_id, param_exclude_from_all_range_maps, param_justification]
+#     rif.runRecordInputFeedbackTool(parameters, None)

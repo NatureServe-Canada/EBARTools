@@ -661,22 +661,22 @@ class ImportSpatialDataTool:
         return
 
 
-# controlling process
-if __name__ == '__main__':
-    isd = ImportSpatialDataTool()
-    # hard code parameters for debugging
-    param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
-    param_import_feature_class = arcpy.Parameter()
-    param_import_feature_class.value = 'C:/GIS/EBAR/CDN_CDC_Data/Manitoba/Occurrence_KBA_MBCDC20230621_v2.gdb/SFLN_KBA_MBCDC20230621_v2'
-    param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'MB Test4'
-    param_dataset_source = arcpy.Parameter()
-    param_dataset_source.value = 'MB Source Feature Lines'
-    param_date_received = arcpy.Parameter()
-    param_date_received.value = 'August 9, 2023'
-    param_restrictions = arcpy.Parameter()
-    param_restrictions.value = 'Restricted'
-    parameters = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_source,
-                  param_date_received, param_restrictions]
-    isd.runImportSpatialDataTool(parameters, None)
+# # controlling process
+# if __name__ == '__main__':
+#     isd = ImportSpatialDataTool()
+#     # hard code parameters for debugging
+#     param_geodatabase = arcpy.Parameter()
+#     param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
+#     param_import_feature_class = arcpy.Parameter()
+#     param_import_feature_class.value = 'C:/GIS/EBAR/CDN_CDC_Data/Manitoba/Occurrence_KBA_MBCDC20230621_v2.gdb/SFLN_KBA_MBCDC20230621_v2'
+#     param_dataset_name = arcpy.Parameter()
+#     param_dataset_name.value = 'MB Test4'
+#     param_dataset_source = arcpy.Parameter()
+#     param_dataset_source.value = 'MB Source Feature Lines'
+#     param_date_received = arcpy.Parameter()
+#     param_date_received.value = 'August 9, 2023'
+#     param_restrictions = arcpy.Parameter()
+#     param_restrictions.value = 'Restricted'
+#     parameters = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_source,
+#                   param_date_received, param_restrictions]
+#     isd.runImportSpatialDataTool(parameters, None)

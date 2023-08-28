@@ -496,22 +496,22 @@ class ImportTabularDataTool:
             return input_point_id, 'new', max_date, bad_bbc
 
 
-# controlling process
-if __name__ == '__main__':
-    itd = ImportTabularDataTool()
-    # hard code parameters for debugging
-    param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
-    param_raw_data_file = arcpy.Parameter()
-    param_raw_data_file.value = 'C:/GIS/EBAR/BBA/QC Northern/naturecounts_data.csv'
-    param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'QC Northen BBA Test'
-    param_dataset_source = arcpy.Parameter()
-    param_dataset_source.value = 'QC Breeding Bird Atlas'
-    param_date_received = arcpy.Parameter()
-    param_date_received.value = 'July 20, 2022'
-    param_restrictions = arcpy.Parameter()
-    param_restrictions.value = 'Non-restricted'
-    parameters = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_source,
-                  param_date_received, param_restrictions]
-    itd.runImportTabularDataTool(parameters, None)
+# # controlling process
+# if __name__ == '__main__':
+#     itd = ImportTabularDataTool()
+#     # hard code parameters for debugging
+#     param_geodatabase = arcpy.Parameter()
+#     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
+#     param_raw_data_file = arcpy.Parameter()
+#     param_raw_data_file.value = 'C:/GIS/EBAR/BBA/QC Northern/naturecounts_data.csv'
+#     param_dataset_name = arcpy.Parameter()
+#     param_dataset_name.value = 'QC Northen BBA Test'
+#     param_dataset_source = arcpy.Parameter()
+#     param_dataset_source.value = 'QC Breeding Bird Atlas'
+#     param_date_received = arcpy.Parameter()
+#     param_date_received.value = 'July 20, 2022'
+#     param_restrictions = arcpy.Parameter()
+#     param_restrictions.value = 'Non-restricted'
+#     parameters = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_source,
+#                   param_date_received, param_restrictions]
+#     itd.runImportTabularDataTool(parameters, None)

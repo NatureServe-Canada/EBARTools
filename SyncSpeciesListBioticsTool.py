@@ -275,14 +275,14 @@ class SyncSpeciesListBioticsTool:
         return
 
 
-# controlling process
-if __name__ == '__main__':
-    ssl = SyncSpeciesListBioticsTool()
-    # hard code parameters for debugging
-    param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value = 'C:/GIS/EBAR/EBARDev2.gdb'
-    #param_geodatabase.value = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde'
-    param_csv = arcpy.Parameter()
-    param_csv.value = 'C:/Users/rgree/Downloads/rgreene_1691752486334.csv' #'C:/GIS/EBAR/EBARTools/Samples/BioticsSpeciesExample.csv'
-    parameters = [param_geodatabase, param_csv]
-    ssl.runSyncSpeciesListBioticsTool(parameters, None)
+# # controlling process
+# if __name__ == '__main__':
+#     ssl = SyncSpeciesListBioticsTool()
+#     # hard code parameters for debugging
+#     param_geodatabase = arcpy.Parameter()
+#     param_geodatabase.value = 'C:/GIS/EBAR/EBARDev2.gdb'
+#     #param_geodatabase.value = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde'
+#     param_csv = arcpy.Parameter()
+#     param_csv.value = 'C:/Users/rgree/Downloads/rgreene_1691752486334.csv' #'C:/GIS/EBAR/EBARTools/Samples/BioticsSpeciesExample.csv'
+#     parameters = [param_geodatabase, param_csv]
+#     ssl.runSyncSpeciesListBioticsTool(parameters, None)

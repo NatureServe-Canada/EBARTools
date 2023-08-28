@@ -222,15 +222,15 @@ class ImportVisitsTool:
         return False, duplicate, date_missing, id_missing, max_date_update, min_date_update
 
 
-# controlling process
-if __name__ == '__main__':
-    iv = ImportVisitsTool()
-    # hard code parameters for debugging
-    param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
-    param_raw_data_file = arcpy.Parameter()
-    param_raw_data_file.value = 'C:/Users/rgree/OneDrive/EBAR_Sensitive_Material/CDN_CDC_Data/Saskatchewan/DataCut_2022/Visits/rgreene_1658852892837.csv'
-    param_subnation = arcpy.Parameter()
-    param_subnation.value = 'SK'
-    parameters = [param_geodatabase, param_raw_data_file, param_subnation]
-    iv.runImportVisitsTool(parameters, None)
+# # controlling process
+# if __name__ == '__main__':
+#     iv = ImportVisitsTool()
+#     # hard code parameters for debugging
+#     param_geodatabase = arcpy.Parameter()
+#     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
+#     param_raw_data_file = arcpy.Parameter()
+#     param_raw_data_file.value = 'C:/Users/rgree/OneDrive/EBAR_Sensitive_Material/CDN_CDC_Data/Saskatchewan/DataCut_2022/Visits/rgreene_1658852892837.csv'
+#     param_subnation = arcpy.Parameter()
+#     param_subnation.value = 'SK'
+#     parameters = [param_geodatabase, param_raw_data_file, param_subnation]
+#     iv.runImportVisitsTool(parameters, None)

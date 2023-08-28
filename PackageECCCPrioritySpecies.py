@@ -170,8 +170,8 @@ class PackageECCCPrioritySpeciesTool:
         return
 
 
-# controlling process
-if __name__ == '__main__':
-    peps = PackageECCCPrioritySpeciesTool()
-    parameters = []
-    peps.runPackageECCCPrioritySpeciesTool(parameters, None)
+# # controlling process
+# if __name__ == '__main__':
+#     peps = PackageECCCPrioritySpeciesTool()
+#     parameters = []
+#     peps.runPackageECCCPrioritySpeciesTool(parameters, None)

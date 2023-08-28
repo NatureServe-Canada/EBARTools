@@ -194,13 +194,13 @@ class FlagBadDataUsingRangeTool:
         return
 
 
-# controlling process
-if __name__ == '__main__':
-    fbdur = FlagBadDataUsingRangeTool()
-    # hard code parameters for debugging
-    param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
-    param_range_map_id = arcpy.Parameter()
-    param_range_map_id.value = '34'
-    parameters = [param_geodatabase, param_range_map_id]
-    fbdur.runFlagBadDataUsingRangeTool(parameters, None)
+# # controlling process
+# if __name__ == '__main__':
+#     fbdur = FlagBadDataUsingRangeTool()
+#     # hard code parameters for debugging
+#     param_geodatabase = arcpy.Parameter()
+#     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
+#     param_range_map_id = arcpy.Parameter()
+#     param_range_map_id.value = '34'
+#     parameters = [param_geodatabase, param_range_map_id]
+#     fbdur.runFlagBadDataUsingRangeTool(parameters, None)

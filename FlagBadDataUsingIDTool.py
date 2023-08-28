@@ -142,22 +142,22 @@ class FlagBadDataUsingIDTool:
         return
 
 
-# controlling process
-if __name__ == '__main__':
-    fbdui = FlagBadDataUsingIDTool()
-    # hard code parameters for debugging
-    param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
-    param_input_point_id = arcpy.Parameter()
-    param_input_point_id.value = None
-    param_input_line_id = arcpy.Parameter()
-    param_input_line_id.value = None
-    param_input_polygon_id = arcpy.Parameter()
-    param_input_polygon_id.value = '24753'
-    param_justification = arcpy.Parameter()
-    param_justification.value = 'Test rationale'
-    param_undo = arcpy.Parameter()
-    param_undo.value = 'false'
-    parameters = [param_geodatabase, param_input_point_id, param_input_line_id, param_input_polygon_id,
-                  param_justification, param_undo]
-    fbdui.runFlagBadDataUsingIDTool(parameters, None)
+# # controlling process
+# if __name__ == '__main__':
+#     fbdui = FlagBadDataUsingIDTool()
+#     # hard code parameters for debugging
+#     param_geodatabase = arcpy.Parameter()
+#     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
+#     param_input_point_id = arcpy.Parameter()
+#     param_input_point_id.value = None
+#     param_input_line_id = arcpy.Parameter()
+#     param_input_line_id.value = None
+#     param_input_polygon_id = arcpy.Parameter()
+#     param_input_polygon_id.value = '24753'
+#     param_justification = arcpy.Parameter()
+#     param_justification.value = 'Test rationale'
+#     param_undo = arcpy.Parameter()
+#     param_undo.value = 'false'
+#     parameters = [param_geodatabase, param_input_point_id, param_input_line_id, param_input_polygon_id,
+#                   param_justification, param_undo]
+#     fbdui.runFlagBadDataUsingIDTool(parameters, None)
