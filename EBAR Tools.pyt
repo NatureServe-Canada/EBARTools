@@ -899,14 +899,14 @@ class ExportInputData(object):
             direction='Input')
         param_include_cdc.value = 'false'
 
-        # Include Restricted Data
-        param_include_restricted = arcpy.Parameter(
-            displayName='Include Restricted Data',
-            name='include_restricted',
-            datatype='GPBoolean',
-            parameterType='Required',
-            direction='Input')
-        param_include_restricted.value = 'false'
+        # # Include Restricted Data
+        # param_include_restricted = arcpy.Parameter(
+        #     displayName='Include Restricted Data',
+        #     name='include_restricted',
+        #     datatype='GPBoolean',
+        #     parameterType='Required',
+        #     direction='Input')
+        # param_include_restricted.value = 'false'
 
         ## Include Other Dataset Types
         #param_include_other = arcpy.Parameter(
@@ -925,7 +925,7 @@ class ExportInputData(object):
             parameterType='Required',
             direction='Input')
 
-        params = [param_geodatabase, param_jurisdictions_covered, param_include_cdc, param_include_restricted,
+        params = [param_geodatabase, param_jurisdictions_covered, param_include_cdc, #param_include_restricted,
                   param_output_zip] # param_include_other, 
         return params
 

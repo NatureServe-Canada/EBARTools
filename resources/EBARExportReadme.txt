@@ -10,8 +10,7 @@ This ZIP package contains a single file geodatabase with the following feature c
 
 The following rules were used when extracting data for export:
 - Include records that overlap the jurisdiction or fall within 32km of its boundary or coastline (32km is the approximate maximum locational obscuring applied to iNaturalist obscured records)
-- Exclude records marked as EBAR Restricted or that come from a United States Natural Heritage Program (i.e., acquired through a licensing agreement that restricts sharing)
-- Exclude records that were provided by a Conservation Data Centre
+- Only include records where the dataset provider explicitly permits CDC Export or All uses
 - Exclude polygon datasets not associated with confirmed species presence, such as Critical Habitat, Range Estimate, Habitat Suitability, and Area of Occupancy
 - Exclude records marked as Bad Data (see description below)
 
