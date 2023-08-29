@@ -15,7 +15,6 @@
 import EBARUtils
 import arcpy
 import datetime
-import shutil
 
 
 class ExportInputDataTool:
