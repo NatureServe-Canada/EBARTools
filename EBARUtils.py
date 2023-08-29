@@ -39,7 +39,7 @@ log_folder = 'C:/GIS/EBAR/temp'
 # various services
 ebar_feature_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/EBAR/FeatureServer'
 ebar_summary_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/Summary/FeatureServer'
-restricted_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/Restricted/FeatureServer'
+#restricted_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/Restricted/FeatureServer'
 
 
 # lowest accuracy data added to database (metres, based on diagonal of 0.2 degrees square at equator)
