@@ -778,9 +778,13 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         #                                         table_name_prefix + "DatasetSource.RestrictionBySpecies = 1 AND " +
         #                                         table_name_prefix + "DatasetSource.CDCJurisdictionID IS NOT NULL AND " +
         #                                         table_name_prefix + temp_restrictions + '.SpeciesID IS NULL)')
+        arcpy.AddJoin_management('pairwise_intersect_layer', 'SpeciesID', param_geodatabase + '/SpeciesSTPH',
+                                 'SpeciesID', 'KEEP_ALL')
         arcpy.SelectLayerByAttribute_management('pairwise_intersect_layer', 'SUBSET_SELECTION',
-                                                '(' + table_name_prefix + "DatasetSource.PermitEBARReviewerApp = 'Y')" +
-                                                ' OR (' + table_name_prefix + "DatasetSource.PermitAll = 'Y')")
+                                                '(' + table_name_prefix + 'SpeciesSTPH.SpeciesID IS NOT NULL OR ' +
+                                                table_name_prefix + 'DatasetSource.CDCJurisdictionID IS NULL) AND (' +
+                                                table_name_prefix + "DatasetSource.PermitEBARReviewerApp = 'Y' OR " +
+                                                table_name_prefix + "DatasetSource.PermitAll = 'Y')")
         arcpy.AddJoin_management('pairwise_intersect_layer', 'SpeciesID',
                                  param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', 'SpeciesID', 'KEEP_COMMON')
         arcpy.AddJoin_management('pairwise_intersect_layer', 'SynonymID',
@@ -824,9 +828,10 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                             'DatasetSourceUniqueID', 'TEXT'))
         arcpy.Append_management('pairwise_intersect_layer', param_geodatabase + '/RangeMapInput', 'NO_TEST',
                                 field_mappings)
-        arcpy.CopyFeatures_management('pairwise_intersect_layer', param_geodatabase + '/TESTX')
+        #arcpy.CopyFeatures_management('pairwise_intersect_layer', param_geodatabase + '/TESTX')
         arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'Synonym')
         arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'BIOTICS_ELEMENT_NATIONAL')
+        arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'SpeciesSTPH')
 
         # get synonyms used
         EBARUtils.displayMessage(messages, 'Documenting Synonyms used')
