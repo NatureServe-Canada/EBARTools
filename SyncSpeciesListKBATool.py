@@ -19,6 +19,7 @@ import io
 import csv
 #import os
 import EBARUtils
+import datetime
 
 
 class SyncSpeciesListKBATool:
