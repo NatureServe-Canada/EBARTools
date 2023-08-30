@@ -1059,8 +1059,9 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             arcpy.Delete_management(temp_line_buffer)
         if arcpy.Exists(temp_point_buffer):
             arcpy.Delete_management(temp_point_buffer)
-        if arcpy.Exists(temp_restrictions):
-            arcpy.Delete_management(temp_restrictions)
+        if param_save_range_map_inputs == 'true':
+            if arcpy.Exists(temp_restrictions):
+                arcpy.Delete_management(temp_restrictions)
         if arcpy.Exists(usage_type_stats):
             arcpy.Delete_management(usage_type_stats)
         # trouble deleting on server only due to locks; could be layer?
