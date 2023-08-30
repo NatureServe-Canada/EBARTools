@@ -5,7 +5,7 @@
 # © WCS Canada / NatureServe Canada 2020 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 # Program: SyncSpeciesListKBATool.py
-# ArcGIS Python tool to synchronize the Species table with the Biotics table in the EBAR-KBA database.
+# ArcGIS Python tool to synchronize the Species table with KBA tracking information.
 # This tool populates fields in the Species table that are specific to the WCS Canada workflow to identify KBAs.
 
 # Notes:
@@ -17,9 +17,8 @@
 import arcpy
 import io
 import csv
-import os
+#import os
 import EBARUtils
-import datetime
 
 
 class SyncSpeciesListKBATool:
@@ -38,8 +37,8 @@ class SyncSpeciesListKBATool:
         infile = io.open(param_csv, 'r', encoding='mbcs')  # mbcs encoding is Windows ANSI
         reader = csv.DictReader(infile)
 
-        # Use os library to access the folder that contains the csv file
-        root_dir = os.path.dirname(param_csv)
+        # # Use os library to access the folder that contains the csv file
+        # root_dir = os.path.dirname(param_csv)
 
         # Assign variables
         line_count = 1
@@ -168,8 +167,15 @@ class SyncSpeciesListKBATool:
                     #                                                                                          species_id))
 
                     # Generate list of existing SpeciesID values in the Species table
-                    existing_values = [row[0] for row in arcpy.da.SearchCursor(param_geodatabase + '\\Species',
-                                                                               "SpeciesID")]
+                    existing_values = []
+                    with arcpy.da.SearchCursor(param_geodatabase + '\\Species', ['SpeciesID']) as search_cursor:
+                        for search_row in EBARUtils.searchCursor(search_cursor):
+                            existing_values.append(search_row['SpeciesID'])
+                    if len(existing_values) > 0:
+                        del search_row
+                    del search_cursor
+                    # existing_values = [row[0] for row in arcpy.da.SearchCursor(param_geodatabase + '\\Species',
+                    #                                                            "SpeciesID")]
 
                     # If the SpeciesID generated for the record (i.e. from Biotics) is in the Species table,
                     # then update it if changed
@@ -254,6 +260,7 @@ class SyncSpeciesListKBATool:
                                     insert_values.append(None)
 
                             insert_cursor.insertRow(insert_values)
+                        del insert_cursor
 
                     # Increase count for processed records
                     processed += 1
@@ -300,7 +307,7 @@ class SyncSpeciesListKBATool:
 #     param_geodatabase = arcpy.Parameter()
 #     param_geodatabase.value = 'C:/GIS/EBAR/EBARDev2.gdb'
 #     param_csv = arcpy.Parameter()
-#     param_csv.value = 'C:/Users/rgree/Downloads/TestY.csv'
+#     param_csv.value = 'C:/GIS/EBAR/EBARTools/samples/SpeciesKBAExample.csv'
 #     parameters = [param_geodatabase, param_csv]
 
 #     sslkba.runSyncSpeciesListKBATool(parameters, None)
