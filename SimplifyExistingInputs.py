@@ -13,9 +13,9 @@ if __name__ == '__main__':
     # parameters
     input_gdb = 'C:/GIS/EBAR/EBAR4.gdb/'
     input_fc = 'RangeMapInputCopy'
-    output_gdb = 'C:/GIS/EBAR/RangeMapInputSimp.gdb/'
-    min_objectid = 3500000
-    max_objectid = 4500000
+    output_gdb = 'C:/GIS/EBAR/RangeMapInputSimp100.gdb/'
+    min_objectid = 0
+    max_objectid = 6200000
     batch_size = 100000
     accuracy = 500
     tolerance = '100 meters'
@@ -31,12 +31,12 @@ if __name__ == '__main__':
         arcpy.SelectLayerByAttribute_management('rmi_lyr', 'NEW_SELECTION',
                                                 'objectid >= ' + str(current_min) +
                                                 ' AND objectid < ' + str(current_min + batch_size) +
-                                                ' AND Accuracy = ' + str(accuracy) +
+                                                ' AND Accuracy >= ' + str(accuracy) +
                                                 " AND OriginalGeometryType = 'P'")
         result = arcpy.GetCount_management('rmi_lyr')
         print(result[0])
         arcpy.SimplifyPolygon_cartography('rmi_lyr', output_gdb + input_fc + str(current_min), 'POINT_REMOVE',
-                                          tolerance, collapsed_point_option='NO_KEEP')
+                                          tolerance, collapsed_point_option='NO_KEEP', error_option='RESOLVE_ERRORS')
         print(datetime.datetime.now())
         current_min += batch_size
 
