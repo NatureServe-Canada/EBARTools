@@ -11,14 +11,21 @@ if __name__ == '__main__':
     arcpy.env.overwriteOutput = True
 
     # parameters
-    input_gdb = 'C:/GIS/EBAR/EBAR4.gdb/'
+    folder = 'C:/GIS/EBAR/'
+    input_gdb = folder + 'EBAR4.gdb/'
     input_fc = 'RangeMapInputCopy'
-    output_gdb = 'C:/GIS/EBAR/RangeMapInputSimp100.gdb/'
+    output_name = 'RangeMapInputSimp10.gdb'
+    output_gdb = folder + output_name
     min_objectid = 0
     max_objectid = 6200000
     batch_size = 100000
-    accuracy = 500
-    tolerance = '100 meters'
+    min_accuracy = 50
+    max_accuracy = 500
+    tolerance = '10 meters'
+
+    # create output gdb
+    if not arcpy.Exists(output_gdb):
+        arcpy.CreateFileGDB_management(folder, output_name)
 
     # layer to allow selections
     arcpy.MakeFeatureLayer_management(input_gdb + input_fc, 'rmi_lyr')
@@ -31,12 +38,26 @@ if __name__ == '__main__':
         arcpy.SelectLayerByAttribute_management('rmi_lyr', 'NEW_SELECTION',
                                                 'objectid >= ' + str(current_min) +
                                                 ' AND objectid < ' + str(current_min + batch_size) +
-                                                ' AND Accuracy >= ' + str(accuracy) +
+                                                ' AND Accuracy >= ' + str(min_accuracy) +
+                                                ' AND Accuracy < ' + str(max_accuracy) +
                                                 " AND OriginalGeometryType = 'P'")
+        # default to 10 meter accuracy (1 meter toloerance) if not provided
+        if tolerance == '1 meters':
+            arcpy.SelectLayerByAttribute_management('rmi_lyr', 'ADD_TO_SELECTION',
+                                                    'objectid >= ' + str(current_min) +
+                                                    ' AND objectid < ' + str(current_min + batch_size) +
+                                                    ' AND Accuracy IS NULL'
+                                                    " AND OriginalGeometryType = 'P'")
+            arcpy.SelectLayerByAttribute_management('rmi_lyr', 'ADD_TO_SELECTION',
+                                                    'objectid >= ' + str(current_min) +
+                                                    ' AND objectid < ' + str(current_min + batch_size) +
+                                                    ' AND Accuracy <= 0'
+                                                    " AND OriginalGeometryType = 'P'")
         result = arcpy.GetCount_management('rmi_lyr')
         print(result[0])
-        arcpy.SimplifyPolygon_cartography('rmi_lyr', output_gdb + input_fc + str(current_min), 'POINT_REMOVE',
-                                          tolerance, collapsed_point_option='NO_KEEP', error_option='RESOLVE_ERRORS')
+        if int(result[0]) > 0:
+            arcpy.SimplifyPolygon_cartography('rmi_lyr', output_gdb + '/' + input_fc + str(current_min), 'POINT_REMOVE',
+                                            tolerance, collapsed_point_option='NO_KEEP', error_option='RESOLVE_ERRORS')
         print(datetime.datetime.now())
         current_min += batch_size
 
