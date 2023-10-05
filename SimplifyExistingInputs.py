@@ -14,14 +14,14 @@ if __name__ == '__main__':
     folder = 'C:/GIS/EBAR/'
     input_gdb = folder + 'EBAR4.gdb/'
     input_fc = 'RangeMapInputCopy'
-    output_name = 'RangeMapInputSimp10.gdb'
+    output_name = 'EBAR4.gdb'
     output_gdb = folder + output_name
     min_objectid = 0
-    max_objectid = 6200000
-    batch_size = 100000
-    min_accuracy = 50
-    max_accuracy = 500
-    tolerance = '10 meters'
+    max_objectid = 10000
+    batch_size = 10000
+    min_accuracy = 1
+    max_accuracy = 5
+    tolerance = '0.1'
 
     # create output gdb
     if not arcpy.Exists(output_gdb):

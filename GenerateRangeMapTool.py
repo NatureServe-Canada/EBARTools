@@ -357,7 +357,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             arcpy.SelectLayerByLocation_management('ecoshape_layer', 'INTERSECT', param_custom_polygons_covered)
         temp_pairwise_intersect = 'TempPairwiseIntersect' + str(start_time.year) + str(start_time.month) + \
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
-        arcpy.PairwiseIntersect_analysis(['all_inputs_layer',  'ecoshape_layer'], temp_pairwise_intersect)
+        arcpy.PairwiseIntersect_analysis(['all_inputs_layer', 'ecoshape_layer'], temp_pairwise_intersect)
         arcpy.AddIndex_management(temp_pairwise_intersect, 'InputDatasetID', 'idid_idx')
         arcpy.MakeFeatureLayer_management(temp_pairwise_intersect, 'pairwise_intersect_layer')
 
@@ -814,86 +814,186 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                      param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', 'SpeciesID', 'KEEP_COMMON')
             arcpy.AddJoin_management('pairwise_intersect_layer', 'SynonymID',
                                      param_geodatabase + '/Synonym', 'SynonymID', 'KEEP_ALL')
-            #field_mappings = arcpy.FieldMappings()
-            # field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
-            #                                                     table_name_prefix + temp_pairwise_intersect + '.RangeMapID',
-            #                                                     'RangeMapID', 'LONG'))
-            # field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer', table_name_prefix + \
-            #                                                     temp_pairwise_intersect + '.OriginalGeometryType',
-            #                                                     'OriginalGeometryType', 'TEXT'))
-            # field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer', table_name_prefix + \
-            #                                                     'BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME',
-            #                                                     'NationalScientificName', 'TEXT'))
-            # field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
-            #                                                     table_name_prefix + 'Synonym.SynonymName',
-            #                                                     'SynonymName', 'TEXT'))
-            # field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
-            #                                                     table_name_prefix + 'DatasetSource.DatasetSourceName',
-            #                                                     'DatasetSourceName', 'TEXT'))
-            # field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
-            #                                                     table_name_prefix + 'DatasetSource.DatasetType',
-            #                                                     'DatasetType', 'TEXT'))
-            # field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
-            #                                                     table_name_prefix + temp_pairwise_intersect + '.Accuracy',
-            #                                                     'Accuracy', 'LONG'))
-            # field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
-            #                                                     table_name_prefix + temp_pairwise_intersect + '.MaxDate',
-            #                                                     'MaxDate', 'DATE'))
-            # field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer', table_name_prefix + \
-            #                                                     temp_pairwise_intersect + '.CoordinatesObscured',
-            #                                                     'CoordinatesObscured', 'SHORT'))
-            # field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
-            #                                                     table_name_prefix + temp_pairwise_intersect + '.EORank',
-            #                                                     'EORank', 'TEXT'))
-            # field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer',
-            #                                                     table_name_prefix + temp_pairwise_intersect + '.URI',
-            #                                                     'URI', 'TEXT'))
-            # field_mappings.addFieldMap(EBARUtils.createFieldMap('pairwise_intersect_layer', table_name_prefix + \
-            #                                                     temp_pairwise_intersect + '.DatasetSourceUniqueID',
-            #                                                     'DatasetSourceUniqueID', 'TEXT'))
-            # arcpy.Append_management('pairwise_intersect_layer', param_geodatabase + '/RangeMapInput', 'NO_TEST',
-            #                         field_mappings)
-            # replace Append with cursors to overcome issue with only geometry, but not attribues, being appended
+            # first dissolve on FID_TempAllIinputs to rebuild polygons split during Ecoshape intersect
+            temp_dissolve = 'TempDissolve' + str(start_time.year) + str(start_time.month) + \
+                str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
+            arcpy.Dissolve_management('pairwise_intersect_layer', temp_dissolve,
+                                      [table_name_prefix + temp_pairwise_intersect + '.FID_' + temp_all_inputs],
+                                      [[table_name_prefix + temp_pairwise_intersect + '.RangeMapID', 'FIRST'],
+                                       [table_name_prefix + temp_pairwise_intersect + '.OriginalGeometryType', 'FIRST'],
+                                       [table_name_prefix + 'BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME', 'FIRST'],
+                                       [table_name_prefix + 'Synonym.SynonymName', 'FIRST'],
+                                       [table_name_prefix + 'DatasetSource.DatasetSourceName', 'FIRST'],
+                                       [table_name_prefix + 'DatasetSource.DatasetType', 'FIRST'],
+                                       [table_name_prefix + temp_pairwise_intersect + '.Accuracy', 'FIRST'],
+                                       [table_name_prefix + temp_pairwise_intersect + '.MaxDate', 'FIRST'],
+                                       [table_name_prefix + temp_pairwise_intersect + '.CoordinatesObscured', 'FIRST'],
+                                       [table_name_prefix + temp_pairwise_intersect + '.EORank', 'FIRST'],
+                                       [table_name_prefix + temp_pairwise_intersect + '.DatasetSourceUniqueID', 'FIRST']])
+            # simplify point-derived polygons in batches to avoid issues with performance and memory usage
+            result = arcpy.GetCount_management(temp_dissolve)
+            polygon_count = int(result[0])
+            arcpy.MakeFeatureLayer_management(temp_dissolve, 'dissolve_layer')
+            batch_size = 10000
+            tolerance_specs = {'100': (100000, 500),
+                               '10': (500, 50),
+                               '1': (50, 5),
+                               '0.1': (5, 1)}
+            batch_count = 1
+            temp_batch = 'TempBatch' + str(start_time.year) + str(start_time.month) + \
+                str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
+            while (batch_size * (batch_count - 1)) <= polygon_count:
+                for tolerance in tolerance_specs.keys():
+                    # selection for current batch
+                    arcpy.SelectLayerByAttribute_management('dissolve_layer', 'NEW_SELECTION',
+                                                            'objectid > ' + str(batch_size * (batch_count - 1)) +
+                                                            ' AND objectid <= ' + str(batch_size * batch_count) +
+                                                            ' AND FIRST_' + table_name_prefix + temp_pairwise_intersect +
+                                                            '_Accuracy < ' + str(tolerance_specs[tolerance][0]) +
+                                                            ' AND FIRST_' + table_name_prefix + temp_pairwise_intersect +
+                                                            '_Accuracy >= ' + str(tolerance_specs[tolerance][1]) +
+                                                            " AND FIRST_" + table_name_prefix + temp_pairwise_intersect +
+                                                            "_OriginalGeometryType = 'P'")
+                    # default to 10 meter accuracy (1 meter toloerance) if not provided
+                    if tolerance == '1':
+                        arcpy.SelectLayerByAttribute_management('dissolve_layer', 'ADD_TO_SELECTION',
+                                                                'objectid > ' + str(batch_size * (batch_count - 1)) +
+                                                                ' AND objectid <= ' + str(batch_size * batch_count) +
+                                                                ' AND FIRST_' + table_name_prefix +
+                                                                temp_pairwise_intersect + '_Accuracy IS NULL' +
+                                                                " AND FIRST_" + table_name_prefix +
+                                                                temp_pairwise_intersect + "_OriginalGeometryType = 'P'")
+                        arcpy.SelectLayerByAttribute_management('dissolve_layer', 'ADD_TO_SELECTION',
+                                                                'objectid > ' + str(batch_size * (batch_count - 1)) +
+                                                                ' AND objectid <= ' + str(batch_size * batch_count) +
+                                                                ' AND FIRST_' + table_name_prefix +
+                                                                temp_pairwise_intersect + '_Accuracy <= 0' +
+                                                                " AND FIRST_" + table_name_prefix +
+                                                                temp_pairwise_intersect + "_OriginalGeometryType = 'P'")
+                    result = arcpy.GetCount_management('dissolve_layer')
+                    if int(result[0]) > 0:
+                        arcpy.SimplifyPolygon_cartography('dissolve_layer', temp_batch, 'POINT_REMOVE',
+                                                          tolerance, collapsed_point_option='NO_KEEP',
+                                                          error_option='RESOLVE_ERRORS')
+                        # append simplified point-derived polygons
+                        with arcpy.da.InsertCursor(param_geodatabase + '/RangeMapInput',
+                                                   ['SHAPE@',
+                                                    'RangeMapID',
+                                                    'OriginalGeometryType',
+                                                    'NationalScientificName',
+                                                    'SynonymName',
+                                                    'DatasetSourceName',
+                                                    'DatasetType',
+                                                    'Accuracy',
+                                                    'MaxDate',
+                                                    'CoordinatesObscured',
+                                                    'EORank',
+                                                    'DatasetSourceUniqueID']) as insert_cursor:
+                            with arcpy.da.SearchCursor(temp_batch,
+                                                       ['SHAPE@',
+                                                        'FIRST_' + table_name_prefix +
+                                                        temp_pairwise_intersect + '_RangeMapID',
+                                                        'FIRST_' + table_name_prefix +
+                                                        temp_pairwise_intersect + '_OriginalGeometryType',
+                                                        'FIRST_' + table_name_prefix +
+                                                        'BIOTICS_ELEMENT_NATIONAL_NATIONAL_SCIENTIFIC_NAME',
+                                                        'FIRST_' + table_name_prefix + 'Synonym_SynonymName',
+                                                        'FIRST_' + table_name_prefix +
+                                                        'DatasetSource_DatasetSourceName',
+                                                        'FIRST_' + table_name_prefix + 'DatasetSource_DatasetType',
+                                                        'FIRST_' + table_name_prefix + temp_pairwise_intersect +
+                                                        '_Accuracy',
+                                                        'FIRST_' + table_name_prefix + temp_pairwise_intersect +
+                                                        '_MaxDate',
+                                                        'FIRST_' + table_name_prefix + temp_pairwise_intersect +
+                                                        '_CoordinatesObscured',
+                                                        'FIRST_' + table_name_prefix + temp_pairwise_intersect +
+                                                        '_EORank',
+                                                        'FIRST_' + table_name_prefix + temp_pairwise_intersect +
+                                                        '_DatasetSourceUniqueID']) as search_cursor:
+                                search_row = None
+                                for search_row in EBARUtils.searchCursor(search_cursor):
+                                    insert_cursor.insertRow([search_row['SHAPE@'],
+                                                            search_row['FIRST_' + table_name_prefix +
+                                                                       temp_pairwise_intersect + '_RangeMapID'],
+                                                            search_row['FIRST_' + table_name_prefix +
+                                                                       temp_pairwise_intersect + '_OriginalGeometryType'],
+                                                            search_row['FIRST_' + table_name_prefix +
+                                                                       'BIOTICS_ELEMENT_NATIONAL_NATIONAL_SCIENTIFIC_NAME'],
+                                                            search_row['FIRST_' + table_name_prefix +
+                                                                       'Synonym_SynonymName'],
+                                                            search_row['FIRST_' + table_name_prefix +
+                                                                       'DatasetSource_DatasetSourceName'],
+                                                            search_row['FIRST_' + table_name_prefix + 
+                                                                       'DatasetSource_DatasetType'],
+                                                            search_row['FIRST_' + table_name_prefix +
+                                                                       temp_pairwise_intersect + '_Accuracy'],
+                                                            search_row['FIRST_' + table_name_prefix +
+                                                                       temp_pairwise_intersect + '_MaxDate'],
+                                                            search_row['FIRST_' + table_name_prefix +
+                                                                       temp_pairwise_intersect + '_CoordinatesObscured'],
+                                                            search_row['FIRST_' + table_name_prefix +
+                                                                       temp_pairwise_intersect + '_EORank'],
+                                                            search_row['FIRST_' + table_name_prefix +
+                                                                       temp_pairwise_intersect + '_DatasetSourceUniqueID']])
+                                if search_row:
+                                    del search_row
+                                del search_cursor
+                        del insert_cursor
+                batch_count += 1
+            # append simplified line- and polygon-derived polygons
             with arcpy.da.InsertCursor(param_geodatabase + '/RangeMapInput',
-                                        ['SHAPE@',
-                                         'RangeMapID',
-                                         'OriginalGeometryType',
-                                         'NationalScientificName',
-                                         'SynonymName',
-                                         'DatasetSourceName',
-                                         'DatasetType',
-                                         'Accuracy',
-                                         'MaxDate',
-                                         'CoordinatesObscured',
-                                         'EORank',
-                                         'DatasetSourceUniqueID']) as insert_cursor:
+                                       ['SHAPE@',
+                                        'RangeMapID',
+                                        'OriginalGeometryType',
+                                        'NationalScientificName',
+                                        'SynonymName',
+                                        'DatasetSourceName',
+                                        'DatasetType',
+                                        'Accuracy',
+                                        'MaxDate',
+                                        'CoordinatesObscured',
+                                        'EORank',
+                                        'DatasetSourceUniqueID']) as insert_cursor:
                 with arcpy.da.SearchCursor('pairwise_intersect_layer',
-                                        ['SHAPE@',
-                                         table_name_prefix + temp_pairwise_intersect + '.RangeMapID',
-                                         table_name_prefix + temp_pairwise_intersect + '.OriginalGeometryType',
-                                         table_name_prefix + 'BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME',
-                                         table_name_prefix + 'Synonym.SynonymName',
-                                         table_name_prefix + 'DatasetSource.DatasetSourceName',
-                                         table_name_prefix + 'DatasetSource.DatasetType',
-                                         table_name_prefix + temp_pairwise_intersect + '.Accuracy',
-                                         table_name_prefix + temp_pairwise_intersect + '.MaxDate',
-                                         table_name_prefix + temp_pairwise_intersect + '.CoordinatesObscured',
-                                         table_name_prefix + temp_pairwise_intersect + '.EORank',
-                                         table_name_prefix + temp_pairwise_intersect + '.DatasetSourceUniqueID']) as search_cursor:
+                                           ['SHAPE@',
+                                            table_name_prefix + temp_pairwise_intersect + '.RangeMapID',
+                                            table_name_prefix + temp_pairwise_intersect + '.OriginalGeometryType',
+                                            table_name_prefix + 'BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME',
+                                            table_name_prefix + 'Synonym.SynonymName',
+                                            table_name_prefix + 'DatasetSource.DatasetSourceName',
+                                            table_name_prefix + 'DatasetSource.DatasetType',
+                                            table_name_prefix + temp_pairwise_intersect + '.Accuracy',
+                                            table_name_prefix + temp_pairwise_intersect + '.MaxDate',
+                                            table_name_prefix + temp_pairwise_intersect + '.CoordinatesObscured',
+                                            table_name_prefix + temp_pairwise_intersect + '.EORank',
+                                            table_name_prefix + temp_pairwise_intersect + '.DatasetSourceUniqueID'],
+                                           table_name_prefix + temp_pairwise_intersect + ".OriginalGeometryType <> 'P'") as search_cursor:
                     search_row = None
                     for search_row in EBARUtils.searchCursor(search_cursor):
                         insert_cursor.insertRow([search_row['SHAPE@'],
-                                                 search_row[table_name_prefix + temp_pairwise_intersect + '.RangeMapID'],
-                                                 search_row[table_name_prefix + temp_pairwise_intersect + '.OriginalGeometryType'],
-                                                 search_row[table_name_prefix + 'BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME'],
-                                                 search_row[table_name_prefix + 'Synonym.SynonymName'],
-                                                 search_row[table_name_prefix + 'DatasetSource.DatasetSourceName'],
-                                                 search_row[table_name_prefix + 'DatasetSource.DatasetType'],
-                                                 search_row[table_name_prefix + temp_pairwise_intersect + '.Accuracy'],
-                                                 search_row[table_name_prefix + temp_pairwise_intersect + '.MaxDate'],
-                                                 search_row[table_name_prefix + temp_pairwise_intersect + '.CoordinatesObscured'],
-                                                 search_row[table_name_prefix + temp_pairwise_intersect + '.EORank'],
-                                                 search_row[table_name_prefix + temp_pairwise_intersect + '.DatasetSourceUniqueID']])
+                                                search_row[table_name_prefix +
+                                                           temp_pairwise_intersect + '.RangeMapID'],
+                                                search_row[table_name_prefix +
+                                                           temp_pairwise_intersect + '.OriginalGeometryType'],
+                                                search_row[table_name_prefix +
+                                                           'BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME'],
+                                                search_row[table_name_prefix +
+                                                           'Synonym.SynonymName'],
+                                                search_row[table_name_prefix +
+                                                           'DatasetSource.DatasetSourceName'],
+                                                search_row[table_name_prefix +
+                                                           'DatasetSource.DatasetType'],
+                                                search_row[table_name_prefix +
+                                                           temp_pairwise_intersect + '.Accuracy'],
+                                                search_row[table_name_prefix +
+                                                           temp_pairwise_intersect + '.MaxDate'],
+                                                search_row[table_name_prefix +
+                                                           temp_pairwise_intersect + '.CoordinatesObscured'],
+                                                search_row[table_name_prefix +
+                                                           temp_pairwise_intersect + '.EORank'],
+                                                search_row[table_name_prefix +
+                                                           temp_pairwise_intersect + '.DatasetSourceUniqueID']])
                     if search_row:
                         del search_row
                     del search_cursor
@@ -1062,6 +1162,10 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         if param_save_range_map_inputs == 'true':
             if arcpy.Exists(temp_restrictions):
                 arcpy.Delete_management(temp_restrictions)
+            if arcpy.Exists(temp_dissolve):
+                arcpy.Delete_management(temp_dissolve)
+            if arcpy.Exists(temp_batch):
+                arcpy.Delete_management(temp_batch)
         if arcpy.Exists(usage_type_stats):
             arcpy.Delete_management(usage_type_stats)
         # trouble deleting on server only due to locks; could be layer?
@@ -1077,32 +1181,35 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         return
             
 
-# # controlling process
-# if __name__ == '__main__':
-#     grm = GenerateRangeMapTool()
-#     # hard code parameters for debugging
-#     param_geodatabase = arcpy.Parameter()
-#     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
-#     param_species = arcpy.Parameter()
-#     param_species.value = 'Bidens amplissima' #'Aechmophorus occidentalis' #Bombus suckleyi #'Micranthes spicata'
-#     param_secondary = arcpy.Parameter()
-#     param_secondary.value = None
-#     #param_secondary.value = "'Schistochilopsis incisa var. opacifolia'" #"'Dodia tarandus';'Dodia verticalis'"
-#     param_version = arcpy.Parameter()
-#     param_version.value = '0.1'
-#     param_stage = arcpy.Parameter()
-#     param_stage.value = 'Auto-generated' # 'Expert reviewed test00' 
-#     param_scope = arcpy.Parameter()
-#     #param_scope.value = None
-#     param_scope.value = 'Canadian'
-#     param_jurisdictions_covered = arcpy.Parameter()
-#     param_jurisdictions_covered.value = None
-#     #param_jurisdictions_covered.value = "'British Columbia'"
-#     param_custom_polygons_covered = arcpy.Parameter()
-#     param_custom_polygons_covered.value = None
-#     #param_custom_polygons_covered.value = 'C:/GIS/EBAR/EBARServer.gdb/Custom'
-#     param_differentiate_usage_type = arcpy.Parameter()
-#     param_differentiate_usage_type.value = None #'true'
-#     parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
-#                   param_jurisdictions_covered, param_custom_polygons_covered, param_differentiate_usage_type]
-#     grm.runGenerateRangeMapTool(parameters, None)
+# controlling process
+if __name__ == '__main__':
+    grm = GenerateRangeMapTool()
+    # hard code parameters for debugging
+    param_geodatabase = arcpy.Parameter()
+    param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
+    param_species = arcpy.Parameter()
+    param_species.value = 'Bidens amplissima' #'Aechmophorus occidentalis' #Bombus suckleyi #'Micranthes spicata'
+    param_secondary = arcpy.Parameter()
+    param_secondary.value = None
+    #param_secondary.value = "'Schistochilopsis incisa var. opacifolia'" #"'Dodia tarandus';'Dodia verticalis'"
+    param_version = arcpy.Parameter()
+    param_version.value = '0.1'
+    param_stage = arcpy.Parameter()
+    param_stage.value = 'Auto-generated' # 'Expert reviewed test00' 
+    param_scope = arcpy.Parameter()
+    #param_scope.value = None
+    param_scope.value = 'Canadian'
+    param_jurisdictions_covered = arcpy.Parameter()
+    param_jurisdictions_covered.value = None
+    #param_jurisdictions_covered.value = "'British Columbia'"
+    param_custom_polygons_covered = arcpy.Parameter()
+    param_custom_polygons_covered.value = None
+    #param_custom_polygons_covered.value = 'C:/GIS/EBAR/EBARServer.gdb/Custom'
+    param_differentiate_usage_type = arcpy.Parameter()
+    param_differentiate_usage_type.value = None #'true'
+    param_save_range_map_inputs = arcpy.Parameter()
+    param_save_range_map_inputs.value = 'true'
+    parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
+                  param_jurisdictions_covered, param_custom_polygons_covered, param_differentiate_usage_type,
+                  param_save_range_map_inputs]
+    grm.runGenerateRangeMapTool(parameters, None)
