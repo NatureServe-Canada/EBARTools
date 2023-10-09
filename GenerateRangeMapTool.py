@@ -846,31 +846,32 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             while (batch_size * (batch_count - 1)) <= polygon_count:
                 for tolerance in tolerance_specs.keys():
                     # selection for current batch
+                    # kludge because arc ends up with different field names under Enterprise gdb after joining
+                    field_names = [f.name for f in arcpy.ListFields(temp_dissolve) if f.aliasName in
+                                   ['FIRST_' + table_name_prefix + temp_pairwise_intersect + '.Accuracy',
+                                    'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.accuracy',
+                                    'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.OriginalGeometryType',                                    
+                                    'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.originalgeometrytype']]
                     arcpy.SelectLayerByAttribute_management('dissolve_layer', 'NEW_SELECTION',
                                                             'objectid > ' + str(batch_size * (batch_count - 1)) +
                                                             ' AND objectid <= ' + str(batch_size * batch_count) +
-                                                            ' AND FIRST_' + table_name_prefix + temp_pairwise_intersect +
-                                                            '_Accuracy < ' + str(tolerance_specs[tolerance][0]) +
-                                                            ' AND FIRST_' + table_name_prefix + temp_pairwise_intersect +
-                                                            '_Accuracy >= ' + str(tolerance_specs[tolerance][1]) +
-                                                            " AND FIRST_" + table_name_prefix + temp_pairwise_intersect +
-                                                            "_OriginalGeometryType = 'P'")
+                                                            ' AND ' + field_names[1] + ' < ' +
+                                                            str(tolerance_specs[tolerance][0]) +
+                                                            ' AND ' + field_names[1] + ' >= ' +
+                                                            str(tolerance_specs[tolerance][1]) +
+                                                            ' AND ' + field_names[0] + " = 'P'")
                     # default to 10 meter accuracy (1 meter toloerance) if not provided
                     if tolerance == '1':
                         arcpy.SelectLayerByAttribute_management('dissolve_layer', 'ADD_TO_SELECTION',
                                                                 'objectid > ' + str(batch_size * (batch_count - 1)) +
                                                                 ' AND objectid <= ' + str(batch_size * batch_count) +
-                                                                ' AND FIRST_' + table_name_prefix +
-                                                                temp_pairwise_intersect + '_Accuracy IS NULL' +
-                                                                " AND FIRST_" + table_name_prefix +
-                                                                temp_pairwise_intersect + "_OriginalGeometryType = 'P'")
+                                                                ' AND ' + field_names[1] + ' IS NULL ' +
+                                                                ' AND ' + field_names[0] + " = 'P'")
                         arcpy.SelectLayerByAttribute_management('dissolve_layer', 'ADD_TO_SELECTION',
                                                                 'objectid > ' + str(batch_size * (batch_count - 1)) +
                                                                 ' AND objectid <= ' + str(batch_size * batch_count) +
-                                                                ' AND FIRST_' + table_name_prefix +
-                                                                temp_pairwise_intersect + '_Accuracy <= 0' +
-                                                                " AND FIRST_" + table_name_prefix +
-                                                                temp_pairwise_intersect + "_OriginalGeometryType = 'P'")
+                                                                ' AND ' + field_names[1] + ' <= 0 ' +
+                                                                ' AND ' + field_names[0] + " = 'P'")
                     result = arcpy.GetCount_management('dissolve_layer')
                     if int(result[0]) > 0:
                         arcpy.SimplifyPolygon_cartography('dissolve_layer', temp_batch, 'POINT_REMOVE',
@@ -890,53 +891,67 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                     'CoordinatesObscured',
                                                     'EORank',
                                                     'DatasetSourceUniqueID']) as insert_cursor:
+                            # kludge because arc ends up with different field names under Enterprise gdb after joining
+                            field_names = [f.name for f in arcpy.ListFields(temp_batch) if f.aliasName in
+                                           ['FIRST_' + table_name_prefix + temp_pairwise_intersect + '.RangeMapID',
+                                            'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.rangemapid',
+                                            'FIRST_' + table_name_prefix + temp_pairwise_intersect +
+                                            '.OriginalGeometryType',
+                                            'FIRST_' + table_name_prefix + temp_pairwise_intersect +
+                                            '.originalgeometrytype',
+                                            'FIRST_' + table_name_prefix +
+                                            'BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME',
+                                            'FIRST_' + table_name_prefix +
+                                            'BIOTICS_ELEMENT_NATIONAL.national_scientific_name',
+                                            'FIRST_' + table_name_prefix + 'Synonym.SynonymName',
+                                            'FIRST_' + table_name_prefix + 'Synonym.synonymname',
+                                            'FIRST_' + table_name_prefix + 'DatasetSource.DatasetSourceName',
+                                            'FIRST_' + table_name_prefix + 'DatasetSource.datasetsourcename',
+                                            'FIRST_' + table_name_prefix + 'DatasetSource.DatasetType',
+                                            'FIRST_' + table_name_prefix + 'DatasetSource.datasettype',
+                                            'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.Accuracy',
+                                            'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.accuracy',
+                                            'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.MaxDate',
+                                            'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.maxdate',
+                                            'FIRST_' + table_name_prefix + temp_pairwise_intersect +
+                                            '.CoordinatesObscured',
+                                            'FIRST_' + table_name_prefix + temp_pairwise_intersect +
+                                            '.coordinatesobscured',
+                                            'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.EORank',
+                                            'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.eorank',
+                                            'FIRST_' + table_name_prefix + temp_pairwise_intersect +
+                                            '.DatasetSourceUniqueID',
+                                            'FIRST_' + table_name_prefix + temp_pairwise_intersect +
+                                            '.datasetsourceuniqueid']]
+                            # for field_name in field_names:
+                            #     EBARUtils.displayMessage(messages, field_name)
                             with arcpy.da.SearchCursor(temp_batch,
                                                        ['SHAPE@',
-                                                        'FIRST_' + table_name_prefix +
-                                                        temp_pairwise_intersect + '_RangeMapID',
-                                                        'FIRST_' + table_name_prefix +
-                                                        temp_pairwise_intersect + '_OriginalGeometryType',
-                                                        'FIRST_' + table_name_prefix +
-                                                        'BIOTICS_ELEMENT_NATIONAL_NATIONAL_SCIENTIFIC_NAME',
-                                                        'FIRST_' + table_name_prefix + 'Synonym_SynonymName',
-                                                        'FIRST_' + table_name_prefix +
-                                                        'DatasetSource_DatasetSourceName',
-                                                        'FIRST_' + table_name_prefix + 'DatasetSource_DatasetType',
-                                                        'FIRST_' + table_name_prefix + temp_pairwise_intersect +
-                                                        '_Accuracy',
-                                                        'FIRST_' + table_name_prefix + temp_pairwise_intersect +
-                                                        '_MaxDate',
-                                                        'FIRST_' + table_name_prefix + temp_pairwise_intersect +
-                                                        '_CoordinatesObscured',
-                                                        'FIRST_' + table_name_prefix + temp_pairwise_intersect +
-                                                        '_EORank',
-                                                        'FIRST_' + table_name_prefix + temp_pairwise_intersect +
-                                                        '_DatasetSourceUniqueID']) as search_cursor:
+                                                        field_names[0],
+                                                        field_names[1],
+                                                        field_names[2],
+                                                        field_names[3],
+                                                        field_names[4],
+                                                        field_names[5],
+                                                        field_names[6],
+                                                        field_names[7],
+                                                        field_names[8],
+                                                        field_names[9],
+                                                        field_names[10]]) as search_cursor:
                                 search_row = None
                                 for search_row in EBARUtils.searchCursor(search_cursor):
                                     insert_cursor.insertRow([search_row['SHAPE@'],
-                                                            search_row['FIRST_' + table_name_prefix +
-                                                                       temp_pairwise_intersect + '_RangeMapID'],
-                                                            search_row['FIRST_' + table_name_prefix +
-                                                                       temp_pairwise_intersect + '_OriginalGeometryType'],
-                                                            search_row['FIRST_' + table_name_prefix +
-                                                                       'BIOTICS_ELEMENT_NATIONAL_NATIONAL_SCIENTIFIC_NAME'],
-                                                            search_row['FIRST_' + table_name_prefix +
-                                                                       'Synonym_SynonymName'],
-                                                            search_row['FIRST_' + table_name_prefix +
-                                                                       'DatasetSource_DatasetSourceName'],
-                                                            search_row['FIRST_' + table_name_prefix + 
-                                                                       'DatasetSource_DatasetType'],
-                                                            search_row['FIRST_' + table_name_prefix +
-                                                                       temp_pairwise_intersect + '_Accuracy'],
-                                                            search_row['FIRST_' + table_name_prefix +
-                                                                       temp_pairwise_intersect + '_MaxDate'],
-                                                            search_row['FIRST_' + table_name_prefix +
-                                                                       temp_pairwise_intersect + '_CoordinatesObscured'],
-                                                            search_row['FIRST_' + table_name_prefix +
-                                                                       temp_pairwise_intersect + '_EORank'],
-                                                            search_row['FIRST_' + table_name_prefix +
-                                                                       temp_pairwise_intersect + '_DatasetSourceUniqueID']])
+                                                             search_row[field_names[0]],
+                                                             search_row[field_names[1]],
+                                                             search_row[field_names[2]],
+                                                             search_row[field_names[3]],
+                                                             search_row[field_names[4]],
+                                                             search_row[field_names[5]],
+                                                             search_row[field_names[6]],
+                                                             search_row[field_names[7]],
+                                                             search_row[field_names[8]],
+                                                             search_row[field_names[9]],
+                                                             search_row[field_names[10]]])
                                 if search_row:
                                     del search_row
                                 del search_cursor
