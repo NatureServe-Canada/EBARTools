@@ -328,7 +328,7 @@ other_fields = {'quality_grade': None,
                 'individual_count': 'individualsCount',
                 'geoprivacy': None,
                 'taxon_geoprivacy': None,
-                'breeding_code': None}
+                'breeding_code': 'breeding_code'}
 
 tabular_field_mapping_dict = {'GBIF': gbif_fields,
                               'NCC_GBIF': ncc_gbif_fields,
