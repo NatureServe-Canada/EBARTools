@@ -80,7 +80,7 @@ class GenerateRangeMapTool:
         differentiate_usage_type = None
         if param_differentiate_usage_type == 'true':
             differentiate_usage_type = 1
-        #param_save_range_map_inputs = parameters[9].valueAsText
+        param_save_range_map_inputs = parameters[9].valueAsText
 
         # use passed geodatabase as workspace (still seems to go to default geodatabase)
         arcpy.env.workspace = param_geodatabase
@@ -796,8 +796,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                   [table_name_prefix + 'DatasetSource.DatasetSourceName'])
 
         # create RangeMapInput records from Non-restricted for overlay display in EBAR Reviewer
-        #if param_save_range_map_inputs == 'true':
-        if 1 == 1:
+        #if 1 == 1:
+        if param_save_range_map_inputs == 'true':
             EBARUtils.displayMessage(messages, 'Creating Range Map Input records for overlay display in EBAR Reviewer')
             temp_restrictions = 'TempRestrictions' + str(start_time.year) + str(start_time.month) + \
                 str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
@@ -1175,8 +1175,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             arcpy.Delete_management(temp_line_buffer)
         if arcpy.Exists(temp_point_buffer):
             arcpy.Delete_management(temp_point_buffer)
-        #if param_save_range_map_inputs == 'true':
-        if 1 == 1:
+        #if 1 == 1:
+        if param_save_range_map_inputs == 'true':
             if arcpy.Exists(temp_restrictions):
                 arcpy.Delete_management(temp_restrictions)
             if arcpy.Exists(temp_dissolve):
@@ -1224,9 +1224,9 @@ if __name__ == '__main__':
     #param_custom_polygons_covered.value = 'C:/GIS/EBAR/EBARServer.gdb/Custom'
     param_differentiate_usage_type = arcpy.Parameter()
     param_differentiate_usage_type.value = None #'true'
-    # param_save_range_map_inputs = arcpy.Parameter()
-    # param_save_range_map_inputs.value = 'true'
+    param_save_range_map_inputs = arcpy.Parameter()
+    param_save_range_map_inputs.value = 'true'
     parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
                   param_jurisdictions_covered, param_custom_polygons_covered, param_differentiate_usage_type]
-                  #param_save_range_map_inputs]
+                  param_save_range_map_inputs]
     grm.runGenerateRangeMapTool(parameters, None)
