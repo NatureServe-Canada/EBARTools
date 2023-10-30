@@ -1227,6 +1227,6 @@ if __name__ == '__main__':
     param_save_range_map_inputs = arcpy.Parameter()
     param_save_range_map_inputs.value = 'true'
     parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
-                  param_jurisdictions_covered, param_custom_polygons_covered, param_differentiate_usage_type]
+                  param_jurisdictions_covered, param_custom_polygons_covered, param_differentiate_usage_type,
                   param_save_range_map_inputs]
     grm.runGenerateRangeMapTool(parameters, None)
