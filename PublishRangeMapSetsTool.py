@@ -190,14 +190,14 @@ class PublishRangeMapSetsTool:
         return
 
 
-# controlling process
-if __name__ == '__main__':
-    prms = PublishRangeMapSetsTool()
-    param_category = arcpy.Parameter()
-    param_category.value = 'Vascular Plant'
-    #param_category.value = None
-    param_taxagroup = arcpy.Parameter()
-    param_taxagroup.value = "Adder's-tongues, Grapeferns, and Moonworts"
-    #param_taxagroup.value = None
-    parameters = [param_category, param_taxagroup]
-    prms.runPublishRangeMapSetsTool(parameters, None)
+# # controlling process
+# if __name__ == '__main__':
+#     prms = PublishRangeMapSetsTool()
+#     param_category = arcpy.Parameter()
+#     param_category.value = 'Vascular Plant'
+#     #param_category.value = None
+#     param_taxagroup = arcpy.Parameter()
+#     param_taxagroup.value = "Adder's-tongues, Grapeferns, and Moonworts"
+#     #param_taxagroup.value = None
+#     parameters = [param_category, param_taxagroup]
+#     prms.runPublishRangeMapSetsTool(parameters, None)

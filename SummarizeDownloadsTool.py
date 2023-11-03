@@ -80,12 +80,12 @@ class SummarizeDownloadsTool:
                                      str(year_month_taxa_zips[year_month]))
 
 
-# controlling process
-if __name__ == '__main__':
-    sd = SummarizeDownloadsTool()
-    # hard code parameters for debugging
-    #param_geodatabase = arcpy.Parameter()
-    #param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
-    #parameters = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_source,
-    #              param_date_received, param_restrictions]
-    sd.runSummarizeDownloadsTool(None, None)
+# # controlling process
+# if __name__ == '__main__':
+#     sd = SummarizeDownloadsTool()
+#     # hard code parameters for debugging
+#     #param_geodatabase = arcpy.Parameter()
+#     #param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
+#     #parameters = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_source,
+#     #              param_date_received, param_restrictions]
+#     sd.runSummarizeDownloadsTool(None, None)

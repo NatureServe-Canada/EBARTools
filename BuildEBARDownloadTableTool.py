@@ -157,7 +157,7 @@ class BuildEBARDownloadTableTool:
         file.close()
 
 
-# controlling process
-if __name__ == '__main__':
-    bedt = BuildEBARDownloadTableTool()
-    bedt.runBuildEBARDownloadTableTool(None, None)
+# # controlling process
+# if __name__ == '__main__':
+#     bedt = BuildEBARDownloadTableTool()
+#     bedt.runBuildEBARDownloadTableTool(None, None)
