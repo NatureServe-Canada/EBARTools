@@ -508,9 +508,10 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     search_row = None
                     with arcpy.da.SearchCursor('ecoshape_review_view',
                                                 [table_name_prefix + 'EcoshapeReview.Markup',
-                                                table_name_prefix + 'EcoshapeReview.EcoshapeReviewNotes',
-                                                table_name_prefix + 'EcoshapeReview.Username',
-                                                table_name_prefix + 'EcoshapeReview.MigrantStatus'],
+                                                 table_name_prefix + 'EcoshapeReview.UsageTypeMarkup',
+                                                 table_name_prefix + 'EcoshapeReview.EcoshapeReviewNotes',
+                                                 table_name_prefix + 'EcoshapeReview.Username',
+                                                 table_name_prefix + 'EcoshapeReview.MigrantStatus'],
                                                 table_name_prefix + 'Review.RangeMapID IN (' + \
                                                 prev_range_map_ids + ') AND ' + table_name_prefix + \
                                                 'Review.UseForMapGen = 1 AND ' + table_name_prefix + \
@@ -521,6 +522,10 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                 str(update_row['EcoshapeID'])) as search_cursor:
                         for search_row in EBARUtils.searchCursor(search_cursor):
                             presence = search_row[table_name_prefix + 'EcoshapeReview.Markup']
+                            usage_type_markup = search_row[table_name_prefix + 'EcoshapeReview.UsageTypeMarkup']
+                            # keep existing presence if only usage_type_markup
+                            if usage_type_markup and not presence:
+                                presence = update_row['Presence']
                             # keep removed ecoshapes, but without Presence or UsageType
                             if presence == 'R':
                                 presence = None
@@ -1198,35 +1203,35 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         return
             
 
-# controlling process
-if __name__ == '__main__':
-    grm = GenerateRangeMapTool()
-    # hard code parameters for debugging
-    param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
-    param_species = arcpy.Parameter()
-    param_species.value = 'Micranthes spicata' #'Bidens amplissima' #'Aechmophorus occidentalis' #Bombus suckleyi
-    param_secondary = arcpy.Parameter()
-    param_secondary.value = None
-    #param_secondary.value = "'Schistochilopsis incisa var. opacifolia'" #"'Dodia tarandus';'Dodia verticalis'"
-    param_version = arcpy.Parameter()
-    param_version.value = '1.0'
-    param_stage = arcpy.Parameter()
-    param_stage.value = 'Auto-generated TEST' # 'Expert reviewed test00' 
-    param_scope = arcpy.Parameter()
-    param_scope.value = None
-    #param_scope.value = 'Canadian'
-    param_jurisdictions_covered = arcpy.Parameter()
-    param_jurisdictions_covered.value = None
-    #param_jurisdictions_covered.value = "'British Columbia'"
-    param_custom_polygons_covered = arcpy.Parameter()
-    param_custom_polygons_covered.value = None
-    #param_custom_polygons_covered.value = 'C:/GIS/EBAR/EBARServer.gdb/Custom'
-    param_differentiate_usage_type = arcpy.Parameter()
-    param_differentiate_usage_type.value = None #'true'
-    param_save_range_map_inputs = arcpy.Parameter()
-    param_save_range_map_inputs.value = 'true'
-    parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
-                  param_jurisdictions_covered, param_custom_polygons_covered, param_differentiate_usage_type,
-                  param_save_range_map_inputs]
-    grm.runGenerateRangeMapTool(parameters, None)
+# # controlling process
+# if __name__ == '__main__':
+#     grm = GenerateRangeMapTool()
+#     # hard code parameters for debugging
+#     param_geodatabase = arcpy.Parameter()
+#     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
+#     param_species = arcpy.Parameter()
+#     param_species.value = 'Falco mexicanus' #'Bidens amplissima' #'Aechmophorus occidentalis' #Bombus suckleyi
+#     param_secondary = arcpy.Parameter()
+#     param_secondary.value = None
+#     #param_secondary.value = "'Schistochilopsis incisa var. opacifolia'" #"'Dodia tarandus';'Dodia verticalis'"
+#     param_version = arcpy.Parameter()
+#     param_version.value = '0.1'
+#     param_stage = arcpy.Parameter()
+#     param_stage.value = 'Auto-generated TEST' # 'Expert reviewed test00' 
+#     param_scope = arcpy.Parameter()
+#     #param_scope.value = None
+#     param_scope.value = 'Canadian'
+#     param_jurisdictions_covered = arcpy.Parameter()
+#     param_jurisdictions_covered.value = None
+#     #param_jurisdictions_covered.value = "'British Columbia'"
+#     param_custom_polygons_covered = arcpy.Parameter()
+#     param_custom_polygons_covered.value = None
+#     #param_custom_polygons_covered.value = 'C:/GIS/EBAR/EBARServer.gdb/Custom'
+#     param_differentiate_usage_type = arcpy.Parameter()
+#     param_differentiate_usage_type.value = 'true'
+#     param_save_range_map_inputs = arcpy.Parameter()
+#     param_save_range_map_inputs.value = 'false'
+#     parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
+#                   param_jurisdictions_covered, param_custom_polygons_covered, param_differentiate_usage_type,
+#                   param_save_range_map_inputs]
+#     grm.runGenerateRangeMapTool(parameters, None)
