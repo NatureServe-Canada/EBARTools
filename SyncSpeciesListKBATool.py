@@ -85,21 +85,12 @@ class SyncSpeciesListKBATool:
                           "IUCN_CD",
                           "IUCN_AssessmentDate",
                           "IUCN_Criteria",
-                          "IUCN_CriteriaVersion",
                           "IUCN_Systems",
-                          "IUCN_PossiblyExtinct",
                           "IUCN_PopulationTrend",
                           "IUCN_PresenceCA",
                           "IUCN_OriginCA",
-                          "IUCN_SeasonalityCA",
                           "IUCN_AOORange",
                           "IUCN_EOORange",
-                          "IUCN_Congregatory",
-                          "IUCN_PopulationSize",
-                          "IUCN_LocationsNumber",
-                          "IUCN_MovementPatterns",
-                          "IUCN_AreaRestricted",
-                          "IUCN_YearOfPopulationEstimate",
                           "PRECAUTIONARY_G_RANK",
                           "PRECAUTIONARY_N_RANK",
                           "PRECAUTIONARY_N_RANK_Breeding",
@@ -120,6 +111,7 @@ class SyncSpeciesListKBATool:
                           "Source_Other",
                           "NSC_Comments",
                           "PotentialKBAs",
+                          "ActiveEBAR",
                           "WDKBAID",
                           "KBAPotential",
                           "KBAPotential_Rationale",
@@ -136,7 +128,10 @@ class SyncSpeciesListKBATool:
                           "Range_N_IUCN_NonBreeding",
                           "Range_G_EBAR",
                           "Range_N_EBAR",
-                          "IsPotentialTrigger"]
+                          "IsPotentialTrigger",
+                          "ECCC_EBARPriority",
+                          "KBATrigger_G_A1_Status",
+                          "KBATrigger_N_A1_Status"]
 
         # Access the dictionary of existing element_national_id and species_id values (in Biotics table)
         element_species_dict = EBARUtils.readElementSpecies(param_geodatabase)
