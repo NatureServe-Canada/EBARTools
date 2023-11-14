@@ -129,7 +129,6 @@ class SyncSpeciesListKBATool:
                           "Range_G_EBAR",
                           "Range_N_EBAR",
                           "IsPotentialTrigger",
-                          "ECCC_EBARPriority",
                           "KBATrigger_G_A1_Status",
                           "KBATrigger_N_A1_Status"]
 
