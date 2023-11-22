@@ -515,7 +515,7 @@ if __name__ == '__main__':
     # param_restrictions = arcpy.Parameter()
     # param_restrictions.value = 'Non-restricted'
     param_sensitivity_restriction_reason = arcpy.Parameter()
-    param_sensitivity_restriction_reason.value = 'XProprietary'
+    param_sensitivity_restriction_reason.value = 'Proprietary'
     parameters = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_source,
                   param_date_received, param_sensitivity_restriction_reason] # param_restrictions]
     itd.runImportTabularDataTool(parameters, None)
