@@ -19,9 +19,9 @@ import ListElementNationalIDsTool
 import SyncSpeciesListBioticsTool
 import AddSynonymsTool
 import ImportExternalRangeReviewTool
-import SyncSpeciesListKBATool
-import BuildEBARDownloadTableTool
-import BuildBulkDownloadTableTool
+# import SyncSpeciesListKBATool
+# import BuildEBARDownloadTableTool
+# import BuildBulkDownloadTableTool
 import ExportInputDataTool
 #import FlagBadDataUsingRangeTool
 import DeleteRangeMapTool
@@ -47,8 +47,8 @@ class Toolbox(object):
 
         # List of tool classes associated with this toolbox
         self.tools = [ImportTabularData, ImportSpatialData, GenerateRangeMap, ListElementNationalIDs,
-                      SyncSpeciesListBiotics, AddSynonyms, ImportExternalRangeReview, SyncSpeciesListKBA,
-                      BuildEBARDownloadTable, BuildBulkDownloadTable, ExportInputData, #FlagBadDataUsingRange,
+                      SyncSpeciesListBiotics, AddSynonyms, ImportExternalRangeReview, ExportInputData,
+                      #SyncSpeciesListKBA, BuildEBARDownloadTable, BuildBulkDownloadTable, #FlagBadDataUsingRange,
                       DeleteRangeMap, ImportVisits, SummarizeDownloads, PublishRangeMap, PublishRangeMapSets,
                       FlagBadDataUsingID, RecordInputFeedback, DeleteInputFeedback, PrepareNSXProTransfer,
                       SyncEcosystemListBiotics]
@@ -116,8 +116,16 @@ class ImportTabularData(object):
             direction='Input')
         param_dataset_restrictions.value = 'Non-restricted'
         
+        # # Sensitive Ecological Data Cat
+        # param_sensitive_ecoogical_data_cat = arcpy.Parameter(
+        #     displayName='Sensitive Ecological Data Cat',
+        #     name='sensitive_ecoogical_data_cat',
+        #     datatype='GPString',
+        #     parameterType='Optional',
+        #     direction='Input')
+        
         params = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_source,
-                  param_date_received, param_dataset_restrictions]
+                  param_date_received, param_dataset_restrictions] #param_sensitive_ecoogical_data_cat]
         return params
 
     def isLicensed(self):
@@ -131,12 +139,21 @@ class ImportTabularData(object):
         ## because filtered picklists cannot be dynamic when published to a geoprocessing service
         #if parameters[0].altered and parameters[0].value:
         #    parameters[3].filter.list = EBARUtils.readDatasetSources(parameters[0].valueAsText, "('T')")
-        domains = arcpy.da.ListDomains(parameters[0].valueAsText)
-        restrictions_list = []
-        for domain in domains:
-            if domain.name == 'Restriction':
-                restrictions_list = list(domain.codedValues.values())
-        parameters[5].filter.list = sorted(restrictions_list)
+
+        # domains = arcpy.da.ListDomains(parameters[0].valueAsText)
+        # restrictions_list = []
+        # for domain in domains:
+        #     if domain.name == 'Restriction':
+        #         restrictions_list = list(domain.codedValues.values())
+        # parameters[5].filter.list = sorted(restrictions_list)
+        # return
+
+        # domains = arcpy.da.ListDomains(parameters[0].valueAsText)
+        # sensitive_ecoogical_data_cat_list = []
+        # for domain in domains:
+        #     if domain.name == 'SensitiveEcologicalDataCat':
+        #         sensitive_ecoogical_data_cat_list = list(domain.codedValues.values())
+        # parameters[5].filter.list = sorted(sensitive_ecoogical_data_cat_list)
         return
 
     def updateMessages(self, parameters):
@@ -216,8 +233,16 @@ class ImportSpatialData(object):
             direction='Input')
         param_dataset_restrictions.value = 'Non-restricted'
         
+        # # Sensitive Ecological Data Cat
+        # param_sensitive_ecoogical_data_cat = arcpy.Parameter(
+        #     displayName='Sensitive Ecological Data Cat',
+        #     name='sensitive_ecoogical_data_cat',
+        #     datatype='GPString',
+        #     parameterType='Optional',
+        #     direction='Input')
+
         params = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_source,
-                  param_date_received, param_dataset_restrictions]
+                  param_date_received, param_dataset_restrictions] #param_sensitive_ecoogical_data_cat]
         return params
 
     def isLicensed(self):
@@ -231,12 +256,21 @@ class ImportSpatialData(object):
         ## because filtered picklists cannot be dynamic when published to a geoprocessing service
         #if parameters[0].altered and parameters[0].value:
         #    parameters[3].filter.list = EBARUtils.readDatasetSources(parameters[0].valueAsText, "('S', 'L', 'P')")
-        domains = arcpy.da.ListDomains(parameters[0].valueAsText)
-        restrictions_list = []
-        for domain in domains:
-            if domain.name == 'Restriction':
-                restrictions_list = list(domain.codedValues.values())
-        parameters[5].filter.list = sorted(restrictions_list)
+
+        # domains = arcpy.da.ListDomains(parameters[0].valueAsText)
+        # restrictions_list = []
+        # for domain in domains:
+        #     if domain.name == 'Restriction':
+        #         restrictions_list = list(domain.codedValues.values())
+        # parameters[5].filter.list = sorted(restrictions_list)
+        # return
+
+        # domains = arcpy.da.ListDomains(parameters[0].valueAsText)
+        # sensitive_ecoogical_data_cat_list = []
+        # for domain in domains:
+        #     if domain.name == 'SensitiveEcologicalDataCat':
+        #         sensitive_ecoogical_data_cat_list = list(domain.codedValues.values())
+        # parameters[5].filter.list = sorted(sensitive_ecoogical_data_cat_list)
         return
 
     def updateMessages(self, parameters):
@@ -724,121 +758,121 @@ class ImportExternalRangeReview(object):
         return
 
 
-class SyncSpeciesListKBA(object):
-    def __init__(self):
-        """Define the tool (tool name is the name of the class)."""
-        self.label = 'Sync Species List KBA'
-        self.description = 'Synchronize the Species tables with WCS KBA updates'
-        self.canRunInBackground = True
+# class SyncSpeciesListKBA(object):
+#     def __init__(self):
+#         """Define the tool (tool name is the name of the class)."""
+#         self.label = 'Sync Species List KBA'
+#         self.description = 'Synchronize the Species tables with WCS KBA updates'
+#         self.canRunInBackground = True
 
-    def getParameterInfo(self):
-        """Define parameter definitions"""
-        # Geodatabase
-        param_geodatabase = arcpy.Parameter(
-            displayName='Geodatabase',
-            name='geodatabase',
-            datatype='DEWorkspace',
-            parameterType='Required',
-            direction='Input')
-        param_geodatabase.filter.list = ['Local Database', 'Remote Database']
+#     def getParameterInfo(self):
+#         """Define parameter definitions"""
+#         # Geodatabase
+#         param_geodatabase = arcpy.Parameter(
+#             displayName='Geodatabase',
+#             name='geodatabase',
+#             datatype='DEWorkspace',
+#             parameterType='Required',
+#             direction='Input')
+#         param_geodatabase.filter.list = ['Local Database', 'Remote Database']
 
-        # CSV
-        param_csv = arcpy.Parameter(
-            displayName='CSV File',
-            name='csv_file',
-            datatype='DEFile',
-            parameterType='Required',
-            direction='Input')
-        param_csv.filter.list = ['txt', 'csv']
+#         # CSV
+#         param_csv = arcpy.Parameter(
+#             displayName='CSV File',
+#             name='csv_file',
+#             datatype='DEFile',
+#             parameterType='Required',
+#             direction='Input')
+#         param_csv.filter.list = ['txt', 'csv']
 
-        params = [param_geodatabase, param_csv]
-        return params
+#         params = [param_geodatabase, param_csv]
+#         return params
 
-    def isLicensed(self):
-        """Set whether tool is licensed to execute."""
-        return True
+#     def isLicensed(self):
+#         """Set whether tool is licensed to execute."""
+#         return True
 
-    def updateParameters(self, parameters):
-        """Modify the values and properties of parameters before internal validation is performed.  This method is
-        called whenever a parameter has been changed."""
-        return
+#     def updateParameters(self, parameters):
+#         """Modify the values and properties of parameters before internal validation is performed.  This method is
+#         called whenever a parameter has been changed."""
+#         return
 
-    def updateMessages(self, parameters):
-        """Modify the messages created by internal validation for each tool parameter.  This method is called
-        after internal validation."""
-        return
+#     def updateMessages(self, parameters):
+#         """Modify the messages created by internal validation for each tool parameter.  This method is called
+#         after internal validation."""
+#         return
 
-    def execute(self, parameters, messages):
-        """The source code of the tool."""
-        sslkba = SyncSpeciesListKBATool.SyncSpeciesListKBATool()
-        sslkba.runSyncSpeciesListKBATool(parameters, messages)
-        return
-
-
-class BuildEBARDownloadTable(object):
-    def __init__(self):
-        """Define the tool (tool name is the name of the class)."""
-        self.label = 'Build EBAR Download Table'
-        self.description = 'Build html table of all Range Maps available for download'
-        self.canRunInBackground = True
-
-    def getParameterInfo(self):
-        """Define parameter definitions"""
-        params = []
-        return params
-
-    def isLicensed(self):
-        """Set whether tool is licensed to execute."""
-        return True
-
-    def updateParameters(self, parameters):
-        """Modify the values and properties of parameters before internal validation is performed.  This method is
-        called whenever a parameter has been changed."""
-        return
-
-    def updateMessages(self, parameters):
-        """Modify the messages created by internal validation for each tool parameter.  This method is called
-        after internal validation."""
-        return
-
-    def execute(self, parameters, messages):
-        """The source code of the tool."""
-        bedt = BuildEBARDownloadTableTool.BuildEBARDownloadTableTool()
-        bedt.runBuildEBARDownloadTableTool(parameters, messages)
-        return
+#     def execute(self, parameters, messages):
+#         """The source code of the tool."""
+#         sslkba = SyncSpeciesListKBATool.SyncSpeciesListKBATool()
+#         sslkba.runSyncSpeciesListKBATool(parameters, messages)
+#         return
 
 
-class BuildBulkDownloadTable(object):
-    def __init__(self):
-        """Define the tool (tool name is the name of the class)."""
-        self.label = 'Build Bulk Download Table'
-        self.description = 'Build html table of all Category - Taxa Groups available for bulk download'
-        self.canRunInBackground = True
+# class BuildEBARDownloadTable(object):
+#     def __init__(self):
+#         """Define the tool (tool name is the name of the class)."""
+#         self.label = 'Build EBAR Download Table'
+#         self.description = 'Build html table of all Range Maps available for download'
+#         self.canRunInBackground = True
 
-    def getParameterInfo(self):
-        """Define parameter definitions"""
-        params = []
-        return params
+#     def getParameterInfo(self):
+#         """Define parameter definitions"""
+#         params = []
+#         return params
 
-    def isLicensed(self):
-        """Set whether tool is licensed to execute."""
-        return True
+#     def isLicensed(self):
+#         """Set whether tool is licensed to execute."""
+#         return True
 
-    def updateParameters(self, parameters):
-        """Modify the values and properties of parameters before internal validation is performed.  This method is
-        called whenever a parameter has been changed."""
-        return
+#     def updateParameters(self, parameters):
+#         """Modify the values and properties of parameters before internal validation is performed.  This method is
+#         called whenever a parameter has been changed."""
+#         return
 
-    def updateMessages(self, parameters):
-        """Modify the messages created by internal validation for each tool parameter.  This method is called
-        after internal validation."""
-        return
+#     def updateMessages(self, parameters):
+#         """Modify the messages created by internal validation for each tool parameter.  This method is called
+#         after internal validation."""
+#         return
 
-    def execute(self, parameters, messages):
-        """The source code of the tool."""
-        bbdt = BuildBulkDownloadTableTool.BuildBulkDownloadTableTool()
-        bbdt.runBuildBulkDownloadTableTool(parameters, messages)
-        return
+#     def execute(self, parameters, messages):
+#         """The source code of the tool."""
+#         bedt = BuildEBARDownloadTableTool.BuildEBARDownloadTableTool()
+#         bedt.runBuildEBARDownloadTableTool(parameters, messages)
+#         return
+
+
+# class BuildBulkDownloadTable(object):
+#     def __init__(self):
+#         """Define the tool (tool name is the name of the class)."""
+#         self.label = 'Build Bulk Download Table'
+#         self.description = 'Build html table of all Category - Taxa Groups available for bulk download'
+#         self.canRunInBackground = True
+
+#     def getParameterInfo(self):
+#         """Define parameter definitions"""
+#         params = []
+#         return params
+
+#     def isLicensed(self):
+#         """Set whether tool is licensed to execute."""
+#         return True
+
+#     def updateParameters(self, parameters):
+#         """Modify the values and properties of parameters before internal validation is performed.  This method is
+#         called whenever a parameter has been changed."""
+#         return
+
+#     def updateMessages(self, parameters):
+#         """Modify the messages created by internal validation for each tool parameter.  This method is called
+#         after internal validation."""
+#         return
+
+#     def execute(self, parameters, messages):
+#         """The source code of the tool."""
+#         bbdt = BuildBulkDownloadTableTool.BuildBulkDownloadTableTool()
+#         bbdt.runBuildBulkDownloadTableTool(parameters, messages)
+#         return
 
 
 class ExportInputData(object):

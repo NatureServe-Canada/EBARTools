@@ -39,9 +39,10 @@ class ExportInputDataTool:
         param_jurisdictions_list = param_jurisdictions_covered.replace("'", '')
         param_jurisdictions_list = param_jurisdictions_list.split(';')
         jur_ids_comma = EBARUtils.buildJurisdictionList(param_geodatabase, param_jurisdictions_list)
-        param_include_cdc = parameters[2].valueAsText
-        param_include_restricted = parameters[3].valueAsText
-        #param_include_other = parameters[4].valueAsText
+        # param_include_cdc = parameters[2].valueAsText
+        # param_include_restricted = parameters[3].valueAsText
+        # #param_include_other = parameters[4].valueAsText
+        # param_output_zip = parameters[4].valueAsText
         param_output_zip = parameters[4].valueAsText
         if param_output_zip[-4:] != '.zip':
             param_output_zip += '.zip'
@@ -72,25 +73,29 @@ class ExportInputDataTool:
         md.description = 'Export of Species data from EBAR-KBA database. ' + \
             'Please see EBARExportReadme.txt for field descriptions.'
         md.credits = 'Please credit original providers as per DatasetSourceCitation field.'
-        if param_include_restricted  == 'true' or param_include_cdc == 'true':
-            md.accessConstraints = 'Some data has restrictions. ' + \
-                'Please check with EBAR-KBA@natureserve.ca before sharing.'
-        else:
-            md.accessConstraints = 'Please credit original providers as per DatasetSourceCitation field.'
+        # if param_include_restricted  == 'true' or param_include_cdc == 'true':
+        #     md.accessConstraints = 'Some data has restrictions. ' + \
+        #         'Please check with EBAR-KBA@natureserve.ca before sharing.'
+        # else:
+        #     md.accessConstraints = 'Please credit original providers as per DatasetSourceCitation field.'
+        md.accessConstraints = 'Please credit original providers as per DatasetSourceCitation field.'
 
         # process points, lines and polygons
         EBARUtils.displayMessage(messages, 'Processing points')
-        arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputPoint', 'points')
-        self.processFeatureClass('points', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
-                                 'EBARPoints', md)
+        arcpy.MakeFeatureLayer_management(param_geodatabase + '/cx_InputPoint', 'points')
+        # self.processFeatureClass('points', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
+        #                          'EBARPoints', md)
+        self.processFeatureClass('points', 'jurs', output_gdb, 'EBARPoints', md)
         EBARUtils.displayMessage(messages, 'Processing lines')
-        arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputLine', 'lines')
-        self.processFeatureClass('lines', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
-                                 'EBARLines', md)
-        EBARUtils.displayMessage(messages, 'Processing EBAR polygons')
-        arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputPolygon', 'ebar_polygons')
-        self.processFeatureClass('ebar_polygons', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
-                                 'EBARPolygons', md)
+        arcpy.MakeFeatureLayer_management(param_geodatabase + '/cx_InputLine', 'lines')
+        # self.processFeatureClass('lines', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
+        #                          'EBARLines', md)
+        self.processFeatureClass('lines', 'jurs', output_gdb, 'EBARLines', md)
+        EBARUtils.displayMessage(messages, 'Processing polygons')
+        arcpy.MakeFeatureLayer_management(param_geodatabase + '/cx_InputPolygon', 'ebar_polygons')
+        # self.processFeatureClass('ebar_polygons', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
+        #                          'EBARPolygons', md)
+        self.processFeatureClass('ebar_polygons', 'jurs', output_gdb, 'EBARPolygons', md)
         #EBARUtils.displayMessage(messages, 'Processing Other polygons')
         #arcpy.MakeFeatureLayer_management(param_geodatabase + '/x_InputPolygon', 'other_polygons')
         #self.processFeatureClass('other_polygons', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
@@ -99,19 +104,22 @@ class ExportInputDataTool:
         # process bad points, lines and polygons
         EBARUtils.displayMessage(messages, 'Processing bad points')
         #arcpy.MakeFeatureLayer_management(param_geodatabase + '/BadInputPoint', 'bad_points')
-        arcpy.MakeFeatureLayer_management(param_geodatabase + '/xb_InputPoint', 'bad_points')
-        self.processFeatureClass('bad_points', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
-                                 'BadEBARPoints', md)
+        arcpy.MakeFeatureLayer_management(param_geodatabase + '/cxb_InputPoint', 'bad_points')
+        # self.processFeatureClass('bad_points', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
+        #                          'BadEBARPoints', md)
+        self.processFeatureClass('bad_points', 'jurs', output_gdb, 'BadEBARPoints', md)
         EBARUtils.displayMessage(messages, 'Processing bad lines')
         #arcpy.MakeFeatureLayer_management(param_geodatabase + '/BadInputLine', 'bad_lines')
-        arcpy.MakeFeatureLayer_management(param_geodatabase + '/xb_InputLine', 'bad_lines')
-        self.processFeatureClass('bad_lines', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
-                                 'BadEBARLines', md)
+        arcpy.MakeFeatureLayer_management(param_geodatabase + '/cxb_InputLine', 'bad_lines')
+        # self.processFeatureClass('bad_lines', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
+        #                          'BadEBARLines', md)
+        self.processFeatureClass('bad_lines', 'jurs', output_gdb, 'BadEBARLines', md)
         EBARUtils.displayMessage(messages, 'Processing bad EBAR polygons')
         #arcpy.MakeFeatureLayer_management(param_geodatabase + '/BadInputPolygon', 'bad_ebar_polygons')
-        arcpy.MakeFeatureLayer_management(param_geodatabase + '/xb_InputPolygon', 'bad_ebar_polygons')
-        self.processFeatureClass('bad_ebar_polygons', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
-                                 'BadEBARPolygons', md)
+        arcpy.MakeFeatureLayer_management(param_geodatabase + '/cxb_InputPolygon', 'bad_ebar_polygons')
+        # self.processFeatureClass('bad_ebar_polygons', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
+        #                          'BadEBARPolygons', md)
+        self.processFeatureClass('bad_ebar_polygons', 'jurs', output_gdb, 'BadEBARPolygons', md)
         #EBARUtils.displayMessage(messages, 'Processing bad Other polygons')
         #arcpy.MakeFeatureLayer_management(param_geodatabase + '/xb_InputPolygon', 'bad_other_polygons')
         #self.processFeatureClass('bad_other_polygons', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
@@ -127,20 +135,27 @@ class ExportInputDataTool:
         EBARUtils.displayMessage(messages,
                                  'Please download output from https://gis.natureserve.ca/download/' + param_output_zip)
 
-    def processFeatureClass(self, fclyr, jurs, include_cdc, include_restricted, output_gdb, output_fc, md):
+    #def processFeatureClass(self, fclyr, jurs, include_cdc, include_restricted, output_gdb, output_fc, md):
+    def processFeatureClass(self, fclyr, jurs, output_gdb, output_fc, md):
         # select features using non-spatial criteria
         where_clause = None
-        if include_cdc == 'false':
-            where_clause = 'CDCJurisdictionID IS NULL'
-        if include_restricted == 'false':
-            if not where_clause:
-               where_clause = ''
-            else:
-                where_clause += ' AND '
-            where_clause += "Restrictions != 'R'"
+        # if include_cdc == 'false':
+        # potentially not needed due to permissions, but provides extra fallback
+        where_clause = 'CDCJurisdictionID IS NULL'
+        # if not where_clause:
+        #     where_clause = ''
+        # else:
+        #     where_clause += ' AND '
+        # now uses data provider permissions (handled in cx_* and cxb_* views)
+        # if include_restricted == 'false':
+        #     if not where_clause:
+        #        where_clause = ''
+        #     else:
+        #         where_clause += ' AND '
+        #     where_clause += "Restrictions != 'R'"
         if fclyr == 'ebar_polygons':
             if not where_clause:
-               where_clause = ''
+                where_clause = ''
             else:
                 where_clause += ' AND '
             # these types go to other polygons
@@ -148,7 +163,7 @@ class ExportInputDataTool:
                 "'Area of Occupancy', 'Other', 'Other Observations', 'Other Range')"
         if fclyr == 'other_polygons' or fclyr == 'bad_other_polygons':
             if not where_clause:
-               where_clause = ''
+                where_clause = ''
             else:
                 where_clause += ' AND '
             where_clause += "DatasetType IN ('Critical Habitat', 'Range Estimate', 'Habitat Suitability'"
@@ -188,7 +203,9 @@ class ExportInputDataTool:
         field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'national_fr_name', 'NATIONAL_FR_NAME', 'Text'))
         field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'synonymname', 'SynonymName', 'Text'))
         field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'datereceived', 'DateReceived', 'Date'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'restrictions', 'Restrictions', 'Text'))
+        # field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'restrictions', 'Restrictions', 'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'sensitiveecologicaldatacat',
+                                                            'SensitiveEcologicalDataCat', 'Text'))
         field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'datasetname', 'DatasetName', 'Text'))
         field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'datasetsourcename', 'DatasetSourceName', 'Text'))
         field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'datasetsourcecitation', 'DatasetSourceCitation',

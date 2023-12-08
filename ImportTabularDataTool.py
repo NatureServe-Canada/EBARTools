@@ -57,7 +57,8 @@ class ImportTabularDataTool:
         param_dataset_name = parameters[2].valueAsText
         param_dataset_source = parameters[3].valueAsText
         param_date_received = parameters[4].valueAsText
-        param_restrictions = parameters[5].valueAsText
+        #param_restrictions = parameters[5].valueAsText
+        param_sensitive_ecoogical_data_cat = parameters[5].valueAsText
 
         # check dataset source
         if param_dataset_source not in EBARUtils.readDatasetSources(param_geodatabase, "('T')"):
@@ -82,8 +83,8 @@ class ImportTabularDataTool:
         # match field_dict with source
         field_dict = TabularFieldMapping.tabular_field_mapping_dict[param_dataset_source]
 
-        # encode restriction using domain
-        param_restrictions = EBARUtils.encodeRestriction(param_geodatabase, param_restrictions)
+        # # encode restriction using domain
+        # param_restrictions = EBARUtils.encodeRestriction(param_geodatabase, param_restrictions)
 
         # check/add InputDataset row
         dataset = param_dataset_name + ', ' + param_dataset_source + ', ' + str(param_date_received)
@@ -91,8 +92,9 @@ class ImportTabularDataTool:
         input_dataset_id, dataset_exists = EBARUtils.checkAddInputDataset(param_geodatabase,
                                                                           param_dataset_name,
                                                                           dataset_source_id,
-                                                                          param_date_received,
-                                                                          param_restrictions)
+                                                                          param_date_received)
+                                                                          #param_sensitive_ecoogical_data_cat)
+                                                                          #param_restrictions)
 
         # read existing species into dict
         EBARUtils.displayMessage(messages, 'Reading full list of Species and Synonyms')
@@ -503,15 +505,17 @@ class ImportTabularDataTool:
 #     param_geodatabase = arcpy.Parameter()
 #     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
 #     param_raw_data_file = arcpy.Parameter()
-#     param_raw_data_file.value = 'C:/GIS/EBAR/BBA/QC Northern/naturecounts_data.csv'
+#     param_raw_data_file.value = 'C:/GIS/EBAR/BBA/QC Northern/naturecounts_data_test.csv'
 #     param_dataset_name = arcpy.Parameter()
-#     param_dataset_name.value = 'QC Northen BBA Test'
+#     param_dataset_name.value = 'QC Northen BBA Test4'
 #     param_dataset_source = arcpy.Parameter()
 #     param_dataset_source.value = 'QC Breeding Bird Atlas'
 #     param_date_received = arcpy.Parameter()
 #     param_date_received.value = 'July 20, 2022'
-#     param_restrictions = arcpy.Parameter()
-#     param_restrictions.value = 'Non-restricted'
+#     # param_restrictions = arcpy.Parameter()
+#     # param_restrictions.value = 'Non-restricted'
+#     param_sensitive_ecoogical_data_cat = arcpy.Parameter()
+#     param_sensitive_ecoogical_data_cat.value = 'Proprietary'
 #     parameters = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_source,
-#                   param_date_received, param_restrictions]
+#                   param_date_received, param_sensitive_ecoogical_data_cat] # param_restrictions]
 #     itd.runImportTabularDataTool(parameters, None)

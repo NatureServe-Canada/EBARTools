@@ -41,7 +41,8 @@ class ImportSpatialDataTool:
         param_dataset_name = parameters[2].valueAsText
         param_dataset_source = parameters[3].valueAsText
         param_date_received = parameters[4].valueAsText
-        param_restrictions = parameters[5].valueAsText
+        param_sensitive_ecoogical_data_cat = parameters[5].valueAsText
+        #param_restrictions = parameters[5].valueAsText
 
         # check dataset source
         if param_dataset_source not in EBARUtils.readDatasetSources(param_geodatabase, "('S', 'L', 'P')"):
@@ -254,8 +255,8 @@ class ImportSpatialDataTool:
         type_dict['BreedingAndBehaviourCode'] = 'TEXT'
         type_dict['IndividualCount'] = 'LONG'
 
-        # encode restriction using domain
-        param_restrictions = EBARUtils.encodeRestriction(param_geodatabase, param_restrictions)
+        # # encode restriction using domain
+        # param_restrictions = EBARUtils.encodeRestriction(param_geodatabase, param_restrictions)
 
         # check/add InputDataset row
         dataset = param_dataset_name + ', ' + param_dataset_source + ', ' + str(param_date_received)
@@ -263,8 +264,9 @@ class ImportSpatialDataTool:
         input_dataset_id, dataset_exists = EBARUtils.checkAddInputDataset(param_geodatabase,
                                                                           param_dataset_name,
                                                                           dataset_source_id,
-                                                                          param_date_received,
-                                                                          param_restrictions)
+                                                                          param_date_received)
+                                                                          #param_sensitive_ecoogical_data_cat)
+                                                                          #param_restrictions)
 
         # read existing species into dict
         EBARUtils.displayMessage(messages, 'Reading full list of Species and Synonyms')
@@ -668,15 +670,17 @@ class ImportSpatialDataTool:
 #     param_geodatabase = arcpy.Parameter()
 #     param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
 #     param_import_feature_class = arcpy.Parameter()
-#     param_import_feature_class.value = 'C:/GIS/EBAR/CDN_CDC_Data/Manitoba/Occurrence_KBA_MBCDC20230621_v2.gdb/SFLN_KBA_MBCDC20230621_v2'
+#     param_import_feature_class.value = 'C:/GIS/EBAR/EBARServer.gdb/sk_sfpt_merge_test'
 #     param_dataset_name = arcpy.Parameter()
-#     param_dataset_name.value = 'MB Test4'
+#     param_dataset_name.value = 'Saskatchewan Source Feature Points 3'
 #     param_dataset_source = arcpy.Parameter()
-#     param_dataset_source.value = 'MB Source Feature Lines'
+#     param_dataset_source.value = 'SK Source Feature Points'
 #     param_date_received = arcpy.Parameter()
-#     param_date_received.value = 'August 9, 2023'
-#     param_restrictions = arcpy.Parameter()
-#     param_restrictions.value = 'Restricted'
+#     param_date_received.value = 'July 21, 2022'
+#     # param_restrictions = arcpy.Parameter()
+#     # param_restrictions.value = 'Non-restricted'
+#     param_sensitivity_restriction_reason = arcpy.Parameter()
+#     param_sensitivity_restriction_reason.value = 'Proprietary'
 #     parameters = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_source,
-#                   param_date_received, param_restrictions]
+#                   param_date_received, param_sensitivity_restriction_reason] # param_restrictions]
 #     isd.runImportSpatialDataTool(parameters, None)

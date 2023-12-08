@@ -800,26 +800,32 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                   [['InputDatasetID','COUNT']],
                                   [table_name_prefix + 'DatasetSource.DatasetSourceName'])
 
-        # create RangeMapInput records from Non-restricted for overlay display in EBAR Reviewer
-        #if 1 == 1:
+        # create RangeMapInput records for overlay display in EBAR Reviewer
         if param_save_range_map_inputs == 'true':
             EBARUtils.displayMessage(messages, 'Creating Range Map Input records for overlay display in EBAR Reviewer')
-            temp_restrictions = 'TempRestrictions' + str(start_time.year) + str(start_time.month) + \
-                str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
-            arcpy.TableToTable_conversion(param_geodatabase + '/RestrictedJurisdictionSpecies', param_geodatabase,
-                                          temp_restrictions, 'SpeciesID IN (' + species_ids + ')')
-            arcpy.AddJoin_management('pairwise_intersect_layer', table_name_prefix + 'DatasetSource.CDCJurisdictionID',
-                                     param_geodatabase + '/' + temp_restrictions, 'CDCJurisdictionID', 'KEEP_ALL')
+            # temp_restrictions = 'TempRestrictions' + str(start_time.year) + str(start_time.month) + \
+            #     str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
+            # arcpy.TableToTable_conversion(param_geodatabase + '/RestrictedJurisdictionSpecies', param_geodatabase,
+            #                             temp_restrictions, 'SpeciesID IN (' + species_ids + ')')
+            # arcpy.AddJoin_management('pairwise_intersect_layer', table_name_prefix + 'DatasetSource.CDCJurisdictionID',
+            #                         param_geodatabase + '/' + temp_restrictions, 'CDCJurisdictionID', 'KEEP_ALL')
+            # arcpy.SelectLayerByAttribute_management('pairwise_intersect_layer', 'SUBSET_SELECTION',
+            #                                         '(' + table_name_prefix + "InputDataset.Restrictions = 'N') OR" +
+            #                                         '(' + table_name_prefix + "InputDataset.Restrictions = 'R' AND " +
+            #                                         table_name_prefix + "DatasetSource.RestrictionBySpecies = 1 AND " +
+            #                                         table_name_prefix + "DatasetSource.CDCJurisdictionID IS NOT NULL AND " +
+            #                                         table_name_prefix + temp_restrictions + '.SpeciesID IS NULL)')
+            arcpy.AddJoin_management('pairwise_intersect_layer', 'SpeciesID', param_geodatabase + '/ESTH',
+                                     'SpeciesID', 'KEEP_ALL')
             arcpy.SelectLayerByAttribute_management('pairwise_intersect_layer', 'SUBSET_SELECTION',
-                                                    '(' + table_name_prefix + "InputDataset.Restrictions = 'N') OR" +
-                                                    '(' + table_name_prefix + "InputDataset.Restrictions = 'R' AND " +
-                                                    table_name_prefix + "DatasetSource.RestrictionBySpecies = 1 AND " +
-                                                    table_name_prefix + "DatasetSource.CDCJurisdictionID IS NOT NULL AND " +
-                                                    table_name_prefix + temp_restrictions + '.SpeciesID IS NULL)')
+                                                    '(' + table_name_prefix + 'ESTH.SpeciesID IS NULL OR ' +
+                                                    table_name_prefix + 'DatasetSource.CDCJurisdictionID IS NULL) AND (' +
+                                                    table_name_prefix + "DatasetSource.PermitEBARReviewerApp = 'Y' OR " +
+                                                    table_name_prefix + "DatasetSource.PermitAll = 'Y')")
             arcpy.AddJoin_management('pairwise_intersect_layer', 'SpeciesID',
-                                     param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', 'SpeciesID', 'KEEP_COMMON')
+                                    param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', 'SpeciesID', 'KEEP_COMMON')
             arcpy.AddJoin_management('pairwise_intersect_layer', 'SynonymID',
-                                     param_geodatabase + '/Synonym', 'SynonymID', 'KEEP_ALL')
+                                    param_geodatabase + '/Synonym', 'SynonymID', 'KEEP_ALL')
             # first dissolve on FID_TempAllIinputs to rebuild polygons split during Ecoshape intersect
             temp_dissolve = 'TempDissolve' + str(start_time.year) + str(start_time.month) + \
                 str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
@@ -1021,6 +1027,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             del insert_cursor
             arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'Synonym')
             arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'BIOTICS_ELEMENT_NATIONAL')
+            arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'ESTH')
 
         # get synonyms used
         EBARUtils.displayMessage(messages, 'Documenting Synonyms used')
@@ -1180,10 +1187,9 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             arcpy.Delete_management(temp_line_buffer)
         if arcpy.Exists(temp_point_buffer):
             arcpy.Delete_management(temp_point_buffer)
-        #if 1 == 1:
         if param_save_range_map_inputs == 'true':
-            if arcpy.Exists(temp_restrictions):
-                arcpy.Delete_management(temp_restrictions)
+            # if arcpy.Exists(temp_restrictions):
+            #     arcpy.Delete_management(temp_restrictions)
             if arcpy.Exists(temp_dissolve):
                 arcpy.Delete_management(temp_dissolve)
             if arcpy.Exists(temp_batch):

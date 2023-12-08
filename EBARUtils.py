@@ -249,7 +249,8 @@ def getUniqueID(table, id_field, object_id):
     return unique_id
 
 
-def checkAddInputDataset(geodatabase, dataset_name, dataset_source_id, date_received, restrictions):
+def checkAddInputDataset(geodatabase, dataset_name, dataset_source_id, date_received):
+                         #sensitive_ecoogical_data_cat): # restrictions):
     """If Dataset already exists (name, source, date), return id and true; otherwise, add and return id and false"""
     input_dataset_id = None
 
@@ -264,9 +265,12 @@ def checkAddInputDataset(geodatabase, dataset_name, dataset_source_id, date_rece
             return input_dataset_id, True
 
     # new
-    dataset_fields = ['DatasetName', 'DatasetSourceID', 'DateReceived', 'Restrictions']
+    # dataset_fields = ['DatasetName', 'DatasetSourceID', 'DateReceived', 'Restrictions']
+    dataset_fields = ['DatasetName', 'DatasetSourceID', 'DateReceived'] #, 'SensitiveEcologicalDataCat']
     with arcpy.da.InsertCursor(geodatabase + '/InputDataset', dataset_fields) as cursor:
-        object_id = cursor.insertRow([dataset_name, dataset_source_id, date_received, restrictions])
+        # object_id = cursor.insertRow([dataset_name, dataset_source_id, date_received, restrictions])
+        object_id = cursor.insertRow([dataset_name, dataset_source_id, date_received])
+                                      #sensitive_ecoogical_data_cat])
     input_dataset_id = getUniqueID(geodatabase + '/InputDataset', 'InputDatasetID', object_id)
     return input_dataset_id, False
 
@@ -506,15 +510,15 @@ def readDatasetSources(param_geodatabase, dataset_source_type):
     return source_list
 
 
-def encodeRestriction(geodatabase, restriction):
-    """encode restriction using domain"""
-    domains = arcpy.da.ListDomains(geodatabase)
-    for domain in domains:
-        if domain.name == 'Restriction':
-            for key in domain.codedValues.keys():
-                if domain.codedValues[key] == restriction:
-                    restriction = key
-    return restriction
+# def encodeRestriction(geodatabase, restriction):
+#     """encode restriction using domain"""
+#     domains = arcpy.da.ListDomains(geodatabase)
+#     for domain in domains:
+#         if domain.name == 'Restriction':
+#             for key in domain.codedValues.keys():
+#                 if domain.codedValues[key] == restriction:
+#                     restriction = key
+#     return restriction
 
 
 def getTableNamePrefix(geodatabase):

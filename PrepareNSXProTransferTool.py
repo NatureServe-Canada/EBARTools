@@ -46,12 +46,14 @@ class PrepareNSXProTransferTool:
             # record counts
             count_dict = {}
 
-            # apply species susceptible to persecution and harm (STPH) exclusions then dataset inclusions
+            # apply species susceptible to persecution and harm (STPH) rules then permissions
             # reset to NULLs in case rules/datasets have changed since last transfer
             EBARUtils.displayMessage(messages, 'Resetting transfer fields')
             arcpy.MakeTableView_management(param_geodatabase + '/' + spatial_input, 'input_view',
-                                           'NSXProTransfer IS NOT NULL OR AllowedPrecisionSquareMiles IS NOT NULL')
-            arcpy.CalculateField_management('input_view', 'NSXProTransfer', 'None')
+                                           #'NSXProTransfer IS NOT NULL OR AllowedPrecisionSquareMiles IS NOT NULL')
+                                           'PermitNSXProTransfer IS NOT NULL OR AllowedPrecisionSquareMiles IS NOT NULL')
+            #arcpy.CalculateField_management('input_view', 'NSXProTransfer', 'None')
+            arcpy.CalculateField_management('input_view', 'PermitNSXProTransfer', 'None')
             arcpy.CalculateField_management('input_view', 'AllowedPrecisionSquareMiles', 'None')
             arcpy.Delete_management('input_view')
 
@@ -75,7 +77,7 @@ class PrepareNSXProTransferTool:
                     self.applyJurisdictionSpecies(param_geodatabase, table_name_prefix, spatial_input, jurs,
                                                   row[table_name_prefix + 'SpeciesSTPH.SpeciesID'], None,
                                                   row[table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles'],
-                                                  count_dict)
+                                                  count_dict, messages)
             if row:
                 del row
             del cursor
@@ -93,7 +95,7 @@ class PrepareNSXProTransferTool:
                                                   [row[table_name_prefix + 'Jurisdiction.JurisdictionAbbreviation']],
                                                   row[table_name_prefix + 'SpeciesSTPH.SpeciesID'], None,
                                                   row[table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles'],
-                                                  count_dict)
+                                                  count_dict, messages)
             if row:
                 del row
             del cursor
@@ -109,13 +111,13 @@ class PrepareNSXProTransferTool:
                     self.applyJurisdictionSpecies(param_geodatabase, table_name_prefix, spatial_input, jurs,
                                                   row[table_name_prefix + 'SpeciesSTPH.SpeciesID'], None,
                                                   row[table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles'],
-                                                  count_dict)
+                                                  count_dict, messages)
             if row:
                 del row
             del cursor
 
             # 4. NSC/CDC by jurisdiction STPHs
-            EBARUtils.displayMessage(messages, 'Applying NSC/CDC by Jurisdictional STPHs')
+            EBARUtils.displayMessage(messages, 'Applying NSC/CDC Jurisdictional STPHs')
             row = None
             with arcpy.da.SearchCursor('stph_view', [table_name_prefix + 'SpeciesSTPH.SpeciesID',
                                                      table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles',
@@ -127,7 +129,7 @@ class PrepareNSXProTransferTool:
                                                   [row[table_name_prefix + 'Jurisdiction.JurisdictionAbbreviation']],
                                                   row[table_name_prefix + 'SpeciesSTPH.SpeciesID'], None,
                                                   row[table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles'],
-                                                  count_dict)
+                                                  count_dict, messages)
             if row:
                 del row
             del cursor
@@ -139,7 +141,9 @@ class PrepareNSXProTransferTool:
             row = None
             with arcpy.da.SearchCursor(param_geodatabase + '/DatasetSource',
                                        ['DatasetSourceID', 'AllowedPrecisionSquareMiles'],
-                                       "NSXProTransfer='Y'") as cursor:
+                                       #"(NSXProTransfer = 'Y') OR (PermitAll = 'Y')") as cursor:
+                                       "(PermitNSXProTransfer = 'Y') OR (PermitAll = 'Y')") as cursor:
+                                       #"NSXProTransfer='Y'") as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     # get InputDatasetIDs
                     input_dataset_ids = []
@@ -151,8 +155,9 @@ class PrepareNSXProTransferTool:
                     if id_row:
                         del id_row
                     del id_cursor
-                    self.applyJurisdictionSpecies(param_geodatabase, table_name_prefix, spatial_input, jurs, None,
-                                                  input_dataset_ids, row['AllowedPrecisionSquareMiles'], count_dict)
+                    if len(input_dataset_ids) > 0:
+                        self.applyJurisdictionSpecies(param_geodatabase, table_name_prefix, spatial_input, jurs, None,
+                                                      input_dataset_ids, row['AllowedPrecisionSquareMiles'], count_dict, messages)
             if row:
                 del row
             del cursor
@@ -170,15 +175,15 @@ class PrepareNSXProTransferTool:
 
 
     def applyJurisdictionSpecies(self, param_geodatabase, table_name_prefix, spatial_input, jurs, species_id,
-                                 input_dataset_ids, allowed_precision_sq_miles, count_dict):
+                                 input_dataset_ids, allowed_precision_sq_miles, count_dict, messages):
         """apply rules for a single step"""
-        # SpeciesID is provided for STPH exclusion/limit rules, InputDatasetIDs for inclusion rules
+        # SpeciesID is provided for ESTH rules, InputDatasetIDs for permissions
         if species_id:
             where = 'SpeciesID = ' + str(species_id) # + ' AND NSXProTransfer IS NULL'
         else:
             where = 'InputDatasetID IN (' + ','.join(map(str, input_dataset_ids)) + ')'
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/'+ spatial_input, 'input_lyr', where)
-
+        
         # select by Location interesting jur(s) buffers
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/JurisdictionBufferFull', 'jurbuffer_lyr')
         arcpy.AddJoin_management('jurbuffer_lyr', 'JurisdictionID', param_geodatabase + '/Jurisdiction',
@@ -188,12 +193,13 @@ class PrepareNSXProTransferTool:
                                                 "'{0}'".format("','".join(jurs)) + ')')
         arcpy.SelectLayerByLocation_management('input_lyr', 'INTERSECT', 'jurbuffer_lyr')
         update_row = None
-        with arcpy.da.UpdateCursor('input_lyr', ['NSXProTransfer', 'AllowedPrecisionSquareMiles']) as update_cursor:
+        #with arcpy.da.UpdateCursor('input_lyr', ['NSXProTransfer', 'AllowedPrecisionSquareMiles']) as update_cursor:
+        with arcpy.da.UpdateCursor('input_lyr', ['PermitNSXProTransfer', 'AllowedPrecisionSquareMiles']) as update_cursor:
             for update_row in EBARUtils.updateCursor(update_cursor):
                 update = False
                 nsx_pro_transfer = None
                 if species_id:
-                    # STPH exclusion/limit rule
+                    # ESTH rule
                     if not update_row['AllowedPrecisionSquareMiles']:
                         # no previous rule
                         update = True
@@ -203,19 +209,18 @@ class PrepareNSXProTransferTool:
                         update = True
                         allowed_prec = allowed_precision_sq_miles
                 else:
-                    # NSC/CDC inclusion rule
+                    # Permission
+                    update = True
                     if update_row['AllowedPrecisionSquareMiles']:
-                        # existing rule
+                        # ESTH rule set earlier
                         allowed_prec = update_row['AllowedPrecisionSquareMiles']
-                    else:
-                        update = True
-                        allowed_prec = 0 # precise
-                    if allowed_precision_sq_miles != allowed_prec:
-                        update = True
                         if allowed_precision_sq_miles > allowed_prec:
                             # keep coarsest of all rules
                             allowed_prec = allowed_precision_sq_miles
-                    if update and allowed_prec < 200000000: # NS magic number for exclude
+                    else:
+                        # no ESTH rule set earlier
+                        allowed_prec = allowed_precision_sq_miles
+                    if  allowed_prec < 200000000: # NS magic number for exclude
                         nsx_pro_transfer = 'Y'
                 if update:
                     update_cursor.updateRow([nsx_pro_transfer, allowed_prec])
@@ -237,7 +242,7 @@ class PrepareNSXProTransferTool:
 #     pnpt = PrepareNSXProTransferTool()
 #     # hard code parameters for debugging
 #     param_geodatabase = arcpy.Parameter()
-#     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
+#     param_geodatabase.value = 'C:/GIS/EBAR/NSXProDebug.gdb'
 #     parameters = [param_geodatabase]
 #     pnpt.runPrepareNSXProTransferTool(parameters, None)
 
