@@ -27,13 +27,13 @@ import json
 # shared folders and addresses
 resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
 temp_folder = 'C:/GIS/EBAR/temp'
-download_folder = 'C:/GIS/EBAR/pub/download'
-#download_folder = 'F:/download'
+#download_folder = 'C:/GIS/EBAR/pub/download'
+download_folder = 'F:/download'
 download_url = 'https://gis.natureserve.ca/download'
 #nsx_species_search_url = 'https://explorer.natureserve.org/api/data/search'
 nsx_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/'
-#log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
-log_folder = 'C:/GIS/EBAR/temp'
+log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
+#log_folder = 'C:/GIS/EBAR/temp'
 
 
 # various services
@@ -1020,8 +1020,10 @@ def inputSelectAndBuffer(geodatabase, input_features, range_map_id, table_name_p
                              geodatabase + '/DatasetSource', 'DatasetSourceID', 'KEEP_COMMON')
     where_clause = table_name_prefix + input_features + '.SpeciesID IN (' + species_ids + ') AND (' + \
                    table_name_prefix + input_features + '.Accuracy IS NULL OR ' + table_name_prefix + \
-                   input_features + '.Accuracy <= ' + str(worst_accuracy) + ') AND ((' + table_name_prefix + \
-                   "DatasetSource.DatasetType IN ('Element Occurrences', " + \
+                   input_features + '.Accuracy <= ' + str(worst_accuracy) + ') AND (' + table_name_prefix + \
+                   "DatasetSource.PermitAll = 'Y' OR " + table_name_prefix + \
+                   "DatasetSource.PermitNSCBiodiversityScience = 'Y')" + \
+                   ' AND ((' + table_name_prefix + "DatasetSource.DatasetType IN ('Element Occurrences', " + \
                    "'Source Features', 'Species Observations') AND " + table_name_prefix + input_features + \
                    '.MaxDate IS NOT NULL) OR (' + table_name_prefix + 'DatasetSource.DatasetType IN ' + \
                    "('Critical Habitat', 'Range Estimate', 'Habitat Suitabilty')"
