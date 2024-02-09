@@ -2,38 +2,34 @@
 # Credits: Randal Greene, Christine Terwissen, Meg Southee
 # © NatureServe Canada 2020 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
-# Program: EBAR Tools.pyt
-# ArcGIS Python toolbox for importing species datasets and generating EBAR maps
-
-# Notes:
-# - following 120 maximum line length "convention"
-# - tested with ArcGIS Pro 2.8.1
+# Program: EBAR Tools Stub.pyt
+# Workaround for tool sharing issues
 
 
 # import python packages
 import arcpy
-import ImportTabularDataTool
-import ImportSpatialDataTool
-import GenerateRangeMapTool
+# import ImportTabularDataTool
+# import ImportSpatialDataTool
+# import GenerateRangeMapTool
 import ListElementNationalIDsTool
-import SyncSpeciesListBioticsTool
-import AddSynonymsTool
-import ImportExternalRangeReviewTool
-import SyncSpeciesListKBATool
-import BuildEBARDownloadTableTool
-import BuildBulkDownloadTableTool
-import ExportInputDataTool
-#import FlagBadDataUsingRangeTool
-import DeleteRangeMapTool
-import ImportVisitsTool
-import SummarizeDownloadsTool
-import PublishRangeMapTool
-import PublishRangeMapSetsTool
-import FlagBadDataUsingIDTool
-import RecordInputFeedbackTool
-import DeleteInputFeedbackTool
-import PrepareNSXProTransferTool
-import SyncEcosystemListBioticsTool
+# import SyncSpeciesListBioticsTool
+# import AddSynonymsTool
+# import ImportExternalRangeReviewTool
+# import SyncSpeciesListKBATool
+# import BuildEBARDownloadTableTool
+# import BuildBulkDownloadTableTool
+# import ExportInputDataTool
+# #import FlagBadDataUsingRangeTool
+# import DeleteRangeMapTool
+# import ImportVisitsTool
+# import SummarizeDownloadsTool
+# import PublishRangeMapTool
+# import PublishRangeMapSetsTool
+# import FlagBadDataUsingIDTool
+# import RecordInputFeedbackTool
+# import DeleteInputFeedbackTool
+# import PrepareNSXProTransferTool
+# import SyncEcosystemListBioticsTool
 import EBARUtils
 import datetime
 import locale
@@ -164,8 +160,6 @@ class ImportTabularData(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        itd = ImportTabularDataTool.ImportTabularDataTool()
-        itd.runImportTabularDataTool(parameters, messages)
         return
 
 
@@ -282,8 +276,6 @@ class ImportSpatialData(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        isd = ImportSpatialDataTool.ImportSpatialDataTool()
-        isd.runImportSpatialDataTool(parameters, messages)
         return
 
 
@@ -445,8 +437,6 @@ class GenerateRangeMap(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        grm = GenerateRangeMapTool.GenerateRangeMapTool()
-        grm.runGenerateRangeMapTool(parameters, messages)
         return
 
 
@@ -539,8 +529,6 @@ class SyncSpeciesListBiotics(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        ssl = SyncSpeciesListBioticsTool.SyncSpeciesListBioticsTool()
-        ssl.runSyncSpeciesListBioticsTool(parameters, messages)
         return
 
 
@@ -590,8 +578,6 @@ class AddSynonyms(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        ast = AddSynonymsTool.AddSynonymsTool()
-        ast.runAddSynonymsTool(parameters, messages)
         return
 
 
@@ -747,8 +733,6 @@ class ImportExternalRangeReview(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        ierr = ImportExternalRangeReviewTool.ImportExternalRangeReviewTool()
-        ierr.runImportExternalRangeReviewTool(parameters, messages)
         return
 
 
@@ -798,8 +782,6 @@ class SyncSpeciesListKBA(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        sslkba = SyncSpeciesListKBATool.SyncSpeciesListKBATool()
-        sslkba.runSyncSpeciesListKBATool(parameters, messages)
         return
 
 
@@ -831,8 +813,6 @@ class BuildEBARDownloadTable(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        bedt = BuildEBARDownloadTableTool.BuildEBARDownloadTableTool()
-        bedt.runBuildEBARDownloadTableTool(parameters, messages)
         return
 
 
@@ -864,8 +844,6 @@ class BuildBulkDownloadTable(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        bbdt = BuildBulkDownloadTableTool.BuildBulkDownloadTableTool()
-        bbdt.runBuildBulkDownloadTableTool(parameters, messages)
         return
 
 
@@ -965,8 +943,6 @@ class ExportInputData(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        ied = ExportInputDataTool.ExportInputDataTool()
-        ied.runExportInputDataTool(parameters, messages)
         return
 
 
@@ -1063,8 +1039,6 @@ class DeleteRangeMap(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        drm = DeleteRangeMapTool.DeleteRangeMapTool()
-        drm.runDeleteRangeMapTool(parameters, messages)
         return
 
 
@@ -1135,8 +1109,6 @@ class ImportVisits(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        iv = ImportVisitsTool.ImportVisitsTool()
-        iv.runImportVisitsTool(parameters, messages)
         return
 
 
@@ -1168,8 +1140,6 @@ class SummarizeDownloads(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        sd = SummarizeDownloadsTool.SummarizeDownloadsTool()
-        sd.runSummarizeDownloadsTool(parameters, messages)
         return
 
 
@@ -1214,8 +1184,6 @@ class PublishRangeMap(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        prm = PublishRangeMapTool.PublishRangeMapTool()
-        prm.runPublishRangeMapTool(parameters, messages)
         return
 
 
@@ -1259,8 +1227,6 @@ class PublishRangeMapSets(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        prms = PublishRangeMapSetsTool.PublishRangeMapSetsTool()
-        prms.runPublishRangeMapSetsTool(parameters, messages)
         return
 
 
@@ -1343,8 +1309,6 @@ class FlagBadDataUsingID(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        fbdui = FlagBadDataUsingIDTool.FlagBadDataUsingIDTool()
-        fbdui.runFlagBadDataUsingIDTool(parameters, messages)
         return
 
 
@@ -1446,8 +1410,6 @@ class RecordInputFeedback(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        rif = RecordInputFeedbackTool.RecordInputFeedbackTool()
-        rif.runRecordInputFeedbackTool(parameters, messages)
         return
 
 
@@ -1497,8 +1459,6 @@ class DeleteInputFeedback(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        dif = DeleteInputFeedbackTool.DeleteInputFeedbackTool()
-        dif.runDeleteInputFeedbackTool(parameters, messages)
         return
 
 
@@ -1539,8 +1499,6 @@ class PrepareNSXProTransfer(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        pnpt = PrepareNSXProTransferTool.PrepareNSXProTransferTool()
-        pnpt.runPrepareNSXProTransferTool(parameters, messages)
         return
 
 
@@ -1590,6 +1548,4 @@ class SyncEcosystemListBiotics(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        sel = SyncEcosystemListBioticsTool.SyncEcosystemListBioticsTool()
-        sel.runSyncEcosystemListBioticsTool(parameters, messages)
         return

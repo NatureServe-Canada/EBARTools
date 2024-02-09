@@ -264,8 +264,8 @@ class ImportSpatialDataTool:
         input_dataset_id, dataset_exists = EBARUtils.checkAddInputDataset(param_geodatabase,
                                                                           param_dataset_name,
                                                                           dataset_source_id,
-                                                                          param_date_received)
-                                                                          #param_sensitive_ecoogical_data_cat)
+                                                                          param_date_received,
+                                                                          param_sensitive_ecoogical_data_cat)
                                                                           #param_restrictions)
 
         # read existing species into dict
