@@ -455,6 +455,8 @@ class ImportSpatialDataTool:
                         if row[field_dict['min_date']]:
                             if type(row[field_dict['min_date']]).__name__ == 'datetime':
                                 min_date = row[field_dict['min_date']]
+                            elif type(row[field_dict['min_date']]).__name__ in ('int', 'long'):
+                                min_date = EBARUtils.extractDate(str(row[field_dict['min_date']]))
                             else:
                                 # extract date from text
                                 min_date = EBARUtils.extractDate(row[field_dict['min_date']].strip())
@@ -475,6 +477,8 @@ class ImportSpatialDataTool:
                         if row[field_dict['max_date']]:
                             if type(row[field_dict['max_date']]).__name__ == 'datetime':
                                 max_date = row[field_dict['max_date']]
+                            elif type(row[field_dict['max_date']]).__name__ in ('int', 'long'):
+                                max_date = EBARUtils.extractDate(str(row[field_dict['max_date']]))
                             else:
                                 # extract date from text
                                 max_date = EBARUtils.extractDate(row[field_dict['max_date']].strip())
@@ -663,24 +667,24 @@ class ImportSpatialDataTool:
         return
 
 
-# # controlling process
-# if __name__ == '__main__':
-#     isd = ImportSpatialDataTool()
-#     # hard code parameters for debugging
-#     param_geodatabase = arcpy.Parameter()
-#     param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
-#     param_import_feature_class = arcpy.Parameter()
-#     param_import_feature_class.value = 'C:/GIS/EBAR/EBARServer.gdb/sk_sfpt_merge_test'
-#     param_dataset_name = arcpy.Parameter()
-#     param_dataset_name.value = 'Saskatchewan Source Feature Points 3'
-#     param_dataset_source = arcpy.Parameter()
-#     param_dataset_source.value = 'SK Source Feature Points'
-#     param_date_received = arcpy.Parameter()
-#     param_date_received.value = 'July 21, 2022'
-#     # param_restrictions = arcpy.Parameter()
-#     # param_restrictions.value = 'Non-restricted'
-#     param_sensitivity_restriction_reason = arcpy.Parameter()
-#     param_sensitivity_restriction_reason.value = 'Proprietary'
-#     parameters = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_source,
-#                   param_date_received, param_sensitivity_restriction_reason] # param_restrictions]
-#     isd.runImportSpatialDataTool(parameters, None)
+# controlling process
+if __name__ == '__main__':
+    isd = ImportSpatialDataTool()
+    # hard code parameters for debugging
+    param_geodatabase = arcpy.Parameter()
+    param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
+    param_import_feature_class = arcpy.Parameter()
+    param_import_feature_class.value = 'C:/GIS/EBAR/EBARServer.gdb/sk_sfpt_merge_test'
+    param_dataset_name = arcpy.Parameter()
+    param_dataset_name.value = 'Saskatchewan Source Feature Points 3'
+    param_dataset_source = arcpy.Parameter()
+    param_dataset_source.value = 'SK Source Feature Points'
+    param_date_received = arcpy.Parameter()
+    param_date_received.value = 'July 21, 2022'
+    # param_restrictions = arcpy.Parameter()
+    # param_restrictions.value = 'Non-restricted'
+    param_sensitivity_restriction_reason = arcpy.Parameter()
+    param_sensitivity_restriction_reason.value = 'Proprietary'
+    parameters = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_source,
+                  param_date_received, param_sensitivity_restriction_reason] # param_restrictions]
+    isd.runImportSpatialDataTool(parameters, None)
