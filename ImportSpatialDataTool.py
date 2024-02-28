@@ -41,8 +41,9 @@ class ImportSpatialDataTool:
         param_dataset_name = parameters[2].valueAsText
         param_dataset_source = parameters[3].valueAsText
         param_date_received = parameters[4].valueAsText
-        param_sensitive_ecoogical_data_cat = parameters[5].valueAsText
         #param_restrictions = parameters[5].valueAsText
+        param_sensitive_ecoogical_data_cat = parameters[5].valueAsText
+        param_dataset_citation = parameters[6].valueAsText
 
         # check dataset source
         if param_dataset_source not in EBARUtils.readDatasetSources(param_geodatabase, "('S', 'L', 'P')"):
@@ -131,7 +132,9 @@ class ImportSpatialDataTool:
                                                                           'IndependentSFField',
                                                                           'UnsuitableHabExcludedField',
                                                                           'BreedingAndBehaviourCodeField',
-                                                                          'IndividualCountField'],
+                                                                          'IndividualCountField',
+                                                                          'LicenseField',
+                                                                          'OriginalInstitutionCodeField'],
                                    "DatasetSourceName = '" + param_dataset_source + "'") as cursor:
             row = None
             for row in EBARUtils.searchCursor(cursor):
@@ -181,6 +184,8 @@ class ImportSpatialDataTool:
                 field_dict['UnsuitableHabExcluded'] = row['UnsuitableHabExcludedField']
                 field_dict['BreedingAndBehaviourCode'] = row['BreedingAndBehaviourCodeField']
                 field_dict['IndividualCount'] = row['IndividualCountField']
+                field_dict['License'] = row['LicenseField']
+                field_dict['OriginalInstitutionCode'] = row['OriginalInstitutionCodeField']
                 if feature_class_type in ('Polygon', 'MultiPatch'):
                     field_dict['EORank'] = row['EORankField']
                     field_dict['EOData'] = row['EODataField']
@@ -254,6 +259,8 @@ class ImportSpatialDataTool:
         type_dict['UnsuitableHabExcluded'] = 'TEXT'
         type_dict['BreedingAndBehaviourCode'] = 'TEXT'
         type_dict['IndividualCount'] = 'LONG'
+        type_dict['License'] = 'TEXT'
+        type_dict['OriginalInstitutionCode'] = 'TEXT'
 
         # # encode restriction using domain
         # param_restrictions = EBARUtils.encodeRestriction(param_geodatabase, param_restrictions)
@@ -265,7 +272,8 @@ class ImportSpatialDataTool:
                                                                           param_dataset_name,
                                                                           dataset_source_id,
                                                                           param_date_received,
-                                                                          param_sensitive_ecoogical_data_cat)
+                                                                          param_sensitive_ecoogical_data_cat,
+                                                                          param_dataset_citation)
                                                                           #param_restrictions)
 
         # read existing species into dict

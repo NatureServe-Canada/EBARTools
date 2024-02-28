@@ -124,9 +124,17 @@ class ImportTabularData(object):
             parameterType='Optional',
             direction='Input')
         
+        # Dataset Citation
+        param_dataset_citation = arcpy.Parameter(
+            displayName='Dataset Citation',
+            name='dataset_citation',
+            datatype='GPString',
+            parameterType='Optional',
+            direction='Input')
+        
         params = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_source,
                   param_date_received, #param_dataset_restrictions
-                  param_sensitive_ecoogical_data_cat]
+                  param_sensitive_ecoogical_data_cat, param_dataset_citation]
         return params
 
     def isLicensed(self):
@@ -242,9 +250,17 @@ class ImportSpatialData(object):
             parameterType='Optional',
             direction='Input')
 
+        # Dataset Citation
+        param_dataset_citation = arcpy.Parameter(
+            displayName='Dataset Citation',
+            name='dataset_citation',
+            datatype='GPString',
+            parameterType='Optional',
+            direction='Input')
+        
         params = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_source,
                   param_date_received, #param_dataset_restrictions
-                  param_sensitive_ecoogical_data_cat]
+                  param_sensitive_ecoogical_data_cat, param_dataset_citation]
         return params
 
     def isLicensed(self):
