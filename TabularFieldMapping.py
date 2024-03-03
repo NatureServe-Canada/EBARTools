@@ -16,7 +16,7 @@ gbif_fields = {
     'scientific_name': 'species',
     'longitude': 'decimalLongitude',
     'latitude': 'decimalLatitude',
-    'srs': 'geodeticDatum',
+    'srs': None, #'geodeticDatum',
     'coordinates_obscured': None,
     'private_longitude': None,
     'private_latitude': None,
