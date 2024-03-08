@@ -4,7 +4,7 @@
 # Credits: Randal Greene, Chloe Debyser, Samantha Stefanoff
 # © NatureServe Canada 2023 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
-# Program: SyncEcosystemListTool.py
+# Program: SyncEcosystemListBioticsTool.py
 # ArcGIS Python tool for Synchronizing the BIOTICS_ECOSYSTEM and Ecosystem tables with Biotics
 
 # Notes:
@@ -106,13 +106,18 @@ class SyncEcosystemListBioticsTool:
                           'CNVC_ONLY_GROUP_ENGLISHNAME',
                           'CNVC_GROUP_FRENCHNAME']
         for file_line in reader:
-            element_global_id = int(float(file_line['ELEMENT_GLOBAL_ID']))
-            EBARUtils.displayMessage(messages, 'ELEMENT_GLOBAL_ID: ' + str(element_global_id))
-            if element_global_id in element_ecosystem_dict:
+            # element_global_id = int(float(file_line['ELEMENT_GLOBAL_ID']))
+            # EBARUtils.displayMessage(messages, 'ELEMENT_GLOBAL_ID: ' + str(element_global_id))
+            # if element_global_id in element_ecosystem_dict:
+            element_national_id = int(float(file_line['ELEMENT_NATIONAL_ID']))
+            EBARUtils.displayMessage(messages, 'ELEMENT_NATIONAL_ID: ' + str(element_national_id))
+            if element_national_id in element_ecosystem_dict:
                 # update if changed
                 changed = False
+                # with arcpy.da.UpdateCursor(param_geodatabase + '/BIOTICS_ECOSYSTEM', regular_fields,
+                #                            'ELEMENT_GLOBAL_ID = ' + str(element_global_id)) as update_cursor:
                 with arcpy.da.UpdateCursor(param_geodatabase + '/BIOTICS_ECOSYSTEM', regular_fields,
-                                           'ELEMENT_GLOBAL_ID = ' + str(element_global_id)) as update_cursor:
+                                           'ELEMENT_NATIONAL_ID = ' + str(element_national_id)) as update_cursor:
                     update_row = None
                     for update_row in EBARUtils.updateCursor(update_cursor):
                         update_values = []
@@ -145,7 +150,8 @@ class SyncEcosystemListBioticsTool:
                 # create new Ecosystem and BIOTICS_ECOSYSTEM records
                 # first check for existing scientific name
                 if file_line['IVC_SCIENTIFIC_NAME'].lower() in ecosystems_dict:
-                    msg = 'WARNING: record with ELEMENT_GLOBAL_ID ' + str(element_global_id) + \
+                    #msg = 'WARNING: record with ELEMENT_GLOBAL_ID ' + str(element_global_id) + \
+                    msg = 'WARNING: record with ELEMENT_NATIONAL_ID ' + str(element_national_id) + \
                         ' skipped because it would create duplicate IVC_SCIENTIFIC_NAME ' + \
                         file_line['IVC_SCIENTIFIC_NAME']
                     EBARUtils.displayMessage(messages, msg)

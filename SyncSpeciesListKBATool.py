@@ -135,6 +135,17 @@ class SyncSpeciesListKBATool:
         # Access the dictionary of existing element_national_id and species_id values (in Biotics table)
         element_species_dict = EBARUtils.readElementSpecies(param_geodatabase)
 
+        # Generate list of existing SpeciesID values in the Species table
+        existing_values = []
+        with arcpy.da.SearchCursor(param_geodatabase + '\\Species', ['SpeciesID']) as search_cursor:
+            for search_row in EBARUtils.searchCursor(search_cursor):
+                existing_values.append(search_row['SpeciesID'])
+        if len(existing_values) > 0:
+            del search_row
+        del search_cursor
+        # existing_values = [row[0] for row in arcpy.da.SearchCursor(param_geodatabase + '\\Species',
+        #                                                            "SpeciesID")]
+
         EBARUtils.displayMessage(messages, 'Processing input csv file...')
 
         for file_line in reader:
@@ -160,17 +171,6 @@ class SyncSpeciesListKBATool:
                     #                          "READ ROW {}. ELEMENT_NATIONAL_ID = {}. SPECIES_ID = {}".format(line_count,
                     #                                                                                          element_national_id,
                     #                                                                                          species_id))
-
-                    # Generate list of existing SpeciesID values in the Species table
-                    existing_values = []
-                    with arcpy.da.SearchCursor(param_geodatabase + '\\Species', ['SpeciesID']) as search_cursor:
-                        for search_row in EBARUtils.searchCursor(search_cursor):
-                            existing_values.append(search_row['SpeciesID'])
-                    if len(existing_values) > 0:
-                        del search_row
-                    del search_cursor
-                    # existing_values = [row[0] for row in arcpy.da.SearchCursor(param_geodatabase + '\\Species',
-                    #                                                            "SpeciesID")]
 
                     # If the SpeciesID generated for the record (i.e. from Biotics) is in the Species table,
                     # then update it if changed

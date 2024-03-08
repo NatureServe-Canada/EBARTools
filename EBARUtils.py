@@ -351,9 +351,11 @@ def readElementEcosystem(geodatabase):
     """read existing element and ecosystem IDs into dict and return"""
     element_ecosystem_dict = {}
     with arcpy.da.SearchCursor(geodatabase + '/BIOTICS_ECOSYSTEM',
-                               ['ELEMENT_GLOBAL_ID', 'EcosystemID']) as cursor:
+                               #['ELEMENT_GLOBAL_ID', 'EcosystemID']) as cursor:
+                               ['ELEMENT_NATIONAL_ID', 'EcosystemID']) as cursor:
         for row in searchCursor(cursor):
-            element_ecosystem_dict[row['ELEMENT_GLOBAL_ID']] = row['EcosystemID']
+            element_ecosystem_dict[row['ELEMENT_NATIONAL_ID']] = row['EcosystemID']
+            #element_ecosystem_dict[row['ELEMENT_GLOBAL_ID']] = row['EcosystemID']
     if len(element_ecosystem_dict) > 0:
         del row
     return element_ecosystem_dict

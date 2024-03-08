@@ -34,6 +34,7 @@ import RecordInputFeedbackTool
 import DeleteInputFeedbackTool
 import PrepareNSXProTransferTool
 import SyncEcosystemListBioticsTool
+import SyncEcosystemListKBATool
 import EBARUtils
 import datetime
 import locale
@@ -51,7 +52,7 @@ class Toolbox(object):
                       SyncSpeciesListKBA, BuildEBARDownloadTable, BuildBulkDownloadTable, #FlagBadDataUsingRange,
                       DeleteRangeMap, ImportVisits, SummarizeDownloads, PublishRangeMap, PublishRangeMapSets,
                       FlagBadDataUsingID, RecordInputFeedback, DeleteInputFeedback, PrepareNSXProTransfer,
-                      SyncEcosystemListBiotics]
+                      SyncEcosystemListBiotics, SyncEcosystemListKBA]
 
 
 class ImportTabularData(object):
@@ -88,7 +89,7 @@ class ImportTabularData(object):
             datatype='GPString',
             parameterType='Required',
             direction='Input')
-        
+
         # Dataset Source
         param_dataset_source = arcpy.Parameter(
             displayName='Dataset Source',
@@ -115,7 +116,7 @@ class ImportTabularData(object):
         #     parameterType='Required',
         #     direction='Input')
         # param_dataset_restrictions.value = 'Non-restricted'
-        
+
         # Sensitive Ecological Data Cat
         param_sensitive_ecoogical_data_cat = arcpy.Parameter(
             displayName='Sensitive Ecological Data Cat',
@@ -123,7 +124,7 @@ class ImportTabularData(object):
             datatype='GPString',
             parameterType='Optional',
             direction='Input')
-        
+
         # Dataset Citation
         param_dataset_citation = arcpy.Parameter(
             displayName='Dataset Citation',
@@ -131,7 +132,7 @@ class ImportTabularData(object):
             datatype='GPString',
             parameterType='Optional',
             direction='Input')
-        
+
         params = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_source,
                   param_date_received, #param_dataset_restrictions
                   param_sensitive_ecoogical_data_cat, param_dataset_citation]
@@ -212,7 +213,7 @@ class ImportSpatialData(object):
             datatype='GPString',
             parameterType='Required',
             direction='Input')
-        
+
         # Dataset Source
         # - used to check for uniqueness of records using provided IDs
         # - one field map can be shared among multiple sources
@@ -241,7 +242,7 @@ class ImportSpatialData(object):
         #     parameterType='Required',
         #     direction='Input')
         # param_dataset_restrictions.value = 'Non-restricted'
-        
+
         # Sensitive Ecological Data Cat
         param_sensitive_ecoogical_data_cat = arcpy.Parameter(
             displayName='Sensitive Ecological Data Cat',
@@ -257,7 +258,7 @@ class ImportSpatialData(object):
             datatype='GPString',
             parameterType='Optional',
             direction='Input')
-        
+
         params = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_source,
                   param_date_received, #param_dataset_restrictions
                   param_sensitive_ecoogical_data_cat, param_dataset_citation]
@@ -948,7 +949,7 @@ class ExportInputData(object):
             direction='Input')
 
         params = [param_geodatabase, param_jurisdictions_covered, param_include_cdc, param_include_restricted,
-                  param_output_zip] # param_include_other, 
+                  param_output_zip] # param_include_other,
         return params
 
     def isLicensed(self):
@@ -1019,12 +1020,12 @@ class ExportInputData(object):
 #         return True
 
 #     def updateParameters(self, parameters):
-#         """Modify the values and properties of parameters before internal validation is performed.  This method is 
+#         """Modify the values and properties of parameters before internal validation is performed.  This method is
 #         called whenever a parameter has been changed."""
 #         return
 
 #     def updateMessages(self, parameters):
-#         """Modify the messages created by internal validation for each tool parameter.  This method is called 
+#         """Modify the messages created by internal validation for each tool parameter.  This method is called
 #         after internal validation."""
 #         return
 
@@ -1561,10 +1562,60 @@ class PrepareNSXProTransfer(object):
 
 
 class SyncEcosystemListBiotics(object):
+
     def __init__(self):
         """Define the tool (tool name is the name of the class)."""
         self.label = 'Sync Ecosystem List Biotics'
         self.description = 'Synchronize the BIOTICS_ECOSYSTEM and Ecosystem tables with Biotics'
+        self.canRunInBackground = True
+
+    def getParameterInfo(self):
+        """Define parameter definitions"""
+        # Geodatabase
+        param_geodatabase = arcpy.Parameter(displayName='Geodatabase',
+                                            name='geodatabase',
+                                            datatype='DEWorkspace',
+                                            parameterType='Required',
+                                            direction='Input')
+        param_geodatabase.filter.list = ['Local Database', 'Remote Database']
+
+        # CSV
+        param_csv = arcpy.Parameter(displayName='CSV File',
+                                    name='csv_file',
+                                    datatype='DEFile',
+                                    parameterType='Required',
+                                    direction='Input')
+        param_csv.filter.list = ['txt', 'csv']
+
+        params = [param_geodatabase, param_csv]
+        return params
+
+    def isLicensed(self):
+        """Set whether tool is licensed to execute."""
+        return True
+
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal validation is performed.  This method is
+        called whenever a parameter has been changed."""
+        return
+
+    def updateMessages(self, parameters):
+        """Modify the messages created by internal validation for each tool parameter.  This method is called
+        after internal validation."""
+        return
+
+    def execute(self, parameters, messages):
+        """The source code of the tool."""
+        sel = SyncEcosystemListBioticsTool.SyncEcosystemListBioticsTool()
+        sel.runSyncEcosystemListBioticsTool(parameters, messages)
+        return
+
+
+class SyncEcosystemListKBA(object):
+    def __init__(self):
+        """Define the tool (tool name is the name of the class)."""
+        self.label = 'Sync Ecosystem List KBA'
+        self.description = 'Synchronize the Ecosystem table WCS KBA updates'
         self.canRunInBackground = True
 
     def getParameterInfo(self):
@@ -1606,6 +1657,6 @@ class SyncEcosystemListBiotics(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        sel = SyncEcosystemListBioticsTool.SyncEcosystemListBioticsTool()
-        sel.runSyncEcosystemListBioticsTool(parameters, messages)
+        selk = SyncEcosystemListKBATool.SyncEcosystemListKBATool()
+        selk.runSyncEcosystemListKBATool(parameters, messages)
         return
