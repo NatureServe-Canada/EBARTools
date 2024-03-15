@@ -14,10 +14,12 @@ This ZIP package should contain the following files:
 - EXARxxxxx.mapx (ArcGIS Pro map file referencing the data files above, with appropriate joins)
 - EBARxxxxxEcoshape.lyrx (ArcGIS Pro layer file, with suggested symbology and appropriate joins, referencing the original ecoshapes)
 - EBARxxxxxEcoshapeOverview.lyrx (ArcGIS Pro layer file, with suggested symbology and appropriate joins, referencing the generalized ecoshapes)
+- EBARxxxxxRemovedEcoshapes.lyrx (ArcGIS Pro layer file, with appropriate joins, showing only ecoshapes that were removed as a result of expet review, referencing the generalized ecoshapes)
 - EBARxxxxxUsageType.lyrx (if applicable, ArcGIS Pro layer file, with suggested symbology and approrpriate joins, referencing usage type of generalized ecoshapes)
 - EBARxxxxx.mxd (ArcMap project file referencing the data files above)
 - EBARxxxxxEcoshape.lyr (ArcMap layer file, with suggested symbology and appropriate joins, referencing the original ecoshapes)
 - EBARxxxxxEcoshapeOverview.lyr (ArcMap layer file, with suggested symbology and appropriate joins, referencing the generalized ecoshapes)
+- EBARxxxxxRemovedEcoshapes.lyr (ArcMap layer file, with appropriate joins, showing only ecoshapes that were removed as a result of expet review, referencing the generalized ecoshapes)
 - EBARxxxxxUsageType.lyr (ArcMap layer file, with suggested symbology and approrpriate joins, referencing usage type of generalized ecoshapes)
 [where xxxxx is the ELEMENT_GLOBAL_ID of the selected species]
 
@@ -67,9 +69,11 @@ RangeMapEcoshape fields:
 objectid - ArcGIS unique identifier
 RangeMapID - EBAR foreign key relating to the appropriate RangeMap record
 EcoshapeID - EBAR foreign key relating to the appropriate Ecoshape/EcoshapeOverview record
-Presence - the category of species presence in the Ecoshape (P=Present, X=Presence Expected, H=Historical, see metadata PDF for definitions)
+Presence - the category of species presence in the Ecoshape (P=Present, X=Presence Expected, H=Historical, NULL=Removed*, see metadata PDF for definitions)
 UsageType - the species usage type in the Ecoshape (B=Breeding, P=Possible Breeding, M=Migration, see metadata PDF for definitions)
-RangeMapEcoshapeNotes - numbers of input records by source
+RangeMapEcoshapeNotes - numbers of input records by source and reviewer comments, if publishable
+
+[*Ecoshapes removed during the expert review process are included with Presence=NULL and field RangeMapEcoshapeNotes containing reviewer comments, if publishable. Note that the ]
 
 Jurisdiction fields:
 objectid - ArcGIS unique identifier

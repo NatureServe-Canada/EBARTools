@@ -363,6 +363,8 @@ class PublishRangeMapTool:
                                 zip_folder + '/EBAR' + element_global_id + 'UsageType.lyr')
             shutil.copyfile(EBARUtils.resources_folder + '/EcoshapeOverview.lyr',
                             zip_folder + '/EBAR' + element_global_id + 'EcoshapeOverview.lyr')
+            shutil.copyfile(EBARUtils.resources_folder + '/RemovedEcoshapes.lyr',
+                            zip_folder + '/EBAR' + element_global_id + 'RemovedEcoshapes.lyr')
             shutil.copyfile(EBARUtils.resources_folder + '/Ecoshape.lyr',
                             zip_folder + '/EBAR' + element_global_id + 'Ecoshape.lyr')
 
@@ -405,7 +407,7 @@ class PublishRangeMapTool:
 #     # spatial_batch_ids = [2341,2339,2340,2342,2344,2322,2323,2325,2326,2327,2328,2329,2330,2331,2332,2333,2334,2335,
 #     #                      2336,2337,2338,2324,1283,2315,2237,2240,2239,2238,2313,2311,2241,2308,2306,2307,2309,2305,
 #     #                      2356,2357,2358,2363,2367,2368,2369,2370,2359,2360,2361,2362,2364,2365,2366]
-#     spatial_batch_ids = [3463,1096,1141,3470,3506,3505,3504,3503,3501,3493,3528,3468]
+#     spatial_batch_ids = [3564]
 #     for id in spatial_batch_ids:
 #        # hard code parameters for debugging
 #        param_range_map_id = arcpy.Parameter()

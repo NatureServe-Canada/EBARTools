@@ -26,8 +26,8 @@ import json
 # shared folders and addresses
 resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
 temp_folder = 'C:/GIS/EBAR/temp'
-#download_folder = 'C:/GIS/EBAR/pub/download'
-download_folder = 'F:/download'
+download_folder = 'C:/GIS/EBAR/pub/download'
+#download_folder = 'F:/download'
 download_url = 'https://gis.natureserve.ca/download'
 #nsx_species_search_url = 'https://explorer.natureserve.org/api/data/search'
 nsx_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/'
@@ -255,7 +255,7 @@ def checkAddInputDataset(geodatabase, dataset_name, dataset_source_id, date_rece
 
     # existing
     with arcpy.da.SearchCursor(geodatabase + '/InputDataset', ['InputDatasetID'],
-                               "DatasetName = '" + dataset_name + "' AND DatasetSourceID = " + \
+                               "DatasetName = '" + dataset_name + "' AND DatasetSourceID = " +
                                str(dataset_source_id) + " AND DateReceived = date '" + date_received + "'") as cursor:
         for row in searchCursor(cursor):
             input_dataset_id = row['InputDatasetID']
@@ -792,7 +792,7 @@ def getTaxonAttributes(global_unique_id, element_global_id, range_map_id, messag
         result = requests.get(nsx_taxon_search_url + global_unique_id)
         results = json.loads(result.content)
     except:
-        displayMessage(messages, 'WARNING: could not find ELEMENT_GLOBAL_ID ' + element_global_id + \
+        displayMessage(messages, 'WARNING: could not find ELEMENT_GLOBAL_ID ' + element_global_id +
             ' or other NSX Taxon API issue for RangeMapID ' + str(range_map_id))
     if results:
         # get from NSX Taxon API
@@ -809,7 +809,7 @@ def getTaxonAttributes(global_unique_id, element_global_id, range_map_id, messag
                             reviewed = ' (reviewed ' + str(en['nrankReviewYear']) + ')'
                         attributes_dict['ca_rank'] = en['nrank'] + reviewed
                         for esn in en['elementSubnationals']:
-                            attributes_dict['ca_subnational_list'].append(esn['subnation']['subnationCode'] + \
+                            attributes_dict['ca_subnational_list'].append(esn['subnation']['subnationCode'] +
                                 '=' + esn['srank'])
                     if en['nation']['isoCode'] == 'US':
                         reviewed = ''
@@ -817,7 +817,7 @@ def getTaxonAttributes(global_unique_id, element_global_id, range_map_id, messag
                             reviewed = ' (reviewed ' + str(en['nrankReviewYear']) + ')'
                         attributes_dict['us_rank'] = en['nrank'] + reviewed
                         for esn in en['elementSubnationals']:
-                            attributes_dict['us_subnational_list'].append(esn['subnation']['subnationCode'] + \
+                            attributes_dict['us_subnational_list'].append(esn['subnation']['subnationCode'] +
                                 '=' + esn['srank'])
                     if en['nation']['isoCode'] == 'MX':
                         reviewed = ''
@@ -825,7 +825,7 @@ def getTaxonAttributes(global_unique_id, element_global_id, range_map_id, messag
                             reviewed = ' (reviewed ' + str(en['nrankReviewYear']) + ')'
                         attributes_dict['mx_rank'] = en['nrank'] + reviewed
                         for esn in en['elementSubnationals']:
-                            attributes_dict['mx_subnational_list'].append(esn['subnation']['subnationCode'] + \
+                            attributes_dict['mx_subnational_list'].append(esn['subnation']['subnationCode'] +
                                 '=' + esn['srank'])
         if results['speciesGlobal']['saraStatus']:
             attributes_dict['sara_status'] = results['speciesGlobal']['saraStatus']
@@ -852,8 +852,8 @@ def getTaxonAttributes(global_unique_id, element_global_id, range_map_id, messag
         attributes_dict['us_subnational_ranks'] = 'Cannot access'
         attributes_dict['mx_subnational_ranks'] = 'Cannot access'
         attributes_dict['esa_status'] = 'Cannot access'
-        with arcpy.da.SearchCursor('biotics_view', 
-                                   ['G_RANK', 'G_RANK_REVIEW_DATE', 'N_RANK', 'N_RANK_REVIEW_DATE', 
+        with arcpy.da.SearchCursor('biotics_view',
+                                   ['G_RANK', 'G_RANK_REVIEW_DATE', 'N_RANK', 'N_RANK_REVIEW_DATE',
                                    'COSEWIC_STATUS', 'SARA_STATUS']) as cursor:
             for row in searchCursor(cursor):
                 attributes_dict['g_rank'] = row['G_RANK']
@@ -882,6 +882,7 @@ def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_i
     map = aprx.listMaps('EBARTemplate')[0]
     map.name = 'EBAR' + element_global_id
     # set layer metadata and properties, saving each to a layer file
+    # UsageType
     usage_type_layer = map.listLayers('EBARTemplateUsageType')[0]
     if differentiate_usage_type:
         usage_type_layer_md = usage_type_layer.metadata
@@ -894,7 +895,8 @@ def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_i
         usage_type_layer.saveACopy(zip_folder + '/EBAR' + element_global_id + 'UsageType.lyrx')
     else:
         map.removeLayer(usage_type_layer)
-    ecoshape_overview_layer =  map.listLayers('EBARTemplateEcoshapeOverview')[0]
+    # EcoshapeOverview
+    ecoshape_overview_layer = map.listLayers('EBARTemplateEcoshapeOverview')[0]
     ecoshape_overview_layer_md = ecoshape_overview_layer.metadata
     metadata.title = 'EBAR EcoshapeOverview.shp'
     metadata.summary = 'Polygons shapefile of generalized ecoshapes for EBAR for selected species'
@@ -903,7 +905,18 @@ def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_i
     ecoshape_overview_layer.name = 'EBAR' + element_global_id + 'EcoshapeOverview'
     ecoshape_overview_layer.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
     ecoshape_overview_layer.saveACopy(zip_folder + '/EBAR' + element_global_id + 'EcoshapeOverview.lyrx')
-    ecoshape_layer =  map.listLayers('EBARTemplateEcoshape')[0]
+    # RemovedEcoshapes (uses same shapefile as above)
+    ecoshape_overview_layer = map.listLayers('EBARTemplateRemovedEcoshapes')[0]
+    ecoshape_overview_layer_md = ecoshape_overview_layer.metadata
+    metadata.title = 'EBAR EcoshapeOverview.shp'
+    metadata.summary = 'Polygons shapefile of generalized ecoshapes for EBAR for selected species'
+    ecoshape_overview_layer_md.copy(metadata)
+    ecoshape_overview_layer_md.save()
+    ecoshape_overview_layer.name = 'EBAR' + element_global_id + 'RemovedEcoshapes'
+    ecoshape_overview_layer.definitionQuery = '"RangeMapID" = ' + str(range_map_id) + ' AND Presence IS NULL'
+    ecoshape_overview_layer.saveACopy(zip_folder + '/EBAR' + element_global_id + 'RemovedEcoshapes.lyrx')
+    # Ecoshape
+    ecoshape_layer = map.listLayers('EBARTemplateEcoshape')[0]
     ecoshape_layer_md = ecoshape_overview_layer.metadata
     metadata.title = 'EBAR Ecoshape.shp'
     metadata.summary = 'Polygons shapefile of original ecoshapes for EBAR for selected species'
@@ -912,9 +925,11 @@ def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_i
     ecoshape_layer.name = 'EBAR' + element_global_id + 'Ecoshape'
     ecoshape_layer.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
     ecoshape_layer.saveACopy(zip_folder + '/EBAR' + element_global_id + 'Ecoshape.lyrx')
+    # RangeMap
     range_map_table = map.listTables('EBARTemplateRangeMap')[0]
     range_map_table.name = 'EBAR' + element_global_id + 'RangeMap'
     range_map_table.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
+    # RangeMapEcoshape
     range_map_ecoshape_table = map.listTables('EBARTemplateRangeMapEcoshape')[0]
     range_map_ecoshape_table.name = 'EBAR' + element_global_id + 'RangeMapEcoshape'
     range_map_ecoshape_table.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
@@ -1269,7 +1284,7 @@ def checkInputRelatedRecords(table, where_clause):
     if int(result[0]) > 0:
         return True
     return False
-    
+
 
 def checkSFEO(geodatabase, input_table, id_field, id_value):
     """check if the record is an SF or EO"""
