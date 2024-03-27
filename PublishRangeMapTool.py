@@ -400,22 +400,22 @@ class PublishRangeMapTool:
         return
 
 
-# # controlling process
-# if __name__ == '__main__':
-#     prm = PublishRangeMapTool()
+# controlling process
+if __name__ == '__main__':
+    prm = PublishRangeMapTool()
     
-#     # spatial_batch_ids = [2341,2339,2340,2342,2344,2322,2323,2325,2326,2327,2328,2329,2330,2331,2332,2333,2334,2335,
-#     #                      2336,2337,2338,2324,1283,2315,2237,2240,2239,2238,2313,2311,2241,2308,2306,2307,2309,2305,
-#     #                      2356,2357,2358,2363,2367,2368,2369,2370,2359,2360,2361,2362,2364,2365,2366]
-#     spatial_batch_ids = [3564]
-#     for id in spatial_batch_ids:
-#        # hard code parameters for debugging
-#        param_range_map_id = arcpy.Parameter()
-#        param_range_map_id.value = str(id)
-#        param_spatial = arcpy.Parameter()
-#        param_spatial.value = 'true'
-#        parameters = [param_range_map_id, param_spatial]
-#        prm.runPublishRangeMapTool(parameters, None)
+    # spatial_batch_ids = [2341,2339,2340,2342,2344,2322,2323,2325,2326,2327,2328,2329,2330,2331,2332,2333,2334,2335,
+    #                      2336,2337,2338,2324,1283,2315,2237,2240,2239,2238,2313,2311,2241,2308,2306,2307,2309,2305,
+    #                      2356,2357,2358,2363,2367,2368,2369,2370,2359,2360,2361,2362,2364,2365,2366]
+    spatial_batch_ids = [3564]
+    for id in spatial_batch_ids:
+       # hard code parameters for debugging
+       param_range_map_id = arcpy.Parameter()
+       param_range_map_id.value = str(id)
+       param_spatial = arcpy.Parameter()
+       param_spatial.value = 'true'
+       parameters = [param_range_map_id, param_spatial]
+       prm.runPublishRangeMapTool(parameters, None)
     
 #     non_spatial_batch_ids = [1879,3471]
 #     for id in non_spatial_batch_ids:
