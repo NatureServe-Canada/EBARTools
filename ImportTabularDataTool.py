@@ -27,6 +27,7 @@ import TabularFieldMapping
 
 class ImportTabularDataTool:
     """Import point data into the InputDataset and InputPoint tables of the EBAR geodatabase"""
+
     def __init__(self):
         pass
 
@@ -60,6 +61,7 @@ class ImportTabularDataTool:
         #param_restrictions = parameters[5].valueAsText
         param_sensitive_ecoogical_data_cat = parameters[5].valueAsText
         param_dataset_citation = parameters[6].valueAsText
+        param_data_file_encoding = parameters[7].valueAsText
 
         # check dataset source
         if param_dataset_source not in EBARUtils.readDatasetSources(param_geodatabase, "('T')"):
@@ -90,13 +92,11 @@ class ImportTabularDataTool:
         # check/add InputDataset row
         dataset = param_dataset_name + ', ' + param_dataset_source + ', ' + str(param_date_received)
         EBARUtils.displayMessage(messages, 'Checking for dataset [' + dataset + '] and adding if new')
-        input_dataset_id, dataset_exists = EBARUtils.checkAddInputDataset(param_geodatabase,
-                                                                          param_dataset_name,
-                                                                          dataset_source_id,
-                                                                          param_date_received,
+        input_dataset_id, dataset_exists = EBARUtils.checkAddInputDataset(param_geodatabase, param_dataset_name,
+                                                                          dataset_source_id, param_date_received,
                                                                           param_sensitive_ecoogical_data_cat,
                                                                           param_dataset_citation)
-                                                                          #param_restrictions)
+        #param_restrictions)
 
         # read existing species into dict
         EBARUtils.displayMessage(messages, 'Reading full list of Species and Synonyms')
@@ -106,8 +106,8 @@ class ImportTabularDataTool:
 
         # read existing unique IDs into dict
         EBARUtils.displayMessage(messages, 'Reading existing Unique IDs for the Dataset Source')
-        id_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, table_name_prefix, dataset_source_id,
-                                                       'Point', False)
+        id_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, table_name_prefix, dataset_source_id, 'Point',
+                                                       False)
         bad_dict = EBARUtils.readDatasetSourceUniqueIDs(param_geodatabase, table_name_prefix, dataset_source_id,
                                                         'Point', True)
 
@@ -121,7 +121,10 @@ class ImportTabularDataTool:
                     bbc_domain_values_lower[bbc_domain_value.lower()] = bbc_domain_values[bbc_domain_value]
 
         # try to open data file as a csv
-        infile = io.open(param_raw_data_file, 'r', encoding='mbcs') # mbcs encoding is Windows ANSI
+        encoding = 'mbcs' # mbcs encoding is Windows ANSI, which is the default for param_data_file_encoding
+        if param_data_file_encoding == 'UTF8':
+            encoding = 'utf8'
+        infile = io.open(param_raw_data_file, 'r', encoding=encoding)
         reader = csv.DictReader(infile)
 
         # process all file lines
@@ -145,7 +148,7 @@ class ImportTabularDataTool:
             for file_line in reader:
                 # check/add point for current line
                 input_point_id, status, max_date, bbc_bad = self.CheckAddPoint(id_dict, bad_dict, param_geodatabase,
-                                                                               input_dataset_id, species_dict, 
+                                                                               input_dataset_id, species_dict,
                                                                                synonym_dict, synonym_species_dict,
                                                                                file_line, field_dict, no_match_list,
                                                                                bbc_domain_values_lower, bad_bbcs_list,
@@ -198,9 +201,8 @@ class ImportTabularDataTool:
             EBARUtils.displayMessage(messages, 'Processed - ' + str(count))
             EBARUtils.displayMessage(messages, 'Species not matched (rejected) - ' + str(no_species_match))
             EBARUtils.displayMessage(messages, 'No coordinates (rejected) - ' + str(no_coords))
-            EBARUtils.displayMessage(messages,
-                                     'Accuracy worse than ' + str(EBARUtils.worst_accuracy) +
-                                     ' m (rejected) - ' + str(inaccurate))
+            EBARUtils.displayMessage(
+                messages, 'Accuracy worse than ' + str(EBARUtils.worst_accuracy) + ' m (rejected) - ' + str(inaccurate))
             EBARUtils.displayMessage(messages, 'Fossils (rejected) - ' + str(fossils))
             EBARUtils.displayMessage(messages, 'Geoprivacy=private (rejected) - ' + str(private))
             EBARUtils.displayMessage(messages, 'IndividualCount=0 (rejected) - ' + str(individual_count_0))
@@ -231,8 +233,8 @@ class ImportTabularDataTool:
                 no_match_list.append('[None]')
                 EBARUtils.displayMessage(messages, 'WARNING: No match for species [None]')
             return None, 'no_species_match', None, bad_bbc
-        if (file_line[field_dict['scientific_name']].lower() not in species_dict and
-            file_line[field_dict['scientific_name']].lower() not in synonym_dict):
+        if (file_line[field_dict['scientific_name']].lower() not in species_dict
+                and file_line[field_dict['scientific_name']].lower() not in synonym_dict):
             if file_line[field_dict['scientific_name']] not in no_match_list:
                 no_match_list.append(file_line[field_dict['scientific_name']])
                 EBARUtils.displayMessage(messages,
@@ -266,15 +268,15 @@ class ImportTabularDataTool:
         if coordinates_obscured:
             # check for private lon/lat
             if field_dict['private_longitude'] and field_dict['private_latitude']:
-                if (file_line[field_dict['private_longitude']] not in ('NA', '') and
-                    file_line[field_dict['private_latitude']] not in ('NA', '')):
+                if (file_line[field_dict['private_longitude']] not in ('NA', '')
+                        and file_line[field_dict['private_latitude']] not in ('NA', '')):
                     private_coords = True
                     coordinates_obscured = False
                     input_point = arcpy.Point(float(file_line[field_dict['private_longitude']]),
                                               float(file_line[field_dict['private_latitude']]))
         if not private_coords:
-            if (file_line[field_dict['longitude']] not in ('NA', '') and
-                file_line[field_dict['latitude']] not in ('NA', '')):
+            if (file_line[field_dict['longitude']] not in ('NA', '')
+                    and file_line[field_dict['latitude']] not in ('NA', '')):
                 input_point = arcpy.Point(float(file_line[field_dict['longitude']]),
                                           float(file_line[field_dict['latitude']]))
         if input_point:
@@ -378,11 +380,10 @@ class ImportTabularDataTool:
             # already exists
             if quality_grade.lower() not in ('research', '1', 'true'):
                 # delete it because it has been downgraded
-                with arcpy.da.UpdateCursor(geodatabase + '/InputPoint',
-                                           ['InputPointID', 'InputDatasetID', 'SpeciesID'],
+                with arcpy.da.UpdateCursor(geodatabase + '/InputPoint', ['InputPointID', 'InputDatasetID', 'SpeciesID'],
                                            'InputPointID = ' + str(id_dict[unique_id_species])) as cursor:
-                                           #"DatasetSourceUniqueID = '" + str(file_line[field_dict['unique_id']]) +
-                                           #"' AND InputDatasetID = " + str(input_dataset_id)) as cursor:
+                    #"DatasetSourceUniqueID = '" + str(file_line[field_dict['unique_id']]) +
+                    #"' AND InputDatasetID = " + str(input_dataset_id)) as cursor:
                     row = None
                     for row in cursor:
                         cursor.deleteRow()
@@ -457,8 +458,9 @@ class ImportTabularDataTool:
                 else:
                     if file_line[field_dict['breeding_code']] not in bad_bbcs_list:
                         bad_bbcs_list.append(file_line[field_dict['breeding_code']])
-                        EBARUtils.displayMessage(messages, 'Warning: Bad Breeding and Behaviour Code ' +
-                                                file_line[field_dict['breeding_code']])
+                        EBARUtils.displayMessage(
+                            messages,
+                            'Warning: Bad Breeding and Behaviour Code ' + file_line[field_dict['breeding_code']])
                     bad_bbc = True
 
         # OriginalInstitutionCode
@@ -475,17 +477,18 @@ class ImportTabularDataTool:
         # save_start = datetime.datetime.now()
         # update or insert
         if update:
-            with arcpy.da.UpdateCursor(geodatabase + '/InputPoint',
-                                       ['SHAPE@XY', 'InputDatasetID', 'URI', 'License', 'SpeciesID', 'SynonymID',
-                                        'MaxDate', 'CoordinatesObscured', 'Accuracy', 'IndividualCount', 'Geoprivacy',
-                                        'TaxonGeoprivacy', 'BreedingAndBehaviourCode', 'OriginalInstitutionCode',
-                                        'Rightsholder'],
-                                        "InputPointID = " + str(id_dict[unique_id_species])) as cursor:
+            with arcpy.da.UpdateCursor(geodatabase + '/InputPoint', [
+                    'SHAPE@XY', 'InputDatasetID', 'URI', 'License', 'SpeciesID', 'SynonymID', 'MaxDate',
+                    'CoordinatesObscured', 'Accuracy', 'IndividualCount', 'Geoprivacy', 'TaxonGeoprivacy',
+                    'BreedingAndBehaviourCode', 'OriginalInstitutionCode', 'Rightsholder'
+            ], "InputPointID = " + str(id_dict[unique_id_species])) as cursor:
                 row = None
                 for row in EBARUtils.updateCursor(cursor):
-                    cursor.updateRow([output_point, input_dataset_id, uri, license, species_id, synonym_id, max_date,
-                                      coordinates_obscured, accuracy, individual_count, geoprivacy, taxon_geoprivacy,
-                                      breeding_code, original_institution_code, rightsholder])
+                    cursor.updateRow([
+                        output_point, input_dataset_id, uri, license, species_id, synonym_id, max_date,
+                        coordinates_obscured, accuracy, individual_count, geoprivacy, taxon_geoprivacy, breeding_code,
+                        original_institution_code, rightsholder
+                    ])
                 if row:
                     del row
             # ## NT perf debug
@@ -494,15 +497,18 @@ class ImportTabularDataTool:
             return id_dict[unique_id_species], 'updated', max_date, bad_bbc
         else:
             # insert, set new id and return
-            point_fields = ['SHAPE@XY', 'InputDatasetID', 'DatasetSourceUniqueID', 'URI', 'License', 'SpeciesID',
-                            'SynonymID', 'MaxDate', 'CoordinatesObscured', 'Accuracy', 'IndividualCount', 'Geoprivacy',
-                            'TaxonGeoprivacy', 'BreedingAndBehaviourCode', 'OriginalInstitutionCode', 'Rightsholder']
+            point_fields = [
+                'SHAPE@XY', 'InputDatasetID', 'DatasetSourceUniqueID', 'URI', 'License', 'SpeciesID', 'SynonymID',
+                'MaxDate', 'CoordinatesObscured', 'Accuracy', 'IndividualCount', 'Geoprivacy', 'TaxonGeoprivacy',
+                'BreedingAndBehaviourCode', 'OriginalInstitutionCode', 'Rightsholder'
+            ]
             with arcpy.da.InsertCursor(geodatabase + '/InputPoint', point_fields) as cursor:
-                object_id = cursor.insertRow([output_point, input_dataset_id,
-                                              str(file_line[field_dict['unique_id']]), uri, license, species_id,
-                                              synonym_id, max_date, coordinates_obscured, accuracy, individual_count,
-                                              geoprivacy, taxon_geoprivacy, breeding_code, original_institution_code,
-                                              rightsholder])
+                object_id = cursor.insertRow([
+                    output_point, input_dataset_id,
+                    str(file_line[field_dict['unique_id']]), uri, license, species_id, synonym_id, max_date,
+                    coordinates_obscured, accuracy, individual_count, geoprivacy, taxon_geoprivacy, breeding_code,
+                    original_institution_code, rightsholder
+                ])
             input_point_id = EBARUtils.getUniqueID(geodatabase + '/InputPoint', 'InputPointID', object_id)
             id_dict[unique_id_species] = input_point_id
             # ## NT perf debug

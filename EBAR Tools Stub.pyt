@@ -107,9 +107,19 @@ class ImportTabularData(object):
             parameterType='Optional',
             direction='Input')
 
+        # Data File Encoding
+        param_data_file_encoding = arcpy.Parameter(
+            displayName='Data File Encoding',
+            name='data_file_encoding',
+            datatype='GPString',
+            parameterType='Optional',
+            direction='Input')
+        param_data_file_encoding.filter.list = ['UTF8', 'Windows ANSI']
+        param_data_file_encoding.value = 'Windows ANSI'
+
         params = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_source,
                   param_date_received, #param_dataset_restrictions
-                  param_sensitive_ecoogical_data_cat, param_dataset_citation]
+                  param_sensitive_ecoogical_data_cat, param_dataset_citation, param_data_file_encoding]
         return params
 
     def isLicensed(self):
