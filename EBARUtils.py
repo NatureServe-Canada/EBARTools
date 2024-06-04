@@ -26,8 +26,8 @@ import json
 # shared folders and addresses
 resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
 temp_folder = 'C:/GIS/EBAR/temp'
-download_folder = 'C:/GIS/EBAR/pub/download'
-#download_folder = 'F:/download'
+#download_folder = 'C:/GIS/EBAR/pub/download'
+download_folder = 'F:/download'
 download_url = 'https://gis.natureserve.ca/download'
 #nsx_species_search_url = 'https://explorer.natureserve.org/api/data/search'
 nsx_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/'
@@ -38,7 +38,7 @@ log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
 # various services
 ebar_feature_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/EBAR/FeatureServer'
 ebar_summary_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/Summary/FeatureServer'
-#restricted_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/Restricted/FeatureServer'
+restricted_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/Restricted/FeatureServer'
 
 
 # lowest accuracy data added to database (metres, based on diagonal of 0.2 degrees square at equator)
@@ -692,7 +692,8 @@ def ExportRangeMapEcoshapesToCSV(range_map_ecoshape_view, range_map_ids, output_
 def ExportEcoshapesToShapefile(ecoshape_layer, range_map_ecoshape_view, output_folder, output_shapefile, metadata,
                                export_all):
     """create shapefile for ecoshapes"""
-    arcpy.MakeFeatureLayer_management(ebar_feature_service + '/3', ecoshape_layer)
+    #arcpy.MakeFeatureLayer_management(ebar_feature_service + '/3', ecoshape_layer)
+    arcpy.MakeFeatureLayer_management(restricted_service + '/3', ecoshape_layer)
     prefix = ''
     if not export_all:
         arcpy.AddJoin_management(ecoshape_layer, 'EcoshapeID', range_map_ecoshape_view, 'EcoshapeID')
