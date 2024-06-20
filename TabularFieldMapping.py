@@ -22,17 +22,17 @@ gbif_fields = {
     'private_latitude': None,
     'accuracy': 'coordinateUncertaintyInMeters',
     'private_accuracy': None,
-    'year': 'year',
-    'month': 'month',
-    'day': 'day',
-    'date': None,
+    'year': None, #'year',
+    'month': None, #'month',
+    'day': None, #'day',
+    'date': 'eventDate',
     'basis_of_record': 'basisOfRecord',
     'individual_count': 'individualCount',
     'geoprivacy': None,
     'taxon_geoprivacy': None,
     'breeding_code': None,
     'original_institution_code': 'institutionCode',
-    'rightsholder': None} # update once we figure out the GBIF use/export of this field
+    'rightsholder': 'rightsHolder'}
 
 ncc_gbif_fields = {'quality_grade': None,
                    'unique_id': 'gbifID',
