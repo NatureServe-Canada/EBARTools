@@ -527,7 +527,9 @@ def getTableNamePrefix(geodatabase):
     table_name_prefix = ''
     desc = arcpy.Describe(geodatabase)
     if desc.workspaceType == 'RemoteDatabase':
-        table_name_prefix = desc.connectionProperties.database + '.' + desc.connectionProperties.user + '.'
+        #table_name_prefix = desc.connectionProperties.database + '.' + desc.connectionProperties.user + '.'
+        # work around glitch introduced with patches on July 3, 2024
+        table_name_prefix = 'ebarkba.sde.'
     return table_name_prefix
 
 
