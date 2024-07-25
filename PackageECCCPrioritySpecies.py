@@ -4,8 +4,8 @@
 # Credits: Randal Greene, Gabrielle Miller
 # © NatureServe Canada 2022 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
-# Program: PackageECCCPrioritySpeciesTool.py
-# ArcGIS Python tool for creating Zip of PDFs and Spatial Data for all ECCC Priority Species
+# Program: PackageECCCPrioritySpecies.py
+# Unpublished ArcGIS Python tool for creating Zip of PDFs and Spatial Data for all ECCC Priority Species
 
 # Notes:
 # - For one off or very occasional use only, so not integrated into the EBARTools toolbox
