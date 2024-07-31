@@ -29,8 +29,8 @@ URI - uniform resource identifier (e.g. URL, URN) for the observation/occurrence
 License - provider's licensing terms for the record
 CoordinatesObscured - 1 indicates exact location has been obscured by the data provided (currently only applies iNaturalist data)
 RepresentationAccuracy - Level of accuracy associated with an Element Occurrence as per http://help.natureserve.org/biotics/#Record_Management/Element_Occurrence/EO_Representation_Accuracy_Value.htm
-ELEMENT_NATIONAL_ID - Canadian unique identier for the element
-ELEMENT_GLOBAL_ID - international unique identier for the element
+ELEMENT_NATIONAL_ID - Canadian unique identfiier for the element
+ELEMENT_GLOBAL_ID - international unique identfiier for the element
 ELEMENT_CODE - unique identifier compatible with the Biological and Conservation Data system
 NATIONAL_SCIENTIFIC_NAME - Canadian scientific name for the species
 NATIONAL_ENGL_NAME - Canadian English name for the species

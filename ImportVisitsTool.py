@@ -154,13 +154,19 @@ class ImportVisitsTool:
             if visited_by:
                 visited_by = visited_by.replace("'", '')
                 where_clause += " AND VisitedBy = '" + visited_by + "'"
-            with arcpy.da.SearchCursor(geodatabase + '/Visit', ['VisitedBy'], where_clause) as cursor:
-                row = None
+            row = None
+            with arcpy.da.SearchCursor(geodatabase + '/Visit', ['VisitID', 'InputPointID', 'InputLineID',
+                                                                'InputPolygonID'], where_clause) as cursor:
                 for row in EBARUtils.searchCursor(cursor):
-                    # existing - skip
+                    # existing - skip, but record InputPoint/Line/PolygonIDs for checking below
                     duplicate = True
-                if row:
-                    del row
+                    visit_id = row['VisitID']
+                    visit_input_point_id = row['InputPointID']
+                    visit_input_line_id = row['InputLineID']
+                    visit_input_polygon_id = row['InputPolygonID']
+            if row:
+                del row
+            del cursor
 
         # check InputPoint/Line/Polygon with same sf_id and subnation for dates and get ID
         input_point_id = None
@@ -174,9 +180,9 @@ class ImportVisitsTool:
                 fields.append('InputLineID')
             elif input_table == '/InputPolygon':
                 fields.append('InputPolygonID')
+            row = None
             with arcpy.da.UpdateCursor(geodatabase + input_table, fields,
-                                        'SFID = ' + str(sf_id) + " AND Subnation = '" + subnation + "'") as cursor:
-                row = None
+                                       'SFID = ' + str(sf_id) + " AND Subnation = '" + subnation + "'") as cursor:
                 for row in EBARUtils.updateCursor(cursor):
                     id_missing = False
                     # get ID
@@ -186,6 +192,7 @@ class ImportVisitsTool:
                         input_line_id = row['InputLineID']
                     elif input_table == '/InputPolygon':
                         input_polygon_id = row['InputPolygonID']
+                    # check IDs
                     # check dates
                     if visit_date:
                         max_date = row['MaxDate']
@@ -208,8 +215,9 @@ class ImportVisitsTool:
                             elif input_table == '/InputPolygon':
                                 values.append(input_polygon_id)
                             cursor.updateRow(values)
-                if row:
-                    del row
+            if row:
+                del row
+            del cursor
 
         if not duplicate:
             # add
@@ -218,6 +226,40 @@ class ImportVisitsTool:
                                                                 'InputLineID', 'InputPolygonID']) as cursor:
                 object_id = cursor.insertRow([sf_id, subnation, visit_date, visit_notes, visited_by, detected,
                                               input_point_id, input_line_id, input_polygon_id])
+            del cursor
+        else:
+            # check/update InputPoint/Line/PolygonIDs
+            if input_point_id:
+                if (not visit_input_point_id) or (visit_input_point_id != input_point_id):
+                    row = None
+                    with arcpy.da.UpdateCursor(geodatabase + '/Visit', ['InputPointID'],
+                                               'VisitID = ' + str(visit_id)) as cursor:
+                        for row in cursor:
+                            cursor.updateRow([input_point_id])
+                    if row:
+                        del row
+                    del cursor
+            if input_line_id:
+                if (not visit_input_line_id) or (visit_input_line_id != input_line_id):
+                    row = None
+                    with arcpy.da.UpdateCursor(geodatabase + '/Visit', ['InputLineID'],
+                                               'VisitID = ' + str(visit_id)) as cursor:
+                        for row in cursor:
+                            cursor.updateRow([input_line_id])
+                    if row:
+                        del row
+                    del cursor
+            if input_polygon_id:
+                if (not visit_input_polygon_id) or (visit_input_polygon_id != input_polygon_id):
+                    row = None
+                    with arcpy.da.UpdateCursor(geodatabase + '/Visit', ['InputPolygonID'],
+                                               'VisitID = ' + str(visit_id)) as cursor:
+                        for row in cursor:
+                            cursor.updateRow([input_polygon_id])
+                    if row:
+                        del row
+                    del cursor
+
 
         return False, duplicate, date_missing, id_missing, max_date_update, min_date_update
 
