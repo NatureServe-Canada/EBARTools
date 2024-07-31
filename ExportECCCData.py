@@ -183,6 +183,22 @@ class ExportECCCDataTool:
         field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'datasetsourcecitation', 'DatasetSourceCitation',
                                                             'Text'))
         field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'datasettype', 'DatasetType', 'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'dataqcstatus', 'DataQCStatus', 'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'datasensitivity', 'DataSensitivity, 'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'datasensitivitycat', 'DataSensitivityCat', 'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'descriptor', 'Descriptor', 'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'digitizingcomments', 'DigitizingComments', 'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'independentsf', 'IndependentSF', 'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'locuncertaintydistcls','LocUncertaintyDistCls',
+                                                            'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'locuncertaintydistunit', 'LocUncertaintyDistUnit',
+                                                            'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'locuncertaintytype', 'LocUncertaintyType', 'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'locuseclass', 'LocUseClass', 'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'mappingcomments', 'MappingComments', 'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'mapqcstatus', 'MapQCStatus', 'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'qccomments', 'QCComments', 'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'unsuitablehabexcluded', 'UnsuitableHabExcluded', 'Text'))
         # export features
         #arcpy.CopyFeatures_management(fclyr, output_gdb + '/' + output_fc)
         arcpy.FeatureClassToFeatureClass_conversion(fclyr, output_gdb, output_fc, field_mapping=field_mappings)

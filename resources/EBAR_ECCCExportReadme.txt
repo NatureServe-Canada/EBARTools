@@ -27,7 +27,7 @@ DatasetSourceUniqueID - provider's unique identifier
 URI - uniform resource identifier (e.g. URL, URN) for the observation/occurrence
 License - provider's licensing terms for the record
 CoordinatesObscured - 1 indicates exact location has been obscured by the data provided (currently only applies iNaturalist data)
-RepresentationAccuracy - Level of accuracy associated with an Element Occurrence as per http://help.natureserve.org/biotics/#Record_Management/Element_Occurrence/EO_Representation_Accuracy_Value.htm
+RepresentationAccuracy - Level of accuracy associated with an Element Occurrence as per http://help.natureserve.org/biotics/#Record_Management/Element_Occurrence/EO_Representation_Accuracy_Value.htm. Accuracy varies on the basis of the area observed to be occupied by the Element (Field Observation) relative to the area contained within the footprint of the Source Feature. Differences in these two size values indicate that additional area was included within the feature boundary for locational uncertainty. Representation Accuracy (RA) provides a common index for the consistent comparison of these features, thus helping to ensure that aggregated data are correctly analyzed and interpreted.
 SpeciesID - EBAR unique identifier for the species/element
 ELEMENT_NATIONAL_ID - Canadian unique identifier for the element
 ELEMENT_GLOBAL_ID - international unique identifier for the element
@@ -42,23 +42,20 @@ DatasetName - label used by EBAR team to identify the dataset
 DatasetSourceName - the name of the dataset source
 DatasetSourceCitation - the citation of the dataset source, to be used for crediting the data provider
 DatasetType - one of Critical Habitat, Element Occurrences, Habitat Suitability, Range Estimate, Source Features, Species Observations, Other, Other Observations, Other Range, Area of Occupancy
-dataqcstatus - Value selected from a drop-down menu that indicates the Quality Control (QC) status of the tabular data associated with the Source Feature.
-datasensitivity - Value selected from a drop-down menu that indicates whether or not locational information of the Element Occurrence (EO) or Source Feature (SF) is sensitive and should be restricted from unsecured use.
-datasensitivitycat - Explanation of why locational information of the Element Occurrence (EO) or Source Feature (SF) is sensitive and restricted.
-descriptor - Any label describing a Source Feature that would be useful to the agency in differentiating between different observations (e.g., east patch, west patch). This may be helpful in identifying the different Source Features that comprise a complex (multi-source) Element Occurrence Representation (EO Rep).
-digitizingcomments - Comments related to the digitizing of the Source Feature.
-independentsf - Checkbox that indicates the Source Feature is not currently a component of an Element Occurrence Representation [EO Rep]); rather, it is Independent.
-locuncertaintydistcls - Value selected from a drop-down menu that indicates the estimated distance, selected from a defined set of ranges (i.e., classes), to be applied as a buffer representing the locational uncertainty associated with data having a real estimated uncertainty.
-locuncertaintydistunit - Value selected from a drop-down menu that indicates the unit associated with the entry in the Locational Uncertainty Distance field for Source Features with Estimated uncertainty.
-locuncertaintytype - Value selected from a drop-down menu that indicates the type of inaccuracy in the mapped location of an observation (i.e., Source Feature) compared with its actual on-the-ground location. This is determined on the basis of the underlying observation data (specifically its size as compared with the minimum mapping unit (mmu), indicated as the Conceptual Feature Type), and the amount and direction of the variability between the recorded and actual locations.
-locuseclass - Location use classes pertain only to Elements that occupy geographically disjunct locations at different seasons. Classes are not applicable to nonmigratory Elements, and are generally not applicable to terrestrial or freshwater migratory Elements that move between contiguous areas.
-mappingcomments - Comments related to how a Source Feature has been mapped.
-mapqcstatus - Value selected from a drop-down menu that indicates the Quality Control (QC) status of the mapped Source Feature.
-qccomments - Comments related to the Quality Control (QC) Status of this Source Feature record.
-RepresentationAccuracy - Value selected from a drop-down menu that indicates the level of accuracy associated with the Source Feature (SF). Accuracy varies on the basis of the area observed to be occupied by the Element (Field Observation) relative to the area contained within the footprint of the Source Feature. Differences in these two size values indicate that additional area was included within the feature boundary for locational uncertainty. Representation Accuracy (RA) provides a common index for the consistent comparison of these features, thus helping to ensure that aggregated data are correctly analyzed and interpreted.
-unsuitablehabexcluded - Checkbox that indicates that the Source Feature has been digitized without including any known unsuitable habitat.
-
-
+DataQCStatus - Value selected from a drop-down menu that indicates the Quality Control (QC) status of the tabular data associated with the Source Feature.
+DataSensitivity - Value selected from a drop-down menu that indicates whether or not locational information of the Element Occurrence (EO) or Source Feature (SF) is sensitive and should be restricted from unsecured use.
+DataSensitivityCat - Explanation of why locational information of the Element Occurrence (EO) or Source Feature (SF) is sensitive and restricted.
+Descriptor - Any label describing a Source Feature that would be useful to the agency in differentiating between different observations (e.g., east patch, west patch). This may be helpful in identifying the different Source Features that comprise a complex (multi-source) Element Occurrence Representation (EO Rep).
+DigitizingComments - Comments related to the digitizing of the Source Feature.
+IndependentSF - Checkbox that indicates the Source Feature is not currently a component of an Element Occurrence Representation [EO Rep]); rather, it is Independent.
+LocUncertaintyDistCls - Value selected from a drop-down menu that indicates the estimated distance, selected from a defined set of ranges (i.e., classes), to be applied as a buffer representing the locational uncertainty associated with data having a real estimated uncertainty.
+LocUncertaintyDistUnit - Value selected from a drop-down menu that indicates the unit associated with the entry in the Locational Uncertainty Distance field for Source Features with Estimated uncertainty.
+LocUncertaintyType - Value selected from a drop-down menu that indicates the type of inaccuracy in the mapped location of an observation (i.e., Source Feature) compared with its actual on-the-ground location. This is determined on the basis of the underlying observation data (specifically its size as compared with the minimum mapping unit (mmu), indicated as the Conceptual Feature Type), and the amount and direction of the variability between the recorded and actual locations.
+LocUseClass - Location use classes pertain only to Elements that occupy geographically disjunct locations at different seasons. Classes are not applicable to nonmigratory Elements, and are generally not applicable to terrestrial or freshwater migratory Elements that move between contiguous areas.
+MappingComments - Comments related to how a Source Feature has been mapped.
+MapQCStatus - Value selected from a drop-down menu that indicates the Quality Control (QC) status of the mapped Source Feature.
+QCComments - Comments related to the Quality Control (QC) Status of this Source Feature record.
+UnsuitableHabExcluded - Checkbox that indicates that the Source Feature has been digitized without including any known unsuitable habitat.
 
 *Individual records can be manually flagged as "Bad Data" by the EBAR team. Flagging is also done automatically using an algorithm that detects duplicates by Species, ObservationDate, and Location. Bad data is not included when generating range maps, but the EBAR team has chosen to retain, rather than delete, bad data to avoid re-importing it in future.
 
