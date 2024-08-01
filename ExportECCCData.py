@@ -184,7 +184,7 @@ class ExportECCCDataTool:
                                                             'Text'))
         field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'datasettype', 'DatasetType', 'Text'))
         field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'dataqcstatus', 'DataQCStatus', 'Text'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'datasensitivity', 'DataSensitivity, 'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'datasensitivity', 'DataSensitivity', 'Text'))
         field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'datasensitivitycat', 'DataSensitivityCat', 'Text'))
         field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'descriptor', 'Descriptor', 'Text'))
         field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'digitizingcomments', 'DigitizingComments', 'Text'))
