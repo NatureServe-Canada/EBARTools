@@ -165,6 +165,7 @@ class ExportECCCDataTool:
                                                             'Text'))
         field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'representationaccuracy', 'RepresentationAccuracy',
                                                             'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'speciesid', 'SpeciesID', 'Long'))
         field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'element_national_id', 'ELEMENT_NATIONAL_ID',
                                                             'Long'))
         field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'element_global_id', 'ELEMENT_GLOBAL_ID', 'Long'))
@@ -216,7 +217,8 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde'
     param_jurisdictions_covered = arcpy.Parameter()
-    param_jurisdictions_covered.value = "'British Columbia';'Saskatchewan'" # Canadian, but no YT or NU
+    # Canadian, but no YT or NU
+    param_jurisdictions_covered.value = "'British Columbia';'Alberta';'Saskatchewan';'Manitoba';'Ontario';'Quebec';'Atlantic Canada';'Northwest Territories'"
     param_output_zip = arcpy.Parameter()
     param_output_zip.value = 'EBAR_ECCCExport.zip'
     parameters = [param_geodatabase, param_jurisdictions_covered, param_output_zip]
