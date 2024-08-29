@@ -366,12 +366,14 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         temp_ecoshape_max_polygon = 'TempEcoshapeMaxPolygon' + str(start_time.year) + str(start_time.month) + \
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
         arcpy.AddJoin_management('pairwise_intersect_layer', 'InputDatasetID',
-                                 param_geodatabase + '/InputDataset', 'InputDatasetID', 'KEEP_COMMON')
+                                 param_geodatabase + '/InputDataset', 'InputDatasetID', 'KEEP_COMMON',
+                                 'INDEX_JOIN_FIELDS')
         arcpy.AddJoin_management('pairwise_intersect_layer', 'DatasetSourceID',
-                                 param_geodatabase + '/DatasetSource', 'DatasetSourceID', 'KEEP_COMMON')
+                                 param_geodatabase + '/DatasetSource', 'DatasetSourceID', 'KEEP_COMMON',
+                                 'INDEX_JOIN_FIELDS')
         arcpy.Statistics_analysis('pairwise_intersect_layer', temp_ecoshape_max_polygon,
                                   [['TempDate', 'MAX']], [table_name_prefix + temp_pairwise_intersect + '.EcoshapeID',
-                                                         table_name_prefix + 'DatasetSource.DatasetType'])
+                                                          table_name_prefix + 'DatasetSource.DatasetType'])
         arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'DatasetSource')
         arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'InputDataset')
 
@@ -823,9 +825,10 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                     table_name_prefix + "DatasetSource.PermitEBARReviewerApp = 'Y' OR " +
                                                     table_name_prefix + "DatasetSource.PermitAll = 'Y')")
             arcpy.AddJoin_management('pairwise_intersect_layer', 'SpeciesID',
-                                    param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', 'SpeciesID', 'KEEP_COMMON')
+                                     param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', 'SpeciesID', 'KEEP_COMMON',
+                                     'INDEX_JOIN_FIELDS')
             arcpy.AddJoin_management('pairwise_intersect_layer', 'SynonymID',
-                                    param_geodatabase + '/Synonym', 'SynonymID', 'KEEP_ALL')
+                                     param_geodatabase + '/Synonym', 'SynonymID', 'KEEP_ALL', 'INDEX_JOIN_FIELDS')
             # first dissolve on FID_TempAllIinputs to rebuild polygons split during Ecoshape intersect
             temp_dissolve = 'TempDissolve' + str(start_time.year) + str(start_time.month) + \
                 str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)

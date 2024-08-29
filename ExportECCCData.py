@@ -220,6 +220,6 @@ if __name__ == '__main__':
     # Canadian, but no YT or NU
     param_jurisdictions_covered.value = "'British Columbia';'Alberta';'Saskatchewan';'Manitoba';'Ontario';'Quebec';'Atlantic Canada';'Northwest Territories'"
     param_output_zip = arcpy.Parameter()
-    param_output_zip.value = 'EBAR_ECCCExport.zip'
+    param_output_zip.value = 'EBAR_ECCCExport_QC.zip'
     parameters = [param_geodatabase, param_jurisdictions_covered, param_output_zip]
     eed.runExportECCCDataTool(parameters, None)
