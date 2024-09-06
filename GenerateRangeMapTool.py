@@ -430,7 +430,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         temp_ecoshape_countby_dataset = 'TempEcoshapeCountByDataset' + str(start_time.year) + str(start_time.month) + \
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
         arcpy.Statistics_analysis('pairwise_intersect_layer', temp_ecoshape_countby_dataset,
-                                  [['InputPointID', 'COUNT']], ['EcoshapeID', 'InputDatasetID'])
+                                  [['InputPointID', 'COUNT'], ['MinDate', 'MIN'], ['MaxDate', 'MAX'],
+                                   ['MaxDate', 'MIN']], ['EcoshapeID', 'InputDatasetID'])
 
         # get ecoshape input counts by source
         EBARUtils.displayMessage(messages, 'Counting Ecoshape Inputs by Dataset Source')
@@ -649,21 +650,29 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         # create RangeMapEcoshapeInputDataset records based on summary
         EBARUtils.displayMessage(messages, 'Creating Range Map Ecoshape Input Dataset records')
         rme_row = None
+        # field_names = [f.name for f in arcpy.ListFields(temp_ecoshape_countby_dataset) if f.name in
+        #                ['EcoshapeID', 'ecoshapeid', 'InputDatasetID', 'inputdatasetid', 'FREQUENCY', 'frequency',
+        #                 'MIN_MinDate', 'min_mindate', 'MAX_MaxDate', 'max_maxdate']]
+        # EBARUtils.displayMessage(messages, field_names)
         with arcpy.da.SearchCursor(param_geodatabase + '/RangeMapEcoshape', ['RangeMapEcoshapeID', 'EcoshapeID'],
                                    'RangeMapID = ' + str(range_map_id)) as rme_cursor:
             for rme_row in EBARUtils.searchCursor(rme_cursor):
                 with arcpy.da.SearchCursor(temp_ecoshape_countby_dataset,
-                                            ['EcoshapeID', 'InputDatasetID', 'FREQUENCY'],
-                                            'EcoshapeID = ' + str(rme_row['EcoshapeID'])) as search_cursor:
+                                           ['EcoshapeID', 'InputDatasetID', 'FREQUENCY', 'MIN_MinDate', 'MAX_MaxDate',
+                                            'MIN_MaxDate'],
+                                           'EcoshapeID = ' + str(rme_row['EcoshapeID'])) as search_cursor:
                     row = None
-                    for row in EBARUtils.searchCursor(search_cursor):
+                    for row in search_cursor:
                         #summary = str(row['FREQUENCY']) + ' input record(s)'
                         with arcpy.da.InsertCursor(param_geodatabase + '/RangeMapEcoshapeInputDataset',
                                                    ['RangeMapEcoshapeID', 'InputDatasetID',
-                                                    'InputDataCount']) as insert_cursor:
+                                                    'InputDataCount', 'MinDate', 'MaxDate']) as insert_cursor:
                                                     # 'InputDataSummary']) as insert_cursor:
-                            insert_cursor.insertRow([rme_row['RangeMapEcoshapeID'], row['InputDatasetID'],
-                                                     row['FREQUENCY']])
+                            min_date = row[3]
+                            if not min_date:
+                                min_date = row[5]
+                            insert_cursor.insertRow([rme_row['RangeMapEcoshapeID'], row[1], row[2], min_date, row[4]])
+                                                     #row['FREQUENCY']])
                 if row:
                     del row
                 del search_cursor
@@ -790,7 +799,14 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     del search_row
                 del search_cursor
         
-        # get overall input counts by source
+        # get min/max date by ecoshape
+        EBARUtils.displayMessage(messages, 'Getting Min/Max Date by Ecoshape')
+        temp_minmax_dateby_ecoshape = 'TempMinMaxDateByEcoshape' + str(start_time.year) + str(start_time.month) + \
+            str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
+        arcpy.Statistics_analysis('pairwise_intersect_layer', temp_minmax_dateby_ecoshape,
+                                  [['MinDate','MIN'], ['MaxDate', 'MAX'], ['MaxDate', 'MIN']], ['EcoshapeID'])
+
+        # count overall input records by source
         EBARUtils.displayMessage(messages, 'Counting Overall Inputs by Dataset Source')
         arcpy.AddJoin_management('pairwise_intersect_layer', 'InputDatasetID',
                                  param_geodatabase + '/InputDataset', 'InputDatasetID', 'KEEP_COMMON')
@@ -1109,7 +1125,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                             expert_comment = expert_name
                             expert_comment += ' Reviewer Comment - '
                             if expert_row['PublishComments']:
-                                expert_comment += row['ReviewNotes']
+                                if row['ReviewNotes']:
+                                    expert_comment += row['ReviewNotes']
                             else:
                                 expert_comment += 'Unpublished'
                             experts_comments.append(expert_comment)
@@ -1119,6 +1136,29 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             if row:
                 del row
             del cursor
+
+        # update Range Map Ecoshape records with Min/Max Date
+        EBARUtils.displayMessage(messages, 'Updating Range Map Ecoshape records with Min/Max Date')
+        row = None
+        with arcpy.da.SearchCursor(temp_minmax_dateby_ecoshape, ['EcoshapeID', 'MIN_MinDate',
+                                                                 'MAX_MaxDate', 'MIN_MaxDate']) as cursor:
+            for row in EBARUtils.searchCursor(cursor):
+                update_row = None
+                with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape',
+                                           ['MinDate', 'MaxDate'],
+                                           'RangeMapID = ' + str(range_map_id) +
+                                           ' AND EcoshapeID = ' + str(row['EcoshapeID'])) as update_cursor:
+                    for update_row in update_cursor:
+                        min_date = row['MIN_MinDate']
+                        if not min_date:
+                            min_date = row['MIN_MaxDate']
+                        update_cursor.updateRow([min_date, row['MAX_MaxDate']])
+                if update_row:
+                    del update_row
+                del update_cursor
+        if row:
+            del row
+        del cursor
 
         # update RangeMap metadata
         EBARUtils.displayMessage(messages, 'Updating Range Map record with Overall Summary')
@@ -1180,6 +1220,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             arcpy.Delete_management(temp_overall_countby_source)
         if arcpy.Exists(temp_ecoshape_countby_source):
             arcpy.Delete_management(temp_ecoshape_countby_source)
+        if arcpy.Exists(temp_minmax_dateby_ecoshape):
+            arcpy.Delete_management(temp_minmax_dateby_ecoshape)
         if arcpy.Exists(temp_ecoshape_countby_dataset):
             arcpy.Delete_management(temp_ecoshape_countby_dataset)
         if arcpy.Exists(temp_ecoshape_max_polygon):
@@ -1212,35 +1254,35 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         return
             
 
-# # controlling process
-# if __name__ == '__main__':
-#     grm = GenerateRangeMapTool()
-#     # hard code parameters for debugging
-#     param_geodatabase = arcpy.Parameter()
-#     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
-#     param_species = arcpy.Parameter()
-#     param_species.value = 'Falco mexicanus' #'Bidens amplissima' #'Aechmophorus occidentalis' #Bombus suckleyi
-#     param_secondary = arcpy.Parameter()
-#     param_secondary.value = None
-#     #param_secondary.value = "'Schistochilopsis incisa var. opacifolia'" #"'Dodia tarandus';'Dodia verticalis'"
-#     param_version = arcpy.Parameter()
-#     param_version.value = '0.1'
-#     param_stage = arcpy.Parameter()
-#     param_stage.value = 'Auto-generated TEST' # 'Expert reviewed test00' 
-#     param_scope = arcpy.Parameter()
-#     #param_scope.value = None
-#     param_scope.value = 'Canadian'
-#     param_jurisdictions_covered = arcpy.Parameter()
-#     param_jurisdictions_covered.value = None
-#     #param_jurisdictions_covered.value = "'British Columbia'"
-#     param_custom_polygons_covered = arcpy.Parameter()
-#     param_custom_polygons_covered.value = None
-#     #param_custom_polygons_covered.value = 'C:/GIS/EBAR/EBARServer.gdb/Custom'
-#     param_differentiate_usage_type = arcpy.Parameter()
-#     param_differentiate_usage_type.value = 'true'
-#     param_save_range_map_inputs = arcpy.Parameter()
-#     param_save_range_map_inputs.value = 'false'
-#     parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
-#                   param_jurisdictions_covered, param_custom_polygons_covered, param_differentiate_usage_type,
-#                   param_save_range_map_inputs]
-#     grm.runGenerateRangeMapTool(parameters, None)
+# controlling process
+if __name__ == '__main__':
+    grm = GenerateRangeMapTool()
+    # hard code parameters for debugging
+    param_geodatabase = arcpy.Parameter()
+    param_geodatabase.value = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde'
+    param_species = arcpy.Parameter()
+    param_species.value = 'Bidens amplissima' #'Aechmophorus occidentalis' #Bombus suckleyi
+    param_secondary = arcpy.Parameter()
+    param_secondary.value = None
+    #param_secondary.value = "'Schistochilopsis incisa var. opacifolia'" #"'Dodia tarandus';'Dodia verticalis'"
+    param_version = arcpy.Parameter()
+    param_version.value = '0.01'
+    param_stage = arcpy.Parameter()
+    param_stage.value = 'Auto-generated TEST' # 'Expert reviewed test00' 
+    param_scope = arcpy.Parameter()
+    #param_scope.value = None
+    param_scope.value = 'Canadian'
+    param_jurisdictions_covered = arcpy.Parameter()
+    param_jurisdictions_covered.value = None
+    #param_jurisdictions_covered.value = "'British Columbia'"
+    param_custom_polygons_covered = arcpy.Parameter()
+    param_custom_polygons_covered.value = None
+    #param_custom_polygons_covered.value = 'C:/GIS/EBAR/EBARServer.gdb/Custom'
+    param_differentiate_usage_type = arcpy.Parameter()
+    param_differentiate_usage_type.value = 'true'
+    param_save_range_map_inputs = arcpy.Parameter()
+    param_save_range_map_inputs.value = 'false'
+    parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
+                  param_jurisdictions_covered, param_custom_polygons_covered, param_differentiate_usage_type,
+                  param_save_range_map_inputs]
+    grm.runGenerateRangeMapTool(parameters, None)

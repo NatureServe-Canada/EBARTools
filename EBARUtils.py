@@ -679,6 +679,8 @@ def ExportRangeMapEcoshapesToCSV(range_map_ecoshape_view, range_map_ids, output_
     field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'UsageType', 'UsageType', 'TEXT'))
     field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'RangeMapEcoshapeNotes',
                                               'RangeMapEcoshapeNotes', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'MinDate', 'MinDate', 'DATE'))
+    field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'MaxDate', 'MaxDate', 'DATE'))
     arcpy.TableToTable_conversion(range_map_ecoshape_view, output_folder, 'RangeMapEcoshape.csv',
                                   field_mapping=field_mappings)
     arcpy.Delete_management(output_folder + '/RangeMapEcoshape.csv.xml')
