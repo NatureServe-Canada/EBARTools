@@ -70,6 +70,8 @@ EcoshapeID - EBAR foreign key relating to the appropriate Ecoshape/EcoshapeOverv
 Presence - the category of species presence in the Ecoshape (P=Present, X=Presence Expected, H=Historical, see metadata PDF for definitions)
 UsageType - the species usage type in the Ecoshape (B=Breeding, P=Possible Breeding, M=Migration, see metadata PDF for definitions)
 RangeMapEcoshapeNotes - numbers of input records by source
+MinDate - the earliest date for all input records that overlap the Ecoshape
+MaxDate - the latest date for all input records that overlap the Ecoshape
 
 Jurisdiction fields:
 objectid - ArcGIS unique identifier

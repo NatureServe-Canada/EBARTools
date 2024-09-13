@@ -72,6 +72,8 @@ EcoshapeID - EBAR foreign key relating to the appropriate Ecoshape/EcoshapeOverv
 Presence - the category of species presence in the Ecoshape (P=Present, X=Presence Expected, H=Historical, NULL=Removed*, see metadata PDF for definitions)
 UsageType - the species usage type in the Ecoshape (B=Breeding, P=Possible Breeding, M=Migration, see metadata PDF for definitions)
 RangeMapEcoshapeNotes - numbers of input records by source and reviewer comments, if publishable
+MinDate - the earliest date for all input records that overlap the Ecoshape
+MaxDate - the latest date for all input records that overlap the Ecoshape
 
 [*Ecoshapes removed during the expert review process are included with Presence=NULL and field RangeMapEcoshapeNotes containing reviewer comments, if publishable. Note that the ]
 
