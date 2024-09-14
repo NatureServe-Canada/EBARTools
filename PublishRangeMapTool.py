@@ -1,8 +1,8 @@
 # encoding: utf-8
 
 # Project: Ecosytem-based Automated Range Mapping (EBAR)
-# Credits: Randal Greene, Christine Terwissen
-# © NatureServe Canada 2020 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+# Credits: Randal Greene, Christine Terwissen, Gabrielle Miller, Samantha Stefanoff
+# © NatureServe Canada 2024 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 # Program: PublishRangeMapTool.py
 # ArcGIS Python tool for creating JPG, PDF and Spatial Data (Zip) for a Range Map
