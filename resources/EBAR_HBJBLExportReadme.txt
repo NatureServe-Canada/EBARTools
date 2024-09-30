@@ -19,6 +19,8 @@ Each feature class has the following fields:
 ObjectID - ArcGIS unique identifier
 Shape - geometry
 InputPointID/InputLineID/InputPolygonID - EBAR unique identifier
+OrginalInstitutionCode - the institution where the record originated
+RightsHolder - the contributor of the original observation
 MinDate - data begin date, if any
 MaxDate - data end data
 Accuracy - spatial uncertainty in metres

@@ -134,6 +134,12 @@ class FlagBadDataUsingIDTool:
             EBARUtils.displayMessage(messages, 'Deleting Bad record')
             arcpy.DeleteRows_management('bad_input_layer')
 
+        # clean up
+        if arcpy.Exists('input_layer'):
+            arcpy.Delete_management('input_layer')
+        if arcpy.Exists('bad_input_layer'):
+            arcpy.Delete_management('bad_input_layer')
+
         # end time
         end_time = datetime.datetime.now()
         EBARUtils.displayMessage(messages, 'End time: ' + str(end_time))
