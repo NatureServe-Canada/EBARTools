@@ -80,38 +80,60 @@ class ExportHBJBLDataTool:
         #self.processFeatureClass('other_polygons', 'jurs', param_include_cdc, param_include_restricted, output_gdb,
         #                         'OtherPolygons', md)
 
-        # process species
-        EBARUtils.displayMessage(messages, 'Processing Species')
-        arcpy.MakeTableView_management(param_geodatabase + '/Species', 'species', "HBJBLPriority = 'Y'")
-        arcpy.FeatureClassToFeatureClass_conversion('species', output_gdb, 'Species')
+        # process species/synonyms
+        EBARUtils.displayMessage(messages, 'Processing Species/Synonyms')
+        fieldinfo = arcpy.FieldInfo()
+        fieldinfo.addField('SpeciesID', 'SpeciesID', 'VISIBLE', '')
+        fieldinfo.addField('ELEMENT_NATIONAL_ID', 'ELEMENT_NATIONAL_ID', 'VISIBLE', '')
+        fieldinfo.addField('ELEMENT_GLOBAL_ID', 'ELEMENT_GLOBAL_ID', 'VISIBLE', '')
+        fieldinfo.addField('ELEMENT_CODE', 'ELEMENT_CODE', 'VISIBLE', '')
+        fieldinfo.addField('NATIONAL_SCIENTIFIC_NAME', 'NATIONAL_SCIENTIFIC_NAME', 'VISIBLE', '')
+        fieldinfo.addField('NATIONAL_ENGL_NAME', 'NATIONAL_ENGL_NAME', 'VISIBLE', '')
+        fieldinfo.addField('NATIONAL_FR_NAME', 'NATIONAL_FR_NAME', 'VISIBLE', '')
+        fieldinfo.addField('GLOBAL_SCIENTIFIC_NAME', 'GLOBAL_SCIENTIFIC_NAME', 'VISIBLE', '')
+        fieldinfo.addField('GLOBAL_SYNONYMS', 'GLOBAL_SYNONYMS', 'VISIBLE', '')
+        fieldinfo.addField('GLOBAL_ENGL_NAME', 'GLOBAL_ENGL_NAME', 'VISIBLE', '')
+        fieldinfo.addField('GLOB_FR_NAME', 'GLOB_FR_NAME', 'VISIBLE', '')
+        fieldinfo.addField('COSEWIC_NAME', 'COSEWIC_NAME', 'VISIBLE', '')
+        fieldinfo.addField('ENGLISH_COSEWIC_COM_NAME', 'ENGLISH_COSEWIC_COM_NAME', 'VISIBLE', '')
+        fieldinfo.addField('FRENCH_COSEWIC_COM_NAME', 'FRENCH_COSEWIC_COM_NAME', 'VISIBLE', '')
+        fieldinfo.addField('COSEWIC_ID', 'COSEWIC_ID', 'VISIBLE', '')
+        fieldinfo.addField('CA_NNAME_LEVEL', 'CA_NNAME_LEVEL', 'VISIBLE', '')
+        fieldinfo.addField('CATEGORY', 'CATEGORY', 'VISIBLE', '')
+        fieldinfo.addField('TAX_GROUP', 'TAX_GROUP', 'VISIBLE', '')
+        fieldinfo.addField('FAMILY_COM', 'FAMILY_COM', 'VISIBLE', '')
+        fieldinfo.addField('GENUS', 'GENUS', 'VISIBLE', '')
+        fieldinfo.addField('PHYLUM', 'PHYLUM', 'VISIBLE', '')
+        fieldinfo.addField('CLASSIFICATION_STATUS', 'CLASSIFICATION_STATUS', 'VISIBLE', '')
+        fieldinfo.addField('SHORT_CITATION_AUTHOR', 'SHORT_CITATION_AUTHOR', 'VISIBLE', '')
+        fieldinfo.addField('SHORT_CITATION_YEAR', 'SHORT_CITATION_YEAR', 'VISIBLE', '')
+        fieldinfo.addField('FORMATTED_FULL_CITATION', 'FORMATTED_FULL_CITATION', 'VISIBLE', '')
+        fieldinfo.addField('AUTHOR_NAME', 'AUTHOR_NAME', 'VISIBLE', '')
+        fieldinfo.addField('NSX_URL', 'NSX_URL', 'VISIBLE', '')
         arcpy.MakeTableView_management(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', 'biotics',
+                                       "SpeciesID IN (SELECT SpeciesID FROM Species WHERE HBJBLPriority = 'Y')",
+                                       field_info=fieldinfo)
+        arcpy.TableToTable_conversion('biotics', output_gdb, 'BIOTICS_ELEMENT_NATIONAL')
+        arcpy.MakeTableView_management(param_geodatabase + '/Synonym', 'synonym',
                                        "SpeciesID IN (SELECT SpeciesID FROM Species WHERE HBJBLPriority = 'Y')")
-        arcpy.FeatureClassToFeatureClass_conversion('biotics', output_gdb, 'BIOTICS_ELEMENT_NATIONAL')
-        arcpy.management.CreateRelationshipClass(output_gdb + '/Species', output_gdb + '/BIOTICS_ELEMENT_NATIONAL',
-                                                 'Species_BIOTICS_ELEMENT_NATIONAL', 'SIMPLE', 'Species',
-                                                 'BIOTICS_ELEMENT_NATIONAL', 'NONE', 'ONE_TO_ONE', 'NONE', 'SpeciesID',
-                                                 'SpeciesID')
-        arcpy.management.CreateRelationshipClass(output_gdb + '/Species', output_gdb + '/EBARPoints',
-                                                 'Species_EBARPoints', 'SIMPLE', 'Species',
-                                                 'EBARPoints', 'NONE', 'ONE_TO_MANY', 'NONE', 'SpeciesID', 'SpeciesID')
-        arcpy.management.CreateRelationshipClass(output_gdb + '/Species', output_gdb + '/EBARLines',
-                                                 'Species_EBARLiness', 'SIMPLE', 'Species',
-                                                 'EBARLiness', 'NONE', 'ONE_TO_MANY', 'NONE', 'SpeciesID', 'SpeciesID')
-        arcpy.management.CreateRelationshipClass(output_gdb + '/Species', output_gdb + '/EBARPolygons',
-                                                 'Species_EBARPolygons', 'SIMPLE', 'Species',
-                                                 'EBARPolygons', 'NONE', 'ONE_TO_MANY', 'NONE', 'SpeciesID',
-                                                 'SpeciesID')
+        arcpy.TableToTable_conversion('synonym', output_gdb, 'Synonym')
+
+        # create relationships
+        arcpy.management.CreateRelationshipClass(output_gdb + '/BIOTICS_ELEMENT_NATIONAL', output_gdb + '/Synonym',
+                                                 output_gdb + '/BIOTICS_ELEMENT_NATIONAL_Synonym', 'SIMPLE',
+                                                 'Synonym', 'BIOTICS_ELEMENT_NATIONAL', 'NONE', 'ONE_TO_MANY', 'NONE',
+                                                 'SpeciesID', 'SpeciesID')
         arcpy.management.CreateRelationshipClass(output_gdb + '/BIOTICS_ELEMENT_NATIONAL', output_gdb + '/EBARPoints',
-                                                 'BIOTICS_ELEMENT_NATIONAL_EBARPoints', 'SIMPLE',
-                                                 'BIOTICS_ELEMENT_NATIONAL', 'EBARPoints', 'NONE', 'ONE_TO_MANY',
+                                                 output_gdb + '/BIOTICS_ELEMENT_NATIONAL_EBARPoints', 'SIMPLE',
+                                                 'EBARPoints', 'BIOTICS_ELEMENT_NATIONAL', 'NONE', 'ONE_TO_MANY',
                                                  'NONE', 'SpeciesID', 'SpeciesID')
         arcpy.management.CreateRelationshipClass(output_gdb + '/BIOTICS_ELEMENT_NATIONAL', output_gdb + '/EBARLines',
-                                                 'BIOTICS_ELEMENT_NATIONAL_EBARLiness', 'SIMPLE',
-                                                 'BIOTICS_ELEMENT_NATIONAL', 'EBARLines', 'NONE', 'ONE_TO_MANY',
+                                                 output_gdb + '/BIOTICS_ELEMENT_NATIONAL_EBARLiness', 'SIMPLE',
+                                                 'EBARLines', 'BIOTICS_ELEMENT_NATIONAL', 'NONE', 'ONE_TO_MANY',
                                                  'NONE', 'SpeciesID', 'SpeciesID')
         arcpy.management.CreateRelationshipClass(output_gdb + '/BIOTICS_ELEMENT_NATIONAL', output_gdb + '/EBARPolygons',
-                                                 'BIOTICS_ELEMENT_NATIONAL_EBARPolygons', 'SIMPLE',
-                                                 'BIOTICS_ELEMENT_NATIONAL', 'EBARPolygons', 'NONE', 'ONE_TO_MANY',
+                                                 output_gdb + '/BIOTICS_ELEMENT_NATIONAL_EBARPolygons', 'SIMPLE',
+                                                 'EBARPolygons', 'BIOTICS_ELEMENT_NATIONAL', 'NONE', 'ONE_TO_MANY',
                                                  'NONE', 'SpeciesID', 'SpeciesID')
 
         # zip gdb into single file for download
@@ -218,7 +240,7 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde'
     param_custom_polygon = arcpy.Parameter()
-    param_custom_polygon.value = 'C:/GIS/EBAR/BudsonBay.gdb/HBJBL10'
+    param_custom_polygon.value = 'C:/GIS/EBAR/HudsonBay.gdb/HBJBL10'
     param_output_zip = arcpy.Parameter()
     param_output_zip.value = 'EBAR_HBJBLExport.zip'
     parameters = [param_geodatabase, param_custom_polygon, param_output_zip]

@@ -6,11 +6,11 @@ This ZIP package contains a single file geodatabase with the following:
 - EBARPoints feature class
 - EBARLines feature class
 - EBARPolygons feature class
-- BIOTICS_ELEMENT_NATIONAL table
-- Species table
+- BIOTICS_ELEMENT_NATIONAL (species) table
+- Synonym table
 
-XXXXXXXThe following rules were used when extracting data for export:
-- Include records that overlap the jurisdictional boundaries of the provinces and territories of Canada or fall within 32km of its boundary or coastline (32km is the approximate maximum locational obscuring applied to iNaturalist obscured records)
+The following rules were used when extracting data for export:
+- Include records that overlap the HBJBL study area or fall within 10km of its boundary or coastline
 - Only include records where the dataset provider explicitly permits NSC Biodiversity Science, or we have confirmed sharing permissions with the CDCs via the Data Sharing Agreement and data users have completed all required data security requirements
 - Exclude polygon datasets not associated with confirmed species presence, such as Critical Habitat, Range Estimate, Habitat Suitability, and Area of Occupancy
 - Exclude records flagged as Bad Data* 
@@ -29,8 +29,8 @@ License - provider's licensing terms for the record
 CoordinatesObscured - 1 indicates exact location has been obscured by the data provided (currently only applies iNaturalist data)
 RepresentationAccuracy - Level of accuracy associated with an Element Occurrence as per http://help.natureserve.org/biotics/#Record_Management/Element_Occurrence/EO_Representation_Accuracy_Value.htm. Accuracy varies on the basis of the area observed to be occupied by the Element (Field Observation) relative to the area contained within the footprint of the Source Feature. Differences in these two size values indicate that additional area was included within the feature boundary for locational uncertainty. Representation Accuracy (RA) provides a common index for the consistent comparison of these features, thus helping to ensure that aggregated data are correctly analyzed and interpreted.
 SpeciesID - EBAR unique identifier for the species/element
-ELEMENT_NATIONAL_ID - Canadian unique identifier for the element
-ELEMENT_GLOBAL_ID - international unique identifier for the element
+ELEMENT_NATIONAL_ID - NatureServe Canadian unique identifier for the species
+ELEMENT_GLOBAL_ID - NatureServe international unique identifier for the species
 ELEMENT_CODE - unique identifier compatible with the Biological and Conservation Data system
 NATIONAL_SCIENTIFIC_NAME - Canadian scientific name for the species
 NATIONAL_ENGL_NAME - Canadian English name for the species
@@ -57,10 +57,44 @@ MapQCStatus - Value selected from a drop-down menu that indicates the Quality Co
 QCComments - Comments related to the Quality Control (QC) Status of this Source Feature record.
 UnsuitableHabExcluded - Checkbox that indicates that the Source Feature has been digitized without including any known unsuitable habitat.
 
-XXXXXXXThe BIOTICS_ELEMENT_NATIONAL table has the following fields:
+The BIOTICS_ELEMENT_NATIONAL table has the following fields:
+SpeciesID - EBAR unique identifier for the species/element
+ELEMENT_NATIONAL_ID - NatureServe Canadian unique identifier for the species
+ELEMENT_GLOBAL_ID - NatureServe international unique identifier for the species
+ELEMENT_CODE - unique identifier compatible with the Biological and Conservation Data system
+NATIONAL_SCIENTIFIC_NAME - Canadian scientific name for the species
+NATIONAL_ENGL_NAME - Canadian English name for the species
+NATIONAL_FR_NAME - Canadian French name for the species
+GLOBAL_SCIENTIFIC_NAME - international scientific name for the species
+GLOBAL_SYNONYMS - international synonyms for the species
+GLOBAL_ENGL_NAME - international English name for the species
+GLOB_FR_NAME - international French name for the species
+COSEWIC_NAME - Committee on the Status of Endangered Wildlife in Canada scientific name for the species
+ENGLISH_COSEWIC_COM_NAME - Committee on the Status of Endangered Wildlife in Canada English name for the species
+FRENCH_COSEWIC_COM_NAME - Committee on the Status of Endangered Wildlife in Canada French name for the species
+COSEWIC_ID - Committee on the Status of Endangered Wildlife in Canada unique identifier for the species
+CA_NNAME_LEVEL - level of the National Scientific Name in the taxonomic or classification hierarchy indicated by the Classification Framework (https://help.natureserve.org/biotics/Content/Record_Management/Scientific_Name/SN_Classification_Framework.htm)
+CATEGORY - taxonomic category of the species
+TAX_GROUP - taxonomic group of the species
+FAMILY_COM - commom name of the taxonomic family of the species
+GENUS - genus of the species
+PHYLUM - phylum of the species
+CLASSIFICATION_STATUS - status of the species (https://help.natureserve.org/biotics/biotics_help.htm#Record_Management/Element_Files/Element_Tracking/ETRACK_Classification_Status.htm)
+SHORT_CITATION_AUTHOR - author(s) of the reference
+SHORT_CITATION_YEAR - year the reference was published
+FORMATTED_FULL_CITATION - formal citation for the reference
+AUTHOR_NAME - author of the scientific name for the species
+NSX_URL - NatureServe Explorer link for the species
 
-XXXXXXXThe Species table has the following fields:
+The Synonym table has the following fields:
+SynonymID - EBAR unique identifier for the Synonym
+SpeciesID - EBAR unique identifier for the Species that the Synonym relates to
+SynonymName - nane of the synonym
+SHORT_CITATION_AUTHOR - author(s) of the reference
+SHORT_CITATION_YEAR - year the reference was published
+FORMATTED_FULL_CITATION - formal citation for the reference
+AUTHOR_NAME - author of the scientific name for the species
 
-XXXXXXX*Individual records can be manually flagged as "Bad Data" by the EBAR team. Flagging is also done automatically using an algorithm that detects duplicates by Species, ObservationDate, and Location. Bad data is not included when generating range maps, but the EBAR team has chosen to retain, rather than delete, bad data to avoid re-importing it in future.
+*Individual records can be manually flagged as "Bad Data" by the EBAR team. Flagging is also done automatically using an algorithm that detects duplicates by Species, ObservationDate, and Location. Bad data is not included when generating range maps, but the EBAR team has chosen to retain, rather than delete, bad data to avoid re-importing it in future.
 
 For additional information please contact EBAR-KBA@natureserve.ca

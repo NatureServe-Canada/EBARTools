@@ -16,36 +16,37 @@ table_name_prefix = EBARUtils.getTableNamePrefix(param_geodatabase)
 #arcpy.AddJoin_management('input_point_layer', 'SpeciesID', 'Species', 'SpeciesID', 'KEEP_COMMON')
 
 # get relevant DatasetSourceIDs
-# dss_ids = []
-# row = None
-# with arcpy.da.SearchCursor(param_geodatabase + '/DatasetSource', ['DatasetSourceID'],
-#                            'DuplicatePriority IS NOT NULL AND CDCJurisdictionID IS NULL') as cursor:
-#     for row in EBARUtils.searchCursor(cursor):
-#         dss_ids.append(row['DatasetSourceID'])
-# if row:
-#     del row
-# del cursor
-dss_ids = [1010]
+dss_ids = []
+row = None
+with arcpy.da.SearchCursor(param_geodatabase + '/DatasetSource', ['DatasetSourceID'],
+                           'DuplicatePriority IS NOT NULL AND CDCJurisdictionID IS NULL') as cursor:
+    for row in EBARUtils.searchCursor(cursor):
+        dss_ids.append(row['DatasetSourceID'])
+if row:
+    del row
+del cursor
+#dss_ids = [1010]
 
 # loop dss_ids
 for dss_id in dss_ids:
     EBARUtils.displayMessage(None, 'Checking DatasetSourceID ' + str(dss_id))
 
-    # get distinct SpeciesIDs within DatasetSource
-    species_ids = []
-    row = None
-    # with arcpy.da.SearchCursor('input_point_layer', [table_name_prefix + 'InputPoint.SpeciesID'],
-    #                            'DatasetSourceID = ' + str(dss_id)) as cursor:
-    #                            #sql_clause=('DISTINCT SpeciesID', None)) as cursor:
+    # # get distinct SpeciesIDs within DatasetSource
+    # species_ids = []
+    # row = None
+    # # with arcpy.da.SearchCursor('input_point_layer', [table_name_prefix + 'InputPoint.SpeciesID'],
+    # #                            'DatasetSourceID = ' + str(dss_id)) as cursor:
+    # #                            #sql_clause=('DISTINCT SpeciesID', None)) as cursor:
     arcpy.MakeFeatureLayer_management(param_geodatabase + '/InputPoint', 'input_point_layer',
                                       'InputDatasetID IN (SELECT InputDatasetID FROM InputDataset WHERE DatasetSourceID = ' + str(dss_id) + ')')
-    with arcpy.da.SearchCursor('input_point_layer', ['SpeciesID'], sql_clause=('DISTINCT SpeciesID', None)) as cursor:
-        #species_ids = sorted({row[table_name_prefix + 'InputPoint.SpeciesID'] for row in cursor})
-        for row in EBARUtils.searchCursor(cursor):
-            species_ids.append(row['SpeciesID'])
-    if row:
-        del row
-    del cursor    
+    # with arcpy.da.SearchCursor('input_point_layer', ['SpeciesID'], sql_clause=('DISTINCT SpeciesID', 'ORDER BY SpeciesID')) as cursor:
+    #     #species_ids = sorted({row[table_name_prefix + 'InputPoint.SpeciesID'] for row in cursor})
+    #     for row in EBARUtils.searchCursor(cursor):
+    #         species_ids.append(row['SpeciesID'])
+    # if row:
+    #     del row
+    # del cursor
+    species_ids = [700]
         
     # loop species_ids
     for species_id in species_ids:
