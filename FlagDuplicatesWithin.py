@@ -49,8 +49,8 @@ try:
         elif dss_ids[dss_id] == 'P':
             input_fcname = 'InputPolygon'
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/' + input_fcname, 'input_lyr',
-                                         'InputDatasetID IN (SELECT InputDatasetID FROM InputDataset WHERE ' +
-                                         'DatasetSourceID = ' str(dss_id) + ')' + ' AND MaxDate IS NOT NULL')
+                                         'InputDatasetID IN (SELECT InputDatasetID FROM InputDataset WHERE ' + \
+                                         'DatasetSourceID = ' + str(dss_id) + ')' + ' AND MaxDate IS NOT NULL')
 
         # get list of species for just the current DatasetSource
         species_ids = []
