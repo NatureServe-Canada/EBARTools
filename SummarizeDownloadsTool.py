@@ -101,6 +101,7 @@ class SummarizeDownloadsTool:
 
         # write top 100 individual file download counts
         EBARUtils.displayMessage(messages, '')
+        EBARUtils.displayMessage(messages, 'Top 100 files:')
         sorted_download_file_count = dict(sorted(file_download_count.items(), reverse=True, key=lambda item: item[1]))
         display_count = 0
         for download_file in sorted_download_file_count.keys(): # sorted(file_download_count.values()):
