@@ -49,13 +49,14 @@ class SummarizeDownloadsTool:
                     if file_line:
                         # only count .pdf and .zip files
                         if (file_line.count('.pdf') > 0) or (file_line.count('.zip') > 0):
-                            # ignore bots and http return errors
+                            # ignore bots, http return errors and similar
                             if ((file_line.count('bot.') == 0) and (file_line.count('bot/') == 0) and
                                 (file_line.count('bot)') == 0) and (file_line.count('/bot') == 0) and
                                 (file_line.count(' - 301') == 0) and (file_line.count(' - 400') == 0) and
                                 (file_line.count(' - 401') == 0) and (file_line.count(' - 404') == 0) and
                                 (file_line.count(' - 405') == 0) and (file_line.count(' - 500') == 0) and
-                                (file_line.count('favicon') == 0)):
+                                (file_line.count('favicon') == 0) and (file_line.count('arcgis') == 0) and
+                                (file_line.count('claudebot') == 0)):
                                 # increment overall counts
                                 if file_line.count('.pdf') > 0:
                                     year_month_species_pdfs[year_month] += 1
@@ -66,11 +67,23 @@ class SummarizeDownloadsTool:
                                         year_month_taxa_zips[year_month] += 1
                                     else:
                                         year_month_species_zips[year_month] += 1
-                                # increment file counts
+                                # increment file counts - first extract file name
                                 line_segments = line_raw.split(' ')
                                 for line_segment in line_segments:
                                     if line_segment[0:10] == '/download/':
-                                        download_file_name = line_segment[11:]
+                                        # check for extraneous text
+                                        download_file_name = line_segment[10:]
+                                        file_type = '.pdf'
+                                        if download_file_name.lower().count('.zip') > 0:
+                                            file_type = '.zip'
+                                        if download_file_name[:4].lower() != file_type:
+                                            # chop extraneous text
+                                            position = download_file_name.find(file_type)
+                                            # EBARUtils.displayMessage(messages, 'Line with extraneous: ' + line_raw)
+                                            # EBARUtils.displayMessage(messages, 'Download file name: ' + download_file_name)
+                                            # EBARUtils.displayMessage(messages, 'Position: ' + str(position))
+                                            download_file_name = download_file_name[0:position + 4]
+                                        # per-file download count
                                         if download_file_name not in file_download_count.keys():
                                             file_download_count[download_file_name] = 1
                                         else:
@@ -85,11 +98,16 @@ class SummarizeDownloadsTool:
         test_file.close()
         EBARUtils.displayMessage(messages, 'Log files processed: ' + str(log_file_count))
 
-        # write individual file download counts
+        # write top 100 individual file download counts
         EBARUtils.displayMessage(messages, '')
-        for download_file in sorted(file_download_count.keys()):
+        sorted_download_file_count = dict(sorted(file_download_count.items(), reverse=True, key=lambda item: item[1]))
+        display_count = 0
+        for download_file in sorted_download_file_count.keys(): # sorted(file_download_count.values()):
             EBARUtils.displayMessage(messages, download_file + ' downloaded ' +
                                      str(file_download_count[download_file]) + ' times')
+            display_count += 1
+            if display_count == 100:
+                break
 
         # write overall stats by month
         EBARUtils.displayMessage(messages, '')
@@ -116,16 +134,22 @@ class SummarizeDownloadsTool:
         # write overall stats
         EBARUtils.displayMessage(messages, '')
         EBARUtils.displayMessage(messages, 'Species PDF downloads/views overall: ' +
-                                 sum(year_month_species_pdfs.values()))
+                                 str(sum(year_month_species_pdfs.values())))
         EBARUtils.displayMessage(messages, '')
         EBARUtils.displayMessage(messages, 'Species Spatial ZIP downloads overall: ' +
-                                 sum(year_month_species_zips.values()))
+                                 str(sum(year_month_species_zips.values())))
         EBARUtils.displayMessage(messages, '')
         EBARUtils.displayMessage(messages, 'Taxa Group PDF downloads/views overall: ' +
-                                 sum(year_month_taxa_pdfs.values()))
+                                 str(sum(year_month_taxa_pdfs.values())))
         EBARUtils.displayMessage(messages, '')
         EBARUtils.displayMessage(messages, 'Taxa Group Spatial ZIP downloads overall: ' +
-                                 sum(year_month_taxa_pdfs.values()))
+                                 str(sum(year_month_taxa_zips.values())))
+        EBARUtils.displayMessage(messages, '')
+        EBARUtils.displayMessage(messages, 'All downloads: ' +
+                                 str(sum(year_month_species_pdfs.values()) +
+                                     sum(year_month_species_zips.values()) +
+                                     sum(year_month_taxa_pdfs.values()) +
+                                     sum(year_month_taxa_zips.values())))
 
 
 # controlling process
