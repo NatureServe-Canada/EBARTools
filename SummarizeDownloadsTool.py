@@ -30,8 +30,8 @@ class SummarizeDownloadsTool:
         year_month_taxa_zips = {}
         log_file_count = 0
         file_download_count = {}
-        # test output file
-        test_file = open('C:/GIS/EBAR/temp/test3.txt', 'w', encoding='MBCS')
+        # # test output file
+        # test_file = open('C:/GIS/EBAR/temp/test3.txt', 'w', encoding='MBCS')
         for file_name in file_list:
             # get year/month
             year_month = file_name[4:8]
@@ -88,14 +88,15 @@ class SummarizeDownloadsTool:
                                             file_download_count[download_file_name] = 1
                                         else:
                                             file_download_count[download_file_name] += 1
-                                # test
-                                test_file.write(line_raw)
+                                # # test
+                                # test_file.write(line_raw)
                     else:
                         break
             log_file_count +=1
             if log_file_count % 100 == 0:
                 EBARUtils.displayMessage(messages, 'Log files processed: ' + str(log_file_count))
-        test_file.close()
+        # # test
+        # test_file.close()
         EBARUtils.displayMessage(messages, 'Log files processed: ' + str(log_file_count))
 
         # write top 100 individual file download counts
