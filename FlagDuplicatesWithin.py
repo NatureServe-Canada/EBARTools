@@ -16,7 +16,7 @@ import sys
 import arcpy
 import datetime
 import EBARUtils
-import FlagBadDataUsingIDTool
+#import FlagBadDataUsingIDTool
 
 # parameters
 param_geodatabase = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde'

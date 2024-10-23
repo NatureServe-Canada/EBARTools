@@ -10,17 +10,17 @@ This ZIP package should contain the following files:
 - RangeMap.csv (table of species and range attributes for EBAR for selected species)
 - RangeMapEcoshape.csv (table of per-ecoshape attributes for EBAR for selected species)
 - Jurisdiction.csv (table of jurisdictions)
-- EXARxxxxx.aprx (ArcGIS Pro project file referencing the data files above, with appropriate joins)
-- EXARxxxxx.mapx (ArcGIS Pro map file referencing the data files above, with appropriate joins)
+- EBARxxxxx.aprx (ArcGIS Pro project file referencing the data files above, with appropriate joins)
+- EBARxxxxx.mapx (ArcGIS Pro map file referencing the data files above, with appropriate joins)
 - EBARxxxxxEcoshape.lyrx (ArcGIS Pro layer file, with suggested symbology and appropriate joins, referencing the original ecoshapes)
 - EBARxxxxxEcoshapeOverview.lyrx (ArcGIS Pro layer file, with suggested symbology and appropriate joins, referencing the generalized ecoshapes)
 - EBARxxxxxRemovedEcoshapes.lyrx (ArcGIS Pro layer file, with appropriate joins, showing only ecoshapes that were removed as a result of expet review, referencing the generalized ecoshapes)
-- EBARxxxxxUsageType.lyrx (if applicable, ArcGIS Pro layer file, with suggested symbology and approrpriate joins, referencing usage type of generalized ecoshapes)
+- EBARxxxxxUsageType.lyrx (if applicable, ArcGIS Pro layer file, with suggested symbology and appropriate joins, referencing usage type of generalized ecoshapes)
 - EBARxxxxx.mxd (ArcMap project file referencing the data files above)
 - EBARxxxxxEcoshape.lyr (ArcMap layer file, with suggested symbology and appropriate joins, referencing the original ecoshapes)
 - EBARxxxxxEcoshapeOverview.lyr (ArcMap layer file, with suggested symbology and appropriate joins, referencing the generalized ecoshapes)
 - EBARxxxxxRemovedEcoshapes.lyr (ArcMap layer file, with appropriate joins, showing only ecoshapes that were removed as a result of expet review, referencing the generalized ecoshapes)
-- EBARxxxxxUsageType.lyr (ArcMap layer file, with suggested symbology and approrpriate joins, referencing usage type of generalized ecoshapes)
+- EBARxxxxxUsageType.lyr (ArcMap layer file, with suggested symbology and appropriate joins, referencing usage type of generalized ecoshapes)
 [where xxxxx is the ELEMENT_GLOBAL_ID of the selected species]
 
 The included data files are related as follows:

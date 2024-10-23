@@ -4,7 +4,7 @@
 # Credits: Randal Greene, Samantha Stefanoff
 # © NatureServe Canada 2024 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
-# Program: FlagDuplicatesWithin.py
+# Program: FlagDuplicatesAcross.py
 # ArcGIS Python tool for flagging InputPoint/Line/Polygon records with the same SpeciesID/MaxDate/Shape(location)
 # across DatasetSources
 
@@ -16,7 +16,7 @@ import sys
 import arcpy
 import datetime
 import EBARUtils
-import FlagBadDataUsingIDTool
+#import FlagBadDataUsingIDTool
 
 # parameters
 param_geodatabase = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde'
