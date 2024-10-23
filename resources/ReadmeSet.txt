@@ -9,14 +9,14 @@ This ZIP package should contain the following files:
 - RangeMap.csv (table of species and range attributes for EBAR for all species within category/taxa group)
 - RangeMapEcoshape.csv (table of per-ecoshape attributes for EBAR for all species within category/taxa group)
 - Jurisdiction.csv (table of jurisdictions)
-- EXARxxxxx.aprx (ArcGIS Pro project file for each species within category/taxa group, referencing the data files above, with appropriate definition queries and joins)
-- EXARxxxxx.mapx (ArcGIS Pro map file for each species within category/taxa group, referencing the data files above, with appropriate definition queries and joins)
+- EBARxxxxx.aprx (ArcGIS Pro project file for each species within category/taxa group, referencing the data files above, with appropriate definition queries and joins)
+- EBARxxxxx.mapx (ArcGIS Pro map file for each species within category/taxa group, referencing the data files above, with appropriate definition queries and joins)
 - EBARxxxxxEcoshape.lyrx (ArcGIS Pro layer file for each species within category/taxa group, with suggested symbology and appropriate definition queries and joins, referencing the original ecoshapes)
 - EBARxxxxxEcoshapeOverview.lyrx (ArcGIS Pro layer file for each species within category/taxa group, with suggested symbology and definition queries and appropriate joins, referencing the generalized ecoshapes)
 - EBARyyyyy.mxd (ArcMap project file referencing the data files above)
 - Ecoshape.lyr (ArcMap layer file, with suggested symbology and appropriate joins, referencing the original ecoshapes)
 - EcoshapeOverview.lyr (ArcMap layer file, with suggested symbology and appropriate joins, referencing the generalized ecoshapes)
-- UsageType.lyr (ArcMap layer file, with suggested symbology and approrpriate joins, referencing usage type, where applicable, of generalized ecoshapes)
+- UsageType.lyr (ArcMap layer file, with suggested symbology and appropriate joins, referencing usage type, where applicable, of generalized ecoshapes)
 [where xxxxx is the ELEMENT_GLOBAL_ID of the selected species, see RangeMap.csv for additional species attributes such as the scientific name]
 [where yyyyy is the name of the category/taxa group]
 [NOTE: ArcMap project and layer files will need to have a definition query applied to each layer - "RangeMapID = yyy", where yyy is an appropriate RangeMapID value from RangeMap.csv]
