@@ -10,6 +10,7 @@
 
 # Notes:
 # - command-line execution only, not yet converted to an interactive tool
+# - each step, including deletion, must be completed before the next step
 
 
 import sys
@@ -162,10 +163,83 @@ try:
 
     # del insert_cursor
 
-    # 3. iNat.ca unrestricted vs iNat.org
-    EBARUtils.displayMessage(None, 'Checking iNat.ca unrestricted vs iNat.org')
+    # # 3. iNat.ca unrestricted vs iNat.org
+    # EBARUtils.displayMessage(None, 'Checking iNat.ca unrestricted vs iNat.org')
+    # # create table to store IDs for external flagging
+    # temp_dups = 'TempDups_iNatcaUnres_iNatorg_' + str(start_time.year) + str(start_time.month) + \
+    #     str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
+    # arcpy.CreateTable_management(param_geodatabase, temp_dups)
+    # temp_dups = param_geodatabase + '/' + temp_dups
+    # arcpy.AddField_management(temp_dups, 'InputPointID', 'LONG')
+    # arcpy.AddField_management(temp_dups, 'DatasetSourceUniqueID', 'TEXT')
+    # with arcpy.da.InsertCursor(temp_dups, ['InputPointID', 'DatasetSourceUniqueID']) as insert_cursor:
+    #     # loop species
+    #     row = None
+    #     with arcpy.da.SearchCursor(param_geodatabase + '/Species', ['SpeciesID'],
+    #                                 sql_clause=(None, 'ORDER BY SpeciesID')) as cursor:
+    #         for row in EBARUtils.searchCursor(cursor):
+    #             EBARUtils.displayMessage(None, 'Checking SpeciesID ' + str(row['SpeciesID']))
+
+    #             # retrieve all DatasetSourceUniqueIDs for iNat.ca unrestricted
+    #             unrestricted_ids = []
+    #             unrestricted_row = None
+    #             where_clause = 'InputDatasetID IN (SELECT InputDatasetID FROM InputDataset WHERE ' + \
+    #                 'DatasetSourceID = 1010)' + ' AND SpeciesID = ' + str(row['SpeciesID'])
+    #             with arcpy.da.SearchCursor(param_geodatabase + '\InputPoint', ['DatasetSourceUniqueID'],
+    #                                         where_clause) as unrestricted_cursor:
+    #                 for unrestricted_row in EBARUtils.searchCursor(unrestricted_cursor):
+    #                     unrestricted_ids.append(unrestricted_row['DatasetSourceUniqueID'])
+    #             if unrestricted_row:
+    #                 del unrestricted_row
+    #             del unrestricted_cursor
+
+    #             # retrieve each DatasetSourceUniqueID for iNat.org
+    #             org_row = None
+    #             where_clause = 'InputDatasetID IN (SELECT InputDatasetID FROM InputDataset WHERE ' + \
+    #                 'DatasetSourceID = 5)' + ' AND SpeciesID = ' + str(row['SpeciesID'])
+    #             with arcpy.da.SearchCursor(param_geodatabase + '\InputPoint', ['InputPointID',
+    #                                                                            'DatasetSourceUniqueID'],
+    #                                         where_clause) as org_cursor:
+    #                 for org_row in EBARUtils.searchCursor(org_cursor):
+    #                     # check if in unrestricted
+    #                     if org_row['DatasetSourceUniqueID'] in unrestricted_ids:
+    #                         EBARUtils.displayMessage(None, 'Flagging duplicate with InputPointID ' + \
+    #                                                     str(org_row['InputPointID']) + \
+    #                                                     ' and DatasetSourceUniqueID ' + \
+    #                                                     org_row['DatasetSourceUniqueID'])
+    #                         # store ID for external flagging
+    #                         insert_cursor.insertRow([org_row['InputPointID'],
+    #                                                  org_row['DatasetSourceUniqueID']])
+    #                         # create BadData record, create InputFeedback record, delete Input record using ID
+    #                         # param_gdb = arcpy.Parameter()
+    #                         # param_gdb.value = param_geodatabase
+    #                         # param_input_point_id = arcpy.Parameter()
+    #                         # param_input_point_id.value = org_row['InputPointID']
+    #                         # param_input_line_id = arcpy.Parameter()
+    #                         # param_input_line_id.value = None
+    #                         # param_input_polygon_id = arcpy.Parameter()
+    #                         # param_input_polygon_id.value = None
+    #                         # param_justification = arcpy.Parameter()
+    #                         # param_justification.value = 'Duplicate with iNaturalist.ca'
+    #                         # param_undo = arcpy.Parameter()
+    #                         # param_undo.value = 'false'
+    #                         # parameters = [param_gdb, param_input_point_id, param_input_line_id, 
+    #                         #             param_input_polygon_id, param_justification, param_undo]
+    #                         # fbdui.runFlagBadDataUsingIDTool(parameters, None, quiet=True)
+    #             if org_row:
+    #                 del org_row
+    #             del org_cursor
+
+    #     if row:
+    #         del row
+    #     del cursor
+
+    # del insert_cursor
+
+    # 4. iNat.ca (all subtypes) vs GBIF
+    EBARUtils.displayMessage(None, 'Checking iNat.ca (all subtypes) vs GBIF')
     # create table to store IDs for external flagging
-    temp_dups = 'TempDups_iNatcaUnres_iNatorg_' + str(start_time.year) + str(start_time.month) + \
+    temp_dups = 'TempDups_iNatca_GBIF_' + str(start_time.year) + str(start_time.month) + \
         str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
     arcpy.CreateTable_management(param_geodatabase, temp_dups)
     temp_dups = param_geodatabase + '/' + temp_dups
@@ -175,59 +249,68 @@ try:
         # loop species
         row = None
         with arcpy.da.SearchCursor(param_geodatabase + '/Species', ['SpeciesID'],
-                                    sql_clause=(None, 'ORDER BY SpeciesID')) as cursor:
+                                   sql_clause=(None, 'ORDER BY SpeciesID')) as cursor:
             for row in EBARUtils.searchCursor(cursor):
                 EBARUtils.displayMessage(None, 'Checking SpeciesID ' + str(row['SpeciesID']))
 
-                # retrieve all DatasetSourceUniqueIDs for iNat.ca unrestricted
-                unrestricted_ids = []
-                unrestricted_row = None
+                # retrieve all DatasetSourceUniqueIDs for iNat.ca (all subtypes)
+                inatca_ids = []
+                inatca_row = None
                 where_clause = 'InputDatasetID IN (SELECT InputDatasetID FROM InputDataset WHERE ' + \
-                    'DatasetSourceID = 1010)' + ' AND SpeciesID = ' + str(row['SpeciesID'])
+                    'DatasetSourceID IN (5, 1010, 1110))' + ' AND SpeciesID = ' + str(row['SpeciesID'])
                 with arcpy.da.SearchCursor(param_geodatabase + '\InputPoint', ['DatasetSourceUniqueID'],
-                                            where_clause) as unrestricted_cursor:
-                    for unrestricted_row in EBARUtils.searchCursor(unrestricted_cursor):
-                        unrestricted_ids.append(unrestricted_row['DatasetSourceUniqueID'])
-                if unrestricted_row:
-                    del unrestricted_row
-                del unrestricted_cursor
+                                            where_clause) as inatca_cursor:
+                    for inatca_row in EBARUtils.searchCursor(inatca_cursor):
+                        inatca_ids.append(inatca_row['DatasetSourceUniqueID'])
+                if inatca_row:
+                    del inatca_row
+                del inatca_cursor
 
-                # retrieve each DatasetSourceUniqueID for iNat.org
-                org_row = None
+                # retrieve each DatasetSourceUniqueID for GBIF
+                gbif_row = None
                 where_clause = 'InputDatasetID IN (SELECT InputDatasetID FROM InputDataset WHERE ' + \
-                    'DatasetSourceID = 5)' + ' AND SpeciesID = ' + str(row['SpeciesID'])
+                    'DatasetSourceID = 1)' + ' AND SpeciesID = ' + str(row['SpeciesID'])
                 with arcpy.da.SearchCursor(param_geodatabase + '\InputPoint', ['InputPointID',
-                                                                               'DatasetSourceUniqueID'],
-                                            where_clause) as org_cursor:
-                    for org_row in EBARUtils.searchCursor(org_cursor):
-                        # check if in unrestricted
-                        if org_row['DatasetSourceUniqueID'] in unrestricted_ids:
-                            EBARUtils.displayMessage(None, 'Flagging duplicate with InputPointID ' + \
-                                                        str(org_row['InputPointID']) + \
-                                                        ' and DatasetSourceUniqueID ' + \
-                                                        org_row['DatasetSourceUniqueID'])
-                            # store ID for external flagging
-                            insert_cursor.insertRow([org_row['InputPointID'],
-                                                     org_row['DatasetSourceUniqueID']])
-                            # create BadData record, create InputFeedback record, delete Input record using ID
-                            # param_gdb = arcpy.Parameter()
-                            # param_gdb.value = param_geodatabase
-                            # param_input_point_id = arcpy.Parameter()
-                            # param_input_point_id.value = org_row['InputPointID']
-                            # param_input_line_id = arcpy.Parameter()
-                            # param_input_line_id.value = None
-                            # param_input_polygon_id = arcpy.Parameter()
-                            # param_input_polygon_id.value = None
-                            # param_justification = arcpy.Parameter()
-                            # param_justification.value = 'Duplicate with iNaturalist.ca'
-                            # param_undo = arcpy.Parameter()
-                            # param_undo.value = 'false'
-                            # parameters = [param_gdb, param_input_point_id, param_input_line_id, 
-                            #             param_input_polygon_id, param_justification, param_undo]
-                            # fbdui.runFlagBadDataUsingIDTool(parameters, None, quiet=True)
-                if org_row:
-                    del org_row
-                del org_cursor
+                                                                               'DatasetSourceUniqueID',
+                                                                               'OriginalInstitutionCode',
+                                                                               'URI'],
+                                           where_clause) as gbif_cursor:
+                    for gbif_row in EBARUtils.searchCursor(gbif_cursor):
+                        dssuid = gbif_row['DatasetSourceUniqueID']
+                        # check if in inatca
+                        if dssuid in inatca_ids:
+                            # ensure OriginalInstitutionCode is 'iNaturalist'
+                            if gbif_row['OriginalInstitutionCode'] == 'iNaturalist':
+                                # ensure dssuid matches URI after the last slash
+                                pieces = gbif_row['URI'].split('/')
+                                if len(pieces) > 0:
+                                    if pieces[-1] == dssuid:
+                                        EBARUtils.displayMessage(None, 'Flagging duplicate with InputPointID ' + \
+                                                                str(gbif_row['InputPointID']) + \
+                                                                ' and DatasetSourceUniqueID ' + \
+                                                                gbif_row['DatasetSourceUniqueID'])
+                                        # store ID for external flagging
+                                        insert_cursor.insertRow([gbif_row['InputPointID'],
+                                                                 gbif_row['DatasetSourceUniqueID']])
+                                        # create BadData record, create InputFeedback record, delete Input record using ID
+                                        # param_gdb = arcpy.Parameter()
+                                        # param_gdb.value = param_geodatabase
+                                        # param_input_point_id = arcpy.Parameter()
+                                        # param_input_point_id.value = gbif_row['InputPointID']
+                                        # param_input_line_id = arcpy.Parameter()
+                                        # param_input_line_id.value = None
+                                        # param_input_polygon_id = arcpy.Parameter()
+                                        # param_input_polygon_id.value = None
+                                        # param_justification = arcpy.Parameter()
+                                        # param_justification.value = 'Duplicate with iNaturalist.ca'
+                                        # param_undo = arcpy.Parameter()
+                                        # param_undo.value = 'false'
+                                        # parameters = [param_gdb, param_input_point_id, param_input_line_id, 
+                                        #             param_input_polygon_id, param_justification, param_undo]
+                                        # fbdui.runFlagBadDataUsingIDTool(parameters, None, quiet=True)
+                if gbif_row:
+                    del gbif_row
+                del gbif_cursor
 
         if row:
             del row
