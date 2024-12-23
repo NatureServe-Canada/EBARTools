@@ -137,28 +137,50 @@ class PublishRangeMapTool:
                                             cosewic_id)
             del row
 
-        # get input references
-        EBARUtils.displayMessage(messages, 'Getting InputReferences from database')
+        # get input citations
+        EBARUtils.displayMessage(messages, 'Getting Input Citations from database')
         input_references = ''
+        previous_dataset_source_name = ''
         arcpy.MakeTableView_management(EBARUtils.ebar_summary_service + '/7', 'citation_view',
                                        'RangeMapID = ' + param_range_map_id)
+        # Nov 2024 - could now be multiple citations per source because InputDataset can have one
+        # see database view s_InputCitationsByRangeMap, including DISTINCT clause!
         with arcpy.da.SearchCursor('citation_view', ['DatasetSourceName', 'DatasetSourceCitation',
-                                                     'DatasetSourceWebsite']) as cursor:
+                                                     'DatasetSourceWebsite', 'DatasetCitation']) as cursor:
             row = None
             for row in EBARUtils.searchCursor(cursor):
-                if len (input_references) > 0:
-                    input_references += '<br>'
-                input_references += row['DatasetSourceName'] + ' - '
-                # use website if provided as link for citation
-                if row['DatasetSourceWebsite']:
-                    input_references += ' <a href="' + row['DatasetSourceWebsite'] + '">' + \
-                        row['DatasetSourceCitation'] + '</a>'
-                else:
-                    input_references += row['DatasetSourceCitation']
-                # input_references += row['DatasetSourceName'] + ' - ' + row['DatasetSourceCitation']
-                # if row['DatasetSourceWebsite']:
-                #     input_references += ' (<a href="' + row['DatasetSourceWebsite'] + '">' + \
-                #         row['DatasetSourceWebsite'] + '</a>)'
+                dataset_source_name = row['DatasetSourceName']
+                dataset_source_website = row['DatasetSourceWebsite']
+                primary_citation = row['DatasetSourceCitation']
+                secondary_citation = row['DatasetCitation']
+                if dataset_source_name != previous_dataset_source_name:
+                    citations_list = []
+                # main citation should never be NULL
+                if primary_citation not in citations_list:
+                    citations_list.append(primary_citation)
+                    if len (input_references) > 0:
+                        input_references += '<br>'
+                    input_references += dataset_source_name + ' - '
+                    # use website if provided as link for citation
+                    if dataset_source_website:
+                        input_references += ' <a href="' + dataset_source_website + '">' + \
+                            primary_citation + '</a>'
+                    else:
+                        input_references += primary_citation
+                # secondary citation can be NULL
+                if secondary_citation:
+                    if secondary_citation not in citations_list:
+                        citations_list.append(secondary_citation)
+                        input_references += '<br>'
+                        input_references += dataset_source_name + ' - '
+                        # use website if provided as link for citation
+                        if dataset_source_website:
+                            input_references += ' <a href="' + dataset_source_website + '">' + \
+                                secondary_citation + '</a>'
+                        else:
+                            input_references += secondary_citation
+                # handle multiple citations per source
+                previous_dataset_source_name = dataset_source_name
             if row:
                 del row
         pdf_html = pdf_html.replace('[InputReferences]', input_references)
@@ -404,23 +426,24 @@ class PublishRangeMapTool:
 if __name__ == '__main__':
     prm = PublishRangeMapTool()
     
-    #spatial_batch_ids = [3803,3804,3805,3806,4100,4265,3815,4275,4281,4254,3821,3847,3829,3314,3838,4041,4045,4066,4280,2650,3852,4158,4196,3828,4206,2651,3458,3833,3835,3830,620,2313,2381,2416,2420,2431,2409,2478,2307,2309,2427,2460,2475,2470,2471,2477,2487,2469,2491,2506,2942,2522,2554,1283,2551,2675,3037,3052,3053,3110,3116,3142,3174,3208,3234,3241,3185,3252,3249,3158,3446,3662,3710,3784,3768,3781,3791,3795,3788,3764]
-    spatial_batch_ids = [4356]
-    for id in spatial_batch_ids:
-       # hard code parameters for debugging
-       param_range_map_id = arcpy.Parameter()
-       param_range_map_id.value = str(id)
-       param_spatial = arcpy.Parameter()
-       param_spatial.value = 'true'
-       parameters = [param_range_map_id, param_spatial]
-       prm.runPublishRangeMapTool(parameters, None)
+    # #spatial_batch_ids = [3803,3804,3805,3806,4100,4265,3815,4275,4281,4254,3821,3847,3829,3314,3838,4041,4045,4066,4280,2650,3852,4158,4196,3828,4206,2651,3458,3833,3835,3830,620,2313,2381,2416,2420,2431,2409,2478,2307,2309,2427,2460,2475,2470,2471,2477,2487,2469,2491,2506,2942,2522,2554,1283,2551,2675,3037,3052,3053,3110,3116,3142,3174,3208,3234,3241,3185,3252,3249,3158,3446,3662,3710,3784,3768,3781,3791,3795,3788,3764]
+    # spatial_batch_ids = [4592]
+    # for id in spatial_batch_ids:
+    #    # hard code parameters for debugging
+    #    param_range_map_id = arcpy.Parameter()
+    #    param_range_map_id.value = str(id)
+    #    param_spatial = arcpy.Parameter()
+    #    param_spatial.value = 'true'
+    #    parameters = [param_range_map_id, param_spatial]
+    #    prm.runPublishRangeMapTool(parameters, None)
     
     # non_spatial_batch_ids = [3289,2546,2648,2527,2560,3057,3288,4074,2590,2518,2555,2608,2577,2500,4210,2559,2591,2575,2490,3244,2524,3268,2580,2526,2563,2530,2579,4278,2589,3286,2578,2514,2542,2656,2528,3066,2616,2989,2571,2585,2539,2548,2523,2583,2582,2566,1795,3779,3197,3056,2991,3258,3271,3272,3589,3593,4277,4279,4211,2511,2531,1101,1740,2503,2533,2535,2537,2540,2565,2567,2572,2581,2584,2586,2587,2588,2607,2573,2574,2986,3051,3054,3065,3070,3172,3195,3213,3291,3293,3595,3283]
-    # for id in non_spatial_batch_ids:
-    #     # hard code parameters for debugging
-    #     param_range_map_id = arcpy.Parameter()
-    #     param_range_map_id.value = str(id)
-    #     param_spatial = arcpy.Parameter()
-    #     param_spatial.value = 'false'
-    #     parameters = [param_range_map_id, param_spatial]
-    #     prm.runPublishRangeMapTool(parameters, None)
+    non_spatial_batch_ids = [4592]
+    for id in non_spatial_batch_ids:
+        # hard code parameters for debugging
+        param_range_map_id = arcpy.Parameter()
+        param_range_map_id.value = str(id)
+        param_spatial = arcpy.Parameter()
+        param_spatial.value = 'false'
+        parameters = [param_range_map_id, param_spatial]
+        prm.runPublishRangeMapTool(parameters, None)

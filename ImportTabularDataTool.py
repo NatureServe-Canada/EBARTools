@@ -510,6 +510,7 @@ class ImportTabularDataTool:
                     original_institution_code, rightsholder
                 ])
             input_point_id = EBARUtils.getUniqueID(geodatabase + '/InputPoint', 'InputPointID', object_id)
+            # add to list of DatasetSourceUniqueIDs in case same batch has duplicates within
             id_dict[unique_id_species] = input_point_id
             # ## NT perf debug
             # save_time = datetime.datetime.now() - save_start
