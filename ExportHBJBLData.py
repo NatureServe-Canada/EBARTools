@@ -111,11 +111,11 @@ class ExportHBJBLDataTool:
         fieldinfo.addField('AUTHOR_NAME', 'AUTHOR_NAME', 'VISIBLE', '')
         fieldinfo.addField('NSX_URL', 'NSX_URL', 'VISIBLE', '')
         arcpy.MakeTableView_management(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', 'biotics',
-                                       "SpeciesID IN (SELECT SpeciesID FROM Species WHERE HBJBLPriority = 'Y')",
+                                       #"SpeciesID IN (SELECT SpeciesID FROM Species WHERE HBJBLPriority = 'Y')",
                                        field_info=fieldinfo)
         arcpy.TableToTable_conversion('biotics', output_gdb, 'BIOTICS_ELEMENT_NATIONAL')
-        arcpy.MakeTableView_management(param_geodatabase + '/Synonym', 'synonym',
-                                       "SpeciesID IN (SELECT SpeciesID FROM Species WHERE HBJBLPriority = 'Y')")
+        arcpy.MakeTableView_management(param_geodatabase + '/Synonym', 'synonym')
+                                       #"SpeciesID IN (SELECT SpeciesID FROM Species WHERE HBJBLPriority = 'Y')")
         arcpy.TableToTable_conversion('synonym', output_gdb, 'Synonym')
 
         # create relationships
