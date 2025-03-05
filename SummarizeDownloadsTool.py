@@ -52,9 +52,9 @@ class SummarizeDownloadsTool:
                             # ignore bots, http return errors and similar
                             if ((file_line.count('bot.') == 0) and (file_line.count('bot/') == 0) and
                                 (file_line.count('bot)') == 0) and (file_line.count('/bot') == 0) and
-                                (file_line.count(' - 301') == 0) and (file_line.count(' - 400') == 0) and
-                                (file_line.count(' - 401') == 0) and (file_line.count(' - 404') == 0) and
-                                (file_line.count(' - 405') == 0) and (file_line.count(' - 500') == 0) and
+                                (file_line.count(' 301 ') == 0) and (file_line.count(' 400 ') == 0) and
+                                (file_line.count(' 401 ') == 0) and (file_line.count(' 404 ') == 0) and
+                                (file_line.count(' 405 ') == 0) and (file_line.count(' 500 ') == 0) and
                                 (file_line.count('favicon') == 0) and (file_line.count('arcgis') == 0) and
                                 (file_line.count('claudebot') == 0)):
                                 # increment overall counts
