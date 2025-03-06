@@ -24,15 +24,15 @@ import json
 
 
 # shared folders and addresses
-resources_folder = 'D:/GIS/EBAR/EBARTools/resources'
-temp_folder = 'D:/GIS/EBAR/temp'
-download_folder = 'D:/GIS/EBAR/pub/download'
+resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
+temp_folder = 'C:/GIS/EBAR/temp'
+download_folder = 'C:/GIS/EBAR/pub/download'
 #download_folder = 'F:/download'
 download_url = 'https://gis.natureserve.ca/download'
 #nsx_species_search_url = 'https://explorer.natureserve.org/api/data/search'
 nsx_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/'
 #log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
-log_folder = 'D:/GIS/EBAR/temp'
+log_folder = 'C:/GIS/EBAR/temp'
 
 
 # various services
@@ -990,38 +990,86 @@ def getJurisidictionAbbreviation(geodatabase, jurisdiction_name):
     return abbrev
 
 
-def getSpeciesAndScopeForRangeMap(geodatabase, range_map_id):
-    """Get primary and seconday species ids for range map"""
+def getSpeciesScopeDateForRangeMap(geodatabase, range_map_id):
+    """Get primary and secondary species ids for range map"""
     species_id = None
     species_ids = None
     scope = None
+    range_date = None
 
     # primary
-    with arcpy.da.SearchCursor(geodatabase + '/RangeMap', ['SpeciesID', 'RangeMapScope'],
-                               'RangeMapID = ' + str(range_map_id), None) as cursor:
+    with arcpy.da.SearchCursor(geodatabase + '/RangeMap', ['SpeciesID', 'RangeMapScope', 'RangeDate'],
+                               'RangeMapID = ' + str(range_map_id)) as cursor:
         for row in searchCursor(cursor):
             species_id = row['SpeciesID']
             scope = row['RangeMapScope']
-        if species_id:
-            # found
-            del row
+            range_date = row['RangeDate']
+    if species_id:
+        # found
+        del row
+    del cursor
 
     # primary and secondary in comma-separated list
     if species_id:
         species_ids = str(species_id)
         with arcpy.da.SearchCursor(geodatabase + '/SecondarySpecies', ['SpeciesID'],
-                                   'RangeMapID = ' + str(range_map_id), None) as cursor:
+                                   'RangeMapID = ' + str(range_map_id)) as cursor:
             for row in searchCursor(cursor):
                 species_ids += ',' + str(row['SpeciesID'])
-            if species_ids != str(species_id):
-                # found at least one
-                del row
+        if species_ids != str(species_id):
+            # found at least one
+            del row
+        del cursor
 
-    return species_id, species_ids, scope
+    return species_id, species_ids, scope, range_date
 
 
-def inputSelectAndBuffer(geodatabase, input_features, range_map_id, table_name_prefix, species_ids, species_id,
-                         start_time):
+def getRelatedRangeMapIDs(geodatabase, range_map_id):
+    """Get all RangeMapIDs as string based on primary and secondary species and scope for passed range map"""
+    range_map_ids = None
+    secondary_species = {}
+
+    # primary
+    range_map_ids = str(range_map_id)
+    with arcpy.da.SearchCursor(geodatabase + '/RangeMap', ['SpeciesID', 'RangeMapScope'],
+                               'RangeMapID = ' + str(range_map_id)) as cursor:
+        for row in searchCursor(cursor):
+            primary_species_id = row['SpeciesID']
+            scope = row['RangeMapScope']
+    del row
+    del cursor
+
+    # secondary
+    with arcpy.da.SearchCursor(geodatabase + '/SecondarySpecies', ['SpeciesID'],
+                                'RangeMapID = ' + str(range_map_id)) as cursor:
+        for row in searchCursor(cursor):
+            # add to dict with unmatched flag
+            secondary_species[row['SpeciesID']] = False
+    if len(secondary_species) > 0:
+        # found at least one
+        del row
+    del cursor
+
+    # get related
+    with arcpy.da.SearchCursor(geodatabase + '/RangeMap', ['RangeMapID'],
+                               'SpeciesID = ' + str(primary_species_id) + " AND RangeMapScope = '" + scope +
+                               "'") as cursor:
+        row = None
+        for row in searchCursor(cursor):
+            # ensure SecondarySpecies, if any, also match
+            sec_row = None
+            with arcpy.da.SearchCursor(geodatabase + 'SecondarySpecies', ['SpeciesID']) as sec_cursor:
+                for sec_row in searchCursor(sec_cursor):
+                    # add/update dict with matched flag
+                    secondary_species[row['SpeciesID']] = True
+            if all(secondary_species.values()):
+                range_map_ids + ',' +  str(row['RangeMapID']) 
+
+    return range_map_ids
+
+
+def inputSelectAndBuffer(geodatabase, input_features, range_map_id, table_name_prefix, species_ids, start_time,
+                         range_date):
     """Select relevant input features and (for points and lines) buffer them"""
     # determine input type and make layer
     desc = arcpy.Describe(input_features)
@@ -1030,8 +1078,8 @@ def inputSelectAndBuffer(geodatabase, input_features, range_map_id, table_name_p
     # select any from secondary inputs (chicken and egg - RangeMapID must already exist!)
     arcpy.AddJoin_management(input_features + '_layer', input_features + 'ID', geodatabase + '/SecondaryInput',
                              input_features + 'ID')
-    arcpy.SelectLayerByAttribute_management(input_features + '_layer', 'NEW_SELECTION',
-                                            table_name_prefix + 'SecondaryInput.RangeMapID = ' + str(range_map_id))
+    where_clause = table_name_prefix + 'SecondaryInput.RangeMapID = ' + str(range_map_id)
+    arcpy.SelectLayerByAttribute_management(input_features + '_layer', 'NEW_SELECTION', where_clause)
     arcpy.RemoveJoin_management(input_features + '_layer', table_name_prefix + 'SecondaryInput')
 
     # add primary inputs to selection based on type
@@ -1053,6 +1101,10 @@ def inputSelectAndBuffer(geodatabase, input_features, range_map_id, table_name_p
                         "'Element Occurrences' AND " + table_name_prefix + input_features + \
                         '.EORank IS NOT NULL) OR ' + table_name_prefix + "DatasetSource.DatasetType = 'Range'"
     where_clause += '))'
+    if range_date:
+        where_clause += ' AND (' + table_name_prefix + "InputDataset.DateReceived < timestamp '" + \
+            range_date.strftime('%Y-%m-%d') + "') AND (" + table_name_prefix + \
+            'DatasetSource.CDCJurisdictionID IS NULL)'
     arcpy.SelectLayerByAttribute_management(input_features + '_layer', 'ADD_TO_SELECTION', where_clause)
     arcpy.RemoveJoin_management(input_features + '_layer', table_name_prefix + 'DatasetSource')
     arcpy.RemoveJoin_management(input_features + '_layer', table_name_prefix + 'InputDataset')

@@ -279,17 +279,17 @@ class GenerateRangeMapTool:
         # select all points for species and buffer
         EBARUtils.displayMessage(messages, 'Buffering Input Points')
         temp_point_buffer = EBARUtils.inputSelectAndBuffer(param_geodatabase, 'InputPoint', range_map_id,
-                                                           table_name_prefix, species_ids, species_id, start_time)
+                                                           table_name_prefix, species_ids, start_time, None)
 
         # select all lines for species and buffer
         EBARUtils.displayMessage(messages, 'Buffering Input Lines')
         temp_line_buffer = EBARUtils.inputSelectAndBuffer(param_geodatabase, 'InputLine', range_map_id,
-                                                          table_name_prefix, species_ids, species_id, start_time)
+                                                          table_name_prefix, species_ids, start_time, None)
 
         # select all polygons for species
         EBARUtils.displayMessage(messages, 'Selecting Input Polygons')
         input_polygon_layer = EBARUtils.inputSelectAndBuffer(param_geodatabase, 'InputPolygon', range_map_id,
-                                                             table_name_prefix, species_ids, species_id, start_time)
+                                                             table_name_prefix, species_ids, start_time, None)
 
         # merge buffer polygons and input polygons
         EBARUtils.displayMessage(messages, 'Merging Buffered Points and Lines and Input Polygons')
