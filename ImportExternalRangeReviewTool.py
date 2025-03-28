@@ -41,27 +41,37 @@ class ImportExternalRangeReviewTool:
         # make variables for parms
         EBARUtils.displayMessage(messages, 'Processing parameters')
         param_geodatabase = parameters[0].valueAsText
-        param_species = parameters[1].valueAsText.lower()
-        param_secondary = parameters[2].valueAsText
-        if param_secondary:
-            param_secondary = param_secondary.lower()
-            param_secondary = param_secondary.replace("'", '')
-            param_secondary = param_secondary.split(';')
-        param_version = parameters[3].valueAsText
-        param_stage = parameters[4].valueAsText
-        param_external_range_table = parameters[5].valueAsText
-        param_presence_field = parameters[6].valueAsText
-        param_usagetype_field = parameters[7].valueAsText
-        param_review_label = parameters[8].valueAsText
-        param_overall_review_notes = parameters[9].valueAsText
-        param_jurisdictions_covered = parameters[10].valueAsText
+        # replace these parms with RangeMapID
+        # param_species = parameters[1].valueAsText.lower()
+        # param_secondary = parameters[2].valueAsText
+        # if param_secondary:
+        #     param_secondary = param_secondary.lower()
+        #     param_secondary = param_secondary.replace("'", '')
+        #     param_secondary = param_secondary.split(';')
+        # param_version = parameters[3].valueAsText
+        # param_stage = parameters[4].valueAsText
+        param_range_map_id = parameters[1].valueAsText
+        # param_external_range_table = parameters[5].valueAsText
+        # param_presence_field = parameters[6].valueAsText
+        # param_usagetype_field = parameters[7].valueAsText
+        # param_review_label = parameters[8].valueAsText
+        # param_overall_review_notes = parameters[9].valueAsText
+        # param_jurisdictions_covered = parameters[10].valueAsText
+        param_external_range_table = parameters[2].valueAsText
+        param_presence_field = parameters[3].valueAsText
+        param_usagetype_field = parameters[4].valueAsText
+        param_review_label = parameters[5].valueAsText
+        param_overall_review_notes = parameters[6].valueAsText
+        param_jurisdictions_covered = parameters[7].valueAsText
         # convert to Python list
         param_jurisdictions_list = []
         if param_jurisdictions_covered:
             param_jurisdictions_list = param_jurisdictions_covered.replace("'", '')
             param_jurisdictions_list = param_jurisdictions_list.split(';')
-        param_username = parameters[11].valueAsText
-        param_additions_only = parameters[12].valueAsText
+        # param_username = parameters[11].valueAsText
+        # param_additions_only = parameters[12].valueAsText
+        param_username = parameters[8].valueAsText
+        param_additions_only = parameters[9].valueAsText
         # use passed geodatabase as workspace (still seems to go to default geodatabase)
         arcpy.env.workspace = param_geodatabase
 
@@ -74,63 +84,74 @@ class ImportExternalRangeReviewTool:
             EBARUtils.displayMessage(messages, 'ERROR: Please provide Presence Field and/or UsageType Field')
             return
 
-        # check for species
-        species_id, short_citation = EBARUtils.checkSpecies(param_species, param_geodatabase)
-        if not species_id:
-            # terminate with error
-            EBARUtils.displayMessage(messages, 'ERROR: Species not found')
-            return
+        # # check for species
+        # species_id, short_citation = EBARUtils.checkSpecies(param_species, param_geodatabase)
+        # if not species_id:
+        #     # terminate with error
+        #     EBARUtils.displayMessage(messages, 'ERROR: Species not found')
+        #     return
 
-        # check for secondary species
-        secondary_ids = []
-        if param_secondary:
-            for secondary in param_secondary:
-                secondary_id, short_citation = EBARUtils.checkSpecies(secondary, param_geodatabase)
-                if not secondary_id:
-                    # terminate with error
-                    EBARUtils.displayMessage(messages, 'ERROR: Secondary species not found')
-                    return
-                if secondary_id in secondary_ids:
-                    # terminate with error
-                    EBARUtils.displayMessage(messages, 'ERROR: Same secondary species specified more than once')
-                    return
-                secondary_ids.append(secondary_id)
+        # # check for secondary species
+        # secondary_ids = []
+        # if param_secondary:
+        #     for secondary in param_secondary:
+        #         secondary_id, short_citation = EBARUtils.checkSpecies(secondary, param_geodatabase)
+        #         if not secondary_id:
+        #             # terminate with error
+        #             EBARUtils.displayMessage(messages, 'ERROR: Secondary species not found')
+        #             return
+        #         if secondary_id in secondary_ids:
+        #             # terminate with error
+        #             EBARUtils.displayMessage(messages, 'ERROR: Same secondary species specified more than once')
+        #             return
+        #         secondary_ids.append(secondary_id)
 
         # check for range map record
         EBARUtils.displayMessage(messages, 'Checking for existing Range Map')
         range_map_id = None
-        arcpy.MakeTableView_management(param_geodatabase + '/RangeMap', 'range_map_view',
-                                       'SpeciesID = ' + str(species_id) +
-                                       " AND RangeVersion = '" + param_version +
-                                       "' AND RangeStage = '" + param_stage + "'")
-        # start with list of range map candidates due to complexity of checking secondary
-        match_candidate = []
-        candidate_secondary_count = {}
-        candidate_secondary_match_count = {}
-        arcpy.AddJoin_management('range_map_view', 'RangeMapID',
-                                 param_geodatabase + '/SecondarySpecies', 'RangeMapID', 'KEEP_ALL')
-        with arcpy.da.SearchCursor('range_map_view', [table_name_prefix + 'RangeMap.RangeMapID',
-                                                      table_name_prefix + 'SecondarySpecies.SpeciesID']) as cursor:
-            row = None
+        # arcpy.MakeTableView_management(param_geodatabase + '/RangeMap', 'range_map_view',
+        #                                'SpeciesID = ' + str(species_id) +
+        #                                " AND RangeVersion = '" + param_version +
+        #                                "' AND RangeStage = '" + param_stage + "'")
+        # # start with list of range map candidates due to complexity of checking secondary
+        # match_candidate = []
+        # candidate_secondary_count = {}
+        # candidate_secondary_match_count = {}
+        # arcpy.AddJoin_management('range_map_view', 'RangeMapID',
+        #                          param_geodatabase + '/SecondarySpecies', 'RangeMapID', 'KEEP_ALL')
+        # with arcpy.da.SearchCursor('range_map_view', [table_name_prefix + 'RangeMap.RangeMapID',
+        #                                               table_name_prefix + 'SecondarySpecies.SpeciesID']) as cursor:
+        #     row = None
+        #     for row in EBARUtils.searchCursor(cursor):
+        #         if row[table_name_prefix + 'RangeMap.RangeMapID'] not in match_candidate:
+        #             match_candidate.append(row[table_name_prefix + 'RangeMap.RangeMapID'])
+        #             candidate_secondary_match_count[row[table_name_prefix + 'RangeMap.RangeMapID']] = 0
+        #             candidate_secondary_count[row[table_name_prefix + 'RangeMap.RangeMapID']] = 0
+        #         if row[table_name_prefix + 'SecondarySpecies.SpeciesID'] in secondary_ids:
+        #             # secondary matches
+        #             candidate_secondary_match_count[row[table_name_prefix + 'RangeMap.RangeMapID']] += 1
+        #         if row[table_name_prefix + 'SecondarySpecies.SpeciesID']:
+        #             # secondary count
+        #             candidate_secondary_count[row[table_name_prefix + 'RangeMap.RangeMapID']] += 1
+        #     if row:
+        #         del row
+        # arcpy.RemoveJoin_management('range_map_view', table_name_prefix + 'SecondarySpecies')
+        # # check candidates for secondary match
+        # for candidate in match_candidate:
+        #     if (candidate_secondary_match_count[candidate] == len(secondary_ids) and
+        #         candidate_secondary_count[candidate] == len(secondary_ids)):
+        #         range_map_id = candidate
+        # if not range_map_id:
+        #     # terminate with error
+        #     EBARUtils.displayMessage(messages, 'ERROR: Range Map not found')
+        #     return
+        with arcpy.da.SearchCursor(param_geodatabase + '/RangeMap', ['RangeMapID'],
+                                   'RangeMapID = ' + param_range_map_id) as cursor:
             for row in EBARUtils.searchCursor(cursor):
-                if row[table_name_prefix + 'RangeMap.RangeMapID'] not in match_candidate:
-                    match_candidate.append(row[table_name_prefix + 'RangeMap.RangeMapID'])
-                    candidate_secondary_match_count[row[table_name_prefix + 'RangeMap.RangeMapID']] = 0
-                    candidate_secondary_count[row[table_name_prefix + 'RangeMap.RangeMapID']] = 0
-                if row[table_name_prefix + 'SecondarySpecies.SpeciesID'] in secondary_ids:
-                    # secondary matches
-                    candidate_secondary_match_count[row[table_name_prefix + 'RangeMap.RangeMapID']] += 1
-                if row[table_name_prefix + 'SecondarySpecies.SpeciesID']:
-                    # secondary count
-                    candidate_secondary_count[row[table_name_prefix + 'RangeMap.RangeMapID']] += 1
-            if row:
-                del row
-        arcpy.RemoveJoin_management('range_map_view', table_name_prefix + 'SecondarySpecies')
-        # check candidates for secondary match
-        for candidate in match_candidate:
-            if (candidate_secondary_match_count[candidate] == len(secondary_ids) and
-                candidate_secondary_count[candidate] == len(secondary_ids)):
-                range_map_id = candidate
+                range_map_id = int(param_range_map_id)
+        if range_map_id:
+            del row
+        del cursor
         if not range_map_id:
             # terminate with error
             EBARUtils.displayMessage(messages, 'ERROR: Range Map not found')
@@ -351,42 +372,47 @@ class ImportExternalRangeReviewTool:
         return
             
 
-# # controlling process
-# if __name__ == '__main__':
-#     ierr = ImportExternalRangeReviewTool()
-#     # hard code parameters for debugging
-#     param_geodatabase = arcpy.Parameter()
-#     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
-#     param_species = arcpy.Parameter()
-#     param_species.value = 'Bidens amplissima'
-#     param_secondary = arcpy.Parameter()
-#     param_secondary.value = None
-#     #param_secondary.value = "'Dodia verticalis'"
-#     #param_secondary.value = "'Dodia tarandus';'Dodia verticalis'"
-#     param_version = arcpy.Parameter()
-#     param_version.value = '1.0'
-#     param_stage = arcpy.Parameter()
-#     param_stage.value = 'Auto-generated'
-#     param_external_range_table = arcpy.Parameter()
-#     param_external_range_table.value = 'C:/GIS/EBAR/EBARServer.gdb/test'
-#     param_presence_field = arcpy.Parameter()
-#     param_presence_field.value = 'CONFIDENCE_CATEGORY_DESCRIPTION'
-#     #param_presence_field.value = None
-#     param_usagetype_field = arcpy.Parameter()
-#     #param_usagetype_field.value = 'UsageTypeMarkup'
-#     param_usagetype_field.value = None
-#     param_review_label = arcpy.Parameter()
-#     param_review_label.value = 'BC expert review'
-#     param_overall_review_notes = arcpy.Parameter()
-#     param_overall_review_notes.value = None # 'Additional notes, such as definitions and exceptions!'
-#     param_jurisdictions_covered = arcpy.Parameter()
-#     param_jurisdictions_covered.value = None
-#     #param_jurisdictions_covered.value = "'Yukon Territory'"
-#     param_username = arcpy.Parameter()
-#     param_username.value = 'rgreenens'
-#     param_additions_only = arcpy.Parameter()
-#     param_additions_only.value = 'false'
-#     parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage,
-#                   param_external_range_table, param_presence_field, param_usagetype_field, param_review_label,
-#                   param_overall_review_notes, param_jurisdictions_covered, param_username, param_additions_only]
-#     ierr.runImportExternalRangeReviewTool(parameters, None)
+# controlling process
+if __name__ == '__main__':
+    ierr = ImportExternalRangeReviewTool()
+    # hard code parameters for debugging
+    param_geodatabase = arcpy.Parameter()
+    param_geodatabase.value = 'D:/GIS/EBAR/EBAR-KBA-Dev.gdb'
+    # param_species = arcpy.Parameter()
+    # param_species.value = 'Bidens amplissima'
+    # param_secondary = arcpy.Parameter()
+    # param_secondary.value = None
+    # #param_secondary.value = "'Dodia verticalis'"
+    # #param_secondary.value = "'Dodia tarandus';'Dodia verticalis'"
+    # param_version = arcpy.Parameter()
+    # param_version.value = '1.0'
+    # param_stage = arcpy.Parameter()
+    # param_stage.value = 'Auto-generated'
+    param_range_map_id = arcpy.Parameter()
+    param_range_map_id.value = 109
+    param_external_range_table = arcpy.Parameter()
+    param_external_range_table.value = 'D:/GIS/EBAR/EBARServer.gdb/test'
+    param_presence_field = arcpy.Parameter()
+    param_presence_field.value = 'CONFIDENCE_CATEGORY_DESCRIPTION'
+    #param_presence_field.value = None
+    param_usagetype_field = arcpy.Parameter()
+    #param_usagetype_field.value = 'UsageTypeMarkup'
+    param_usagetype_field.value = None
+    param_review_label = arcpy.Parameter()
+    param_review_label.value = 'BC expert review'
+    param_overall_review_notes = arcpy.Parameter()
+    param_overall_review_notes.value = None # 'Additional notes, such as definitions and exceptions!'
+    param_jurisdictions_covered = arcpy.Parameter()
+    param_jurisdictions_covered.value = None
+    #param_jurisdictions_covered.value = "'Yukon Territory'"
+    param_username = arcpy.Parameter()
+    param_username.value = 'rgreenens'
+    param_additions_only = arcpy.Parameter()
+    param_additions_only.value = 'false'
+    # parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage,
+    #               param_external_range_table, param_presence_field, param_usagetype_field, param_review_label,
+    #               param_overall_review_notes, param_jurisdictions_covered, param_username, param_additions_only]
+    parameters = [param_geodatabase, param_range_map_id, param_external_range_table, param_presence_field,
+                  param_usagetype_field, param_review_label, param_overall_review_notes, param_jurisdictions_covered,
+                  param_username, param_additions_only]
+    ierr.runImportExternalRangeReviewTool(parameters, None)
