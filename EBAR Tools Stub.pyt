@@ -604,41 +604,50 @@ class ImportExternalRangeReview(object):
             direction='Input')
         param_geodatabase.filter.list = ['Local Database', 'Remote Database']
 
-        # Species
-        param_species = arcpy.Parameter(
-            displayName='Species Scientific Name',
-            name='species',
-            datatype='GPString',
+        # replace these parms with RangeMapID
+        # # Species
+        # param_species = arcpy.Parameter(
+        #     displayName='Species Scientific Name',
+        #     name='species',
+        #     datatype='GPString',
+        #     parameterType='Required',
+        #     direction='Input')
+
+        # # Secondary Species
+        # param_secondary = arcpy.Parameter(
+        #     displayName='Secondary Species',
+        #     name='secondary_species',
+        #     datatype='GPString',
+        #     parameterType='Optional',
+        #     direction='Input',
+        #     multiValue=True)
+
+        # # Range Version
+        # param_version = arcpy.Parameter(
+        #     displayName='Range Version',
+        #     name='range_version',
+        #     datatype='GPString',
+        #     parameterType='Required',
+        #     direction='Input')
+        # param_version.value = '1.0'
+
+        # # Range Stage
+        # param_stage = arcpy.Parameter(
+        #     displayName='Range Stage',
+        #     name='range_stage',
+        #     datatype='GPString',
+        #     parameterType='Required',
+        #     direction='Input')
+        # param_stage.value = 'Auto-generated'
+
+        # RangeMapID
+        param_range_map_id = arcpy.Parameter(
+            displayName='RangeMapID',
+            name='range_map_id',
+            datatype='GPLong',
             parameterType='Required',
             direction='Input')
-
-        # Secondary Species
-        param_secondary = arcpy.Parameter(
-            displayName='Secondary Species',
-            name='secondary_species',
-            datatype='GPString',
-            parameterType='Optional',
-            direction='Input',
-            multiValue=True)
-
-        # Range Version
-        param_version = arcpy.Parameter(
-            displayName='Range Version',
-            name='range_version',
-            datatype='GPString',
-            parameterType='Required',
-            direction='Input')
-        param_version.value = '1.0'
-
-        # Range Stage
-        param_stage = arcpy.Parameter(
-            displayName='Range Stage',
-            name='range_stage',
-            datatype='GPString',
-            parameterType='Required',
-            direction='Input')
-        param_stage.value = 'Auto-generated'
-
+        
         # External Range Table
         param_external_range_table = arcpy.Parameter(
             displayName='External Range Table',
@@ -705,9 +714,12 @@ class ImportExternalRangeReview(object):
             direction='Input')
         param_additions_only.value = 'false'
 
-        params = [param_geodatabase, param_species, param_secondary, param_version, param_stage,
-                  param_external_range_table, param_presence_field, param_usagetype_field, param_review_label,
-                  param_overall_review_notes, param_jurisdictions_covered, param_username, param_additions_only]
+        # params = [param_geodatabase, param_species, param_secondary, param_version, param_stage,
+        #           param_external_range_table, param_presence_field, param_usagetype_field, param_review_label,
+        #           param_overall_review_notes, param_jurisdictions_covered, param_username, param_additions_only]
+        params = [param_geodatabase, param_range_map_id, param_external_range_table, param_presence_field,
+                  param_usagetype_field, param_review_label, param_overall_review_notes, param_jurisdictions_covered,
+                  param_username, param_additions_only]
         return params
 
     def isLicensed(self):
@@ -728,7 +740,8 @@ class ImportExternalRangeReview(object):
                     jur_list.append(row['JurisdictionName'])
                 if len(jur_list) > 0:
                     del row
-            parameters[10].filter.list = jur_list
+            # parameters[10].filter.list = jur_list
+            parameters[7].filter.list = jur_list
         return
 
     def updateMessages(self, parameters):
