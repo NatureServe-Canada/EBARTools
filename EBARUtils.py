@@ -26,13 +26,13 @@ import json
 # shared folders and addresses
 resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
 temp_folder = 'C:/GIS/EBAR/temp'
-download_folder = 'C:/GIS/EBAR/pub/download'
-#download_folder = 'F:/download'
+#download_folder = 'C:/GIS/EBAR/pub/download'
+download_folder = 'F:/download'
 download_url = 'https://gis.natureserve.ca/download'
 #nsx_species_search_url = 'https://explorer.natureserve.org/api/data/search'
 nsx_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/'
-#log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
-log_folder = 'C:/GIS/EBAR/temp'
+log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
+#log_folder = 'C:/GIS/EBAR/temp'
 
 
 # various services
@@ -1041,7 +1041,7 @@ def getRelatedRangeMapIDs(geodatabase, range_map_id):
 
     # secondary
     with arcpy.da.SearchCursor(geodatabase + '/SecondarySpecies', ['SpeciesID'],
-                                'RangeMapID = ' + str(range_map_id)) as cursor:
+                               'RangeMapID = ' + str(range_map_id)) as cursor:
         for row in searchCursor(cursor):
             # add to dict with unmatched flag
             secondary_species[row['SpeciesID']] = False
@@ -1058,10 +1058,11 @@ def getRelatedRangeMapIDs(geodatabase, range_map_id):
         for row in searchCursor(cursor):
             # ensure SecondarySpecies, if any, also match
             sec_row = None
-            with arcpy.da.SearchCursor(geodatabase + 'SecondarySpecies', ['SpeciesID']) as sec_cursor:
+            with arcpy.da.SearchCursor(geodatabase + '/SecondarySpecies', ['SpeciesID'],
+                                       'RangeMapID = ' + str(row['RangeMapID'])) as sec_cursor:
                 for sec_row in searchCursor(sec_cursor):
                     # add/update dict with matched flag
-                    secondary_species[row['SpeciesID']] = True
+                    secondary_species[sec_row['SpeciesID']] = True
             if all(secondary_species.values()):
                 range_map_ids + ',' +  str(row['RangeMapID']) 
 
