@@ -155,7 +155,10 @@ class PublishRangeMapTool:
                 secondary_citation = row['DatasetCitation']
                 if dataset_source_name != previous_dataset_source_name:
                     citations_list = []
-                # main citation should never be NULL
+                # primary citation should never be NULL
+                if not primary_citation:
+                    EBARUtils.displayMessage('ERROR: ' + dataset_source_name + ' has no Citation')
+                    return
                 if primary_citation not in citations_list:
                     citations_list.append(primary_citation)
                     if len (input_references) > 0:
