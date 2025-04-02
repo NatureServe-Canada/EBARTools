@@ -506,16 +506,17 @@ class SyncSpeciesListBiotics(object):
             direction='Input')
         param_geodatabase.filter.list = ['Local Database', 'Remote Database']
 
-        # CSV
-        param_csv = arcpy.Parameter(
-            displayName='CSV File',
-            name='csv_file',
+        # CSVs
+        param_csvs = arcpy.Parameter(
+            displayName='CSV Files',
+            name='csv_files',
             datatype='DEFile',
             parameterType='Required',
-            direction='Input')
-        param_csv.filter.list = ['txt', 'csv']
+            direction='Input',
+            multiValue=True)
+        param_csvs.filter.list = ['txt', 'csv']
 
-        params = [param_geodatabase, param_csv]
+        params = [param_geodatabase, param_csvs]
         return params
 
     def isLicensed(self):
@@ -555,16 +556,17 @@ class AddSynonyms(object):
             direction='Input')
         param_geodatabase.filter.list = ['Local Database', 'Remote Database']
 
-        # CSV
-        param_csv = arcpy.Parameter(
-            displayName='CSV File',
-            name='csv_file',
+        # CSVs
+        param_csvs = arcpy.Parameter(
+            displayName='CSV Files',
+            name='csv_files',
             datatype='DEFile',
             parameterType='Required',
-            direction='Input')
-        param_csv.filter.list = ['txt', 'csv']
+            direction='Input',
+            multiValue=True)
+        param_csvs.filter.list = ['txt', 'csv']
 
-        params = [param_geodatabase, param_csv]
+        params = [param_geodatabase, param_csvs]
         return params
 
     def isLicensed(self):
@@ -710,7 +712,7 @@ class ImportExternalRangeReview(object):
             displayName='Additions Only',
             name='additions_only',
             datatype='GPBoolean',
-            parameterType='Required',
+            parameterType='Optional',
             direction='Input')
         param_additions_only.value = 'false'
 
@@ -1008,8 +1010,6 @@ class ExportInputData(object):
 
 #     def execute(self, parameters, messages):
 #         """The source code of the tool."""
-#         fbdur = FlagBadDataUsingRangeTool.FlagBadDataUsingRangeTool()
-#         fbdur.runFlagBadDataUsingRangeTool(parameters, messages)
 #         return
 
 
