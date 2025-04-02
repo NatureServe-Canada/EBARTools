@@ -24,15 +24,15 @@ import json
 
 
 # shared folders and addresses
-resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
-temp_folder = 'C:/GIS/EBAR/temp'
-#download_folder = 'C:/GIS/EBAR/pub/download'
-download_folder = 'F:/download'
+resources_folder = 'D:/GIS/EBAR/EBARTools/resources'
+temp_folder = 'D:/GIS/EBAR/temp'
+download_folder = 'D:/GIS/EBAR/pub/download'
+#download_folder = 'F:/download'
 download_url = 'https://gis.natureserve.ca/download'
 #nsx_species_search_url = 'https://explorer.natureserve.org/api/data/search'
 nsx_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/'
-log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
-#log_folder = 'C:/GIS/EBAR/temp'
+#log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
+log_folder = 'D:/GIS/EBAR/temp'
 
 
 # various services
@@ -625,8 +625,8 @@ def ExportRangeMapToCSV(range_map_view, range_map_ids, attributes_dict, output_f
     arcpy.TableToTable_conversion(range_map_view, output_folder, 'temp.csv', field_mapping=field_mappings)
 
     # add taxon attributes
-    with open(output_folder + '/temp.csv','r') as csv_input:
-        with open(output_folder + '/' + output_csv, 'w') as csv_output:
+    with open(output_folder + '/temp.csv', 'r', encoding='UTF-8') as csv_input:
+        with open(output_folder + '/' + output_csv, 'w', encoding='UTF-8') as csv_output:
             writer = csv.writer(csv_output, lineterminator='\n')
             reader = csv.reader(csv_input)
             all = []
