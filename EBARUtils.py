@@ -660,7 +660,7 @@ def ExportRangeMapToCSV(range_map_view, range_map_ids, attributes_dict, output_f
             writer.writerows(all)
     arcpy.Delete_management(output_folder + '/temp.csv')
     range_map_md = arcpy.metadata.Metadata(output_folder + '/' + output_csv)
-    metadata.title = 'EBAR RangeMap.csv'
+    metadata.title = 'EBAR '+ output_csv
     metadata.summary = 'Table of species and range attributes for EBAR for selected species'
     range_map_md.copy(metadata)
     range_map_md.save()
@@ -681,13 +681,13 @@ def ExportRangeMapEcoshapesToCSV(range_map_ecoshape_view, range_map_ids, output_
                                               'RangeMapEcoshapeNotes', 'TEXT'))
     field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'MinDate', 'MinDate', 'DATE'))
     field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'MaxDate', 'MaxDate', 'DATE'))
-    arcpy.TableToTable_conversion(range_map_ecoshape_view, output_folder, 'RangeMapEcoshape.csv',
+    arcpy.TableToTable_conversion(range_map_ecoshape_view, output_folder, output_csv,
                                   field_mapping=field_mappings)
-    arcpy.Delete_management(output_folder + '/RangeMapEcoshape.csv.xml')
+    arcpy.Delete_management(output_folder + '/' + output_csv + '.xml')
     arcpy.Delete_management(output_folder + '/schema.ini')
     arcpy.Delete_management(output_folder + '/info')
-    range_map_ecoshape_md = arcpy.metadata.Metadata(output_folder + '/RangeMapEcoshape.csv')
-    metadata.title = 'EBAR RangeMapEcoshape.csv'
+    range_map_ecoshape_md = arcpy.metadata.Metadata(output_folder + '/' + output_csv)
+    metadata.title = 'EBAR ' + output_csv
     metadata.summary = 'Table of per-ecoshape attributes for EBAR for selected species'
     range_map_ecoshape_md.copy(metadata)
     range_map_ecoshape_md.save()
@@ -716,7 +716,7 @@ def ExportEcoshapesToShapefile(ecoshape_layer, range_map_ecoshape_view, output_f
     arcpy.FeatureClassToFeatureClass_conversion(ecoshape_layer, output_folder, output_shapefile,
                                                 field_mapping=field_mappings)
     ecoshape_md = arcpy.metadata.Metadata(output_folder + '/' + output_shapefile)
-    metadata.title = 'EBAR Ecoshape.shp'
+    metadata.title = 'EBAR ' + output_shapefile
     metadata.summary = 'Polygons shapefile of original ecoshapes for EBAR for selected species'
     ecoshape_md.copy(metadata)
     ecoshape_md.save()
@@ -754,7 +754,7 @@ def ExportEcoshapeOverviewsToShapefile(ecoshape_overview_layer, range_map_ecosha
     arcpy.FeatureClassToFeatureClass_conversion(ecoshape_overview_layer, output_folder, output_shapefile,
                                                 field_mapping=field_mappings)
     ecoshape_overview_md = arcpy.metadata.Metadata(output_folder + '/' + output_shapefile)
-    metadata.title = 'EBAR EcoshapeOverview.shp'
+    metadata.title = 'EBAR ' + output_shapefile
     metadata.summary = 'Polygons shapefile of generalized ecoshapes for EBAR for selected species'
     ecoshape_overview_md.copy(metadata)
     ecoshape_overview_md.save()

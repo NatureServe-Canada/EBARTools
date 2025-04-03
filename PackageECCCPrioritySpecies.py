@@ -28,7 +28,7 @@ class PackageECCCPrioritySpeciesTool:
         # export range maps, with biotics/species additions
         EBARUtils.displayMessage(messages, 'Exporting RangeMap records to CSV')
         EBARUtils.ExportRangeMapToCSV('range_map_view_pkg', range_map_ids, attributes_dict, zip_folder, 'RangeMap.csv',
-                                      metadata, messages)
+                                      metadata)
 
         # export range map ecoshapes
         EBARUtils.displayMessage(messages, 'Exporting RangeMapEcoshape records to CSV')
@@ -57,7 +57,7 @@ class PackageECCCPrioritySpeciesTool:
         EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/' +
                                  'EBAR_ECCC_2024-25_Species_All_Data.zip')
         EBARUtils.createZip(zip_folder,
-                            EBARUtils.download_folder + '/EBAR_ECCC_2024-25_Species_All_Data', None)
+                            EBARUtils.download_folder + '/EBAR_ECCC_2024-25_Species_All_Data.zip', None)
         # EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/' +
         #                          'EBAR_ECCC_2022-23_Species_All_Data.zip')
         # EBARUtils.createZip(zip_folder,
