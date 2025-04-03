@@ -429,24 +429,24 @@ class PublishRangeMapTool:
 if __name__ == '__main__':
     prm = PublishRangeMapTool()
     
-    #spatial_batch_ids = [3803,3804,3805,3806,4100,4265,3815,4275,4281,4254,3821,3847,3829,3314,3838,4041,4045,4066,4280,2650,3852,4158,4196,3828,4206,2651,3458,3833,3835,3830,620,2313,2381,2416,2420,2431,2409,2478,2307,2309,2427,2460,2475,2470,2471,2477,2487,2469,2491,2506,2942,2522,2554,1283,2551,2675,3037,3052,3053,3110,3116,3142,3174,3208,3234,3241,3185,3252,3249,3158,3446,3662,3710,3784,3768,3781,3791,3795,3788,3764]
-    spatial_batch_ids = [2359]
-    for id in spatial_batch_ids:
-       # hard code parameters for debugging
-       param_range_map_id = arcpy.Parameter()
-       param_range_map_id.value = str(id)
-       param_spatial = arcpy.Parameter()
-       param_spatial.value = 'true'
-       parameters = [param_range_map_id, param_spatial]
-       prm.runPublishRangeMapTool(parameters, None)
+    # spatial_batch_ids = [2727,4282,4303,4308,4313,4314,4320,4321,4322,4323,4324,4325,4333,4335,4337,4338,4339,4340,4341,4347,4350,4358,4360,4361,4362,4363,4364,4366,4368,4369,4370,4371,4374,4376,4378,4383,4386,4389,4391,4408,4424,4430,4432,4439,4440,4441,4443,4445,4447,4448,4449,4450,4451,4452,4455,4456,4457,4459,4461,4463,4464,4465,4468,4472,4475,4477,4480,4481,4482,4486,4487,4494,4500,4504,4507,4508,4511,4512,4513,4514,4515,4516,4518,4519,4520,4521,4522,4523,4524,4526,4527,4528,4529,4530,4531,4532,4533,4534,4535,4536,4537,4538,4539,4540,4541,4545,4546,4547,4548,4549,4550,4551,4552,4553,4554,4556,4557,4558,4559,4561,4562,4563,4564,4566,4567,4568,4569,4570,4571,4572,4574,4575,4576,4577,4578,4587,4595,4599,4611,4615]
+    # #spatial_batch_ids = [2359]
+    # for id in spatial_batch_ids:
+    #    # hard code parameters for debugging
+    #    param_range_map_id = arcpy.Parameter()
+    #    param_range_map_id.value = str(id)
+    #    param_spatial = arcpy.Parameter()
+    #    param_spatial.value = 'true'
+    #    parameters = [param_range_map_id, param_spatial]
+    #    prm.runPublishRangeMapTool(parameters, None)
     
-    # # non_spatial_batch_ids = [3289,2546,2648,2527,2560,3057,3288,4074,2590,2518,2555,2608,2577,2500,4210,2559,2591,2575,2490,3244,2524,3268,2580,2526,2563,2530,2579,4278,2589,3286,2578,2514,2542,2656,2528,3066,2616,2989,2571,2585,2539,2548,2523,2583,2582,2566,1795,3779,3197,3056,2991,3258,3271,3272,3589,3593,4277,4279,4211,2511,2531,1101,1740,2503,2533,2535,2537,2540,2565,2567,2572,2581,2584,2586,2587,2588,2607,2573,2574,2986,3051,3054,3065,3070,3172,3195,3213,3291,3293,3595,3283]
-    # non_spatial_batch_ids = [4592]
-    # for id in non_spatial_batch_ids:
-    #     # hard code parameters for debugging
-    #     param_range_map_id = arcpy.Parameter()
-    #     param_range_map_id.value = str(id)
-    #     param_spatial = arcpy.Parameter()
-    #     param_spatial.value = 'false'
-    #     parameters = [param_range_map_id, param_spatial]
-    #     prm.runPublishRangeMapTool(parameters, None)
+    non_spatial_batch_ids = [2727,4282,4303,4308,4313,4314,4320,4321,4322,4323,4324,4325,4333,4335,4337,4338,4339,4340,4341,4347,4350,4358,4360,4361,4362,4363,4364,4366,4368,4369,4370,4371,4374,4376,4378,4383,4386,4389,4391,4408,4424,4430,4432,4439,4440,4441,4443,4445,4447,4448,4449,4450,4451,4452,4455,4456,4457,4459,4461,4463,4464,4465,4468,4472,4475,4477,4480,4481,4482,4486,4487,4494,4500,4504,4507,4508,4511,4512,4513,4514,4515,4516,4518,4519,4520,4521,4522,4523,4524,4526,4527,4528,4529,4530,4531,4532,4533,4534,4535,4536,4537,4538,4539,4540,4541,4545,4546,4547,4548,4549,4550,4551,4552,4553,4554,4556,4557,4558,4559,4561,4562,4563,4564,4566,4567,4568,4569,4570,4571,4572,4574,4575,4576,4577,4578,4587,4595,4599,4611,4615]
+    #non_spatial_batch_ids = [4592]
+    for id in non_spatial_batch_ids:
+        # hard code parameters for debugging
+        param_range_map_id = arcpy.Parameter()
+        param_range_map_id.value = str(id)
+        param_spatial = arcpy.Parameter()
+        param_spatial.value = 'false'
+        parameters = [param_range_map_id, param_spatial]
+        prm.runPublishRangeMapTool(parameters, None)
