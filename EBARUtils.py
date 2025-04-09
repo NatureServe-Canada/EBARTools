@@ -24,15 +24,15 @@ import json
 
 
 # shared folders and addresses
-resources_folder = 'D:/GIS/EBAR/EBARTools/resources'
-temp_folder = 'D:/GIS/EBAR/temp'
-download_folder = 'D:/GIS/EBAR/pub/download'
-#download_folder = 'F:/download'
+resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
+temp_folder = 'C:/GIS/EBAR/temp'
+#download_folder = 'D:/GIS/EBAR/pub/download'
+download_folder = 'F:/download'
 download_url = 'https://gis.natureserve.ca/download'
 #nsx_species_search_url = 'https://explorer.natureserve.org/api/data/search'
 nsx_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/'
-#log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
-log_folder = 'D:/GIS/EBAR/temp'
+log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
+#log_folder = 'C:/GIS/EBAR/temp'
 
 
 # various services
@@ -990,20 +990,25 @@ def getJurisidictionAbbreviation(geodatabase, jurisdiction_name):
     return abbrev
 
 
-def getSpeciesScopeDateForRangeMap(geodatabase, range_map_id):
+def getDetailsForRangeMap(geodatabase, range_map_id):
     """Get primary and secondary species ids for range map"""
     species_id = None
     species_ids = None
     scope = None
     range_date = None
+    publish = None
+    include_in_download_table = None
 
     # primary
-    with arcpy.da.SearchCursor(geodatabase + '/RangeMap', ['SpeciesID', 'RangeMapScope', 'RangeDate'],
+    with arcpy.da.SearchCursor(geodatabase + '/RangeMap', ['SpeciesID', 'RangeMapScope', 'RangeDate', 'Publish',
+                                                           'IncludeInDownloadTable'],
                                'RangeMapID = ' + str(range_map_id)) as cursor:
         for row in searchCursor(cursor):
             species_id = row['SpeciesID']
             scope = row['RangeMapScope']
             range_date = row['RangeDate']
+            publish = row['Publish']
+            include_in_download_table = row['IncludeInDownloadTable']
     if species_id:
         # found
         del row
@@ -1021,7 +1026,7 @@ def getSpeciesScopeDateForRangeMap(geodatabase, range_map_id):
             del row
         del cursor
 
-    return species_id, species_ids, scope, range_date
+    return species_id, species_ids, scope, range_date, publish, include_in_download_table
 
 
 def getRelatedRangeMapIDs(geodatabase, range_map_id):

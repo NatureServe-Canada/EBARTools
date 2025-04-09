@@ -1,11 +1,12 @@
 # encoding: utf-8
 
 # Project: Ecosytem-based Automated Range Mapping (EBAR)
-# Credits: Randal Greene, Christine Terwissen
-# © NatureServe Canada 2020 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+# Credits: Randal Greene, Samantha Stefanoff, Christine Terwissen
+# © NatureServe Canada 2025 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 # Program: FlagBadDataUsingRangeTool.py
-# ArcGIS Python tool for using reviewed range to identify and flag bad input data
+# ArcGIS Python tool for using reviewed range to identify and flag input data that is in ecoshapes removed by expert
+# review
 
 # Notes:
 # - Normally called from EBAR Tools.pyt, unless doing interactive debugging
@@ -49,13 +50,23 @@ class FlagBadDataUsingRangeTool:
         table_name_prefix = EBARUtils.getTableNamePrefix(param_geodatabase)
 
 	    # get primary and secondary species
-        species_id, species_ids, scope, range_date = EBARUtils.getSpeciesScopeDateForRangeMap(param_geodatabase,
-                                                                                              range_map_id)
+        species_id, species_ids, scope, range_date, publish, include_in_download_table = \
+            EBARUtils.getDetailsForRangeMap(param_geodatabase, range_map_id)
         if not species_id:
             EBARUtils.displayMessage(messages, 'ERROR: Range Map not found')
             # terminate with error
             return
-            #raise arcpy.ExecuteError
+
+        # only allow fully expert reviewed (high quality) range
+        high_quality = False
+        if publish and include_in_download_table:
+            if publish == 1: #and include_in_download_table == 1:
+                high_quality = True
+        if not high_quality:
+            EBARUtils.displayMessage(messages,
+                                     'ERROR: Range Map must be fully reviewed (i.e., published and of high quality)')
+            # terminate with error
+            return
 
         # get all RangeMapIDs for species (primary + secondary) and scope
         range_map_ids = EBARUtils.getRelatedRangeMapIDs(param_geodatabase, range_map_id)
@@ -265,6 +276,6 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde'
     param_range_map_id = arcpy.Parameter()
-    param_range_map_id.value = '4081'
+    param_range_map_id.value = '4658'
     parameters = [param_geodatabase, param_range_map_id]
     fbdur.runFlagBadDataUsingRangeTool(parameters, None)
