@@ -621,6 +621,8 @@ def ExportRangeMapToCSV(range_map_view, range_map_ids, attributes_dict, output_f
                                               'NATIONAL_FR_NAME', 'TEXT'))
     field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.COSEWIC_NAME',
                                               'COSEWIC_NAME', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.COSEWIC_ID',
+                                              'COSEWIC_ID', 'TEXT'))
     field_mappings.addFieldMap(createFieldMap(range_map_view, 'L19Species.ENDEMISM', 'ENDEMISM_TYPE', 'TEXT'))
     arcpy.TableToTable_conversion(range_map_view, output_folder, 'temp.csv', field_mapping=field_mappings)
 

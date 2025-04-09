@@ -51,6 +51,7 @@ NATIONAL_SCIENTIFIC_NAME - NatureServe Biotics Canadian species scientific name
 NATIONAL_ENGL_NAME - NatureServe Biotics Canadian species English name
 NATIONAL_FR_NAME - NatureServe Biotics Canadian species French name
 COSEWIC_NAME - NatureServe Biotics COSEWIC species name
+COSEWIC_ID - NatureServe Biotics COSEWIC species ID
 ENDEMISM_TYPE - NatureServe Biotics species endemism type
 GRANK - NatureServe Biotics species global rank
 NRANK_CA - NatureServe Biotics species Canadian national rank
