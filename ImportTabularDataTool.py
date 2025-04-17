@@ -322,6 +322,8 @@ class ImportTabularDataTool:
             elif field_dict['accuracy']:
                 if file_line[field_dict['accuracy']] not in ('NA', ''):
                     accuracy = round(float(file_line[field_dict['accuracy']]))
+                    if accuracy <= 0:
+                        accuracy = None
             if accuracy:
                 if accuracy > EBARUtils.worst_accuracy:
                     return None, 'inaccurate', None, bad_bbc

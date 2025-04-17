@@ -412,6 +412,8 @@ class ImportSpatialDataTool:
                     accuracy_raw = row[field_dict['Accuracy']]
                     if isinstance(accuracy_raw, float):
                         accuracy_raw = int(accuracy_raw)
+                    if accuracy_raw <= 0:
+                        cursor.updateRow([None, 0])
                     if accuracy_raw:
                         if accuracy_raw > EBARUtils.worst_accuracy:
                             inaccurate += 1
