@@ -60,7 +60,7 @@ class FlagBadDataUsingRangeTool:
         # only allow fully expert reviewed (high quality) range
         high_quality = False
         if publish and include_in_download_table:
-            if publish == 1: #and include_in_download_table == 1:
+            if publish == 1 and include_in_download_table == 1:
                 high_quality = True
         if not high_quality:
             EBARUtils.displayMessage(messages,
@@ -319,6 +319,6 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde'
     param_range_map_id = arcpy.Parameter()
-    param_range_map_id.value = '4646'
+    param_range_map_id.value = '4296'
     parameters = [param_geodatabase, param_range_map_id]
     fbdur.runFlagBadDataUsingRangeTool(parameters, None)
