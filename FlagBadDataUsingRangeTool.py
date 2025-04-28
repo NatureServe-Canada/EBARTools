@@ -136,7 +136,7 @@ class FlagBadDataUsingRangeTool:
         #                                        'NEW_SELECTION', 'INVERT')
         # # # DEBUG
         # # result = arcpy.GetCount_management('point_layer')
-        # # EBARUtils.displayMessage(messages, 'All points count: ' + str(int(result[0])))
+        # # EBARUtils.displayMessage(messages, 'Outside points count: ' + str(int(result[0])))
         # # subset points to exclude CDC data
         # arcpy.AddJoin_management('point_layer', 'InputDatasetID', param_geodatabase + '/InputDataset',
         #                          'InputDatasetID', 'KEEP_COMMON')
@@ -256,14 +256,18 @@ class FlagBadDataUsingRangeTool:
         #     # arcpy.DeleteRows_management('original_lines')
 
         # process polygons
-        # select all non-CDC polygons acquired before range
+        # select all polygons acquired before range map was generated
         # (different from above because it works on a selection of full dataset,
         # not a buffered copy for relevant species only)
-        EBARUtils.displayMessage(messages, 'Selecting Input Polygons for primary species')
+        EBARUtils.displayMessage(messages, 'Selecting Input Polygons for primary species ' + str(species_id))
         input_polygon_layer = EBARUtils.inputSelectAndBuffer(param_geodatabase, 'InputPolygon', range_map_id,
                                                              table_name_prefix, str(species_id), start_time,
                                                              range_date)
+        # DEBUG
+        result = arcpy.GetCount_management(input_polygon_layer)
+        EBARUtils.displayMessage(messages, 'All polygons count: ' + str(int(result[0])))
         EBARUtils.displayMessage(messages, 'Flagging any InputPolygon that does not intersect range')
+        return
         polygons_found = 0
         # if len(arcpy.Describe(input_polygon_layer).FIDSet) > 0:
         #     # DEBUG
@@ -275,7 +279,7 @@ class FlagBadDataUsingRangeTool:
                                                 None, 'SUBSET_SELECTION', 'INVERT')
         # DEBUG
         result = arcpy.GetCount_management(input_polygon_layer)
-        EBARUtils.displayMessage(messages, 'All polygons count: ' + str(int(result[0])))
+        EBARUtils.displayMessage(messages, 'Outside polygons count: ' + str(int(result[0])))
         # subset polygons to exclude CDC data!!!
         arcpy.AddJoin_management(input_polygon_layer, 'InputDatasetID', param_geodatabase + '/InputDataset',
                                     'InputDatasetID', 'KEEP_COMMON')

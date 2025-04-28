@@ -80,7 +80,7 @@ class GenerateRangeMapTool:
         differentiate_usage_type = None
         if param_differentiate_usage_type == 'true':
             differentiate_usage_type = 1
-        param_save_range_map_inputs = 'true' #parameters[9].valueAsText
+        param_save_range_map_inputs = parameters[9].valueAsText #'true'
 
         # use passed geodatabase as workspace (still seems to go to default geodatabase)
         arcpy.env.workspace = param_geodatabase
