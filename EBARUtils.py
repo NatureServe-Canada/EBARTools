@@ -24,15 +24,15 @@ import json
 
 
 # shared folders and addresses
-resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
-temp_folder = 'C:/GIS/EBAR/temp'
-#download_folder = 'D:/GIS/EBAR/pub/download'
-download_folder = 'F:/download'
+resources_folder = 'D:/GIS/EBAR/EBARTools/resources'
+temp_folder = 'D:/GIS/EBAR/temp'
+download_folder = 'D:/GIS/EBAR/pub/download'
+#download_folder = 'F:/download'
 download_url = 'https://gis.natureserve.ca/download'
 #nsx_species_search_url = 'https://explorer.natureserve.org/api/data/search'
 nsx_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/'
-log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
-#log_folder = 'C:/GIS/EBAR/temp'
+#log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
+log_folder = 'D:/GIS/EBAR/temp'
 
 
 # various services
@@ -1113,9 +1113,17 @@ def inputSelectAndBuffer(geodatabase, input_features, range_map_id, table_name_p
         where_clause += ' AND (' + table_name_prefix + "InputDataset.DateReceived < timestamp '" + \
             range_date.strftime('%Y-%m-%d') + "') AND (" + table_name_prefix + \
             'DatasetSource.CDCJurisdictionID IS NULL)'
+    # # DEBUG
+    # print('where_clause: ' + where_clause)
+    # return
     arcpy.SelectLayerByAttribute_management(input_features + '_layer', 'ADD_TO_SELECTION', where_clause)
     arcpy.RemoveJoin_management(input_features + '_layer', table_name_prefix + 'DatasetSource')
     arcpy.RemoveJoin_management(input_features + '_layer', table_name_prefix + 'InputDataset')
+    # # DEBUG
+    # result = arcpy.GetCount_management(input_features + '_layer')
+    # print('All polygons GetCount: ' + str(int(result[0])))
+    # print('All polygons FIDSet: ' + str(len(arcpy.Describe(input_features + '_layer').FIDSet)))
+    # return
 
     # remove excluded points from selection
     arcpy.AddJoin_management(input_features + '_layer', input_features + 'ID', geodatabase + '/InputFeedback',
