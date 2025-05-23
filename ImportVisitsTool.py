@@ -136,7 +136,7 @@ class ImportVisitsTool:
         sf_id = file_line['SOURCE_FEATURE_ID']
         if not sf_id:
             return True, duplicate, date_missing, id_missing, max_date_update, min_date_update
-        visit_date = EBARUtils.extractDate(file_line['VISIT_DATE'])
+        visit_date, partial = EBARUtils.extractDate(file_line['VISIT_DATE'])
         if not visit_date:
             date_missing = True
         visit_notes = file_line['VISIT_NOTES']

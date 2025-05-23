@@ -144,6 +144,7 @@ class ImportTabularDataTool:
         bad_bbc = 0
         bad_bbcs_list = []
         bad_date = 0
+        #partial_date = 0
         try:
             for file_line in reader:
                 # check/add point for current line
@@ -212,6 +213,7 @@ class ImportTabularDataTool:
             EBARUtils.displayMessage(messages, 'Duplicates updated - ' + str(updates))
             EBARUtils.displayMessage(messages, 'Imported without bad breeding and behaviour code - ' + str(bad_bbc))
             EBARUtils.displayMessage(messages, 'Imported without date - ' + str(bad_date))
+            #EBARUtils.displayMessage(messages, 'Imported with partial date - ' + str(partial_date))
             end_time = datetime.datetime.now()
             EBARUtils.displayMessage(messages, 'End time: ' + str(end_time))
             elapsed_time = end_time - start_time
@@ -338,9 +340,10 @@ class ImportTabularDataTool:
         # date_fossil_grade_start = datetime.datetime.now()
         # MaxDate
         max_date = None
+        partial = False
         if field_dict['date']:
             # date field
-            max_date = EBARUtils.extractDate(file_line[field_dict['date']])
+            max_date, partial = EBARUtils.extractDate(file_line[field_dict['date']])
         if not max_date:
             # separate ymd fields
             if field_dict['year']:
@@ -482,15 +485,17 @@ class ImportTabularDataTool:
             with arcpy.da.UpdateCursor(geodatabase + '/InputPoint', [
                     'SHAPE@XY', 'InputDatasetID', 'URI', 'License', 'SpeciesID', 'SynonymID', 'MaxDate',
                     'CoordinatesObscured', 'Accuracy', 'IndividualCount', 'Geoprivacy', 'TaxonGeoprivacy',
-                    'BreedingAndBehaviourCode', 'OriginalInstitutionCode', 'Rightsholder'
+                    'BreedingAndBehaviourCode', 'OriginalInstitutionCode', 'Rightsholder', 'PartialDate'
             ], "InputPointID = " + str(id_dict[unique_id_species])) as cursor:
                 row = None
                 for row in EBARUtils.updateCursor(cursor):
+                    partial_text = 'N'
+                    if partial:
+                        partial_text = 'Y'
                     cursor.updateRow([
                         output_point, input_dataset_id, uri, license, species_id, synonym_id, max_date,
                         coordinates_obscured, accuracy, individual_count, geoprivacy, taxon_geoprivacy, breeding_code,
-                        original_institution_code, rightsholder
-                    ])
+                        original_institution_code, rightsholder, partial_text])
                 if row:
                     del row
             # ## NT perf debug

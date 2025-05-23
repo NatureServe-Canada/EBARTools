@@ -140,6 +140,10 @@ class FlagBadDataUsingRangeTool:
         EBARUtils.displayMessage(messages, 'Buffering Input Points for primary species')
         temp_point_buffer = EBARUtils.inputSelectAndBuffer(param_geodatabase, 'InputPoint', range_map_id,
                                                            table_name_prefix, str(species_id), start_time, range_date)
+        # # DEBUG
+        # result = arcpy.GetCount_management(temp_point_buffer)
+        # EBARUtils.displayMessage(messages, 'All points count: ' + str(int(result[0])))
+        # return
         EBARUtils.displayMessage(messages, 'Flagging any InputPoint that does not intersect range')
         arcpy.MakeFeatureLayer_management(temp_point_buffer, 'point_layer')
         # # select any that intersect removed ecoshapes
@@ -151,21 +155,21 @@ class FlagBadDataUsingRangeTool:
         # DEBUG
         result = arcpy.GetCount_management('point_layer')
         EBARUtils.displayMessage(messages, 'Outside points count: ' + str(int(result[0])))
-        # subset points to exclude CDC data
-        arcpy.AddJoin_management('point_layer', 'InputDatasetID', param_geodatabase + '/InputDataset',
-                                 'InputDatasetID', 'KEEP_COMMON')
-        arcpy.AddJoin_management('point_layer', 'DatasetSourceID', param_geodatabase + '/DatasetSource',
-                                 'DatasetSourceID', 'KEEP_COMMON')
-        arcpy.SelectLayerByAttribute_management('point_layer', 'SUBSET_SELECTION',
-                                                table_name_prefix + 'DatasetSource.CDCJurisdictionID IS NULL')
-        # DEBUG
-        result = arcpy.GetCount_management('point_layer')
-        EBARUtils.displayMessage(messages, 'Non-CDC points count with join: ' + str(int(result[0])))
+        # # subset points to exclude CDC data (already done above in inputSelectAndBuffer)
+        # arcpy.AddJoin_management('point_layer', 'InputDatasetID', param_geodatabase + '/InputDataset',
+        #                          'InputDatasetID', 'KEEP_COMMON')
+        # arcpy.AddJoin_management('point_layer', 'DatasetSourceID', param_geodatabase + '/DatasetSource',
+        #                          'DatasetSourceID', 'KEEP_COMMON')
+        # arcpy.SelectLayerByAttribute_management('point_layer', 'SUBSET_SELECTION',
+        #                                         table_name_prefix + 'DatasetSource.CDCJurisdictionID IS NULL')
+        # # DEBUG
+        # result = arcpy.GetCount_management('point_layer')
+        # EBARUtils.displayMessage(messages, 'Non-CDC points count with join: ' + str(int(result[0])))
         arcpy.RemoveJoin_management('point_layer', table_name_prefix + 'DatasetSource')
         arcpy.RemoveJoin_management('point_layer', table_name_prefix + 'InputDataset')
-        # DEBUG
-        result = arcpy.GetCount_management('point_layer')
-        EBARUtils.displayMessage(messages, 'Non-CDC points count without join: ' + str(int(result[0])))
+        # # DEBUG
+        # result = arcpy.GetCount_management('point_layer')
+        # EBARUtils.displayMessage(messages, 'Non-CDC points count without join: ' + str(int(result[0])))
         # subset points for national (use within to avoid flagging points that may be relevant in US)
         if scope == 'N':
             arcpy.SelectLayerByLocation_management('point_layer', 'WITHIN', 'nat_ecoshape_layer', None,

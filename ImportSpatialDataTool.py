@@ -306,6 +306,7 @@ class ImportSpatialDataTool:
         EBARUtils.checkAddField('import_features', 'MinDate', 'DATE')
         EBARUtils.checkAddField('import_features', 'MaxDate', 'DATE')
         EBARUtils.checkAddField('import_features', 'ignore_imp', 'SHORT')
+        EBARUtils.checkAddField('import_features', 'PartialDate', 'TEXT')
         #if feature_class_type in ('Polygon', 'MultiPatch'):
         #    # EOs can only be polygons
         #    EBARUtils.checkAddField('import_features', 'eo_rank', 'TEXT')
@@ -320,6 +321,7 @@ class ImportSpatialDataTool:
         no_coords = 0
         no_species_match = 0
         no_date = 0
+        #partial_date = 0
         species_updates = 0
         no_match_list = []
         subnation = None
@@ -388,6 +390,10 @@ class ImportSpatialDataTool:
                     values.append(subnation)
                 if field_dict['IndividualCount']:
                     values.append(row[field_dict['IndividualCount']])
+                # if partial:
+                #     values.append('Y')
+                # else:
+                #     values.append('N')
                 cursor.updateRow(values)
                 if ignore_imp == 0:
                     # add to id_dict with fake id (because InputPoint/Line/PolygonID doesn't exist yet)
@@ -466,17 +472,17 @@ class ImportSpatialDataTool:
                             if type(row[field_dict['min_date']]).__name__ == 'datetime':
                                 min_date = row[field_dict['min_date']]
                             elif type(row[field_dict['min_date']]).__name__ in ('int', 'long'):
-                                min_date = EBARUtils.extractDate(str(row[field_dict['min_date']]))
+                                min_date, partial = EBARUtils.extractDate(str(row[field_dict['min_date']]))
                             else:
                                 # extract date from text
-                                min_date = EBARUtils.extractDate(row[field_dict['min_date']].strip())
+                                min_date, partial = EBARUtils.extractDate(row[field_dict['min_date']].strip())
                         cursor.updateRow([row[field_dict['min_date']], min_date])
                     if row:
                         del row
                 EBARUtils.displayMessage(messages, 'Min Date pre-processed ' + str(loop_count))
             if field_dict['max_date']:
                 loop_count = 0
-                with arcpy.da.UpdateCursor('import_features', [field_dict['max_date'], 'MaxDate'],
+                with arcpy.da.UpdateCursor('import_features', [field_dict['max_date'], 'MaxDate', 'PartialDate'],
                                            'ignore_imp <> 1') as cursor:
                     row = None
                     for row in EBARUtils.updateCursor(cursor):
@@ -484,15 +490,20 @@ class ImportSpatialDataTool:
                         if loop_count % 1000 == 0:
                             EBARUtils.displayMessage(messages, 'Max Date pre-processed ' + str(loop_count))
                         max_date = None
+                        partial = False
                         if row[field_dict['max_date']]:
                             if type(row[field_dict['max_date']]).__name__ == 'datetime':
                                 max_date = row[field_dict['max_date']]
                             elif type(row[field_dict['max_date']]).__name__ in ('int', 'long'):
-                                max_date = EBARUtils.extractDate(str(row[field_dict['max_date']]))
+                                max_date, partial = EBARUtils.extractDate(str(row[field_dict['max_date']]))
                             else:
                                 # extract date from text
-                                max_date = EBARUtils.extractDate(row[field_dict['max_date']].strip())
-                        cursor.updateRow([row[field_dict['max_date']], max_date])
+                                max_date, partial = EBARUtils.extractDate(row[field_dict['max_date']].strip())
+                        partial_text = 'N'
+                        if partial:
+                            partial_text = 'Y'
+                            #partial_date += 1
+                        cursor.updateRow([row[field_dict['max_date']], max_date, partial_text])
                         if not max_date:
                             no_date += 1
                     if row:
@@ -664,6 +675,7 @@ class ImportSpatialDataTool:
             EBARUtils.displayMessage(messages, 'Imported without bad breeding and behaviour code - ' + str(bbc_bad))
         if field_dict['max_date']:
             EBARUtils.displayMessage(messages, 'Imported without date - ' + str(no_date))
+            #EBARUtils.displayMessage(messages, 'Imported with partial date - ' + str(partial_date))
         else:
             EBARUtils.displayMessage(messages, 'Imported without date - ' + str(overall_count - no_species_match - 
                                                                                 individual_count_0 - no_coords -
