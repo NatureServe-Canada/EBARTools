@@ -53,7 +53,7 @@ class SyncEcosystemListKBATool:
             'EcosystemLevelJustification', 'G_CONCEPT_SENTENCE_FR', 'ActiveEBAR', 'BIOME_NAME_FR', 'SUBBIOME_NAME_FR',
             'FORMATION_NAME_FR', 'DIVISION_NAME_FR', 'IVC_MG_NAME_FR', 'IVC_GROUP_NAME_FR',
             'IVC_FORMATTED_SCIENTIFIC_NAME_F', 'IVC_NAME_FR', 'WDKBAID', 'IUCN_CD', 'IUCN_AssessmentDate',
-            'IUCN_Criteria', 'Source'
+            'IUCN_Criteria', 'Source', 'PRECAUTIONARY_G_RANK', 'PRECAUTIONARY_N_RANK'
         ]
 
         # Access the dictionary of existing element_national_id and species_id values (in Biotics table)
