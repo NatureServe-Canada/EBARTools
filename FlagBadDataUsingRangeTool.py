@@ -114,23 +114,23 @@ class FlagBadDataUsingRangeTool:
             # display message and stop
             EBARUtils.displayMessage(messages, 'ERROR: Range Map has no Ecoshapes')
             return
-        else:
-            # DEBUG
-            EBARUtils.displayMessage(messages, 'Ecoshapes in Range: ' + result[0])
+        # else:
+        #     # DEBUG
+        #     EBARUtils.displayMessage(messages, 'Ecoshapes in Range: ' + result[0])
 
         # select subsets of all ecoshapes for National (Canadian) scope
         if scope == 'N':
             EBARUtils.displayMessage(messages, 'Selecting subset of Ecoshapes for National (Canadian) scope')
             arcpy.MakeFeatureLayer_management(param_geodatabase + '/Ecoshape', 'nat_ecoshape_layer',
                                               'JurisdictionID IN ' + EBARUtils.national_jur_ids)
-            # DEBUG
             result = arcpy.management.GetCount('nat_ecoshape_layer')
             if int(result[0]) == 0:
                 # display message and stop
                 EBARUtils.displayMessage(messages, 'ERROR: Range Map has no Canadian Ecoshapes')
                 return
-            else:
-                EBARUtils.displayMessage(messages, 'Canadian Ecoshapes: ' + result[0])
+            # else:
+            #     # DEBUG
+            #     EBARUtils.displayMessage(messages, 'Canadian Ecoshapes: ' + result[0])
 
         # use related tool for doing actual flagging
         fbdui = FlagBadDataUsingIDTool.FlagBadDataUsingIDTool()
@@ -152,9 +152,9 @@ class FlagBadDataUsingRangeTool:
         # select any that don't intersect range ecoshapes
         arcpy.SelectLayerByLocation_management('point_layer', 'INTERSECT', 'range_ecoshape_layer', None,
                                                'NEW_SELECTION', 'INVERT')
-        # DEBUG
-        result = arcpy.GetCount_management('point_layer')
-        EBARUtils.displayMessage(messages, 'Outside points count: ' + str(int(result[0])))
+        # # DEBUG
+        # result = arcpy.GetCount_management('point_layer')
+        # EBARUtils.displayMessage(messages, 'Outside points count: ' + str(int(result[0])))
         # # subset points to exclude CDC data (already done above in inputSelectAndBuffer)
         # arcpy.AddJoin_management('point_layer', 'InputDatasetID', param_geodatabase + '/InputDataset',
         #                          'InputDatasetID', 'KEEP_COMMON')
@@ -165,8 +165,8 @@ class FlagBadDataUsingRangeTool:
         # # DEBUG
         # result = arcpy.GetCount_management('point_layer')
         # EBARUtils.displayMessage(messages, 'Non-CDC points count with join: ' + str(int(result[0])))
-        arcpy.RemoveJoin_management('point_layer', table_name_prefix + 'DatasetSource')
-        arcpy.RemoveJoin_management('point_layer', table_name_prefix + 'InputDataset')
+        # arcpy.RemoveJoin_management('point_layer', table_name_prefix + 'DatasetSource')
+        # arcpy.RemoveJoin_management('point_layer', table_name_prefix + 'InputDataset')
         # # DEBUG
         # result = arcpy.GetCount_management('point_layer')
         # EBARUtils.displayMessage(messages, 'Non-CDC points count without join: ' + str(int(result[0])))
@@ -174,9 +174,9 @@ class FlagBadDataUsingRangeTool:
         if scope == 'N':
             arcpy.SelectLayerByLocation_management('point_layer', 'WITHIN', 'nat_ecoshape_layer', None,
                                                    'SUBSET_SELECTION')
-        # DEBUG
-        result = arcpy.GetCount_management('point_layer')
-        EBARUtils.displayMessage(messages, 'Non-CDC points count National: ' + str(int(result[0])))
+        # # DEBUG
+        # result = arcpy.GetCount_management('point_layer')
+        # EBARUtils.displayMessage(messages, 'Non-CDC points count National: ' + str(int(result[0])))
         # select same set of original InputPoints
         input_point_ids = ''
         points_found = 0
@@ -192,10 +192,10 @@ class FlagBadDataUsingRangeTool:
             arcpy.MakeFeatureLayer_management(param_geodatabase + '/InputPoint', 'original_points',
                                               'InputPointID IN (' + input_point_ids + ')')
             #arcpy.SelectLayerByLocation_management('original_points', 'INTERSECT', 'point_layer')
-            # DEBUG
-            result = arcpy.GetCount_management('original_points')
-            points_found = int(result[0])
-            #if points_found > 0:
+            # # DEBUG
+            # result = arcpy.GetCount_management('original_points')
+            # points_found = int(result[0])
+            # #if points_found > 0:
             with arcpy.da.SearchCursor('original_points', ['InputPointID']) as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     EBARUtils.displayMessage(messages, 'Would flag InputPointID ' + str(row['InputPointID']))
@@ -282,10 +282,10 @@ class FlagBadDataUsingRangeTool:
         input_polygon_layer = EBARUtils.inputSelectAndBuffer(param_geodatabase, 'InputPolygon', range_map_id,
                                                              table_name_prefix, str(species_id), start_time,
                                                              range_date)
-        # DEBUG
         polygons_found = int(arcpy.GetCount_management(input_polygon_layer)[0])
-        EBARUtils.displayMessage(messages, 'All polygons GetCount: ' + str(polygons_found))
-        #EBARUtils.displayMessage(messages, 'All polygons FIDSet: ' + str(len(arcpy.Describe(input_polygon_layer).FIDSet)))
+        # # DEBUG
+        # EBARUtils.displayMessage(messages, 'All polygons GetCount: ' + str(polygons_found))
+        # #EBARUtils.displayMessage(messages, 'All polygons FIDSet: ' + str(len(arcpy.Describe(input_polygon_layer).FIDSet)))
         if polygons_found > 0:
             EBARUtils.displayMessage(messages, 'Flagging any InputPolygon that does not intersect range')
             # select any that don't intersect range
@@ -293,9 +293,9 @@ class FlagBadDataUsingRangeTool:
             #                                        None, 'SUBSET_SELECTION')
             arcpy.SelectLayerByLocation_management(input_polygon_layer, 'INTERSECT', 'range_ecoshape_layer',
                                                    None, 'SUBSET_SELECTION', 'INVERT')
-            # DEBUG
-            result = arcpy.GetCount_management(input_polygon_layer)
-            EBARUtils.displayMessage(messages, 'Outside polygons count: ' + str(int(result[0])))
+            # # DEBUG
+            # result = arcpy.GetCount_management(input_polygon_layer)
+            # EBARUtils.displayMessage(messages, 'Outside polygons count: ' + str(int(result[0])))
             # subset polygons to exclude CDC data!!!
             arcpy.AddJoin_management(input_polygon_layer, 'InputDatasetID', param_geodatabase + '/InputDataset',
                                     'InputDatasetID', 'KEEP_COMMON')
@@ -303,21 +303,21 @@ class FlagBadDataUsingRangeTool:
                                     'DatasetSourceID', 'KEEP_COMMON')
             arcpy.SelectLayerByAttribute_management(input_polygon_layer, 'SUBSET_SELECTION',
                                                     table_name_prefix + 'DatasetSource.CDCJurisdictionID IS NULL')
-            # DEBUG
-            result = arcpy.GetCount_management(input_polygon_layer)
-            EBARUtils.displayMessage(messages, 'Non-CDC polygons count with join: ' + str(int(result[0])))
+            # # DEBUG
+            # result = arcpy.GetCount_management(input_polygon_layer)
+            # EBARUtils.displayMessage(messages, 'Non-CDC polygons count with join: ' + str(int(result[0])))
             arcpy.RemoveJoin_management(input_polygon_layer, table_name_prefix + 'DatasetSource')
             arcpy.RemoveJoin_management(input_polygon_layer, table_name_prefix + 'InputDataset')
             # subset polygons for national
             if scope == 'N':
                 arcpy.SelectLayerByLocation_management(input_polygon_layer, 'INTERSECT', 'nat_ecoshape_layer', None,
                                                         'SUBSET_SELECTION')
-            # DEBUG
-            #result = arcpy.GetCount_management(input_polygon_layer)
-            polygons_found = int(arcpy.GetCount_management(input_polygon_layer)[0])
-            #EBARUtils.displayMessage(messages, 'Non-CDC polygons count National: ' + str(int(result[0])))
-            EBARUtils.displayMessage(messages, 'Non-CDC polygons count National: ' + str(polygons_found))
-            #polygons_found = len(arcpy.Describe(input_polygon_layer).FIDSet)
+            # # DEBUG
+            # #result = arcpy.GetCount_management(input_polygon_layer)
+            # #EBARUtils.displayMessage(messages, 'Non-CDC polygons count National: ' + str(int(result[0])))
+            # polygons_found = int(arcpy.GetCount_management(input_polygon_layer)[0])
+            # EBARUtils.displayMessage(messages, 'Non-CDC polygons count National: ' + str(polygons_found))
+            polygons_found = len(arcpy.Describe(input_polygon_layer).FIDSet)
             if polygons_found > 0:
                 # create InputFeedback records
                 with arcpy.da.SearchCursor(input_polygon_layer, ['InputPolygonID']) as cursor:
