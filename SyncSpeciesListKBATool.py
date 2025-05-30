@@ -130,7 +130,11 @@ class SyncSpeciesListKBATool:
                           "Range_N_EBAR",
                           "IsPotentialTrigger",
                           "KBATrigger_G_A1_Status",
-                          "KBATrigger_N_A1_Status"]
+                          "KBATrigger_N_A1_Status",
+                          "HBJBLPriority",
+                          "KBASync",
+                          "NSCTracked",
+                          "KBATracked"]
 
         # Access the dictionary of existing element_national_id and species_id values (in Biotics table)
         element_species_dict = EBARUtils.readElementSpecies(param_geodatabase)
