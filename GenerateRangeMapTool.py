@@ -1261,14 +1261,11 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde'
     param_species = arcpy.Parameter()
-    param_species.value = 'Bidens amplissima' #'Aechmophorus occidentalis' #Bombus suckleyi
     param_secondary = arcpy.Parameter()
-    param_secondary.value = None
     #param_secondary.value = "'Schistochilopsis incisa var. opacifolia'" #"'Dodia tarandus';'Dodia verticalis'"
     param_version = arcpy.Parameter()
-    param_version.value = '0.01'
     param_stage = arcpy.Parameter()
-    param_stage.value = 'Auto-generated TEST' # 'Expert reviewed test00' 
+    param_stage.value = 'eBird Abundance Auto-reviewed TEST' #'Auto-generated TEST'
     param_scope = arcpy.Parameter()
     #param_scope.value = None
     param_scope.value = 'Canadian'
@@ -1281,8 +1278,31 @@ if __name__ == '__main__':
     param_differentiate_usage_type = arcpy.Parameter()
     param_differentiate_usage_type.value = 'true'
     param_save_range_map_inputs = arcpy.Parameter()
-    param_save_range_map_inputs.value = 'false'
-    parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
-                  param_jurisdictions_covered, param_custom_polygons_covered, param_differentiate_usage_type,
-                  param_save_range_map_inputs]
-    grm.runGenerateRangeMapTool(parameters, None)
+
+    for version in ['1.1', '1.2', '1.5']:
+    #    for species in ['Ardea herodias', 'Botaurus exilis', 'Branta canadensis', 'Centronyx henslowii', 'Charadrius melodus', 'Falco peregrinus', 'Melanerpes lewis', 'Setophaga cerulea', 'Tringa solitaria', 'Zonotrichia querula']:
+    #for version in ['1.2', '1.3']:
+        #for species in ['Charadrius melodus']:
+        #for species in ['Ardea herodias', 'Branta canadensis', 'Charadrius melodus', 'Melanerpes lewis']:
+        for species in ['Botaurus exilis', 'Branta canadensis', 'Centronyx henslowii', 'Charadrius melodus', 'Falco peregrinus', 'Melanerpes lewis', 'Setophaga cerulea', 'Tringa solitaria', 'Zonotrichia querula']:
+            param_version.value = version
+            param_species.value = species
+            if species == 'Ardea herodias':
+                param_secondary.value = "'Ardea herodias fannini';'Ardea herodias herodias'"
+            elif species == 'Branta canadensis':
+                param_secondary.value = "'Branta canadensis occidentalis'"
+            elif species == 'Charadrius melodus':
+                param_secondary.value = "'Charadrius melodus circumcinctus';'Charadrius melodus melodus'"
+            elif species == 'Melanerpes lewis':
+                param_secondary.value = "'Melanerpes lewis pop. 1'"
+            else:
+                param_secondary.value = None
+            #if version == '1.1':
+            #    param_save_range_map_inputs.value = 'true'
+            #else:
+            param_save_range_map_inputs.value = 'false'
+            parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
+                          param_jurisdictions_covered, param_custom_polygons_covered, param_differentiate_usage_type,
+                          param_save_range_map_inputs]
+            grm.runGenerateRangeMapTool(parameters, None)
+    
