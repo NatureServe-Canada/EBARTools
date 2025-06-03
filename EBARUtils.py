@@ -431,7 +431,7 @@ def readDatasetSourceUniqueIDs(geodatabase, table_name_prefix, dataset_source_id
 def extractDate(date_str):
     """attempt to extract a date from the passed string"""
     ret_date = None
-    partial = False
+    partial = True
     # accept yyyy?mm?dd, yyyy?mm or yyyy
     if date_str not in ('NA', '', 'Unknown', 'unknown', 'No Date', 'ND', 'N.D.', None):
         if len(date_str) >= 4:
@@ -451,9 +451,11 @@ def extractDate(date_str):
                             day = int(date_str[8:10])
                             if day > 31 or day == 0:
                                 day = 1
+                            else:
+                                partial = False
             except:
                 # bury any errors
-                partial = True
+                pass
             finally:
                 if at_least_year:
                     try:
@@ -461,12 +463,11 @@ def extractDate(date_str):
                             ret_date = datetime.datetime(year, month, day)
                     except ValueError:
                         # handle rare cases such as month with less than 31 days and day of 31
+                        partial = True
                         try:
                             ret_date = datetime.datetime(year, month, 1)
-                            partial = True
                         except ValueError:
                             ret_date = datetime.datetime(year, 1, 1)
-                            partial = True
     return ret_date, partial
 
 
