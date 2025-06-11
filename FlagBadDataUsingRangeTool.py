@@ -14,6 +14,7 @@
 
 
 # import Python packages
+import arcpy.management
 import EBARUtils
 import arcpy
 import datetime
@@ -114,23 +115,15 @@ class FlagBadDataUsingRangeTool:
             # display message and stop
             EBARUtils.displayMessage(messages, 'ERROR: Range Map has no Ecoshapes')
             return
-        # else:
-        #     # DEBUG
-        #     EBARUtils.displayMessage(messages, 'Ecoshapes in Range: ' + result[0])
 
         # select subsets of all ecoshapes for National (Canadian) scope
         if scope == 'N':
             EBARUtils.displayMessage(messages, 'Selecting subset of Ecoshapes for National (Canadian) scope')
             arcpy.MakeFeatureLayer_management(param_geodatabase + '/Ecoshape', 'nat_ecoshape_layer',
                                               'JurisdictionID IN ' + EBARUtils.national_jur_ids)
-            result = arcpy.management.GetCount('nat_ecoshape_layer')
-            if int(result[0]) == 0:
-                # display message and stop
-                EBARUtils.displayMessage(messages, 'ERROR: Range Map has no Canadian Ecoshapes')
-                return
-            # else:
-            #     # DEBUG
-            #     EBARUtils.displayMessage(messages, 'Canadian Ecoshapes: ' + result[0])
+            # also need non-Canadian (international) ecoshapes
+            arcpy.MakeFeatureLayer_management(param_geodatabase + '/Ecoshape', 'intl_ecoshape_layer',
+                                              'JurisdictionID NOT IN ' + EBARUtils.national_jur_ids)
 
         # use related tool for doing actual flagging
         fbdui = FlagBadDataUsingIDTool.FlagBadDataUsingIDTool()
@@ -140,206 +133,214 @@ class FlagBadDataUsingRangeTool:
         EBARUtils.displayMessage(messages, 'Buffering Input Points for primary species')
         temp_point_buffer = EBARUtils.inputSelectAndBuffer(param_geodatabase, 'InputPoint', range_map_id,
                                                            table_name_prefix, str(species_id), start_time, range_date)
-        # # DEBUG
-        # result = arcpy.GetCount_management(temp_point_buffer)
-        # EBARUtils.displayMessage(messages, 'All points count: ' + str(int(result[0])))
-        # return
         EBARUtils.displayMessage(messages, 'Flagging any InputPoint that does not intersect range')
         arcpy.MakeFeatureLayer_management(temp_point_buffer, 'point_layer')
-        # # select any that intersect removed ecoshapes
-        # arcpy.SelectLayerByLocation_management('point_layer', 'COMPLETELY_WITHIN', 'removed_ecoshape_layer', None,
-        #                                        'NEW_SELECTION')
         # select any that don't intersect range ecoshapes
         arcpy.SelectLayerByLocation_management('point_layer', 'INTERSECT', 'range_ecoshape_layer', None,
                                                'NEW_SELECTION', 'INVERT')
-        # # DEBUG
-        # result = arcpy.GetCount_management('point_layer')
-        # EBARUtils.displayMessage(messages, 'Outside points count: ' + str(int(result[0])))
-        # # subset points to exclude CDC data (already done above in inputSelectAndBuffer)
-        # arcpy.AddJoin_management('point_layer', 'InputDatasetID', param_geodatabase + '/InputDataset',
-        #                          'InputDatasetID', 'KEEP_COMMON')
-        # arcpy.AddJoin_management('point_layer', 'DatasetSourceID', param_geodatabase + '/DatasetSource',
-        #                          'DatasetSourceID', 'KEEP_COMMON')
-        # arcpy.SelectLayerByAttribute_management('point_layer', 'SUBSET_SELECTION',
-        #                                         table_name_prefix + 'DatasetSource.CDCJurisdictionID IS NULL')
-        # # DEBUG
-        # result = arcpy.GetCount_management('point_layer')
-        # EBARUtils.displayMessage(messages, 'Non-CDC points count with join: ' + str(int(result[0])))
-        # arcpy.RemoveJoin_management('point_layer', table_name_prefix + 'DatasetSource')
-        # arcpy.RemoveJoin_management('point_layer', table_name_prefix + 'InputDataset')
-        # # DEBUG
-        # result = arcpy.GetCount_management('point_layer')
-        # EBARUtils.displayMessage(messages, 'Non-CDC points count without join: ' + str(int(result[0])))
-        # subset points for national (use within to avoid flagging points that may be relevant in US)
+        points_found = int(arcpy.GetCount_management('point_layer')[0])
+        # subset points for national
         if scope == 'N':
-            arcpy.SelectLayerByLocation_management('point_layer', 'WITHIN', 'nat_ecoshape_layer', None,
+            arcpy.SelectLayerByLocation_management('point_layer', 'INTERSECT', 'nat_ecoshape_layer', None,
                                                    'SUBSET_SELECTION')
-        # # DEBUG
-        # result = arcpy.GetCount_management('point_layer')
-        # EBARUtils.displayMessage(messages, 'Non-CDC points count National: ' + str(int(result[0])))
+            points_found = int(arcpy.GetCount_management('point_layer')[0])
+            if points_found > 0:
+                arcpy.SelectLayerByLocation_management('point_layer', 'INTERSECT', 'intl_ecoshape_layer',
+                                                       None, 'SUBSET_SELECTION', 'INVERT')
+                points_found = int(arcpy.GetCount_management('point_layer')[0])
         # select same set of original InputPoints
-        input_point_ids = ''
-        points_found = 0
-        with arcpy.da.SearchCursor('point_layer', ['InputPointID']) as cursor:
-            for row in EBARUtils.searchCursor(cursor):
-                if len(input_point_ids) > 0:
-                    input_point_ids += ','
-                input_point_ids += str(row['InputPointID'])
-                points_found += 1
         if points_found > 0:
+            input_point_ids = ''
+            with arcpy.da.SearchCursor('point_layer', ['InputPointID']) as cursor:
+                for row in EBARUtils.searchCursor(cursor):
+                    if len(input_point_ids) > 0:
+                        input_point_ids += ','
+                    input_point_ids += str(row['InputPointID'])
             del row, cursor
-            #EBARUtils.displayMessage(messages, 'InputPointIDs: ' + input_point_ids)
             arcpy.MakeFeatureLayer_management(param_geodatabase + '/InputPoint', 'original_points',
                                               'InputPointID IN (' + input_point_ids + ')')
-            #arcpy.SelectLayerByLocation_management('original_points', 'INTERSECT', 'point_layer')
-            # # DEBUG
-            # result = arcpy.GetCount_management('original_points')
-            # points_found = int(result[0])
-            # #if points_found > 0:
             with arcpy.da.SearchCursor('original_points', ['InputPointID']) as cursor:
                 for row in EBARUtils.searchCursor(cursor):
-                    EBARUtils.displayMessage(messages, 'Would flag InputPointID ' + str(row['InputPointID']))
                     # # create InputFeedback, append to Bad, delete original
-                    # param_geodatabase2 = arcpy.Parameter()
-                    # param_geodatabase2.value = param_geodatabase
+                    # EBARUtils.displayMessage(messages, 'Flagging InputPointID ' + str(row['InputPointID']))
+                    # param_gdb = arcpy.Parameter()
+                    # param_gdb.value = param_geodatabase
                     # param_input_point_id = arcpy.Parameter()
-                    # param_input_point_id.value = row['InputPointID']
+                    # param_input_point_id.value = str(row['InputPointID'])
                     # param_input_line_id = arcpy.Parameter()
                     # param_input_line_id.value = None
                     # param_input_polygon_id = arcpy.Parameter()
                     # param_input_polygon_id.value = None
                     # param_justification = arcpy.Parameter()
-                    # param_justification.value = 'Test rationale'
+                    # param_justification.value = 'Record flagged as bad because it is within an expert removed ecoshape'
                     # param_undo = arcpy.Parameter()
                     # param_undo.value = 'false'
-                    # parameters = [param_geodatabase, param_input_point_id, param_input_line_id, param_input_polygon_id,
-                    #             param_justification, param_undo]
+                    # parameters = [param_gdb, param_input_point_id, param_input_line_id, param_input_polygon_id,
+                    #               param_justification, param_undo]
                     # fbdui.runFlagBadDataUsingIDTool(parameters, None)
-                    # # create InputFeedback
-                    # with arcpy.da.InsertCursor(param_geodatabase + '/InputFeedback',
-                    #                            ['BadInputPointID', 'InputFeedbackNotes']) as insert_cursor:
-                    #     insert_cursor.insertRow([row['InputPointID'], 'Not in reviewed range with RangeMapID ' +
-                    #                              str(range_map_id)])
-                    # del insert_cursor
+                    # create InputFeedback
+                    EBARUtils.displayMessage(messages,
+                                             'Creating InputFeedback for InputPointID ' + str(row['InputPointID']))
+                    with arcpy.da.InsertCursor(param_geodatabase + '/InputFeedback',
+                                               ['BadInputPointID', 'Justification']) as insert_cursor:
+                        insert_cursor.insertRow([row['InputPointID'], 'Not in reviewed range with RangeMapID ' +
+                                                 str(range_map_id)])
+                    del insert_cursor
             del row, cursor
             # append to Bad, delete original
-            # #arcpy.Append_management('original_points', param_geodatabase + '/BadInputPoint', 'TEST')
-            # EBARUtils.appendUsingCursor('original_points', param_geodatabase + '/BadInputPoint')
-            # EBARUtils.displayMessage(messages, 'Deleting original points')
-            # arcpy.DeleteRows_management('original_points')
+            EBARUtils.displayMessage(messages, 'Appending BadInputPoint(s)')
+            EBARUtils.appendUsingCursor('original_points', param_geodatabase + '/BadInputPoint')
+            EBARUtils.displayMessage(messages, 'Deleting original point(s)')
+            arcpy.DeleteRows_management('original_points')
 
         # process lines
-        # select all points acquired before range map was generated
+        # select all lines acquired before range map was generated
         EBARUtils.displayMessage(messages, 'Buffering Input Lines for primary species')
         temp_line_buffer = EBARUtils.inputSelectAndBuffer(param_geodatabase, 'InputLine', range_map_id,
                                                           table_name_prefix, str(species_id), start_time, range_date)
-        EBARUtils.displayMessage(messages,
-                                 'Flagging any InputLine that does not intersect range')
+        EBARUtils.displayMessage(messages, 'Flagging any InputLine that does not intersect range')
         arcpy.MakeFeatureLayer_management(temp_line_buffer, 'line_layer')
         # select any that don't intersect range
-        # arcpy.SelectLayerByLocation_management('line_layer', 'COMPLETELY_WITHIN', 'removed_ecoshape_layer', None,
-        #                                        'NEW_SELECTION')
         arcpy.SelectLayerByLocation_management('line_layer', 'INTERSECT', 'range_ecoshape_layer', None,
                                                'NEW_SELECTION', 'INVERT')
-        # subset lines to exclude CDC data!!!
-        arcpy.AddJoin_management('line_layer', 'InputDatasetID', param_geodatabase + '/InputDataset',
-                                 'InputDatasetID', 'KEEP_COMMON')
-        arcpy.AddJoin_management('line_layer', 'DatasetSourceID', param_geodatabase + '/DatasetSource',
-                                 'DatasetSourceID', 'KEEP_COMMON')
-        arcpy.SelectLayerByAttribute_management('line_layer', 'SUBSET_SELECTION',
-                                                table_name_prefix + 'DatasetSource.CDCJurisdictionID IS NULL')
+        lines_found = int(arcpy.GetCount_management('line_layer')[0])
         # subset lines for national
         if scope == 'N':
             arcpy.SelectLayerByLocation_management('line_layer', 'INTERSECT', 'nat_ecoshape_layer', None,
                                                    'SUBSET_SELECTION')
+            lines_found = int(arcpy.GetCount_management('line_layer')[0])
+            if lines_found > 0:
+                arcpy.SelectLayerByLocation_management('line_layer', 'INTERSECT', 'intl_ecoshape_layer', None,
+                                                    'SUBSET_SELECTION', 'INVERT')
+                lines_found = int(arcpy.GetCount_management('line_layer')[0])
         # select same set of original InputLines
-        arcpy.MakeFeatureLayer_management(param_geodatabase + '/InputLine', 'original_lines')
-        arcpy.SelectLayerByLocation_management('original_lines', 'INTERSECT', 'line_layer')
-        result = arcpy.GetCount_management('original_lines')
-        lines_found = int(result[0])
         if lines_found > 0:
-            # create InputFeedback records
+            input_line_ids = ''
+            with arcpy.da.SearchCursor('line_layer', ['InputLineID']) as cursor:
+                for row in EBARUtils.searchCursor(cursor):
+                    if len(input_line_ids) > 0:
+                        input_line_ids += ','
+                    input_line_ids += str(row['InputLineID'])
+            del row, cursor
+            arcpy.MakeFeatureLayer_management(param_geodatabase + '/InputLine', 'original_lines',
+                                              'InputLineID IN (' + input_line_ids + ')')
             with arcpy.da.SearchCursor('original_lines', ['InputLineID']) as cursor:
                 for row in EBARUtils.searchCursor(cursor):
-                    EBARUtils.displayMessage(messages, 'Would flag InputLineID ' + str(row['InputLineID']))
-                    # with arcpy.da.InsertCursor(param_geodatabase + '/InputFeedback',
-                    #                            ['BadInputLineID', 'InputFeedbackNotes']) as insert_cursor:
-                    #     insert_cursor.insertRow([row['InputLineID'], 'Not in reviewed range with RangeMapID ' +
-                    #                              str(range_map_id)])
-                    # del insert_cursor
-                del row, cursor
-            # # append to Bad and delete original
-            # #arcpy.Append_management('original_lines', param_geodatabase + '/BadInputLine', 'TEST')
-            # EBARUtils.appendUsingCursor('original_lines', param_geodatabase + '/BadInputLine')
-            # EBARUtils.displayMessage(messages, 'Deleting original lines')
-            # arcpy.DeleteRows_management('original_lines')
+                    # # create InputFeedback, append to Bad, delete original
+                    # EBARUtils.displayMessage(messages, 'Flagging InputLineID ' + str(row['InputLineID']))
+                    # param_gdb = arcpy.Parameter()
+                    # param_gdb.value = param_geodatabase
+                    # param_input_point_id = arcpy.Parameter()
+                    # param_input_point_id.value = None
+                    # param_input_line_id = arcpy.Parameter()
+                    # param_input_line_id.value = str(row['InputLineID'])
+                    # param_input_polygon_id = arcpy.Parameter()
+                    # param_input_polygon_id.value = None
+                    # param_justification = arcpy.Parameter()
+                    # param_justification.value = 'Record flagged as bad because it is within an expert removed ecoshape'
+                    # param_undo = arcpy.Parameter()
+                    # param_undo.value = 'false'
+                    # parameters = [param_gdb, param_input_point_id, param_input_line_id, param_input_polygon_id,
+                    #               param_justification, param_undo]
+                    # fbdui.runFlagBadDataUsingIDTool(parameters, None)
+                    # create InputFeedback
+                    EBARUtils.displayMessage(messages,
+                                             'Creating InputFeedback for InputLineID ' + str(row['InputLineID']))
+                    with arcpy.da.InsertCursor(param_geodatabase + '/InputFeedback',
+                                               ['BadInputLineID', 'Justification']) as insert_cursor:
+                        insert_cursor.insertRow([row['InputLineID'], 'Not in reviewed range with RangeMapID ' +
+                                                 str(range_map_id)])
+                    del insert_cursor
+            del row, cursor
+            # append to Bad, delete original
+            EBARUtils.displayMessage(messages, 'Appending BadInputLine(s)')
+            EBARUtils.appendUsingCursor('original_lines', param_geodatabase + '/BadInputLine')
+            EBARUtils.displayMessage(messages, 'Deleting original line(s)')
+            arcpy.DeleteRows_management('original_lines')
 
         # process polygons
         # select all polygons acquired before range map was generated
         # (different from above because it works on a selection of full dataset,
         # not a buffered copy for relevant species only)
-        EBARUtils.displayMessage(messages, 'Selecting Input Polygons for primary species ' + str(species_id))
+        EBARUtils.displayMessage(messages, 'Selecting Input Polygons for primary species')
         input_polygon_layer = EBARUtils.inputSelectAndBuffer(param_geodatabase, 'InputPolygon', range_map_id,
                                                              table_name_prefix, str(species_id), start_time,
                                                              range_date)
         polygons_found = int(arcpy.GetCount_management(input_polygon_layer)[0])
-        # # DEBUG
-        # EBARUtils.displayMessage(messages, 'All polygons GetCount: ' + str(polygons_found))
-        # #EBARUtils.displayMessage(messages, 'All polygons FIDSet: ' + str(len(arcpy.Describe(input_polygon_layer).FIDSet)))
         if polygons_found > 0:
             EBARUtils.displayMessage(messages, 'Flagging any InputPolygon that does not intersect range')
             # select any that don't intersect range
-            # arcpy.SelectLayerByLocation_management(input_polygon_layer, 'COMPLETELY_WITHIN', 'removed_ecoshape_layer',
-            #                                        None, 'SUBSET_SELECTION')
             arcpy.SelectLayerByLocation_management(input_polygon_layer, 'INTERSECT', 'range_ecoshape_layer',
                                                    None, 'SUBSET_SELECTION', 'INVERT')
-            # # DEBUG
-            # result = arcpy.GetCount_management(input_polygon_layer)
-            # EBARUtils.displayMessage(messages, 'Outside polygons count: ' + str(int(result[0])))
-            # subset polygons to exclude CDC data!!!
-            arcpy.AddJoin_management(input_polygon_layer, 'InputDatasetID', param_geodatabase + '/InputDataset',
-                                    'InputDatasetID', 'KEEP_COMMON')
-            arcpy.AddJoin_management(input_polygon_layer, 'DatasetSourceID', param_geodatabase + '/DatasetSource',
-                                    'DatasetSourceID', 'KEEP_COMMON')
-            arcpy.SelectLayerByAttribute_management(input_polygon_layer, 'SUBSET_SELECTION',
-                                                    table_name_prefix + 'DatasetSource.CDCJurisdictionID IS NULL')
-            # # DEBUG
-            # result = arcpy.GetCount_management(input_polygon_layer)
-            # EBARUtils.displayMessage(messages, 'Non-CDC polygons count with join: ' + str(int(result[0])))
-            arcpy.RemoveJoin_management(input_polygon_layer, table_name_prefix + 'DatasetSource')
-            arcpy.RemoveJoin_management(input_polygon_layer, table_name_prefix + 'InputDataset')
+            polygons_found = int(arcpy.GetCount_management(input_polygon_layer)[0])
             # subset polygons for national
             if scope == 'N':
                 arcpy.SelectLayerByLocation_management(input_polygon_layer, 'INTERSECT', 'nat_ecoshape_layer', None,
-                                                        'SUBSET_SELECTION')
-            # # DEBUG
-            # #result = arcpy.GetCount_management(input_polygon_layer)
-            # #EBARUtils.displayMessage(messages, 'Non-CDC polygons count National: ' + str(int(result[0])))
-            # polygons_found = int(arcpy.GetCount_management(input_polygon_layer)[0])
-            # EBARUtils.displayMessage(messages, 'Non-CDC polygons count National: ' + str(polygons_found))
-            polygons_found = len(arcpy.Describe(input_polygon_layer).FIDSet)
+                                                       'SUBSET_SELECTION')
+                polygons_found = int(arcpy.GetCount_management(input_polygon_layer)[0])
+                if polygons_found > 0:
+                    arcpy.SelectLayerByLocation_management(input_polygon_layer, 'INTERSECT', 'intl_ecoshape_layer',
+                                                           None, 'SUBSET_SELECTION', 'INVERT')
+                    polygons_found = int(arcpy.GetCount_management(input_polygon_layer)[0])
             if polygons_found > 0:
                 # create InputFeedback records
                 with arcpy.da.SearchCursor(input_polygon_layer, ['InputPolygonID']) as cursor:
                     for row in EBARUtils.searchCursor(cursor):
-                        EBARUtils.displayMessage(messages, 'Would flag InputPolygonID ' + str(row['InputPolygonID']))
-                        # with arcpy.da.InsertCursor(param_geodatabase + '/InputFeedback',
-                        #                            ['BadInputPolygonID', 'InputFeedbackNotes']) as insert_cursor:
-                        #     insert_cursor.insertRow([row['InputPolygonID'], 'Not in reviewed range with ' +
-                        #                              'RangeMapID ' + str(range_map_id)])
-                        # del insert_cursor
-                    del row, cursor
-                # # append to Bad and delete original
-                # #arcpy.Append_management(input_polygon_layer, param_geodatabase + '/BadInputPolygon', 'TEST')
-                # EBARUtils.appendUsingCursor(input_polygon_layer, param_geodatabase + '/BadInputPolygon')
-                # EBARUtils.displayMessage(messages, 'Deleting original polygons')
-                # arcpy.DeleteRows_management(input_polygon_layer)
+                        # # create InputFeedback, append to Bad, delete original
+                        # EBARUtils.displayMessage(messages, 'Flagging InputPolygonID ' + str(row['InputPolygonID']))
+                        # param_gdb = arcpy.Parameter()
+                        # param_gdb.value = param_geodatabase
+                        # param_input_point_id = arcpy.Parameter()
+                        # param_input_point_id.value = None
+                        # param_input_line_id = arcpy.Parameter()
+                        # param_input_line_id.value = None
+                        # param_input_polygon_id = arcpy.Parameter()
+                        # param_input_polygon_id.value = str(row['InputPolygonID'])
+                        # param_justification = arcpy.Parameter()
+                        # param_justification.value = 'Record flagged as bad because it is within an expert removed ' + \
+                        #     'ecoshape'
+                        # param_undo = arcpy.Parameter()
+                        # param_undo.value = 'false'
+                        # parameters = [param_gdb, param_input_point_id, param_input_line_id, param_input_polygon_id,
+                        #               param_justification, param_undo]
+                        # fbdui.runFlagBadDataUsingIDTool(parameters, None)
+                        # create InputFeedback
+                        EBARUtils.displayMessage(messages,
+                                                 'Creating InputFeedback for InputPolygonID ' +
+                                                 str(row['InputPolygonID']))
+                        with arcpy.da.InsertCursor(param_geodatabase + '/InputFeedback',
+                                                   ['BadInputPolygonID', 'Justification']) as insert_cursor:
+                            insert_cursor.insertRow([row['InputPolygonID'], 'Not in reviewed range with RangeMapID ' +
+                                                    str(range_map_id)])
+                        del insert_cursor
+                del row, cursor
+                # append to Bad, delete original
+                EBARUtils.displayMessage(messages, 'Appending BadInputPolygon(s)')
+                EBARUtils.appendUsingCursor(input_polygon_layer, param_geodatabase + '/BadInputPolygon')
+                EBARUtils.displayMessage(messages, 'Deleting original polygon(s)')
+                arcpy.DeleteRows_management(input_polygon_layer)
 
         # temp clean-up
         if arcpy.Exists(temp_point_buffer):
             arcpy.Delete_management(temp_point_buffer)
         if arcpy.Exists(temp_line_buffer):
             arcpy.Delete_management(temp_line_buffer)
+        if arcpy.Exists('range_ecoshape_layer'):
+            arcpy.Delete_management('range_ecoshape_layer')
+        if arcpy.Exists('nat_ecoshape_layer'):
+            arcpy.Delete_management('nat_ecoshape_layer')
+        if arcpy.Exists('intl_ecoshape_layer'):
+            arcpy.Delete_management('intl_ecoshape_layer')
+        if arcpy.Exists('point_layer'):
+            arcpy.Delete_management('point_layer')
+        if arcpy.Exists('original_points'):
+            arcpy.Delete_management('original_points')
+        if arcpy.Exists('line_layer'):
+            arcpy.Delete_management('line_layer')
+        if arcpy.Exists('original_lines'):
+            arcpy.Delete_management('original_lines')
+        if arcpy.Exists(input_polygon_layer):
+            arcpy.Delete_management(input_polygon_layer)
 
         # results
         EBARUtils.displayMessage(messages, str(points_found) + ' Input Points flagged as Bad Data')
@@ -361,6 +362,7 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde'
     param_range_map_id = arcpy.Parameter()
-    param_range_map_id.value = '4628'
-    parameters = [param_geodatabase, param_range_map_id]
-    fbdur.runFlagBadDataUsingRangeTool(parameters, None)
+    for rmid in (4476,4280,4601,4604,4606,4613,4379,4605,4618,4619,4623,4627,4629,4630,4631,4632,4634,4635,4636,4637,4638,4639,4640,4641,4642,4643,4644,4645,4646,4648,4650,4651,4653,4620,4621,4654,4633,4656,4657,4665,4668,4655,4667,4669,4670,4671,4672,4673,4674,4676,4677,4678,4679,4680,4681,4683,4685,4687,4690,4691,4693,4694,4695,4696,4697,4698,4700,4734):
+        param_range_map_id.value = str(rmid)
+        parameters = [param_geodatabase, param_range_map_id]
+        fbdur.runFlagBadDataUsingRangeTool(parameters, None)

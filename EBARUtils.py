@@ -809,8 +809,9 @@ def getTaxonAttributes(global_unique_id, element_global_id, range_map_id, messag
         # get from NSX Taxon API
         attributes_dict['g_rank'] = results['grank']
         if results['grankReviewDate']:
+            extract_date, partial = extractDate(results['grankReviewDate'])
             attributes_dict['reviewed_grank'] = ' (reviewed ' + \
-                extractDate(results['grankReviewDate']).strftime('%B %d, %Y') + ')'
+                extract_date.strftime('%B %d, %Y') + ')'
         for key in results:
             if key == 'elementNationals':
                 for en in results[key]:
@@ -841,19 +842,22 @@ def getTaxonAttributes(global_unique_id, element_global_id, range_map_id, messag
         if results['speciesGlobal']['saraStatus']:
             attributes_dict['sara_status'] = results['speciesGlobal']['saraStatus']
             if results['speciesGlobal']['saraStatusDate']:
+                extract_date, partial = extractDate(results['speciesGlobal']['saraStatusDate'])
                 attributes_dict['sara_status'] += ' (' + \
-                    extractDate(results['speciesGlobal']['saraStatusDate']).strftime('%B %d, %Y') + ')'
+                    extract_date.strftime('%B %d, %Y') + ')'
         if results['speciesGlobal']['cosewic']:
             if results['speciesGlobal']['cosewic']['cosewicDescEn']:
                 attributes_dict['cosewic_status'] = results['speciesGlobal']['cosewic']['cosewicDescEn']
                 if results['speciesGlobal']['cosewicDate']:
+                    extract_date, partial = extractDate(results['speciesGlobal']['cosewicDate'])
                     attributes_dict['cosewic_status'] += ' (' + \
-                        extractDate(results['speciesGlobal']['cosewicDate']).strftime('%B %d, %Y') + ')'
+                        extract_date.strftime('%B %d, %Y') + ')'
         if results['speciesGlobal']['interpretedUsesa']:
             attributes_dict['esa_status'] = results['speciesGlobal']['interpretedUsesa']
             if results['speciesGlobal']['usesaDate']:
+                extract_date, partial = extractDate(results['speciesGlobal']['usesaDate'])
                 attributes_dict['esa_status'] += ' (' + \
-                    extractDate(results['speciesGlobal']['usesaDate']).strftime('%B %d, %Y') + ')'
+                    extract_date.strftime('%B %d, %Y') + ')'
 
     else:
         # get from BIOTICS table
@@ -1085,6 +1089,8 @@ def inputSelectAndBuffer(geodatabase, input_features, range_map_id, table_name_p
     """Select relevant input features and (for points and lines) buffer them"""
     # determine input type and make layer
     desc = arcpy.Describe(input_features)
+    if arcpy.Exists(input_features + '_layer'):
+        arcpy.Delete_management(input_features + '_layer')
     arcpy.MakeFeatureLayer_management(geodatabase + '/' + input_features, input_features + '_layer')
 
     # select any from secondary inputs (chicken and egg - RangeMapID must already exist!)
