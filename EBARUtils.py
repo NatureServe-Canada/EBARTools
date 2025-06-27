@@ -1410,3 +1410,22 @@ def checkSFEO(geodatabase, input_table, id_field, id_value):
 #     smtp.login(sender, password)
 #     smtp.sendmail(sender, receivers, msg.as_string())
 #     smtp.quit()
+
+
+def percentPopulationCutoff(input_polygon, total_pop, cutoff_percent):
+    """Script code goes below"""
+    cutoff = round(total_pop * cutoff_percent / 100)
+    row = None
+    prev_pop = 0
+    total = 0
+    with arcpy.da.SearchCursor(input_polygon, ['gridcode'],
+                               sql_clause=[None,'ORDER BY gridcode ASC']) as cursor:
+        for row in searchCursor(cursor):
+            total += row['gridcode']
+            if total > cutoff:
+                return prev_pop
+            prev_pop = row['gridcode']
+    del cursor
+    if row:
+        del row
+    return prev_pop

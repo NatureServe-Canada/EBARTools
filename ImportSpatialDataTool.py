@@ -388,6 +388,7 @@ class ImportSpatialDataTool:
                           synonym_id, ignore_imp, row['SHAPE@']]
                 if field_dict['Subnation']:
                     values.append(subnation)
+                    #EBARUtils.displayMessage(messages, 'Subnation: ' + subnation)
                 if field_dict['IndividualCount']:
                     values.append(row[field_dict['IndividualCount']])
                 # if partial:
@@ -418,12 +419,14 @@ class ImportSpatialDataTool:
                     accuracy_raw = row[field_dict['Accuracy']]
                     if isinstance(accuracy_raw, float):
                         accuracy_raw = int(accuracy_raw)
-                    if accuracy_raw <= 0:
-                        cursor.updateRow([None, 0])
                     if accuracy_raw:
+                        if accuracy_raw <= 0:
+                            cursor.updateRow([None, 0])
                         if accuracy_raw > EBARUtils.worst_accuracy:
                             inaccurate += 1
                             cursor.updateRow([row[field_dict['Accuracy']], 1])
+                    else:
+                        cursor.updateRow([None, 0])
                 if loop_count > 0:
                     del row
             EBARUtils.displayMessage(messages, 'Accuracy pre-processed ' + str(loop_count))
@@ -697,19 +700,21 @@ if __name__ == '__main__':
     isd = ImportSpatialDataTool()
     # hard code parameters for debugging
     param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value='C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
+    param_geodatabase.value='C:/GIS/EBAR/nsc-gis-ebarkba.sde'
     param_import_feature_class = arcpy.Parameter()
-    param_import_feature_class.value = 'C:/GIS/EBAR/EBARServer.gdb/sk_sfpt_merge_test'
+    param_import_feature_class.value = 'C:/GIS/EBAR/BC/BIOT_OCCR_NON_SENS_AREA_SVW/BIO_NS_SVW_polygon.shp'
     param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'Saskatchewan Source Feature Points 3'
+    param_dataset_name.value = 'British Columbia Non-sensitive EOs'
     param_dataset_source = arcpy.Parameter()
-    param_dataset_source.value = 'SK Source Feature Points'
+    param_dataset_source.value = 'BC Non-sensitive Element Occurrences'
     param_date_received = arcpy.Parameter()
-    param_date_received.value = 'July 21, 2022'
+    param_date_received.value = 'June 23, 2025'
     # param_restrictions = arcpy.Parameter()
     # param_restrictions.value = 'Non-restricted'
-    param_sensitivity_restriction_reason = arcpy.Parameter()
-    param_sensitivity_restriction_reason.value = 'Proprietary'
+    param_sensitive_ecoogical_data_cat = arcpy.Parameter()
+    param_sensitive_ecoogical_data_cat.value = None # 'Proprietary'
+    param_dataset_citation = arcpy.Parameter()
+    param_dataset_citation.value = None
     parameters = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_source,
-                  param_date_received, param_sensitivity_restriction_reason] # param_restrictions]
+                  param_date_received, param_sensitive_ecoogical_data_cat, param_dataset_citation]
     isd.runImportSpatialDataTool(parameters, None)
