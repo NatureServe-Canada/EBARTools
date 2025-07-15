@@ -23,6 +23,7 @@ OrginalInstitutionCode - the institution where the record originated
 RightsHolder - the contributor of the original observation
 MinDate - data begin date, if any
 MaxDate - data end data
+PartialDate - Y/N value where Y indicates that some of the date MaxDate was inferred (if day or month cannot be determined, 1 is assumed)
 Accuracy - spatial uncertainty in metres
 IndividualCount - the number of species individuals reported in the observation
 DatasetSourceUniqueID - provider's unique identifier

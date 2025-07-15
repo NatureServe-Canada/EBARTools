@@ -178,11 +178,12 @@ class ExportHBJBLDataTool:
             field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'inputlineid', 'InputLineID', 'Long'))
         if EBARUtils.checkField(fclyr, 'inputpolygonid'):
             field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'inputpolygonid', 'InputPolygonID', 'Long'))
-        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'mindate', 'MinDate', 'Date'))
         field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'originalinstitutioncode', 'OrginalInstitutionCode',
                                                             'Text'))
         field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'rightsholder', 'RightsHolder', 'Text'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'mindate', 'MinDate', 'Date'))
         field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'maxdate', 'MaxDate', 'Date'))
+        field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'partialdate', 'PartialDate', 'Text'))
         field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'accuracy', 'Accuracy', 'Long'))
         field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'individualcount', 'IndividualCount', 'Long'))
         field_mappings.addFieldMap(EBARUtils.createFieldMap(fclyr, 'datasetsourceuniqueid', 'DatasetSourceUniqueID',
