@@ -19,7 +19,7 @@ import EBARUtils
 
 
 class ImportSpatialDataTool:
-    """Import point data into the InputDataset and InputPoint tables of the EBAR geodatabase"""
+    """Import data into the InputDataset and InputPoint/Line/Polygon tables of the EBAR geodatabase"""
     def __init__(self):
         pass
 
@@ -134,7 +134,8 @@ class ImportSpatialDataTool:
                                                                           'BreedingAndBehaviourCodeField',
                                                                           'IndividualCountField',
                                                                           'LicenseField',
-                                                                          'OriginalInstitutionCodeField'],
+                                                                          'OriginalInstitutionCodeField',
+                                                                          'RightsholderField'],
                                    "DatasetSourceName = '" + param_dataset_source + "'") as cursor:
             row = None
             for row in EBARUtils.searchCursor(cursor):
@@ -186,6 +187,7 @@ class ImportSpatialDataTool:
                 field_dict['IndividualCount'] = row['IndividualCountField']
                 field_dict['License'] = row['LicenseField']
                 field_dict['OriginalInstitutionCode'] = row['OriginalInstitutionCodeField']
+                field_dict['Rightsholder'] = row['RightsholderField']
                 if feature_class_type in ('Polygon', 'MultiPatch'):
                     field_dict['EORank'] = row['EORankField']
                     field_dict['EOData'] = row['EODataField']
@@ -212,55 +214,56 @@ class ImportSpatialDataTool:
                                      'ERROR: Feature Class Type and Dataset Source Type do not match')
             return
 
-        # # populate types
-        # type_dict = {}
-        # type_dict['InputDatasetID'] = 'LONG'
-        # type_dict['SpeciesID'] = 'LONG'
-        # type_dict['SynonymID'] = 'LONG'
-        # type_dict['MinDate'] = 'DATE'
-        # type_dict['MaxDate'] = 'DATE'
-        # type_dict['DatasetSourceUniqueID'] = 'TEXT'
-        # type_dict['URI'] = 'TEXT'
-        # type_dict['RepresentationAccuracy'] = 'TEXT'
-        # type_dict['EORank'] = 'TEXT'
-        # type_dict['Accuracy'] = 'LONG'
-        # type_dict['Origin'] = 'TEXT'
-        # type_dict['Seasonality'] = 'TEXT'
-        # type_dict['Subnation'] = 'TEXT'
-        # type_dict['EOData'] = 'TEXT'
-        # type_dict['GenDesc'] = 'TEXT'
-        # type_dict['EORankDesc'] = 'TEXT'
-        # type_dict['SurveyDate'] = 'TEXT'
-        # type_dict['RepAccuracyComment'] = 'TEXT'
-        # type_dict['ConfidenceExtent'] = 'TEXT'
-        # type_dict['ConfidenceExtentDesc'] = 'TEXT'
-        # type_dict['DataSensitivity'] = 'TEXT'
-        # type_dict['DataSensitivityCat'] = 'TEXT'
-        # type_dict['IDConfirmed'] = 'TEXT'
-        # type_dict['EORankDate'] = 'TEXT'
-        # type_dict['EORankComments'] = 'TEXT'
-        # type_dict['AdditionalInvNeeded'] = 'TEXT'
-        # type_dict['Ownership'] = 'TEXT'
-        # type_dict['OwnerComments'] = 'TEXT'
-        # type_dict['DataQCStatus'] = 'TEXT'
-        # type_dict['MapQCStatus'] = 'TEXT'
-        # type_dict['QCComments'] = 'TEXT'
-        # type_dict['EOID'] = 'LONG'
-        # type_dict['SFID'] = 'LONG'
-        # type_dict['Descriptor'] = 'TEXT'
-        # type_dict['Locator'] = 'TEXT'
-        # type_dict['MappingComments'] = 'TEXT'
-        # type_dict['DigitizingComments'] = 'TEXT'
-        # type_dict['LocUncertaintyType'] = 'TEXT'
-        # type_dict['LocUncertaintyDistCls'] = 'TEXT'
-        # type_dict['LocUncertaintyDistUnit'] = 'TEXT'
-        # type_dict['LocUseClass'] = 'TEXT'
-        # type_dict['IndependentSF'] = 'TEXT'
-        # type_dict['UnsuitableHabExcluded'] = 'TEXT'
-        # type_dict['BreedingAndBehaviourCode'] = 'TEXT'
-        # type_dict['IndividualCount'] = 'LONG'
-        # type_dict['License'] = 'TEXT'
-        # type_dict['OriginalInstitutionCode'] = 'TEXT'
+        # populate types
+        type_dict = {}
+        type_dict['InputDatasetID'] = 'LONG'
+        type_dict['SpeciesID'] = 'LONG'
+        type_dict['SynonymID'] = 'LONG'
+        type_dict['MinDate'] = 'DATE'
+        type_dict['MaxDate'] = 'DATE'
+        type_dict['DatasetSourceUniqueID'] = 'TEXT'
+        type_dict['URI'] = 'TEXT'
+        type_dict['RepresentationAccuracy'] = 'TEXT'
+        type_dict['EORank'] = 'TEXT'
+        type_dict['Accuracy'] = 'LONG'
+        type_dict['Origin'] = 'TEXT'
+        type_dict['Seasonality'] = 'TEXT'
+        type_dict['Subnation'] = 'TEXT'
+        type_dict['EOData'] = 'TEXT'
+        type_dict['GenDesc'] = 'TEXT'
+        type_dict['EORankDesc'] = 'TEXT'
+        type_dict['SurveyDate'] = 'TEXT'
+        type_dict['RepAccuracyComment'] = 'TEXT'
+        type_dict['ConfidenceExtent'] = 'TEXT'
+        type_dict['ConfidenceExtentDesc'] = 'TEXT'
+        type_dict['DataSensitivity'] = 'TEXT'
+        type_dict['DataSensitivityCat'] = 'TEXT'
+        type_dict['IDConfirmed'] = 'TEXT'
+        type_dict['EORankDate'] = 'TEXT'
+        type_dict['EORankComments'] = 'TEXT'
+        type_dict['AdditionalInvNeeded'] = 'TEXT'
+        type_dict['Ownership'] = 'TEXT'
+        type_dict['OwnerComments'] = 'TEXT'
+        type_dict['DataQCStatus'] = 'TEXT'
+        type_dict['MapQCStatus'] = 'TEXT'
+        type_dict['QCComments'] = 'TEXT'
+        type_dict['EOID'] = 'LONG'
+        type_dict['SFID'] = 'LONG'
+        type_dict['Descriptor'] = 'TEXT'
+        type_dict['Locator'] = 'TEXT'
+        type_dict['MappingComments'] = 'TEXT'
+        type_dict['DigitizingComments'] = 'TEXT'
+        type_dict['LocUncertaintyType'] = 'TEXT'
+        type_dict['LocUncertaintyDistCls'] = 'TEXT'
+        type_dict['LocUncertaintyDistUnit'] = 'TEXT'
+        type_dict['LocUseClass'] = 'TEXT'
+        type_dict['IndependentSF'] = 'TEXT'
+        type_dict['UnsuitableHabExcluded'] = 'TEXT'
+        type_dict['BreedingAndBehaviourCode'] = 'TEXT'
+        type_dict['IndividualCount'] = 'LONG'
+        type_dict['License'] = 'TEXT'
+        type_dict['OriginalInstitutionCode'] = 'TEXT'
+        type_dict['RightsHolder'] = 'TEXT'
 
         # # encode restriction using domain
         # param_restrictions = EBARUtils.encodeRestriction(param_geodatabase, param_restrictions)
@@ -399,10 +402,11 @@ class ImportSpatialDataTool:
                 if ignore_imp == 0:
                     # add to id_dict with fake id (because InputPoint/Line/PolygonID doesn't exist yet)
                     id_dict[str(uid_raw)] = 0
-            if overall_count > 0:
-                del row
-                ## index ignore_imp to improve performance
-                #arcpy.AddIndex_management('import_features', ['ignore_imp'], 'temp_ignore_imp_idx')
+        if overall_count > 0:
+            del row
+            ## index ignore_imp to improve performance
+            #arcpy.AddIndex_management('import_features', ['ignore_imp'], 'temp_ignore_imp_idx')
+        del cursor
         EBARUtils.displayMessage(messages, 'Subnation, species, ' + \
                                  'coordinates and duplicates pre-processed ' + str(overall_count))
 
@@ -427,8 +431,9 @@ class ImportSpatialDataTool:
                             cursor.updateRow([row[field_dict['Accuracy']], 1])
                     else:
                         cursor.updateRow([None, 0])
-                if loop_count > 0:
-                    del row
+            if loop_count > 0:
+                del row
+            del cursor
             EBARUtils.displayMessage(messages, 'Accuracy pre-processed ' + str(loop_count))
 
         # other pre-processing (that doesn't result in ignoring input rows)
@@ -456,16 +461,17 @@ class ImportSpatialDataTool:
                                     eo_rank = eo_rank.upper()
                                 # save
                                 cursor.updateRow([eo_rank])
-                        if loop_count > 0:
-                            del row
+                    if loop_count > 0:
+                        del row
+                    del cursor
                     EBARUtils.displayMessage(messages, 'EO Rank pre-processed ' + str(loop_count))
 
             # pre-process dates
             if field_dict['min_date']:
                 loop_count = 0
+                row = None
                 with arcpy.da.UpdateCursor('import_features', [field_dict['min_date'], 'MinDate'],
                                            'ignore_imp <> 1') as cursor:
-                    row = None
                     for row in EBARUtils.updateCursor(cursor):
                         loop_count += 1
                         if loop_count % 1000 == 0:
@@ -480,14 +486,16 @@ class ImportSpatialDataTool:
                                 # extract date from text
                                 min_date, partial = EBARUtils.extractDate(row[field_dict['min_date']].strip())
                         cursor.updateRow([row[field_dict['min_date']], min_date])
-                    if row:
-                        del row
+                if row:
+                    del row
+                del cursor
+                    
                 EBARUtils.displayMessage(messages, 'Min Date pre-processed ' + str(loop_count))
             if field_dict['max_date']:
                 loop_count = 0
+                row = None
                 with arcpy.da.UpdateCursor('import_features', [field_dict['max_date'], 'MaxDate', 'PartialDate'],
                                            'ignore_imp <> 1') as cursor:
-                    row = None
                     for row in EBARUtils.updateCursor(cursor):
                         loop_count += 1
                         if loop_count % 1000 == 0:
@@ -509,8 +517,9 @@ class ImportSpatialDataTool:
                         cursor.updateRow([row[field_dict['max_date']], max_date, partial_text])
                         if not max_date:
                             no_date += 1
-                    if row:
-                        del row
+                if row:
+                    del row
+                del cursor
                 EBARUtils.displayMessage(messages, 'Max Date pre-processed ' + str(loop_count))
 
             # check bb codes
@@ -518,9 +527,9 @@ class ImportSpatialDataTool:
                 loop_count = 0
                 bbc_bad = 0
                 bad_bbcs_list = []
+                row = None
                 with arcpy.da.UpdateCursor('import_features', [field_dict['BreedingAndBehaviourCode']],
                                            'ignore_imp <> 1') as cursor:
-                    row = None
                     for row in EBARUtils.updateCursor(cursor):
                         loop_count += 1
                         if loop_count % 1000 == 0:
@@ -537,8 +546,8 @@ class ImportSpatialDataTool:
                             else:
                                 cursor.updateRow([row[field_dict['BreedingAndBehaviourCode']].strip()])
 
-                    if row:
-                        del row
+                if row:
+                    del row
                 EBARUtils.displayMessage(messages, 'BB Codes pre-processed ' + str(loop_count))
 
             # pre-process subnational species fields
@@ -575,6 +584,7 @@ class ImportSpatialDataTool:
 
             # PartialDate was added in preprocessing
             field_dict['PartialDate'] = 'PartialDate'
+            type_dict['PartialDate'] = 'TEXT'
 
             # select for appending
             arcpy.SelectLayerByAttribute_management('import_features', where_clause='ignore_imp = 0')
@@ -582,29 +592,37 @@ class ImportSpatialDataTool:
             if added > 0:
                 # append to InputPolygon/Point/Line
                 EBARUtils.displayMessage(messages, 'Appending features')
-                # # map fields
-                # field_mappings = arcpy.FieldMappings()
-                # for key in field_dict:
-                #     # exclude fields that were used for preprocessing
-                #     if key not in ['scientific_name', 'S_RANK', 'ROUNDED_S_RANK', 'EST_DATA_SENS', 'EST_DATASEN_CAT',
-                #                    'min_date', 'max_date', 'SHAPE@']:
-                #         if field_dict[key]:
-                #             field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict[key], key,
-                #                                                                 type_dict[key]))
-                # arcpy.Append_management('import_features', destination, 'NO_TEST', field_mappings)
-                skip_fields_lower = ['scientific_name', 's_rank', 'rounded_s_rank', 'est_data_sens', 'est_datasen_cat',
-                                     'min_date', 'max_date']
-                EBARUtils.appendUsingCursor('import_features', destination, field_dict=field_dict,
-                                            skip_fields_lower=skip_fields_lower)
+                # Append tool-based approach
+                # map fields
+                field_mappings = arcpy.FieldMappings()
+                for key in field_dict:
+                    # exclude fields that were used for preprocessing
+                    if key not in ['scientific_name', 'S_RANK', 'ROUNDED_S_RANK', 'EST_DATA_SENS', 'EST_DATASEN_CAT',
+                                   'min_date', 'max_date', 'SHAPE@']:
+                        if field_dict[key]:
+                            # # debug
+                            # EBARUtils.displayMessage(messages, key)
+                            field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict[key], key,
+                                                                                type_dict[key]))
+                # # debug
+                EBARUtils.displayMessage(messages, 'Field mappings: ' + field_mappings.exportToString())
+                # return
+                arcpy.management.Append('import_features', destination, 'NO_TEST', field_mappings)
+                #arcpy.Append_management('import_features', destination, 'NO_TEST', field_mappings)
+                # # cursor-based approach
+                # skip_fields_lower = ['scientific_name', 's_rank', 'rounded_s_rank', 'est_data_sens', 'est_datasen_cat',
+                #                      'min_date', 'max_date']
+                # EBARUtils.appendUsingCursor('import_features', destination, field_dict=field_dict,
+                #                             skip_fields_lower=skip_fields_lower)
 
             # update duplicates
             if duplicates > 0:
                 EBARUtils.displayMessage(messages, 'Updating features')
                 # existing records could be in any InputDataset linked to the DatasetSource
                 input_dataset_ids = ''
+                row = None
                 with arcpy.da.SearchCursor(param_geodatabase + '/InputDataset', ['InputDatasetID'],
                                            'DatasetSourceID = ' + str(dataset_source_id)) as cursor:
-                    row = None
                     for row in EBARUtils.searchCursor(cursor):
                         if len(input_dataset_ids) == 0:
                             input_dataset_ids += '('
@@ -622,9 +640,12 @@ class ImportSpatialDataTool:
                                    'min_date', 'max_date']:
                         if field_dict[key]:
                             src_fields.append(field_dict[key])
+                if row:
+                    del row
+                del cursor
                 arcpy.SelectLayerByAttribute_management('import_features', 'CLEAR_SELECTION')
+                row = None
                 with arcpy.da.SearchCursor('import_features', src_fields, 'ignore_imp = 2') as cursor:
-                    row = None
                     for row in EBARUtils.searchCursor(cursor):
                         # build list of values from source
                         values = []
@@ -657,8 +678,9 @@ class ImportSpatialDataTool:
                                 update_cursor.updateRow(values)
                             if update_row:
                                 del update_row
-                    if row:
-                        del row
+                if row:
+                    del row
+                del cursor
 
         # temp clean-up
         # trouble deleting on server only due to locks; could be layer?
@@ -700,19 +722,19 @@ if __name__ == '__main__':
     isd = ImportSpatialDataTool()
     # hard code parameters for debugging
     param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value='C:/GIS/EBAR/nsc-gis-ebarkba.sde'
+    param_geodatabase.value='D:/GIS/EBAR/EBAR-KBA-Dev3.gdb'
     param_import_feature_class = arcpy.Parameter()
-    param_import_feature_class.value = 'C:/GIS/EBAR/BC/BIOT_OCCR_NON_SENS_AREA_SVW/BIO_NS_SVW_polygon.shp'
+    param_import_feature_class.value = 'D:/GIS/EBAR/Permissions.gdb/Observations_includes_SFs'
     param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'British Columbia Non-sensitive EOs'
+    param_dataset_name.value = 'Ontario Observations and Source Features'
     param_dataset_source = arcpy.Parameter()
-    param_dataset_source.value = 'BC Non-sensitive Element Occurrences'
+    param_dataset_source.value = 'ON Observations and Source Features'
     param_date_received = arcpy.Parameter()
-    param_date_received.value = 'June 23, 2025'
+    param_date_received.value = 'July 8, 2025'
     # param_restrictions = arcpy.Parameter()
     # param_restrictions.value = 'Non-restricted'
     param_sensitive_ecoogical_data_cat = arcpy.Parameter()
-    param_sensitive_ecoogical_data_cat.value = None # 'Proprietary'
+    param_sensitive_ecoogical_data_cat.value = 'Proprietary' #None
     param_dataset_citation = arcpy.Parameter()
     param_dataset_citation.value = None
     parameters = [param_geodatabase, param_import_feature_class, param_dataset_name, param_dataset_source,
