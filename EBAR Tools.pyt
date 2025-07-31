@@ -35,6 +35,7 @@ import DeleteInputFeedbackTool
 import PrepareNSXProTransferTool
 import SyncEcosystemListBioticsTool
 import SyncEcosystemListKBATool
+import GenerateHotspotMapTool
 import EBARUtils
 import datetime
 import locale
@@ -52,7 +53,7 @@ class Toolbox(object):
                       SyncSpeciesListKBA, BuildEBARDownloadTable, BuildBulkDownloadTable, FlagBadDataUsingRange,
                       DeleteRangeMap, ImportVisits, SummarizeDownloads, PublishRangeMap, PublishRangeMapSets,
                       FlagBadDataUsingID, RecordInputFeedback, DeleteInputFeedback, PrepareNSXProTransfer,
-                      SyncEcosystemListBiotics, SyncEcosystemListKBA]
+                      SyncEcosystemListBiotics, SyncEcosystemListKBA, GenerateHotspotMap]
 
 
 class ImportTabularData(object):
@@ -1684,4 +1685,55 @@ class SyncEcosystemListKBA(object):
         """The source code of the tool."""
         selk = SyncEcosystemListKBATool.SyncEcosystemListKBATool()
         selk.runSyncEcosystemListKBATool(parameters, messages)
+        return
+
+
+class GenerateHotspotMap(object):
+    def __init__(self):
+        """Define the tool (tool name is the name of the class)."""
+        self.label = 'Generate Hotspot Map'
+        self.description = 'Create JPG hotspot maps from EBAR ranges'
+        self.canRunInBackground = True
+
+    def getParameterInfo(self):
+        """Define parameter definitions"""
+        # Geodatabase
+        param_geodatabase = arcpy.Parameter(
+            displayName='Geodatabase',
+            name='geodatabase',
+            datatype='DEWorkspace',
+            parameterType='Required',
+            direction='Input')
+        param_geodatabase.filter.list = ['Local Database', 'Remote Database']
+
+        # Hotspot Type
+        param_csv = arcpy.Parameter(
+            displayName='Hotspot Type',
+            name='hotspot_type',
+            datatype='GPString',
+            parameterType='Required',
+            direction='Input')
+        param_csv.filter.list = ['Published SAR', 'Published High Quality', 'Published All']
+
+        params = [param_geodatabase, param_csv]
+        return params
+
+    def isLicensed(self):
+        """Set whether tool is licensed to execute."""
+        return True
+
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal validation is performed.  This method is
+        called whenever a parameter has been changed."""
+        return
+
+    def updateMessages(self, parameters):
+        """Modify the messages created by internal validation for each tool parameter.  This method is called
+        after internal validation."""
+        return
+
+    def execute(self, parameters, messages):
+        """The source code of the tool."""
+        ghm = GenerateHotspotMapTool.GenerateHotspotMapTool()
+        ghm.runGenerateHotspotMapTool(parameters, messages)
         return
