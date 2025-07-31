@@ -24,15 +24,15 @@ import json
 
 
 # shared folders and addresses
-resources_folder = 'D:/GIS/EBAR/EBARTools/resources'
-temp_folder = 'D:/GIS/EBAR/temp'
-download_folder = 'D:/GIS/EBAR/pub/download'
-#download_folder = 'F:/download'
+resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
+temp_folder = 'C:/GIS/EBAR/temp'
+#download_folder = 'D:/GIS/EBAR/pub/download'
+download_folder = 'F:/download'
 download_url = 'https://gis.natureserve.ca/download'
 #nsx_species_search_url = 'https://explorer.natureserve.org/api/data/search'
 nsx_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/'
-#log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
-log_folder = 'D:/GIS/EBAR/temp'
+log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
+#log_folder = 'D:/GIS/EBAR/temp'
 
 
 # various services
@@ -425,6 +425,8 @@ def readDatasetSourceUniqueIDs(geodatabase, table_name_prefix, dataset_source_id
             unique_ids_dict[row[source_id_field]] = row[spatial_id_field]
     if len(unique_ids_dict) > 0:
         del row
+    del cursor
+    arcpy.Delete_management(feature_layer)
     return unique_ids_dict
 
 
@@ -1297,10 +1299,10 @@ def readSubnationalSpeciesFields(geodatabase, subnation_code):
 
 def updateSubnationalSpeciesFields(geodatabase, subnation_code, subnational_species_dict):
     """update subnational species fields based on passed dict within dict"""
+    count = 0
     with arcpy.da.UpdateCursor(geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
                                ['SpeciesID', subnation_code + '_S_RANK', subnation_code + '_ROUNDED_S_RANK',
                                 subnation_code + '_DATASEN', subnation_code + '_DATASEN_CAT']) as cursor:
-        count = 0
         for row in updateCursor(cursor):
             if subnational_species_dict[row['SpeciesID']]['changed']:
                 count += 1
@@ -1309,8 +1311,9 @@ def updateSubnationalSpeciesFields(geodatabase, subnation_code, subnational_spec
                                   subnational_species_dict[row['SpeciesID']]['ROUNDED_S_RANK'],
                                   subnational_species_dict[row['SpeciesID']]['EST_DATA_SENS'],
                                   subnational_species_dict[row['SpeciesID']]['EST_DATASEN_CAT']])
-        if count > 0:
-            del row
+    if count > 0:
+        del row
+    del cursor
     return count
 
 
@@ -1347,6 +1350,7 @@ def appendUsingCursor(append_from, append_to, field_dict=None, skip_fields_lower
                     from_fields.append(field.name)
         to_fields = from_fields
     # insert
+    row = None
     with arcpy.da.SearchCursor(append_from, from_fields) as cursor:
         for row in searchCursor(cursor):
             # build list of values
@@ -1356,7 +1360,9 @@ def appendUsingCursor(append_from, append_to, field_dict=None, skip_fields_lower
             with arcpy.da.InsertCursor(append_to, to_fields) as insert_cursor:
                 insert_cursor.insertRow(values)
             del insert_cursor
-    del row, cursor
+    if row:
+        del row
+    del cursor
 
 
 def checkInputRelatedRecords(table, where_clause):

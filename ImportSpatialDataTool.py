@@ -330,6 +330,7 @@ class ImportSpatialDataTool:
         subnation = None
         fields = [field_dict['DatasetSourceUniqueID'], field_dict['scientific_name'], 'SpeciesID', 'SynonymID',
                   'ignore_imp', 'SHAPE@']
+        # values: [21621.0, 'Stellaria humifusa', 16739, None, 2, <Polygon object at 0x242aec3a450[0x242aeb05f20]>]
         if field_dict['Subnation']:
             fields.append(field_dict['Subnation'])
         if field_dict['IndividualCount']:
@@ -383,7 +384,7 @@ class ImportSpatialDataTool:
                             duplicates += 1
                             ignore_imp = 2
                         # check for existing bad
-                        if str(uid_raw) in bad_dict:
+                        elif str(uid_raw) in bad_dict:
                             bad_data += 1
                             ignore_imp = 1
                 # save
@@ -394,10 +395,6 @@ class ImportSpatialDataTool:
                     #EBARUtils.displayMessage(messages, 'Subnation: ' + subnation)
                 if field_dict['IndividualCount']:
                     values.append(row[field_dict['IndividualCount']])
-                # if partial:
-                #     values.append('Y')
-                # else:
-                #     values.append('N')
                 cursor.updateRow(values)
                 if ignore_imp == 0:
                     # add to id_dict with fake id (because InputPoint/Line/PolygonID doesn't exist yet)
@@ -425,12 +422,12 @@ class ImportSpatialDataTool:
                         accuracy_raw = int(accuracy_raw)
                     if accuracy_raw:
                         if accuracy_raw <= 0:
-                            cursor.updateRow([None, 0])
+                            cursor.updateRow([None, row['ignore_imp']])
                         if accuracy_raw > EBARUtils.worst_accuracy:
                             inaccurate += 1
                             cursor.updateRow([row[field_dict['Accuracy']], 1])
                     else:
-                        cursor.updateRow([None, 0])
+                        cursor.updateRow([None, row['ignore_imp']])
             if loop_count > 0:
                 del row
             del cursor
@@ -469,7 +466,6 @@ class ImportSpatialDataTool:
             # pre-process dates
             if field_dict['min_date']:
                 loop_count = 0
-                row = None
                 with arcpy.da.UpdateCursor('import_features', [field_dict['min_date'], 'MinDate'],
                                            'ignore_imp <> 1') as cursor:
                     for row in EBARUtils.updateCursor(cursor):
@@ -486,14 +482,12 @@ class ImportSpatialDataTool:
                                 # extract date from text
                                 min_date, partial = EBARUtils.extractDate(row[field_dict['min_date']].strip())
                         cursor.updateRow([row[field_dict['min_date']], min_date])
-                if row:
+                if loop_count > 0:
                     del row
                 del cursor
-                    
                 EBARUtils.displayMessage(messages, 'Min Date pre-processed ' + str(loop_count))
             if field_dict['max_date']:
                 loop_count = 0
-                row = None
                 with arcpy.da.UpdateCursor('import_features', [field_dict['max_date'], 'MaxDate', 'PartialDate'],
                                            'ignore_imp <> 1') as cursor:
                     for row in EBARUtils.updateCursor(cursor):
@@ -517,7 +511,7 @@ class ImportSpatialDataTool:
                         cursor.updateRow([row[field_dict['max_date']], max_date, partial_text])
                         if not max_date:
                             no_date += 1
-                if row:
+                if loop_count > 0:
                     del row
                 del cursor
                 EBARUtils.displayMessage(messages, 'Max Date pre-processed ' + str(loop_count))
@@ -527,7 +521,6 @@ class ImportSpatialDataTool:
                 loop_count = 0
                 bbc_bad = 0
                 bad_bbcs_list = []
-                row = None
                 with arcpy.da.UpdateCursor('import_features', [field_dict['BreedingAndBehaviourCode']],
                                            'ignore_imp <> 1') as cursor:
                     for row in EBARUtils.updateCursor(cursor):
@@ -546,8 +539,9 @@ class ImportSpatialDataTool:
                             else:
                                 cursor.updateRow([row[field_dict['BreedingAndBehaviourCode']].strip()])
 
-                if row:
+                if loop_count > 0:
                     del row
+                del cursor
                 EBARUtils.displayMessage(messages, 'BB Codes pre-processed ' + str(loop_count))
 
             # pre-process subnational species fields
@@ -575,8 +569,9 @@ class ImportSpatialDataTool:
                                         (subnational_species_dict[row['SpeciesID']][field] != row[field_dict[field]])):
                                         subnational_species_dict[row['SpeciesID']][field] = row[field_dict[field]]
                                         subnational_species_dict[row['SpeciesID']]['changed'] = True
-                    if row:
-                        del row
+                if loop_count > 0:
+                    del row
+                del cursor
                 # update all subnational fields per species
                 species_updates = EBARUtils.updateSubnationalSpeciesFields(param_geodatabase, subnation,
                                                                            subnational_species_dict)
@@ -592,6 +587,11 @@ class ImportSpatialDataTool:
             if added > 0:
                 # append to InputPolygon/Point/Line
                 EBARUtils.displayMessage(messages, 'Appending features')
+                # # cursor-based approach - performing slowly after upgrade to 11.4
+                # skip_fields_lower = ['scientific_name', 's_rank', 'rounded_s_rank', 'est_data_sens', 'est_datasen_cat',
+                #                      'min_date', 'max_date']
+                # EBARUtils.appendUsingCursor('import_features', destination, field_dict=field_dict,
+                #                             skip_fields_lower=skip_fields_lower)
                 # Append tool-based approach
                 # map fields
                 field_mappings = arcpy.FieldMappings()
@@ -600,20 +600,11 @@ class ImportSpatialDataTool:
                     if key not in ['scientific_name', 'S_RANK', 'ROUNDED_S_RANK', 'EST_DATA_SENS', 'EST_DATASEN_CAT',
                                    'min_date', 'max_date', 'SHAPE@']:
                         if field_dict[key]:
-                            # # debug
-                            # EBARUtils.displayMessage(messages, key)
                             field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', field_dict[key], key,
                                                                                 type_dict[key]))
-                # # debug
-                EBARUtils.displayMessage(messages, 'Field mappings: ' + field_mappings.exportToString())
-                # return
-                arcpy.management.Append('import_features', destination, 'NO_TEST', field_mappings)
-                #arcpy.Append_management('import_features', destination, 'NO_TEST', field_mappings)
-                # # cursor-based approach
-                # skip_fields_lower = ['scientific_name', 's_rank', 'rounded_s_rank', 'est_data_sens', 'est_datasen_cat',
-                #                      'min_date', 'max_date']
-                # EBARUtils.appendUsingCursor('import_features', destination, field_dict=field_dict,
-                #                             skip_fields_lower=skip_fields_lower)
+                # work around issue after upgrading to 11.4 whereby FieldMappings needs to be reinitialized!!!
+                field_mappings.loadFromString(field_mappings.exportToString())
+                arcpy.Append_management('import_features', destination, 'NO_TEST', field_mappings)
 
             # update duplicates
             if duplicates > 0:
@@ -629,8 +620,9 @@ class ImportSpatialDataTool:
                         else:
                             input_dataset_ids += ', '
                         input_dataset_ids += str(row['InputDatasetID'])
-                    if row:
-                        del row
+                if row:
+                    del row
+                del cursor
                 input_dataset_ids += ')'
                 # use most fields from dict to automate
                 src_fields = []
@@ -640,9 +632,6 @@ class ImportSpatialDataTool:
                                    'min_date', 'max_date']:
                         if field_dict[key]:
                             src_fields.append(field_dict[key])
-                if row:
-                    del row
-                del cursor
                 arcpy.SelectLayerByAttribute_management('import_features', 'CLEAR_SELECTION')
                 row = None
                 with arcpy.da.SearchCursor('import_features', src_fields, 'ignore_imp = 2') as cursor:
@@ -683,10 +672,9 @@ class ImportSpatialDataTool:
                 del cursor
 
         # temp clean-up
-        # trouble deleting on server only due to locks; could be layer?
-        if param_geodatabase[-4:].lower() == '.gdb':
-            if arcpy.Exists(temp_import_features):
-                arcpy.Delete_management(temp_import_features)
+        arcpy.Delete_management('import_features')
+        if arcpy.Exists(temp_import_features):
+            arcpy.Delete_management(temp_import_features)
 
         # summary and end time
         EBARUtils.displayMessage(messages, 'Summary:')
