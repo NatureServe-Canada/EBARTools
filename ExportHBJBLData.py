@@ -244,8 +244,8 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde'
     param_custom_polygon = arcpy.Parameter()
-    param_custom_polygon.value = 'C:/GIS/EBAR/HudsonBay.gdb/HBJBL10'
+    param_custom_polygon.value = 'C:/GIS/EBAR/HBJBL_Seal_Buffer_10.gdb/HBJBL_Seal_Buffer_10_Dissolve'
     param_output_zip = arcpy.Parameter()
-    param_output_zip.value = 'EBAR_HBJBLExport.zip'
+    param_output_zip.value = 'EBAR_HBJBLExport_July2025.zip'
     parameters = [param_geodatabase, param_custom_polygon, param_output_zip]
     ehd.runExportHBJBLDataTool(parameters, None)
