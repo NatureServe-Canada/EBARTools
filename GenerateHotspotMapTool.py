@@ -76,7 +76,9 @@ class GenerateHotspotMapTool:
                 brk.symbol.outlineWidth = 0 #outlineColor = {'RGB' : [255, 255, 255, 0]}
             layer.symbology = symbology
 
-        # modify dynamic title and legend text
+        # modify dynamic text
+        date_text = layout.listElements('TEXT_ELEMENT', 'DateText')[0]
+        date_text.text = datetime.datetime.now().strftime('%B %d, %Y')
         title_text = layout.listElements('TEXT_ELEMENT', 'TitleText')[0]
         if param_hotspot_type != 'Published SAR':
             title_text.text = 'Canadian Biodiversity Hotspots'
@@ -122,6 +124,6 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde' #'D:/GIS/EBAR/EBAR.gdb'
     param_hotspot_type = arcpy.Parameter()
-    param_hotspot_type.value = 'Published High Quality' #'Published All' #'Published SAR' # #
+    param_hotspot_type.value = 'Published High Quality' #'Published SAR'# 'Published All' 
     parameters = [param_geodatabase, param_hotspot_type]
     ghm.runGenerateHotspotMapTool(parameters, None)
