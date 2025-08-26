@@ -19,6 +19,7 @@ field_mappings = arcpy.FieldMappings()
 
 # this one doesn't! no error, just no records appended
 field_mappings = arcpy.FieldMappings()
+field_mappings.addTable('import_features')
 #field_mappings.addFieldMap(EBARUtils.createFieldMap('import_features', 'InDSID', 'InputDatasetID', 'Long'))
 field_map = arcpy.FieldMap()
 field_map.addInputField('import_features', 'InDSID')
@@ -51,6 +52,6 @@ field_mappings.addFieldMap(field_map)
 # if you comment this out, we get different incorrect outcomes depending on the destination:
 # - if it is an Enterprise gdb, we get no records
 # - if it is a File gdb, we get records but with NULL in fields where the source and destination field names don't match
-field_mappings.loadFromString(field_mappings.exportToString())
+#field_mappings.loadFromString(field_mappings.exportToString())
 
 arcpy.Append_management('import_features', destination, 'NO_TEST', field_mappings)
