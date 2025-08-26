@@ -181,17 +181,21 @@ class FlagBadDataUsingRangeTool:
                     # create InputFeedback
                     EBARUtils.displayMessage(messages,
                                              'Creating InputFeedback for InputPointID ' + str(row['InputPointID']))
+                    # with arcpy.da.InsertCursor(param_geodatabase + '/InputFeedback',
+                    #                            ['BadInputPointID', 'Justification']) as insert_cursor:
+                    #     insert_cursor.insertRow([row['InputPointID'], 'Not in reviewed range with RangeMapID ' +
+                    #                              str(range_map_id)])
                     with arcpy.da.InsertCursor(param_geodatabase + '/InputFeedback',
-                                               ['BadInputPointID', 'Justification']) as insert_cursor:
+                                               ['InputPointID', 'Justification', 'ExcludeFromAllRangeMaps']) as insert_cursor:
                         insert_cursor.insertRow([row['InputPointID'], 'Not in reviewed range with RangeMapID ' +
-                                                 str(range_map_id)])
+                                                 str(range_map_id), 1])
                     del insert_cursor
             del row, cursor
-            # append to Bad, delete original
-            EBARUtils.displayMessage(messages, 'Appending BadInputPoint(s)')
-            EBARUtils.appendUsingCursor('original_points', param_geodatabase + '/BadInputPoint')
-            EBARUtils.displayMessage(messages, 'Deleting original point(s)')
-            arcpy.DeleteRows_management('original_points')
+            # # append to Bad, delete original
+            # EBARUtils.displayMessage(messages, 'Appending BadInputPoint(s)')
+            # EBARUtils.appendUsingCursor('original_points', param_geodatabase + '/BadInputPoint')
+            # EBARUtils.displayMessage(messages, 'Deleting original point(s)')
+            # arcpy.DeleteRows_management('original_points')
 
         # process lines
         # select all lines acquired before range map was generated
@@ -246,17 +250,21 @@ class FlagBadDataUsingRangeTool:
                     # create InputFeedback
                     EBARUtils.displayMessage(messages,
                                              'Creating InputFeedback for InputLineID ' + str(row['InputLineID']))
+                    # with arcpy.da.InsertCursor(param_geodatabase + '/InputFeedback',
+                    #                            ['BadInputLineID', 'Justification']) as insert_cursor:
+                    #     insert_cursor.insertRow([row['InputLineID'], 'Not in reviewed range with RangeMapID ' +
+                    #                              str(range_map_id)])
                     with arcpy.da.InsertCursor(param_geodatabase + '/InputFeedback',
-                                               ['BadInputLineID', 'Justification']) as insert_cursor:
+                                               ['InputLineID', 'Justification', 'ExcludeFromAllRangeMaps']) as insert_cursor:
                         insert_cursor.insertRow([row['InputLineID'], 'Not in reviewed range with RangeMapID ' +
-                                                 str(range_map_id)])
+                                                 str(range_map_id), 1])
                     del insert_cursor
             del row, cursor
-            # append to Bad, delete original
-            EBARUtils.displayMessage(messages, 'Appending BadInputLine(s)')
-            EBARUtils.appendUsingCursor('original_lines', param_geodatabase + '/BadInputLine')
-            EBARUtils.displayMessage(messages, 'Deleting original line(s)')
-            arcpy.DeleteRows_management('original_lines')
+            # # append to Bad, delete original
+            # EBARUtils.displayMessage(messages, 'Appending BadInputLine(s)')
+            # EBARUtils.appendUsingCursor('original_lines', param_geodatabase + '/BadInputLine')
+            # EBARUtils.displayMessage(messages, 'Deleting original line(s)')
+            # arcpy.DeleteRows_management('original_lines')
 
         # process polygons
         # select all polygons acquired before range map was generated
@@ -308,17 +316,21 @@ class FlagBadDataUsingRangeTool:
                         EBARUtils.displayMessage(messages,
                                                  'Creating InputFeedback for InputPolygonID ' +
                                                  str(row['InputPolygonID']))
+                        # with arcpy.da.InsertCursor(param_geodatabase + '/InputFeedback',
+                        #                            ['BadInputPolygonID', 'Justification']) as insert_cursor:
+                        #     insert_cursor.insertRow([row['InputPolygonID'], 'Not in reviewed range with RangeMapID ' +
+                        #                             str(range_map_id)])
                         with arcpy.da.InsertCursor(param_geodatabase + '/InputFeedback',
-                                                   ['BadInputPolygonID', 'Justification']) as insert_cursor:
+                                                   ['InputPolygonID', 'Justification', 'ExcludeFromAllRangeMaps']) as insert_cursor:
                             insert_cursor.insertRow([row['InputPolygonID'], 'Not in reviewed range with RangeMapID ' +
-                                                    str(range_map_id)])
+                                                    str(range_map_id), 1])
                         del insert_cursor
                 del row, cursor
-                # append to Bad, delete original
-                EBARUtils.displayMessage(messages, 'Appending BadInputPolygon(s)')
-                EBARUtils.appendUsingCursor(input_polygon_layer, param_geodatabase + '/BadInputPolygon')
-                EBARUtils.displayMessage(messages, 'Deleting original polygon(s)')
-                arcpy.DeleteRows_management(input_polygon_layer)
+                # # append to Bad, delete original
+                # EBARUtils.displayMessage(messages, 'Appending BadInputPolygon(s)')
+                # EBARUtils.appendUsingCursor(input_polygon_layer, param_geodatabase + '/BadInputPolygon')
+                # EBARUtils.displayMessage(messages, 'Deleting original polygon(s)')
+                # arcpy.DeleteRows_management(input_polygon_layer)
 
         # temp clean-up
         if arcpy.Exists(temp_point_buffer):
