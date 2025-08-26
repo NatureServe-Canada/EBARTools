@@ -836,7 +836,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         temp_overall_countby_source = 'TempOverallCountBySource' + str(start_time.year) + str(start_time.month) + \
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
         arcpy.Statistics_analysis('pairwise_intersect_layer', temp_overall_countby_source,
-                                  [['InputDatasetID','COUNT']],
+                                  [['InputDatasetID','COUNT'], ['MinDate', 'MIN'], ['MaxDate', 'MAX'],
+                                   ['MaxDate', 'MIN']],
                                   [table_name_prefix + 'DatasetSource.DatasetSourceName'])
 
         # create RangeMapInput records for overlay display in EBAR Reviewer
@@ -1193,13 +1194,31 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                 # input records
                 # kludge because arc ends up with different field names under Enterprise gdb after joining
                 field_names = [f.name for f in arcpy.ListFields(temp_overall_countby_source) if f.aliasName in
-                               ['DatasetSourceName', 'FREQUENCY', 'frequency']]
+                               ['DatasetSourceName', 'FREQUENCY', 'frequency',
+                                'MIN_MinDate', 'min_mindate',
+                                'MIN_' + table_name_prefix + temp_pairwise_intersect + '.mindate',
+                                'MAX_MaxDate', 'max_maxdate',
+                                'MAX_' + table_name_prefix + temp_pairwise_intersect + '.maxdate',
+                                'MIN_MaxDate', 'min_maxdate',
+                                'MIN_' + table_name_prefix + temp_pairwise_intersect + '.maxdate']]
                 summary = ''
                 with arcpy.da.SearchCursor(temp_overall_countby_source, field_names) as search_cursor:
                     for search_row in EBARUtils.searchCursor(search_cursor):
                         if len(summary) > 0:
                             summary += ', '
                         summary += str(search_row[field_names[1]]) + ' ' + search_row[field_names[0]]
+                        if search_row[field_names[3]]:
+                            min_year = search_row[field_names[3]].year
+                            max_year = search_row[field_names[3]].year
+                            if search_row[field_names[4]].year < min_year:
+                                min_year = search_row[field_names[4]].year
+                            if search_row[field_names[2]]:
+                                if search_row[field_names[2]].year < min_year:
+                                    min_year = search_row[field_names[2]].year
+                            summary += ' ('
+                            if min_year < max_year:
+                                summary += str(min_year) + '-'
+                            summary += str(max_year) + ')'
                 if len(summary) > 0:
                     del search_row
                 del search_cursor
