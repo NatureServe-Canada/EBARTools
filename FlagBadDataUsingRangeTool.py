@@ -355,9 +355,12 @@ class FlagBadDataUsingRangeTool:
             arcpy.Delete_management(input_polygon_layer)
 
         # results
-        EBARUtils.displayMessage(messages, str(points_found) + ' Input Points flagged as Bad Data')
-        EBARUtils.displayMessage(messages, str(lines_found) + ' Input Lines flagged as Bad Data')
-        EBARUtils.displayMessage(messages, str(polygons_found) + ' Input Polygons flagged as Bad Data')
+        # EBARUtils.displayMessage(messages, str(points_found) + ' Input Points flagged as Bad Data')
+        # EBARUtils.displayMessage(messages, str(lines_found) + ' Input Lines flagged as Bad Data')
+        # EBARUtils.displayMessage(messages, str(polygons_found) + ' Input Polygons flagged as Bad Data')
+        EBARUtils.displayMessage(messages, str(points_found) + ' Input Points flagged to Exclude From All Range Maps')
+        EBARUtils.displayMessage(messages, str(lines_found) + ' Input Lines flagged to Exclude From All Range Maps')
+        EBARUtils.displayMessage(messages, str(polygons_found) + ' Input Polygons to Exclude From All Range Maps')
 
         # end time
         end_time = datetime.datetime.now()
