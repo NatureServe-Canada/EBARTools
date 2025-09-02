@@ -1122,7 +1122,10 @@ def inputSelectAndBuffer(geodatabase, input_features, range_map_id, table_name_p
                         '.EORank IS NOT NULL) OR ' + table_name_prefix + "DatasetSource.DatasetType = 'Range'"
     where_clause += '))'
     if range_date:
-        where_clause += ' AND (' + table_name_prefix + "InputDataset.DateReceived < timestamp '" + \
+        # where_clause += ' AND (' + table_name_prefix + "InputDataset.DateReceived < timestamp '" + \
+        #     range_date.strftime('%Y-%m-%d') + "') AND (" + table_name_prefix + \
+        #     'DatasetSource.CDCJurisdictionID IS NULL)'
+        where_clause += ' AND (' + table_name_prefix + "InputDataset.created_date < timestamp '" + \
             range_date.strftime('%Y-%m-%d') + "') AND (" + table_name_prefix + \
             'DatasetSource.CDCJurisdictionID IS NULL)'
     # # DEBUG
