@@ -29,6 +29,12 @@ class GenerateHotspotMapTool:
         start_time = datetime.datetime.now()
         EBARUtils.displayMessage(messages, 'Start time: ' + str(start_time))
 
+        # # debug
+        # #desc = arcpy.Describe(EBARUtils.ebar_summary_service + '/22')
+        # desc = arcpy.Describe(EBARUtils.ebar_feature_service + '/11')
+        # EBARUtils.displayMessage(messages, desc.name)
+        # return
+
         # settings
         #arcpy.gp.overwriteOutput = True
         arcgis_pro_project = EBARUtils.resources_folder + '/EBARMapLayoutsBackup.aprx'
