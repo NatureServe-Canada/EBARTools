@@ -76,7 +76,7 @@ RangeMapEcoshapeNotes - numbers of input records by source and reviewer comments
 MinDate - the earliest date for all input records that overlap the Ecoshape
 MaxDate - the latest date for all input records that overlap the Ecoshape
 
-[*Ecoshapes removed during the expert review process are included with Presence=NULL and field RangeMapEcoshapeNotes containing reviewer comments, if publishable. Note that the ]
+[*Ecoshapes removed during the expert review process are included with Presence=NULL and field RangeMapEcoshapeNotes containing reviewer comments, if publishable.]
 
 Jurisdiction fields:
 objectid - ArcGIS unique identifier

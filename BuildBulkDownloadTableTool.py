@@ -138,7 +138,7 @@ class BuildBulkDownloadTableTool:
         file.close()
 
 
-# # controlling process
-# if __name__ == '__main__':
-#     bbdt = BuildBulkDownloadTableTool()
-#     bbdt.runBuildBulkDownloadTableTool(None, None)
+# controlling process
+if __name__ == '__main__':
+    bbdt = BuildBulkDownloadTableTool()
+    bbdt.runBuildBulkDownloadTableTool(None, None)

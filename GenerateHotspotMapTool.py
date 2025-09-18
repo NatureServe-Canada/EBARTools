@@ -35,8 +35,11 @@ class GenerateHotspotMapTool:
         # EBARUtils.displayMessage(messages, desc.name)
         # return
 
+        # connect to portal
+        arcpy.SignInToPortal('https://gis.natureserve.ca/portal', 'rgreenens', '!necDQAD5SScpqqr!')
+
         # settings
-        #arcpy.gp.overwriteOutput = True
+        arcpy.gp.overwriteOutput = True
         arcgis_pro_project = EBARUtils.resources_folder + '/EBARMapLayoutsBackup.aprx'
 
         # make variables for parms
@@ -44,9 +47,6 @@ class GenerateHotspotMapTool:
         param_geodatabase = parameters[0].valueAsText
         param_hotspot_type = parameters[1].valueAsText
         EBARUtils.displayMessage(messages, 'Hotspot type: ' + param_hotspot_type)
-
-        # get table name prefix (needed for joined tables and feature classes in enterprise geodatabases)
-        table_name_prefix = EBARUtils.getTableNamePrefix(param_geodatabase)
 
         # get map, layout and related objects
         EBARUtils.displayMessage(messages, 'Generating JPG map')
@@ -87,13 +87,13 @@ class GenerateHotspotMapTool:
         date_text.text = datetime.datetime.now().strftime('%B %d, %Y')
         title_text = layout.listElements('TEXT_ELEMENT', 'TitleText')[0]
         if param_hotspot_type != 'Published SAR':
-            title_text.text = 'Canadian Biodiversity Hotspots'
+            title_text.text = 'Canadian Biodiversity Heatmap'
         if param_hotspot_type == 'Published All':
             legend.title = 'Count of EBAR Ranges\n(all published ranges)'
         elif param_hotspot_type == 'Published High Quality':
             legend.title = 'Count of EBAR Ranges\n(high quality published ranges)'
 
-        # modify dynamic n= text (directly access views, so only works on server)
+        # modify dynamic n= text (directly accesses geodatabase, so only works on server)
         n_text = layout.listElements('TEXT_ELEMENT', 'NText')[0]
         n_view = param_geodatabase + '/s_PublishedSARRangeCount'
         if param_hotspot_type == 'Published All':
@@ -109,16 +109,80 @@ class GenerateHotspotMapTool:
         del cursor
 
         # generate jpg
-        jpg = 'EBARHotspotsPublishedSAR'
+        jpg = 'EBARHeatmapPublishedSAR'
         if param_hotspot_type == 'Published All':
-            jpg = 'EBARHotspotsPublishedAll'
+            jpg = 'EBARHeatmapPublishedAll'
         elif param_hotspot_type == 'Published High Quality':
-            jpg = 'EBARHotspotsPublishedHighQuality'
+            jpg = 'EBARHeatmapPublishedHighQuality'
         layout.exportToJPEG(EBARUtils.download_folder + '/' + jpg + '.jpg', 300, clip_to_elements=False)
         #layout.exportToJPEG('D:/GIS/EBAR/' + jpg + '.jpg', 300, clip_to_elements=False)
-
-        # results link messages
         EBARUtils.displayMessage(messages, 'Image: ' + EBARUtils.download_url + '/' + jpg + '.jpg')
+
+        # generate species sheet and download zip
+        if param_hotspot_type == 'Published SAR':
+            # species sheet
+            field_mappings = arcpy.FieldMappings()
+            field_mappings.addFieldMap(EBARUtils.createFieldMap(param_geodatabase + '/s_PublishedSARDistinctSpecies',
+                                                                'ELEMENT_NATIONAL_ID', 'ELEMENT_NATIONAL_ID', 'LONG'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap(param_geodatabase + '/s_PublishedSARDistinctSpecies',
+                                                                'ELEMENT_GLOBAL_ID', 'ELEMENT_GLOBAL_ID', 'LONG'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap(param_geodatabase + '/s_PublishedSARDistinctSpecies',
+                                                                'ELEMENT_CODE', 'ELEMENT_CODE', 'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap(param_geodatabase + '/s_PublishedSARDistinctSpecies',
+                                                                'CATEGORY', 'CATEGORY', 'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap(param_geodatabase + '/s_PublishedSARDistinctSpecies',
+                                                                'TAX_GROUP', 'TAX_GROUP', 'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap(param_geodatabase + '/s_PublishedSARDistinctSpecies',
+                                                                'KINGDOM', 'KINGDOM', 'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap(param_geodatabase + '/s_PublishedSARDistinctSpecies',
+                                                                'CLASS', 'CLASS', 'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap(param_geodatabase + '/s_PublishedSARDistinctSpecies',
+                                                                'TAX_ORDER', 'TAX_ORDER', 'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap(param_geodatabase + '/s_PublishedSARDistinctSpecies',
+                                                                'FAMILY', 'FAMILY', 'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap(param_geodatabase + '/s_PublishedSARDistinctSpecies',
+                                                                'NATIONAL_SCIENTIFIC_NAME', 'NATIONAL_SCIENTIFIC_NAME',
+                                                                'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap(param_geodatabase + '/s_PublishedSARDistinctSpecies',
+                                                                'NATIONAL_ENGL_NAME', 'NATIONAL_ENGL_NAME', 'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap(param_geodatabase + '/s_PublishedSARDistinctSpecies',
+                                                                'NATIONAL_FR_NAME', 'NATIONAL_FR_NAME', 'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap(param_geodatabase + '/s_PublishedSARDistinctSpecies',
+                                                                'COSEWIC_NAME', 'COSEWIC_NAME', 'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap(param_geodatabase + '/s_PublishedSARDistinctSpecies',
+                                                                'ENGLISH_COSEWIC_COM_NAME', 'ENGLISH_COSEWIC_COM_NAME',
+                                                                'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap(param_geodatabase + '/s_PublishedSARDistinctSpecies',
+                                                                'FRENCH_COSEWIC_COM_NAME', 'FRENCH_COSEWIC_COM_NAME',
+                                                                'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap(param_geodatabase + '/s_PublishedSARDistinctSpecies',
+                                                                'COSEWIC_STATUS', 'COSEWIC_STATUS', 'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap(param_geodatabase + '/s_PublishedSARDistinctSpecies',
+                                                                'SARA_STATUS', 'SARA_STATUS', 'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap(param_geodatabase + '/s_PublishedSARDistinctSpecies',
+                                                                'SHORT_CITATION_AUTHOR', 'SHORT_CITATION_AUTHOR',
+                                                                'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap(param_geodatabase + '/s_PublishedSARDistinctSpecies',
+                                                                'SHORT_CITATION_YEAR', 'SHORT_CITATION_YEAR', 'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap(param_geodatabase + '/s_PublishedSARDistinctSpecies',
+                                                                'FORMATTED_FULL_CITATION', 'FORMATTED_FULL_CITATION',
+                                                                'TEXT'))
+            field_mappings.addFieldMap(EBARUtils.createFieldMap(param_geodatabase + '/s_PublishedSARDistinctSpecies',
+                                                                'NSX_URL', 'NSX_URL', 'TEXT'))
+            arcpy.ExportTable_conversion(param_geodatabase + '/s_PublishedSARDistinctSpecies',
+                                         EBARUtils.download_folder + '/' + jpg + '.csv', field_mapping=field_mappings)
+            EBARUtils.displayMessage(messages, 'Species sheet: ' + EBARUtils.download_url + '/' + jpg + '.csv')
+        #     # download zip
+        #     zip_folder = EBARUtils.temp_folder + '/EBAR_SAR_Hotspots'
+        #     EBARUtils.createReplaceFolder(zip_folder)
+        #     EBARUtils.createZip(zip_folder, EBARUtils.download_folder + '/EBAR_SAR_Hotspots.zip', None)
+        #     EBARUtils.addToZip(EBARUtils.download_folder + '/EBAR_SAR_Hotspots.zip',
+        #                        EBARUtils.resources_folder + '/EBAR Hotspot Mapping Documentation.pdf')
+        #     EBARUtils.addToZip(EBARUtils.download_folder + '/EBAR_SAR_Hotspots.zip',
+        #                        EBARUtils.download_url + '/' + jpg + '.jpg')
+        #     EBARUtils.addToZip(EBARUtils.download_folder + '/EBAR_SAR_Hotspots.zip',
+        #                        EBARUtils.download_url + '/' + jpg + '.csv')
+        #     EBARUtils.displayMessage(messages, 'Download zip: ' + EBARUtils.download_url + '/' + jpg + '.zip')
 
         return
 
@@ -130,6 +194,6 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde' #'D:/GIS/EBAR/EBAR.gdb'
     param_hotspot_type = arcpy.Parameter()
-    param_hotspot_type.value = 'Published High Quality' #'Published SAR'# 'Published All' 
+    param_hotspot_type.value = 'Published SAR' # 'Published High Quality' # 'Published All' 
     parameters = [param_geodatabase, param_hotspot_type]
     ghm.runGenerateHotspotMapTool(parameters, None)
