@@ -1,17 +1,17 @@
-objectid,JurisID,JurisAbbrev,JurisName
-1,1,YT,Yukon Territory
-2,2,NT,Northwest Territories
-3,3,NU,Nunavut
-4,4,BC,British Columbia
-5,5,AB,Alberta
-6,6,SK,Saskatchewan
-7,7,MB,Manitoba
-8,8,ON,Ontario
-9,9,QC,Quebec
-10,10,NB,New Brunswick
-11,11,PE,Prince Edward Island
-12,12,NS,Nova Scotia
-13,13,NL,Newfoundland and Labrador
-14,14,US,United States of America
-15,15,MX,Mexico
-16,16,AC,Atlantic Canada
+objectid,JurisID,JurisAbbrev,JurisNameE,JurisNameF
+1,1,YT,Yukon,Yukon
+2,2,NT,Northwest Territories,Territoires du Nord-Ouest
+3,3,NU,Nunavut,Nunavut
+4,4,BC,British Columbia,Colombie-Britannique
+5,5,AB,Alberta,Alberta
+6,6,SK,Saskatchewan,Saskatchewan
+7,7,MB,Manitoba,Manitoba
+8,8,ON,Ontario,Ontario
+9,9,QC,Quebec,Québec
+10,10,NB,New Brunswick,Nouveau-Brunswick
+11,11,PE,Prince Edward Island,Île-du-Prince-Édouard
+12,12,NS,Nova Scotia,Nouvelle-Écosse
+13,13,NL,Newfoundland and Labrador,Terre-Neuve-et-Labrador
+14,14,US,United States of America,États-Unis d'Amérique
+15,15,MX,Mexico,Mexique
+16,16,AC,Atlantic Canada,Canada Atlantique
