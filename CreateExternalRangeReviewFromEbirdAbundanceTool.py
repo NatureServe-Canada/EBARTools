@@ -36,7 +36,9 @@ class CreateExternalRangeReviewFromEbirdAbundanceTool:
         # make variables for parms
         EBARUtils.displayMessage(messages, 'Processing parameters')
         param_ebird_full_year_raster = parameters[0].valueAsText
+        EBARUtils.displayMessage(messages, 'Full Year Raster: ' + param_ebird_full_year_raster)
         param_ebird_breeding_season_raster = parameters[1].valueAsText
+        EBARUtils.displayMessage(messages, 'Breeding Season Raster: ' + param_ebird_breeding_season_raster)
         param_percent_of_population_cutoffs = parameters[2].valueAsText
         param_percent_of_population_cutoffs = param_percent_of_population_cutoffs.split(';')
         param_label = parameters[3].valueAsText
@@ -97,15 +99,15 @@ class CreateExternalRangeReviewFromEbirdAbundanceTool:
         arcpy.Delete_management('plus_raster')
         arcpy.Delete_management(plus_raster)
 
-        # Raster to Polygon
-        EBARUtils.displayMessage(messages, 'Converting to polygon')
-        arcpy.RasterToPolygon_conversion('integer_raster', 'polygons', 'NO_SIMPLIFY', 'VALUE')
-        arcpy.Delete_management('integer_raster')
-        arcpy.Delete_management(integer_raster)
+        # Raster to Point
+        # needed to ensure every cell gets included in sum
+        # raster to polygon combines neighbouring cells with the same value!!!
+        EBARUtils.displayMessage(messages, 'Converting to point')
+        arcpy.RasterToPolygon_conversion('integer_raster', 'points', 'NO_SIMPLIFY', 'VALUE')
 
         # Summary Statistics for sum/population
         EBARUtils.displayMessage(messages, 'Calculating total population')
-        arcpy.Statistics_analysis('polygons', 'stats', [['gridcode', 'SUM']])
+        arcpy.Statistics_analysis('points', 'stats', [['gridcode', 'SUM']])
         total_pop = 0
         row = None
         with arcpy.da.SearchCursor('stats', ['SUM_gridcode']) as cursor:
@@ -115,6 +117,13 @@ class CreateExternalRangeReviewFromEbirdAbundanceTool:
         if row:
             del row
         arcpy.Delete_management('stats')
+        arcpy.Delete_management('points')
+
+        # Raster to Polygon
+        EBARUtils.displayMessage(messages, 'Converting to polygon')
+        arcpy.RasterToPolygon_conversion('integer_raster', 'polygons', 'NO_SIMPLIFY', 'VALUE')
+        arcpy.Delete_management('integer_raster')
+        arcpy.Delete_management(integer_raster)
 
         # Percent Population Cutoffs
         for percent_of_population_cutoff in percent_of_population_cutoffs:
@@ -210,75 +219,75 @@ if __name__ == '__main__':
     param_ebird_full_year_raster = arcpy.Parameter()
     param_ebird_breeding_season_raster = arcpy.Parameter()
     param_percent_of_population_cutoffs = arcpy.Parameter()
-    param_percent_of_population_cutoffs.value = '1;2;5'
+    param_percent_of_population_cutoffs.value = '5' #'1;2;5'
     param_label = arcpy.Parameter()
     param_output_folder = arcpy.Parameter()
     param_output_folder.value = 'D:/GIS/eBird/eBird Status and Trends'
     param_output_gdbname = arcpy.Parameter()
-    param_output_gdbname.value = 'eBird External Range Reviews.gdb'
+    param_output_gdbname.value = 'eBird External Range Reviews 2.gdb'
 
-    param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/grbher3_abundance_seasonal_full-year_mean_2022.tif"
-    param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/grbher3_abundance_seasonal_breeding_mean_2022.tif"
-    param_label.value = 'grbher3'
-    parameters = [param_ebird_full_year_raster, param_ebird_breeding_season_raster,
-                  param_percent_of_population_cutoffs, param_label, param_output_folder, param_output_gdbname]
-    cerrfea.runCreateExternalRangeReviewFromEbirdAbundanceTool(parameters, None)
+    # param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/grbher3_abundance_seasonal_full-year_mean_2022.tif"
+    # param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/grbher3_abundance_seasonal_breeding_mean_2022.tif"
+    # param_label.value = 'grbher3'
+    # parameters = [param_ebird_full_year_raster, param_ebird_breeding_season_raster,
+    #               param_percent_of_population_cutoffs, param_label, param_output_folder, param_output_gdbname]
+    # cerrfea.runCreateExternalRangeReviewFromEbirdAbundanceTool(parameters, None)
 
-    param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/harspa_abundance_seasonal_full-year_mean_2022.tif"
-    param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/harspa_abundance_seasonal_breeding_mean_2022.tif"
-    param_label.value = 'harspa'
-    parameters = [param_ebird_full_year_raster, param_ebird_breeding_season_raster,
-                  param_percent_of_population_cutoffs, param_label, param_output_folder, param_output_gdbname]
-    cerrfea.runCreateExternalRangeReviewFromEbirdAbundanceTool(parameters, None)
+    # param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/harspa_abundance_seasonal_full-year_mean_2022.tif"
+    # param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/harspa_abundance_seasonal_breeding_mean_2022.tif"
+    # param_label.value = 'harspa'
+    # parameters = [param_ebird_full_year_raster, param_ebird_breeding_season_raster,
+    #               param_percent_of_population_cutoffs, param_label, param_output_folder, param_output_gdbname]
+    # cerrfea.runCreateExternalRangeReviewFromEbirdAbundanceTool(parameters, None)
 
-    param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/henspa_abundance_seasonal_full-year_mean_2022.tif"
-    param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/henspa_abundance_seasonal_breeding_mean_2022.tif"
-    param_label.value = 'henspa'
-    parameters = [param_ebird_full_year_raster, param_ebird_breeding_season_raster,
-                  param_percent_of_population_cutoffs, param_label, param_output_folder, param_output_gdbname]
-    cerrfea.runCreateExternalRangeReviewFromEbirdAbundanceTool(parameters, None)
+    # param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/henspa_abundance_seasonal_full-year_mean_2022.tif"
+    # param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/henspa_abundance_seasonal_breeding_mean_2022.tif"
+    # param_label.value = 'henspa'
+    # parameters = [param_ebird_full_year_raster, param_ebird_breeding_season_raster,
+    #               param_percent_of_population_cutoffs, param_label, param_output_folder, param_output_gdbname]
+    # cerrfea.runCreateExternalRangeReviewFromEbirdAbundanceTool(parameters, None)
 
-    param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/perfal_abundance_seasonal_full-year_mean_2022.tif"
-    param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/perfal_abundance_seasonal_breeding_mean_2022.tif"
-    param_label.value = 'perfal'
-    parameters = [param_ebird_full_year_raster, param_ebird_breeding_season_raster,
-                  param_percent_of_population_cutoffs, param_label, param_output_folder, param_output_gdbname]
-    cerrfea.runCreateExternalRangeReviewFromEbirdAbundanceTool(parameters, None)
+    # param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/perfal_abundance_seasonal_full-year_mean_2022.tif"
+    # param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/perfal_abundance_seasonal_breeding_mean_2022.tif"
+    # param_label.value = 'perfal'
+    # parameters = [param_ebird_full_year_raster, param_ebird_breeding_season_raster,
+    #               param_percent_of_population_cutoffs, param_label, param_output_folder, param_output_gdbname]
+    # cerrfea.runCreateExternalRangeReviewFromEbirdAbundanceTool(parameters, None)
 
-    param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Cerulean Warbler/cerwar_abundance_seasonal_full-year_mean_2022.tif"
-    param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Cerulean Warbler/cerwar_abundance_seasonal_breeding_mean_2022.tif"
-    param_label.value = 'cerwar'
-    parameters = [param_ebird_full_year_raster, param_ebird_breeding_season_raster,
-                  param_percent_of_population_cutoffs, param_label, param_output_folder, param_output_gdbname]
-    cerrfea.runCreateExternalRangeReviewFromEbirdAbundanceTool(parameters, None)
+    # param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Cerulean Warbler/cerwar_abundance_seasonal_full-year_mean_2022.tif"
+    # param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Cerulean Warbler/cerwar_abundance_seasonal_breeding_mean_2022.tif"
+    # param_label.value = 'cerwar'
+    # parameters = [param_ebird_full_year_raster, param_ebird_breeding_season_raster,
+    #               param_percent_of_population_cutoffs, param_label, param_output_folder, param_output_gdbname]
+    # cerrfea.runCreateExternalRangeReviewFromEbirdAbundanceTool(parameters, None)
 
-    param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Canada Goose/cangoo_abundance_seasonal_full-year_mean_2022.tif"
-    param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Canada Goose/cangoo_abundance_seasonal_breeding_mean_2022.tif"
-    param_label.value = 'cangoo'
-    parameters = [param_ebird_full_year_raster, param_ebird_breeding_season_raster,
-                  param_percent_of_population_cutoffs, param_label, param_output_folder, param_output_gdbname]
-    cerrfea.runCreateExternalRangeReviewFromEbirdAbundanceTool(parameters, None)
+    # param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Canada Goose/cangoo_abundance_seasonal_full-year_mean_2022.tif"
+    # param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Canada Goose/cangoo_abundance_seasonal_breeding_mean_2022.tif"
+    # param_label.value = 'cangoo'
+    # parameters = [param_ebird_full_year_raster, param_ebird_breeding_season_raster,
+    #               param_percent_of_population_cutoffs, param_label, param_output_folder, param_output_gdbname]
+    # cerrfea.runCreateExternalRangeReviewFromEbirdAbundanceTool(parameters, None)
 
-    param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Least Bittern/leabit_abundance_seasonal_full-year_mean_2022.tif"
-    param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Least Bittern/leabit_abundance_seasonal_breeding_mean_2022.tif"
-    param_label.value = 'leabit'
-    parameters = [param_ebird_full_year_raster, param_ebird_breeding_season_raster,
-                  param_percent_of_population_cutoffs, param_label, param_output_folder, param_output_gdbname]
-    cerrfea.runCreateExternalRangeReviewFromEbirdAbundanceTool(parameters, None)
+    # param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Least Bittern/leabit_abundance_seasonal_full-year_mean_2022.tif"
+    # param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Least Bittern/leabit_abundance_seasonal_breeding_mean_2022.tif"
+    # param_label.value = 'leabit'
+    # parameters = [param_ebird_full_year_raster, param_ebird_breeding_season_raster,
+    #               param_percent_of_population_cutoffs, param_label, param_output_folder, param_output_gdbname]
+    # cerrfea.runCreateExternalRangeReviewFromEbirdAbundanceTool(parameters, None)
 
-    param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Lewis's Woodpecker/lewwoo_abundance_seasonal_full-year_mean_2022.tif"
-    param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Lewis's Woodpecker/lewwoo_abundance_seasonal_breeding_mean_2022.tif"
-    param_label.value = 'lewwoo'
-    parameters = [param_ebird_full_year_raster, param_ebird_breeding_season_raster,
-                  param_percent_of_population_cutoffs, param_label, param_output_folder, param_output_gdbname]
-    cerrfea.runCreateExternalRangeReviewFromEbirdAbundanceTool(parameters, None)
+    # param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Lewis's Woodpecker/lewwoo_abundance_seasonal_full-year_mean_2022.tif"
+    # param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Lewis's Woodpecker/lewwoo_abundance_seasonal_breeding_mean_2022.tif"
+    # param_label.value = 'lewwoo'
+    # parameters = [param_ebird_full_year_raster, param_ebird_breeding_season_raster,
+    #               param_percent_of_population_cutoffs, param_label, param_output_folder, param_output_gdbname]
+    # cerrfea.runCreateExternalRangeReviewFromEbirdAbundanceTool(parameters, None)
 
-    param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Piping Plover/pipplo_abundance_seasonal_full-year_mean_2022.tif"
-    param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Piping Plover/pipplo_abundance_seasonal_breeding_mean_2022.tif"
-    param_label.value = 'pipplo'
-    parameters = [param_ebird_full_year_raster, param_ebird_breeding_season_raster,
-                  param_percent_of_population_cutoffs, param_label, param_output_folder, param_output_gdbname]
-    cerrfea.runCreateExternalRangeReviewFromEbirdAbundanceTool(parameters, None)
+    # param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Piping Plover/pipplo_abundance_seasonal_full-year_mean_2022.tif"
+    # param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Piping Plover/pipplo_abundance_seasonal_breeding_mean_2022.tif"
+    # param_label.value = 'pipplo'
+    # parameters = [param_ebird_full_year_raster, param_ebird_breeding_season_raster,
+    #               param_percent_of_population_cutoffs, param_label, param_output_folder, param_output_gdbname]
+    # cerrfea.runCreateExternalRangeReviewFromEbirdAbundanceTool(parameters, None)
 
     param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Solitary Sandpiper/solsan_abundance_seasonal_full-year_mean_2022.tif"
     param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Solitary Sandpiper/solsan_abundance_seasonal_breeding_mean_2022.tif"
