@@ -8,7 +8,6 @@
 
 # import python packages
 import arcpy
-import ListElementNationalIDsTool
 import EBARUtils
 import datetime
 import locale
@@ -483,8 +482,6 @@ class ListElementNationalIDs(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        leni = ListElementNationalIDsTool.ListElementNationalIDsTool()
-        leni.runListElementNationalIDsTool(parameters, messages)
         return
 
 
@@ -1645,6 +1642,80 @@ class GenerateHotspotMap(object):
         param_csv.filter.list = ['Published SAR', 'Published High Quality', 'Published All']
 
         params = [param_geodatabase, param_csv]
+        return params
+
+    def isLicensed(self):
+        """Set whether tool is licensed to execute."""
+        return True
+
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal validation is performed.  This method is
+        called whenever a parameter has been changed."""
+        return
+
+    def updateMessages(self, parameters):
+        """Modify the messages created by internal validation for each tool parameter.  This method is called
+        after internal validation."""
+        return
+
+    def execute(self, parameters, messages):
+        """The source code of the tool."""
+        return
+
+
+class CreateExternalRangeReviewFromEbirdAbundance(object):
+    def __init__(self):
+        """Define the tool (tool name is the name of the class)."""
+        self.label = 'Create External Range Review from eBird Abundance'
+        self.description = 'Create an external range review table from eBird Abundance raster(s)'
+        self.canRunInBackground = True
+
+    def getParameterInfo(self):
+        """Define parameter definitions"""
+        # Geodatabase
+        param_geodatabase = arcpy.Parameter(
+            displayName='Geodatabase',
+            name='geodatabase',
+            datatype='DEWorkspace',
+            parameterType='Required',
+            direction='Input')
+        param_geodatabase.filter.list = ['Local Database', 'Remote Database']
+
+        # eBird Full Year Raster
+        param_ebird_full_year_raster = arcpy.Parameter(
+            displayName='eBird Full Year Raster',
+            name='ebird_full_year_raster',
+            datatype='DEFile',
+            parameterType='Required',
+            direction='Input')
+        param_ebird_full_year_raster.filter.list = ['tif']
+
+        # eBird Breeding Season Raster
+        param_ebird_breeding_season_raster = arcpy.Parameter(
+            displayName='eBird Full Year Raster',
+            name='ebird_breeding_season_raster',
+            datatype='DEFile',
+            parameterType='Optional',
+            direction='Input')
+        param_ebird_breeding_season_raster.filter.list = ['tif']
+
+        param_percent_of_population_cutoff = arcpy.Parameter(
+            displayName='Percent of Population Cutoff',
+            name='percent_of_population_cutoff',
+            datatype='GPLong',
+            parameterType='Required',
+            direction='Input')
+        param_percent_of_population_cutoff.value = 5
+
+        param_label = arcpy.Parameter(
+            displayName='Label',
+            name='label',
+            datatype='GPString',
+            parameterType='Required',
+            direction='Input')
+
+        params = [param_geodatabase, param_ebird_full_year_raster, param_ebird_breeding_season_raster,
+                  param_percent_of_population_cutoff, param_label]
         return params
 
     def isLicensed(self):

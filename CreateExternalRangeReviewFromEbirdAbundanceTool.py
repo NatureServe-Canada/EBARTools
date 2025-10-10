@@ -18,7 +18,7 @@ import datetime
 import EBARUtils
 
 class CreateExternalRangeReviewFromEbirdAbundanceTool:
-    """Generate Range Map for a species from available spatial data in the EBAR geodatabase"""
+    """Create an external range review table from eBird Abundance raster(s)"""
     def __init__(self):
         pass
 
@@ -35,36 +35,39 @@ class CreateExternalRangeReviewFromEbirdAbundanceTool:
 
         # make variables for parms
         EBARUtils.displayMessage(messages, 'Processing parameters')
-        param_ebird_full_year_raster = parameters[0].valueAsText
+        param_geodatabase = parameters[0].valueAsText
+        param_ebird_full_year_raster = parameters[1].valueAsText
         EBARUtils.displayMessage(messages, 'Full Year Raster: ' + param_ebird_full_year_raster)
-        param_ebird_breeding_season_raster = parameters[1].valueAsText
+        param_ebird_breeding_season_raster = parameters[2].valueAsText
         EBARUtils.displayMessage(messages, 'Breeding Season Raster: ' + param_ebird_breeding_season_raster)
-        param_percent_of_population_cutoffs = parameters[2].valueAsText
-        param_percent_of_population_cutoffs = param_percent_of_population_cutoffs.split(';')
-        param_label = parameters[3].valueAsText
-        param_output_folder = parameters[4].valueAsText
-        param_output_gdbname = parameters[5].valueAsText
+        param_percent_of_population_cutoff = parameters[3].valueAsText
+        EBARUtils.displayMessage(messages, 'Percent of Population Cutoff: ' + param_percent_of_population_cutoff)
+        param_label = parameters[4].valueAsText
+        EBARUtils.displayMessage(messages, 'Label: ' + param_label)
 
-        # create if needed
-        if not arcpy.Exists(param_output_folder + '/' + param_output_gdbname):
-            arcpy.CreateFileGDB_management(param_output_folder, param_output_gdbname)
-
-        # use passed geodatabase as workspace for temp and final outputs
-        arcpy.env.workspace = param_output_folder + '/' + param_output_gdbname
+        # use passed geodatabase as workspace for temp outputs
+        arcpy.env.workspace = param_geodatabase
 
         # full year raster is required
         EBARUtils.displayMessage(messages, 'PROCESSING FULL YEAR RASTER')
-        self.ProcessRaster(messages, param_ebird_full_year_raster, param_percent_of_population_cutoffs,
+        self.ProcessRaster(messages, param_ebird_full_year_raster, param_percent_of_population_cutoff,
                            param_label, True)
 
         # breeding season raster is optional
         if param_ebird_breeding_season_raster:
             EBARUtils.displayMessage(messages, 'PROCESSING BREEDING SEASON RASTER')
-            self.ProcessRaster(messages, param_ebird_breeding_season_raster, param_percent_of_population_cutoffs,
+            self.ProcessRaster(messages, param_ebird_breeding_season_raster, param_percent_of_population_cutoff,
                                param_label, False)
+            
+        # export to CSV
+        arcpy.ExportTable_conversion(param_geodatabase + '/' + param_label + '_' + param_percent_of_population_cutoff,
+                                     EBARUtils.download_folder + '/' + param_label + '_' +
+                                     param_percent_of_population_cutoff + '.csv')
+        EBARUtils.displayMessage(messages, 'Output CSV: ' + EBARUtils.download_url + '/' + param_label + '_' +
+                                 param_percent_of_population_cutoff + '.csv')
 
 
-    def ProcessRaster(self, messages, ebird_raster, percent_of_population_cutoffs,
+    def ProcessRaster(self, messages, ebird_raster, percent_of_population_cutoff,
                       label, is_full_year):
         # Extract by Mask to Canada
         EBARUtils.displayMessage(messages, 'Extracting by Mask for Canada only')
@@ -125,71 +128,71 @@ class CreateExternalRangeReviewFromEbirdAbundanceTool:
         arcpy.Delete_management('integer_raster')
         arcpy.Delete_management(integer_raster)
 
-        # Percent Population Cutoffs
-        for percent_of_population_cutoff in percent_of_population_cutoffs:
-            EBARUtils.displayMessage(messages, 'Determining cutoff for ' + percent_of_population_cutoff)
-            minimum = self.PercentPopulationCutoff('polygons', total_pop, percent_of_population_cutoff)
+        # Percent Population Cutoff
+        # for percent_of_population_cutoff in percent_of_population_cutoffs:
+        EBARUtils.displayMessage(messages, 'Determining cutoff for ' + percent_of_population_cutoff)
+        minimum = self.PercentPopulationCutoff('polygons', total_pop, percent_of_population_cutoff)
 
-            # Select above cutoff
-            EBARUtils.displayMessage(messages, 'Applying cutoff for ' + percent_of_population_cutoff)
-            arcpy.MakeFeatureLayer_management('polygons', 'included_polygons', 'gridcode > ' + str(minimum))
+        # Select above cutoff
+        EBARUtils.displayMessage(messages, 'Applying cutoff for ' + percent_of_population_cutoff)
+        arcpy.MakeFeatureLayer_management('polygons', 'included_polygons', 'gridcode > ' + str(minimum))
 
-            # Intersect with ecoshapes
-            EBARUtils.displayMessage(messages, 'Intersecting ecoshapes')
-            arcpy.SelectLayerByLocation_management('cdn_ecoshapes', 'INTERSECT', 'included_polygons',
-                                                selection_type='NEW_SELECTION')
-            arcpy.Delete_management('included_polygons')
+        # Intersect with ecoshapes
+        EBARUtils.displayMessage(messages, 'Intersecting ecoshapes')
+        arcpy.SelectLayerByLocation_management('cdn_ecoshapes', 'INTERSECT', 'included_polygons',
+                                            selection_type='NEW_SELECTION')
+        arcpy.Delete_management('included_polygons')
 
-            # Output to table
-            EBARUtils.displayMessage(messages, 'Outputting to table')
-            output_table = label + '_' + percent_of_population_cutoff
-            if is_full_year:
-                # Create table with one Present record for each EcoshapeID
-                field_mappings = arcpy.FieldMappings()
-                field_mappings.addFieldMap(EBARUtils.createFieldMap('cdn_ecoshapes', 'EcoshapeID', 'EcoshapeID', 'LONG'))
-                arcpy.ExportTable_conversion('cdn_ecoshapes', output_table, field_mapping=field_mappings)
-                arcpy.AddField_management(output_table, 'Presence', 'TEXT')
-                arcpy.CalculateField_management(output_table, 'Presence', "'P'")
-            else:
-                # # Create table with one Breeding record for each EcoshapeID
-                # field_mappings = arcpy.FieldMappings()
-                # field_mappings.addFieldMap(EBARUtils.createFieldMap('cdn_ecoshapes', 'EcoshapeID', 'EcoshapeID', 'LONG'))
-                # arcpy.ExportTable_conversion('cdn_ecoshapes', output_table + 'U', field_mapping=field_mappings)
-                # arcpy.AddField_management(output_table + 'U', 'UsageType', 'TEXT')
-                # arcpy.CalculateField_management(output_table + 'U', 'UsageType', "'B'")
+        # Output to table
+        EBARUtils.displayMessage(messages, 'Outputting to table')
+        output_table = label + '_' + percent_of_population_cutoff
+        if is_full_year:
+            # Create table with one Present record for each EcoshapeID
+            field_mappings = arcpy.FieldMappings()
+            field_mappings.addFieldMap(EBARUtils.createFieldMap('cdn_ecoshapes', 'EcoshapeID', 'EcoshapeID', 'LONG'))
+            arcpy.ExportTable_conversion('cdn_ecoshapes', output_table, field_mapping=field_mappings)
+            arcpy.AddField_management(output_table, 'Presence', 'TEXT')
+            arcpy.CalculateField_management(output_table, 'Presence', "'P'")
+        else:
+            # # Create table with one Breeding record for each EcoshapeID
+            # field_mappings = arcpy.FieldMappings()
+            # field_mappings.addFieldMap(EBARUtils.createFieldMap('cdn_ecoshapes', 'EcoshapeID', 'EcoshapeID', 'LONG'))
+            # arcpy.ExportTable_conversion('cdn_ecoshapes', output_table + 'U', field_mapping=field_mappings)
+            # arcpy.AddField_management(output_table + 'U', 'UsageType', 'TEXT')
+            # arcpy.CalculateField_management(output_table + 'U', 'UsageType', "'B'")
 
-                # Update table with UsageType = Breeding for each EcoshapeID
-                arcpy.AddField_management(output_table, 'UsageType', 'TEXT')
+            # Update table with UsageType = Breeding for each EcoshapeID
+            arcpy.AddField_management(output_table, 'UsageType', 'TEXT')
 
-                # loop through ecoshapes because records may need to be added or updated
-                ecoshape_row = None
-                with arcpy.da.SearchCursor('cdn_ecoshapes', ['EcoshapeID']) as ecoshape_cursor:
-                    for ecoshape_row in EBARUtils.searchCursor(ecoshape_cursor):
-                        # update if row already exists
-                        update_row = None
-                        with arcpy.da.UpdateCursor(output_table, ['UsageType'],
-                                                   'EcoshapeID = ' + str(ecoshape_row['EcoshapeID'])) as update_cursor:
-                            for update_row in EBARUtils.updateCursor(update_cursor):
-                                update_cursor.updateRow(['B'])
-                        del update_cursor
-                        if update_row:
-                            del update_row
-                        else:
-                            # insert row
-                            with arcpy.da.InsertCursor(output_table,
-                                                       ['EcoshapeID', 'Presence', 'UsageType']) as insert_cursor:
-                                insert_cursor.insertRow([ecoshape_row['EcoshapeID'], 'P', 'B'])
-                            del insert_cursor
+            # loop through ecoshapes because records may need to be added or updated
+            ecoshape_row = None
+            with arcpy.da.SearchCursor('cdn_ecoshapes', ['EcoshapeID']) as ecoshape_cursor:
+                for ecoshape_row in EBARUtils.searchCursor(ecoshape_cursor):
+                    # update if row already exists
+                    update_row = None
+                    with arcpy.da.UpdateCursor(output_table, ['UsageType'],
+                                                'EcoshapeID = ' + str(ecoshape_row['EcoshapeID'])) as update_cursor:
+                        for update_row in EBARUtils.updateCursor(update_cursor):
+                            update_cursor.updateRow(['B'])
+                    del update_cursor
+                    if update_row:
+                        del update_row
+                    else:
+                        # insert row
+                        with arcpy.da.InsertCursor(output_table,
+                                                    ['EcoshapeID', 'Presence', 'UsageType']) as insert_cursor:
+                            insert_cursor.insertRow([ecoshape_row['EcoshapeID'], 'P', 'B'])
+                        del insert_cursor
 
-                # # export selected ecoshapes to temp because used in a join
-                # field_mappings = arcpy.FieldMappings()
-                # field_mappings.addFieldMap(EBARUtils.createFieldMap('cdn_ecoshapes', 'EcoshapeID', 'EcoshapeID', 'LONG'))
-                # arcpy.ExportTable_conversion('cdn_ecoshapes', 'breeding_ecoshapes_table', field_mapping=field_mappings)
-                # arcpy.AddJoin_management(output_table, 'EcoshapeID', 'breeding_ecoshapes_table', 'EcoshapeID',
-                #                         'KEEP_COMMON')
-                # arcpy.CalculateField_management(output_table, 'UsageType', "'B'")
-                #arcpy.RemoveJoin_management(output_table, 'breeding_ecoshapes_table')
-                # arcpy.Delete_management('breeding_ecoshapes_table')
+            # # export selected ecoshapes to temp because used in a join
+            # field_mappings = arcpy.FieldMappings()
+            # field_mappings.addFieldMap(EBARUtils.createFieldMap('cdn_ecoshapes', 'EcoshapeID', 'EcoshapeID', 'LONG'))
+            # arcpy.ExportTable_conversion('cdn_ecoshapes', 'breeding_ecoshapes_table', field_mapping=field_mappings)
+            # arcpy.AddJoin_management(output_table, 'EcoshapeID', 'breeding_ecoshapes_table', 'EcoshapeID',
+            #                         'KEEP_COMMON')
+            # arcpy.CalculateField_management(output_table, 'UsageType', "'B'")
+            #arcpy.RemoveJoin_management(output_table, 'breeding_ecoshapes_table')
+            # arcpy.Delete_management('breeding_ecoshapes_table')
         arcpy.Delete_management('polygons')
         arcpy.Delete_management('cdn_ecoshapes')
 
@@ -216,82 +219,16 @@ class CreateExternalRangeReviewFromEbirdAbundanceTool:
 if __name__ == '__main__':
     cerrfea = CreateExternalRangeReviewFromEbirdAbundanceTool()
     # hard code parameters for debugging
+    param_geodatabase = arcpy.Parameter()
+    param_geodatabase.value = 'D:/GIS/EBAR/EBAR.gdb' #'C:/GIS/EBAR/nsc-gis-ebarkba.sde'
     param_ebird_full_year_raster = arcpy.Parameter()
-    param_ebird_breeding_season_raster = arcpy.Parameter()
-    param_percent_of_population_cutoffs = arcpy.Parameter()
-    param_percent_of_population_cutoffs.value = '5' #'1;2;5'
-    param_label = arcpy.Parameter()
-    param_output_folder = arcpy.Parameter()
-    param_output_folder.value = 'D:/GIS/eBird/eBird Status and Trends'
-    param_output_gdbname = arcpy.Parameter()
-    param_output_gdbname.value = 'eBird External Range Reviews 2.gdb'
-
-    # param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/grbher3_abundance_seasonal_full-year_mean_2022.tif"
-    # param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/grbher3_abundance_seasonal_breeding_mean_2022.tif"
-    # param_label.value = 'grbher3'
-    # parameters = [param_ebird_full_year_raster, param_ebird_breeding_season_raster,
-    #               param_percent_of_population_cutoffs, param_label, param_output_folder, param_output_gdbname]
-    # cerrfea.runCreateExternalRangeReviewFromEbirdAbundanceTool(parameters, None)
-
-    # param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/harspa_abundance_seasonal_full-year_mean_2022.tif"
-    # param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/harspa_abundance_seasonal_breeding_mean_2022.tif"
-    # param_label.value = 'harspa'
-    # parameters = [param_ebird_full_year_raster, param_ebird_breeding_season_raster,
-    #               param_percent_of_population_cutoffs, param_label, param_output_folder, param_output_gdbname]
-    # cerrfea.runCreateExternalRangeReviewFromEbirdAbundanceTool(parameters, None)
-
-    # param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/henspa_abundance_seasonal_full-year_mean_2022.tif"
-    # param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/henspa_abundance_seasonal_breeding_mean_2022.tif"
-    # param_label.value = 'henspa'
-    # parameters = [param_ebird_full_year_raster, param_ebird_breeding_season_raster,
-    #               param_percent_of_population_cutoffs, param_label, param_output_folder, param_output_gdbname]
-    # cerrfea.runCreateExternalRangeReviewFromEbirdAbundanceTool(parameters, None)
-
-    # param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/perfal_abundance_seasonal_full-year_mean_2022.tif"
-    # param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/perfal_abundance_seasonal_breeding_mean_2022.tif"
-    # param_label.value = 'perfal'
-    # parameters = [param_ebird_full_year_raster, param_ebird_breeding_season_raster,
-    #               param_percent_of_population_cutoffs, param_label, param_output_folder, param_output_gdbname]
-    # cerrfea.runCreateExternalRangeReviewFromEbirdAbundanceTool(parameters, None)
-
-    # param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Cerulean Warbler/cerwar_abundance_seasonal_full-year_mean_2022.tif"
-    # param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Cerulean Warbler/cerwar_abundance_seasonal_breeding_mean_2022.tif"
-    # param_label.value = 'cerwar'
-    # parameters = [param_ebird_full_year_raster, param_ebird_breeding_season_raster,
-    #               param_percent_of_population_cutoffs, param_label, param_output_folder, param_output_gdbname]
-    # cerrfea.runCreateExternalRangeReviewFromEbirdAbundanceTool(parameters, None)
-
-    # param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Canada Goose/cangoo_abundance_seasonal_full-year_mean_2022.tif"
-    # param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Canada Goose/cangoo_abundance_seasonal_breeding_mean_2022.tif"
-    # param_label.value = 'cangoo'
-    # parameters = [param_ebird_full_year_raster, param_ebird_breeding_season_raster,
-    #               param_percent_of_population_cutoffs, param_label, param_output_folder, param_output_gdbname]
-    # cerrfea.runCreateExternalRangeReviewFromEbirdAbundanceTool(parameters, None)
-
-    # param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Least Bittern/leabit_abundance_seasonal_full-year_mean_2022.tif"
-    # param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Least Bittern/leabit_abundance_seasonal_breeding_mean_2022.tif"
-    # param_label.value = 'leabit'
-    # parameters = [param_ebird_full_year_raster, param_ebird_breeding_season_raster,
-    #               param_percent_of_population_cutoffs, param_label, param_output_folder, param_output_gdbname]
-    # cerrfea.runCreateExternalRangeReviewFromEbirdAbundanceTool(parameters, None)
-
-    # param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Lewis's Woodpecker/lewwoo_abundance_seasonal_full-year_mean_2022.tif"
-    # param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Lewis's Woodpecker/lewwoo_abundance_seasonal_breeding_mean_2022.tif"
-    # param_label.value = 'lewwoo'
-    # parameters = [param_ebird_full_year_raster, param_ebird_breeding_season_raster,
-    #               param_percent_of_population_cutoffs, param_label, param_output_folder, param_output_gdbname]
-    # cerrfea.runCreateExternalRangeReviewFromEbirdAbundanceTool(parameters, None)
-
-    # param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Piping Plover/pipplo_abundance_seasonal_full-year_mean_2022.tif"
-    # param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Piping Plover/pipplo_abundance_seasonal_breeding_mean_2022.tif"
-    # param_label.value = 'pipplo'
-    # parameters = [param_ebird_full_year_raster, param_ebird_breeding_season_raster,
-    #               param_percent_of_population_cutoffs, param_label, param_output_folder, param_output_gdbname]
-    # cerrfea.runCreateExternalRangeReviewFromEbirdAbundanceTool(parameters, None)
-
     param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Solitary Sandpiper/solsan_abundance_seasonal_full-year_mean_2022.tif"
+    param_ebird_breeding_season_raster = arcpy.Parameter()
     param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Solitary Sandpiper/solsan_abundance_seasonal_breeding_mean_2022.tif"
+    param_percent_of_population_cutoff = arcpy.Parameter()
+    param_percent_of_population_cutoff.value = 5
+    param_label = arcpy.Parameter()
     param_label.value = 'solsan'
-    parameters = [param_ebird_full_year_raster, param_ebird_breeding_season_raster,
-                  param_percent_of_population_cutoffs, param_label, param_output_folder, param_output_gdbname]
+    parameters = [param_geodatabase, param_ebird_full_year_raster, param_ebird_breeding_season_raster,
+                  param_percent_of_population_cutoff, param_label]
     cerrfea.runCreateExternalRangeReviewFromEbirdAbundanceTool(parameters, None)
