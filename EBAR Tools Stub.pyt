@@ -1699,6 +1699,15 @@ class CreateExternalRangeReviewFromEbirdAbundance(object):
             direction='Input')
         param_ebird_breeding_season_raster.filter.list = ['tif']
 
+        # Label
+        param_label = arcpy.Parameter(
+            displayName='Label',
+            name='label',
+            datatype='GPString',
+            parameterType='Required',
+            direction='Input')
+
+        # Percent of Population Cutoff
         param_percent_of_population_cutoff = arcpy.Parameter(
             displayName='Percent of Population Cutoff',
             name='percent_of_population_cutoff',
@@ -1707,15 +1716,17 @@ class CreateExternalRangeReviewFromEbirdAbundance(object):
             direction='Input')
         param_percent_of_population_cutoff.value = 5
 
-        param_label = arcpy.Parameter(
-            displayName='Label',
-            name='label',
-            datatype='GPString',
-            parameterType='Required',
-            direction='Input')
+        # # Year
+        # param_year = arcpy.Parameter(
+        #     displayName='Year',
+        #     name='year',
+        #     datatype='GPLong',
+        #     parameterType='Required',
+        #     direction='Input')
+        # param_year.value = 2023
 
         params = [param_geodatabase, param_ebird_full_year_raster, param_ebird_breeding_season_raster,
-                  param_percent_of_population_cutoff, param_label]
+                  param_label, param_percent_of_population_cutoff] #, param_year]
         return params
 
     def isLicensed(self):
