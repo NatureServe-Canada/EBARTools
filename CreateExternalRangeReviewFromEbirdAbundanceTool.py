@@ -33,6 +33,13 @@ class CreateExternalRangeReviewFromEbirdAbundanceTool:
         start_time = datetime.datetime.now()
         EBARUtils.displayMessage(messages, 'Start time: ' + str(start_time))
 
+        # connect to portal
+        # get password from file
+        pfile = open(EBARUtils.portal_file)
+        password = pfile.read()
+        pfile.close()
+        arcpy.SignInToPortal('https://gis.natureserve.ca/portal', 'rgreenens', password)
+
         # settings
         arcpy.env.overwriteOutput = True
 
@@ -128,36 +135,36 @@ class CreateExternalRangeReviewFromEbirdAbundanceTool:
         # needed to ensure every cell gets included in sum
         # raster to polygon combines neighbouring cells with the same value!!!
         EBARUtils.displayMessage(messages, 'Converting to point')
-        arcpy.RasterToPolygon_conversion('integer_raster', 'points', 'NO_SIMPLIFY', 'VALUE')
+        arcpy.RasterToPoint_conversion('integer_raster', 'ebird_points', 'VALUE')
 
         # Summary Statistics for sum/population
         EBARUtils.displayMessage(messages, 'Calculating total population')
-        arcpy.Statistics_analysis('points', 'stats', [['gridcode', 'SUM']])
+        arcpy.Statistics_analysis('ebird_points', 'stats', [['grid_code', 'SUM']])
         total_pop = 0
         row = None
-        with arcpy.da.SearchCursor('stats', ['SUM_gridcode']) as cursor:
+        with arcpy.da.SearchCursor('stats', ['SUM_grid_code']) as cursor:
             for row in EBARUtils.searchCursor(cursor):
-                total_pop = row['SUM_gridcode']
+                total_pop = row['SUM_grid_code']
         del cursor
         if row:
             del row
         arcpy.Delete_management('stats')
-        arcpy.Delete_management('points')
+        arcpy.Delete_management('ebird_points')
 
         # Raster to Polygon
         EBARUtils.displayMessage(messages, 'Converting to polygon')
-        arcpy.RasterToPolygon_conversion('integer_raster', 'polygons', 'NO_SIMPLIFY', 'VALUE')
+        arcpy.RasterToPolygon_conversion('integer_raster', 'ebird_polygons', 'NO_SIMPLIFY', 'VALUE')
         arcpy.Delete_management('integer_raster')
         arcpy.Delete_management(integer_raster)
 
         # Percent Population Cutoff
         # for percent_of_population_cutoff in percent_of_population_cutoffs:
         EBARUtils.displayMessage(messages, 'Determining cutoff for ' + percent_of_population_cutoff)
-        minimum = self.PercentPopulationCutoff('polygons', total_pop, percent_of_population_cutoff)
+        minimum = self.PercentPopulationCutoff('ebird_polygons', total_pop, percent_of_population_cutoff)
 
         # Select above cutoff
         EBARUtils.displayMessage(messages, 'Applying cutoff for ' + percent_of_population_cutoff)
-        arcpy.MakeFeatureLayer_management('polygons', 'included_polygons', 'gridcode > ' + str(minimum))
+        arcpy.MakeFeatureLayer_management('ebird_polygons', 'included_polygons', 'gridcode > ' + str(minimum))
 
         # Intersect with ecoshapes
         EBARUtils.displayMessage(messages, 'Intersecting ecoshapes')
@@ -215,7 +222,7 @@ class CreateExternalRangeReviewFromEbirdAbundanceTool:
             # arcpy.CalculateField_management(output_table, 'UsageType', "'B'")
             #arcpy.RemoveJoin_management(output_table, 'breeding_ecoshapes_table')
             # arcpy.Delete_management('breeding_ecoshapes_table')
-        arcpy.Delete_management('polygons')
+        arcpy.Delete_management('ebird_polygons')
         arcpy.Delete_management('cdn_ecoshapes')
 
 

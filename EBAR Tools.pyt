@@ -35,7 +35,7 @@ import DeleteInputFeedbackTool
 import PrepareNSXProTransferTool
 import SyncEcosystemListBioticsTool
 import SyncEcosystemListKBATool
-import GenerateHotspotMapTool
+import GenerateHeatmapTool
 import CreateExternalRangeReviewFromEbirdAbundanceTool
 import EBARUtils
 import datetime
@@ -54,7 +54,8 @@ class Toolbox(object):
                       SyncSpeciesListKBA, BuildEBARDownloadTable, BuildBulkDownloadTable, FlagBadDataUsingRange,
                       DeleteRangeMap, ImportVisits, SummarizeDownloads, PublishRangeMap, PublishRangeMapSets,
                       FlagBadDataUsingID, RecordInputFeedback, DeleteInputFeedback, PrepareNSXProTransfer,
-                      SyncEcosystemListBiotics, SyncEcosystemListKBA, GenerateHotspotMap, CreateExternalRangeReviewFromEbirdAbundance]
+                      SyncEcosystemListBiotics, SyncEcosystemListKBA, GenerateHeatmap,
+                      CreateExternalRangeReviewFromEbirdAbundance]
 
 
 class ImportTabularData(object):
@@ -1689,11 +1690,11 @@ class SyncEcosystemListKBA(object):
         return
 
 
-class GenerateHotspotMap(object):
+class GenerateHeatmap(object):
     def __init__(self):
         """Define the tool (tool name is the name of the class)."""
-        self.label = 'Generate Hotspot Map'
-        self.description = 'Create JPG hotspot maps from EBAR ranges'
+        self.label = 'Generate Heatmap'
+        self.description = 'Create JPG heatmap from EBAR ranges'
         self.canRunInBackground = True
 
     def getParameterInfo(self):
@@ -1707,10 +1708,10 @@ class GenerateHotspotMap(object):
             direction='Input')
         param_geodatabase.filter.list = ['Local Database', 'Remote Database']
 
-        # Hotspot Type
+        # Heatmap Type
         param_csv = arcpy.Parameter(
-            displayName='Hotspot Type',
-            name='hotspot_type',
+            displayName='Heatmap Type',
+            name='heatmap_type',
             datatype='GPString',
             parameterType='Required',
             direction='Input')
@@ -1735,8 +1736,8 @@ class GenerateHotspotMap(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        ghm = GenerateHotspotMapTool.GenerateHotspotMapTool()
-        ghm.runGenerateHotspotMapTool(parameters, messages)
+        ghm = GenerateHeatmapTool.GenerateHeatmapTool()
+        ghm.runGenerateHeatmapTool(parameters, messages)
         return
 
 
@@ -1769,7 +1770,7 @@ class CreateExternalRangeReviewFromEbirdAbundance(object):
 
         # eBird Breeding Season Raster
         param_ebird_breeding_season_raster = arcpy.Parameter(
-            displayName='eBird Full Year Raster',
+            displayName='eBird Breeding Season Raster',
             name='ebird_breeding_season_raster',
             datatype='DEFile',
             parameterType='Optional',
