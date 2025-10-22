@@ -149,6 +149,11 @@ class CreateExternalRangeReviewFromEbirdAbundanceTool:
         if row:
             del row
         arcpy.Delete_management('stats')
+
+        # Percent Population Cutoff
+        # for percent_of_population_cutoff in percent_of_population_cutoffs:
+        EBARUtils.displayMessage(messages, 'Determining cutoff for ' + percent_of_population_cutoff)
+        minimum = self.PercentPopulationCutoff('ebird_points', total_pop, percent_of_population_cutoff)
         arcpy.Delete_management('ebird_points')
 
         # Raster to Polygon
@@ -156,11 +161,6 @@ class CreateExternalRangeReviewFromEbirdAbundanceTool:
         arcpy.RasterToPolygon_conversion('integer_raster', 'ebird_polygons', 'NO_SIMPLIFY', 'VALUE')
         arcpy.Delete_management('integer_raster')
         arcpy.Delete_management(integer_raster)
-
-        # Percent Population Cutoff
-        # for percent_of_population_cutoff in percent_of_population_cutoffs:
-        EBARUtils.displayMessage(messages, 'Determining cutoff for ' + percent_of_population_cutoff)
-        minimum = self.PercentPopulationCutoff('ebird_polygons', total_pop, percent_of_population_cutoff)
 
         # Select above cutoff
         EBARUtils.displayMessage(messages, 'Applying cutoff for ' + percent_of_population_cutoff)
@@ -231,13 +231,13 @@ class CreateExternalRangeReviewFromEbirdAbundanceTool:
         row = None
         prev_pop = 0
         total = 0
-        with arcpy.da.SearchCursor(population_table, ['gridcode'],
-                                   sql_clause=[None,'ORDER BY gridcode ASC']) as cursor:
+        with arcpy.da.SearchCursor(population_table, ['grid_code'],
+                                   sql_clause=[None,'ORDER BY grid_code ASC']) as cursor:
             for row in EBARUtils.searchCursor(cursor):
-                total += row['gridcode']
+                total += row['grid_code']
                 if total > cutoff:
                     return prev_pop
-                prev_pop = row['gridcode']
+                prev_pop = row['grid_code']
         del cursor
         if row:
             del row
