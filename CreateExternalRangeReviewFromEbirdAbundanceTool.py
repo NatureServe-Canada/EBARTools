@@ -60,6 +60,18 @@ class CreateExternalRangeReviewFromEbirdAbundanceTool:
         # use passed geodatabase as workspace for temp outputs
         arcpy.env.workspace = param_geodatabase
 
+        # check input raster for coordinate system
+        EBARUtils.displayMessage(messages, 'Checking/defining spatial reference system on input rasters')
+        dsc = arcpy.Describe(param_ebird_full_year_raster)
+        if dsc.spatialReference.name == 'Unknown':
+            arcpy.DefineProjection_management(param_ebird_full_year_raster,
+                                              arcpy.SpatialReference('Eckert IV (world)'))
+        if param_ebird_breeding_season_raster:
+            dsc = arcpy.Describe(param_ebird_breeding_season_raster)
+            if dsc.spatialReference.name == 'Unknown':
+                arcpy.DefineProjection_management(param_ebird_breeding_season_raster,
+                                                  arcpy.SpatialReference('Eckert IV (world)'))
+
         # full year raster is required
         # download fails with 500 error using two different methods despite URLs working correctly in browser!
         # EBARUtils.displayMessage(messages, 'Downloading Full Year raster')
@@ -251,11 +263,11 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'D:/GIS/EBAR/EBAR.gdb' #'C:/GIS/EBAR/nsc-gis-ebarkba.sde'
     param_ebird_full_year_raster = arcpy.Parameter()
-    param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Solitary Sandpiper/solsan_abundance_seasonal_full-year_mean_2022.tif"
+    param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/wesgre_abundance_seasonal_full-year_mean_2023.tif"
     param_ebird_breeding_season_raster = arcpy.Parameter()
-    param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/Solitary Sandpiper/solsan_abundance_seasonal_breeding_mean_2022.tif"
+    param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/wesgre_abundance_seasonal_breeding_mean_2023.tif"
     param_label = arcpy.Parameter()
-    param_label.value = 'solsan'
+    param_label.value = 'wesgre'
     param_percent_of_population_cutoff = arcpy.Parameter()
     param_percent_of_population_cutoff.value = 5
     # param_year = arcpy.Parameter()

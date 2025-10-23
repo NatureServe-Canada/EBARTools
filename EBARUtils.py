@@ -510,10 +510,10 @@ def createFieldMap(input_table, input_field, output_field, data_type):
     return field_map
 
 
-def readDatasetSources(param_geodatabase, dataset_source_type):
+def readDatasetSources(geodatabase, dataset_source_type):
     """return a list of dataset source names for the given type"""
     source_list = []
-    with arcpy.da.SearchCursor(param_geodatabase + '/DatasetSource', ['DatasetSourceName'],
+    with arcpy.da.SearchCursor(geodatabase + '/DatasetSource', ['DatasetSourceName'],
                                 "DatasetSourceType IN " + dataset_source_type,
                                 sql_clause=(None, 'ORDER BY DatasetSourceName')) as cursor:
         for row in searchCursor(cursor):
@@ -772,6 +772,59 @@ def ExportEcoshapeOverviewsToShapefile(ecoshape_overview_layer, range_map_ecosha
     metadata.summary = 'Polygons shapefile of generalized ecoshapes for EBAR for selected species'
     ecoshape_overview_md.copy(metadata)
     ecoshape_overview_md.save()
+
+
+def ExportHeatmapSpeciesToCSV(geodatabase, output_folder, output_csv, metadata):
+    field_mappings = arcpy.FieldMappings()
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARDistinctSpecies',
+                                              'ELEMENT_NATIONAL_ID', 'ELEMENT_NATIONAL_ID', 'LONG'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARDistinctSpecies',
+                                              'ELEMENT_GLOBAL_ID', 'ELEMENT_GLOBAL_ID', 'LONG'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARDistinctSpecies',
+                                              'ELEMENT_CODE', 'ELEMENT_CODE', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARDistinctSpecies',
+                                              'CATEGORY', 'CATEGORY', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARDistinctSpecies',
+                                              'TAX_GROUP', 'TAX_GROUP', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARDistinctSpecies',
+                                              'KINGDOM', 'KINGDOM', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARDistinctSpecies',
+                                              'CLASS', 'CLASS', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARDistinctSpecies',
+                                              'TAX_ORDER', 'TAX_ORDER', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARDistinctSpecies',
+                                              'FAMILY', 'FAMILY', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARDistinctSpecies',
+                                              'NATIONAL_SCIENTIFIC_NAME', 'NATIONAL_SCIENTIFIC_NAME',
+                                              'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARDistinctSpecies',
+                                              'NATIONAL_ENGL_NAME', 'NATIONAL_ENGL_NAME', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARDistinctSpecies',
+                                              'NATIONAL_FR_NAME', 'NATIONAL_FR_NAME', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARDistinctSpecies',
+                                              'COSEWIC_NAME', 'COSEWIC_NAME', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARDistinctSpecies',
+                                              'ENGLISH_COSEWIC_COM_NAME', 'ENGLISH_COSEWIC_COM_NAME',
+                                              'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARDistinctSpecies',
+                                              'FRENCH_COSEWIC_COM_NAME', 'FRENCH_COSEWIC_COM_NAME',
+                                              'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARDistinctSpecies',
+                                              'COSEWIC_STATUS', 'COSEWIC_STATUS', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARDistinctSpecies',
+                                              'SARA_STATUS', 'SARA_STATUS', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARDistinctSpecies',
+                                              'SHORT_CITATION_AUTHOR', 'SHORT_CITATION_AUTHOR',
+                                              'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARDistinctSpecies',
+                                              'SHORT_CITATION_YEAR', 'SHORT_CITATION_YEAR', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARDistinctSpecies',
+                                              'FORMATTED_FULL_CITATION', 'FORMATTED_FULL_CITATION',
+                                              'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARDistinctSpecies',
+                                              'NSX_URL', 'NSX_URL', 'TEXT'))
+    # arcpy.ExportTable_conversion(geodatabase + '/s_PublishedSARDistinctSpecies',
+    #                              download_folder + '/' + jpg + '.csv', field_mapping=field_mappings)
 
 
 def getTaxonAttributes(global_unique_id, element_global_id, range_map_id, messages):
