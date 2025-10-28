@@ -1,0 +1,1443 @@
+{
+  "type" : "CIMMapDocument",
+  "version" : "3.5.0",
+  "build" : 57366,
+  "mapDefinition" : {
+    "type" : "CIMMap",
+    "name" : "EBAR_SAR_Heatmap",
+    "uRI" : "CIMPATH=Map/Map.json",
+    "sourceModifiedTime" : {
+      "type" : "TimeInstant"
+    },
+    "metadataURI" : "CIMPATH=Metadata/17981dacbc77446dd32d40284fa106dd.xml",
+    "useSourceMetadata" : true,
+    "illumination" : {
+      "type" : "CIMIlluminationProperties",
+      "ambientLight" : 50,
+      "sunPositionX" : -0.61237243569579003,
+      "sunPositionY" : 0.61237243569579003,
+      "sunPositionZ" : 0.5,
+      "illuminationSource" : "AbsoluteSunPosition",
+      "sunAzimuth" : 315,
+      "sunAltitude" : 30,
+      "showStars" : true,
+      "enableAmbientOcclusion" : true,
+      "enableEyeDomeLighting" : true
+    },
+    "layers" : [
+      "CIMPATH=97f48dd02103441cbb7259ff65676599.json",
+      "CIMPATH=Map/EcoshapeOverview.json",
+      "CIMPATH=f2ccfa7c0b424791aa461aa30c6e9164.json",
+      "CIMPATH=b39bcde9bd164ae5a60e08af75e8497f.json"
+    ],
+    "defaultViewingMode" : "Map",
+    "mapType" : "Map",
+    "groundElevationSurfaceLayer" : "CIMPATH=Map/27cdd8c4d9604a229c328148e8871669.json",
+    "defaultColorVisionDeficiencyMode" : "None",
+    "standaloneTables" : [
+      "CIMPATH=Map/BIOTICS_ELEMENT_NATIONAL_csv.json",
+      "CIMPATH=Map/RangeMap_csv.json",
+      "CIMPATH=Map/RangeMapEcoshape_csv.json"
+    ],
+    "datumTransforms" : [
+      {
+        "type" : "CIMDatumTransform",
+        "forward" : true,
+        "geoTransformation" : {
+          "geoTransforms" : [
+            {
+              "wkid" : 108190,
+              "latestWkid" : 108190,
+              "transformForward" : true,
+              "name" : "WGS_1984_(ITRF00)_To_NAD_1983"
+            }
+          ]
+        }
+      },
+      {
+        "type" : "CIMDatumTransform",
+        "forward" : false,
+        "geoTransformation" : {
+          "geoTransforms" : [
+            {
+              "wkid" : 108190,
+              "latestWkid" : 108190,
+              "transformForward" : true,
+              "name" : "WGS_1984_(ITRF00)_To_NAD_1983"
+            }
+          ]
+        }
+      },
+      {
+        "type" : "CIMDatumTransform",
+        "forward" : true,
+        "geoTransformation" : {
+          "geoTransforms" : [
+            {
+              "wkid" : 108190,
+              "latestWkid" : 108190,
+              "transformForward" : true,
+              "name" : "WGS_1984_(ITRF00)_To_NAD_1983"
+            }
+          ]
+        }
+      },
+      {
+        "type" : "CIMDatumTransform",
+        "forward" : false,
+        "geoTransformation" : {
+          "geoTransforms" : [
+            {
+              "wkid" : 108190,
+              "latestWkid" : 108190,
+              "transformForward" : true,
+              "name" : "WGS_1984_(ITRF00)_To_NAD_1983"
+            }
+          ]
+        }
+      },
+      {
+        "type" : "CIMDatumTransform",
+        "forward" : true,
+        "geoTransformation" : {
+          "geoTransforms" : [
+            {
+              "wkid" : 108190,
+              "latestWkid" : 108190,
+              "transformForward" : true,
+              "name" : "WGS_1984_(ITRF00)_To_NAD_1983"
+            }
+          ]
+        }
+      },
+      {
+        "type" : "CIMDatumTransform",
+        "forward" : false,
+        "geoTransformation" : {
+          "geoTransforms" : [
+            {
+              "wkid" : 108190,
+              "latestWkid" : 108190,
+              "transformForward" : true,
+              "name" : "WGS_1984_(ITRF00)_To_NAD_1983"
+            }
+          ]
+        }
+      }
+    ],
+    "defaultExtent" : {
+      "xmin" : -2854171.01059981762,
+      "ymin" : 56120.2529847659171,
+      "xmax" : 3442750.41599981626,
+      "ymax" : 4732167.46051523462,
+      "spatialReference" : {
+        "wkid" : 102008,
+        "latestWkid" : 102008,
+        "xyTolerance" : 0.001,
+        "zTolerance" : 0.001,
+        "mTolerance" : 0.001,
+        "falseX" : -16688100,
+        "falseY" : -9068200,
+        "xyUnits" : 10000,
+        "falseZ" : -100000,
+        "zUnits" : 10000,
+        "falseM" : -100000,
+        "mUnits" : 10000
+      }
+    },
+    "generalPlacementProperties" : {
+      "type" : "CIMMaplexGeneralPlacementProperties",
+      "invertedLabelTolerance" : 2,
+      "unplacedLabelColor" : {
+        "type" : "CIMRGBColor",
+        "values" : [
+          255,
+          0,
+          0,
+          100
+        ]
+      },
+      "keyNumberGroups" : [
+        {
+          "type" : "CIMMaplexKeyNumberGroup",
+          "delimiterCharacter" : ".",
+          "horizontalAlignment" : "Left",
+          "maximumNumberOfLines" : 20,
+          "minimumNumberOfLines" : 2,
+          "name" : "Default",
+          "numberResetType" : "None",
+          "keyNumberMethod" : "PreventUnplacedLabels"
+        }
+      ],
+      "placementQuality" : "High"
+    },
+    "snappingProperties" : {
+      "type" : "CIMSnappingProperties",
+      "xYTolerance" : 10,
+      "xYToleranceUnit" : "SnapXYToleranceUnitPixel",
+      "snapToSketchEnabled" : true,
+      "snapRequestType" : "SnapRequestType_GeometricAndVisualSnapping",
+      "isZSnappingEnabled" : true,
+      "snapTipDisplayParts" : 3
+    },
+    "spatialReference" : {
+      "wkid" : 102008,
+      "latestWkid" : 102008,
+      "xyTolerance" : 0.001,
+      "zTolerance" : 0.001,
+      "mTolerance" : 0.001,
+      "falseX" : -16688100,
+      "falseY" : -9068200,
+      "xyUnits" : 10000,
+      "falseZ" : -100000,
+      "zUnits" : 10000,
+      "falseM" : -100000,
+      "mUnits" : 10000
+    },
+    "timeDisplay" : {
+      "type" : "CIMMapTimeDisplay",
+      "defaultTimeIntervalUnits" : "esriTimeUnitsUnknown",
+      "timeValue" : {
+        "type" : "TimeExtent",
+        "start" : null,
+        "end" : null,
+        "empty" : false
+      },
+      "timeRelation" : "esriTimeRelationOverlaps"
+    },
+    "colorModel" : "RGB",
+    "scaleDisplayFormat" : "Value",
+    "clippingMode" : "None",
+    "nearPlaneClipDistanceMode" : "Automatic",
+    "rGBColorProfile" : "sRGB IEC61966-2.1",
+    "cMYKColorProfile" : "U.S. Web Coated (SWOP) v2",
+    "autoFillFeatureCache" : true,
+    "useMasking" : true
+  },
+  "layerDefinitions" : [
+    {
+      "type" : "CIMVectorTileLayer",
+      "name" : "World Terrain Reference",
+      "uRI" : "CIMPATH=97f48dd02103441cbb7259ff65676599.json",
+      "sourceModifiedTime" : {
+        "type" : "TimeInstant"
+      },
+      "useSourceMetadata" : true,
+      "layerType" : "BasemapTopReference",
+      "showLegends" : true,
+      "visibility" : true,
+      "displayCacheType" : "Permanent",
+      "maxDisplayCacheAge" : 5,
+      "showPopups" : true,
+      "serviceLayerID" : -1,
+      "refreshRate" : -1,
+      "refreshRateUnit" : "esriTimeUnitsSeconds",
+      "webMapLayerID" : "VectorTile_8118",
+      "blendingMode" : "Alpha",
+      "allowDrapingOnIntegratedMesh" : false,
+      "dataConnection" : {
+        "type" : "CIMVectorTileDataConnection",
+        "uRI" : "https://cdn.arcgis.com/sharing/rest/content/items/14fbc125ccc9488888b014db09f35f67/resources/styles/root.json"
+      }
+    },
+    {
+      "type" : "CIMFeatureLayer",
+      "name" : "HeatmapEcoshapeOverview",
+      "uRI" : "CIMPATH=Map/EcoshapeOverview.json",
+      "sourceModifiedTime" : {
+        "type" : "TimeInstant",
+        "start" : -62135596800000
+      },
+      "metadataURI" : "CIMPATH=Metadata/ca908e1362fe5a09183aa558f29fa9f4.xml",
+      "useSourceMetadata" : true,
+      "description" : "EcoshapeOverview",
+      "layerElevation" : {
+        "type" : "CIMLayerElevationSurface",
+        "elevationSurfaceLayerURI" : "CIMPATH=Map/27cdd8c4d9604a229c328148e8871669.json"
+      },
+      "expanded" : true,
+      "layerType" : "Operational",
+      "showLegends" : true,
+      "visibility" : true,
+      "displayCacheType" : "Permanent",
+      "maxDisplayCacheAge" : 5,
+      "showPopups" : true,
+      "serviceLayerID" : -1,
+      "refreshRate" : -1,
+      "refreshRateUnit" : "esriTimeUnitsSeconds",
+      "blendingMode" : "Alpha",
+      "allowDrapingOnIntegratedMesh" : true,
+      "autoGenerateFeatureTemplates" : true,
+      "featureElevationExpression" : "0",
+      "featureTable" : {
+        "type" : "CIMFeatureTable",
+        "displayField" : "ecoshapena",
+        "editable" : true,
+        "fieldDescriptions" : [
+          {
+            "type" : "CIMFieldDescription",
+            "alias" : "OBJECTID",
+            "fieldName" : "OBJECTID",
+            "numberFormat" : {
+              "type" : "CIMNumericFormat",
+              "alignmentOption" : "esriAlignRight",
+              "alignmentWidth" : 0,
+              "roundingOption" : "esriRoundNumberOfDecimals",
+              "roundingValue" : 0
+            },
+            "readOnly" : true,
+            "visible" : true,
+            "searchMode" : "Exact"
+          },
+          {
+            "type" : "CIMFieldDescription",
+            "alias" : "Shape",
+            "fieldName" : "Shape",
+            "visible" : true,
+            "searchMode" : "Exact"
+          },
+          {
+            "type" : "CIMFieldDescription",
+            "alias" : "EcoshapeID",
+            "fieldName" : "EcoshapeID",
+            "numberFormat" : {
+              "type" : "CIMNumericFormat",
+              "alignmentOption" : "esriAlignRight",
+              "alignmentWidth" : 0,
+              "roundingOption" : "esriRoundNumberOfDecimals",
+              "roundingValue" : 0
+            },
+            "visible" : true,
+            "searchMode" : "Exact"
+          },
+          {
+            "type" : "CIMFieldDescription",
+            "alias" : "EcoshapeName",
+            "fieldName" : "EcoshapeName",
+            "visible" : true,
+            "searchMode" : "Exact"
+          },
+          {
+            "type" : "CIMFieldDescription",
+            "alias" : "HeatmapRangeCount",
+            "fieldName" : "HeatmapRangeCount",
+            "numberFormat" : {
+              "type" : "CIMNumericFormat",
+              "alignmentOption" : "esriAlignRight",
+              "alignmentWidth" : 0,
+              "roundingOption" : "esriRoundNumberOfDecimals",
+              "roundingValue" : 0
+            },
+            "visible" : true,
+            "searchMode" : "Exact"
+          },
+          {
+            "type" : "CIMFieldDescription",
+            "alias" : "HeatmapScinames",
+            "fieldName" : "HeatmapScinames",
+            "visible" : true,
+            "searchMode" : "Exact"
+          },
+          {
+            "type" : "CIMFieldDescription",
+            "alias" : "ParentEcoregion",
+            "fieldName" : "ParentEcoregion",
+            "visible" : true,
+            "searchMode" : "Exact"
+          },
+          {
+            "type" : "CIMFieldDescription",
+            "alias" : "ParentEcoregionFR",
+            "fieldName" : "ParentEcoregionFR",
+            "visible" : true,
+            "searchMode" : "Exact"
+          },
+          {
+            "type" : "CIMFieldDescription",
+            "alias" : "Ecozone",
+            "fieldName" : "Ecozone",
+            "visible" : true,
+            "searchMode" : "Exact"
+          },
+          {
+            "type" : "CIMFieldDescription",
+            "alias" : "EcozoneFR",
+            "fieldName" : "EcozoneFR",
+            "visible" : true,
+            "searchMode" : "Exact"
+          },
+          {
+            "type" : "CIMFieldDescription",
+            "alias" : "MosaicVersion",
+            "fieldName" : "MosaicVersion",
+            "visible" : true,
+            "searchMode" : "Exact"
+          },
+          {
+            "type" : "CIMFieldDescription",
+            "alias" : "Shape_Length",
+            "fieldName" : "Shape_Length",
+            "numberFormat" : {
+              "type" : "CIMNumericFormat",
+              "alignmentOption" : "esriAlignRight",
+              "alignmentWidth" : 0,
+              "roundingOption" : "esriRoundNumberOfDecimals",
+              "roundingValue" : 6
+            },
+            "readOnly" : true,
+            "visible" : true,
+            "searchMode" : "Exact"
+          },
+          {
+            "type" : "CIMFieldDescription",
+            "alias" : "Shape_Area",
+            "fieldName" : "Shape_Area",
+            "numberFormat" : {
+              "type" : "CIMNumericFormat",
+              "alignmentOption" : "esriAlignRight",
+              "alignmentWidth" : 0,
+              "roundingOption" : "esriRoundNumberOfDecimals",
+              "roundingValue" : 6
+            },
+            "readOnly" : true,
+            "visible" : true,
+            "searchMode" : "Exact"
+          }
+        ],
+        "dataConnection" : {
+          "type" : "CIMStandardDataConnection",
+          "workspaceConnectionString" : "DATABASE=.\\EBAR_SAR_Heatmap.gdb",
+          "workspaceFactory" : "FileGDB",
+          "dataset" : "HeatmapEcoshapeOverview",
+          "datasetType" : "esriDTFeatureClass"
+        },
+        "studyAreaSpatialRel" : "esriSpatialRelUndefined",
+        "searchOrder" : "esriSearchOrderSpatial"
+      },
+      "htmlPopupEnabled" : true,
+      "selectable" : true,
+      "featureCacheType" : "Session",
+      "displayFiltersType" : "ByScale",
+      "featureBlendingMode" : "Alpha",
+      "layerEffectsMode" : "Layer",
+      "labelClasses" : [
+        {
+          "type" : "CIMLabelClass",
+          "expressionTitle" : "Custom",
+          "expression" : "$feature.ecoshapena",
+          "expressionEngine" : "Arcade",
+          "featuresToLabel" : "AllVisibleFeatures",
+          "maplexLabelPlacementProperties" : {
+            "type" : "CIMMaplexLabelPlacementProperties",
+            "featureType" : "Polygon",
+            "avoidPolygonHoles" : true,
+            "canOverrunFeature" : true,
+            "canPlaceLabelOutsidePolygon" : true,
+            "canRemoveOverlappingLabel" : true,
+            "canStackLabel" : true,
+            "centerLabelAnchorType" : "Symbol",
+            "connectionType" : "Unambiguous",
+            "constrainOffset" : "NoConstraint",
+            "contourAlignmentType" : "Page",
+            "contourLadderType" : "Straight",
+            "contourMaximumAngle" : 90,
+            "enableConnection" : true,
+            "featureWeight" : 0,
+            "fontHeightReductionLimit" : 4,
+            "fontHeightReductionStep" : 0.5,
+            "fontWidthReductionLimit" : 90,
+            "fontWidthReductionStep" : 5,
+            "graticuleAlignmentType" : "Straight",
+            "keyNumberGroupName" : "Default",
+            "labelBuffer" : 15,
+            "labelLargestPolygon" : true,
+            "labelPriority" : -1,
+            "labelStackingProperties" : {
+              "type" : "CIMMaplexLabelStackingProperties",
+              "stackAlignment" : "ChooseBest",
+              "maximumNumberOfLines" : 3,
+              "minimumNumberOfCharsPerLine" : 3,
+              "maximumNumberOfCharsPerLine" : 24,
+              "separators" : [
+                {
+                  "type" : "CIMMaplexStackingSeparator",
+                  "separator" : " ",
+                  "splitAfter" : true
+                },
+                {
+                  "type" : "CIMMaplexStackingSeparator",
+                  "separator" : ",",
+                  "visible" : true,
+                  "splitAfter" : true
+                }
+              ],
+              "trimStackingSeparators" : true,
+              "preferToStackLongLabels" : true
+            },
+            "lineFeatureType" : "General",
+            "linePlacementMethod" : "OffsetCurvedFromLine",
+            "maximumLabelOverrun" : 80,
+            "maximumLabelOverrunUnit" : "Point",
+            "measureFromClippedFeatureGeometry" : true,
+            "minimumFeatureSizeUnit" : "Map",
+            "multiPartOption" : "OneLabelPerPart",
+            "offsetAlongLineProperties" : {
+              "type" : "CIMMaplexOffsetAlongLineProperties",
+              "placementMethod" : "BestPositionAlongLine",
+              "labelAnchorPoint" : "CenterOfLabel",
+              "distanceUnit" : "Percentage",
+              "useLineDirection" : true
+            },
+            "pointExternalZonePriorities" : {
+              "type" : "CIMMaplexExternalZonePriorities",
+              "aboveLeft" : 4,
+              "aboveCenter" : 2,
+              "aboveRight" : 1,
+              "centerRight" : 3,
+              "belowRight" : 5,
+              "belowCenter" : 7,
+              "belowLeft" : 8,
+              "centerLeft" : 6
+            },
+            "pointPlacementMethod" : "AroundPoint",
+            "polygonAnchorPointType" : "GeometricCenter",
+            "polygonBoundaryWeight" : 0,
+            "polygonExternalZones" : {
+              "type" : "CIMMaplexExternalZonePriorities",
+              "aboveLeft" : 4,
+              "aboveCenter" : 2,
+              "aboveRight" : 1,
+              "centerRight" : 3,
+              "belowRight" : 5,
+              "belowCenter" : 7,
+              "belowLeft" : 8,
+              "centerLeft" : 6
+            },
+            "polygonFeatureType" : "General",
+            "polygonInternalZones" : {
+              "type" : "CIMMaplexInternalZonePriorities",
+              "center" : 1
+            },
+            "polygonPlacementMethod" : "HorizontalInPolygon",
+            "primaryOffset" : 1,
+            "primaryOffsetUnit" : "Point",
+            "removeAmbiguousLabels" : "All",
+            "removeExtraWhiteSpace" : true,
+            "repetitionIntervalUnit" : "Point",
+            "rotationProperties" : {
+              "type" : "CIMMaplexRotationProperties",
+              "rotationType" : "Arithmetic",
+              "alignmentType" : "Straight"
+            },
+            "secondaryOffset" : 100,
+            "secondaryOffsetUnit" : "Percentage",
+            "strategyPriorities" : {
+              "type" : "CIMMaplexStrategyPriorities",
+              "stacking" : 1,
+              "overrun" : 2,
+              "fontCompression" : 3,
+              "fontReduction" : 4,
+              "abbreviation" : 5
+            },
+            "thinningDistanceUnit" : "Point",
+            "truncationMarkerCharacter" : ".",
+            "truncationMinimumLength" : 1,
+            "truncationPreferredCharacters" : "aeiou",
+            "truncationExcludedCharacters" : "0123456789",
+            "polygonAnchorPointPerimeterInsetUnit" : "Point"
+          },
+          "name" : "Class 1",
+          "priority" : -1,
+          "standardLabelPlacementProperties" : {
+            "type" : "CIMStandardLabelPlacementProperties",
+            "featureType" : "Line",
+            "featureWeight" : "None",
+            "labelWeight" : "High",
+            "numLabelsOption" : "OneLabelPerName",
+            "lineLabelPosition" : {
+              "type" : "CIMStandardLineLabelPosition",
+              "above" : true,
+              "inLine" : true,
+              "parallel" : true
+            },
+            "lineLabelPriorities" : {
+              "type" : "CIMStandardLineLabelPriorities",
+              "aboveStart" : 3,
+              "aboveAlong" : 3,
+              "aboveEnd" : 3,
+              "centerStart" : 3,
+              "centerAlong" : 3,
+              "centerEnd" : 3,
+              "belowStart" : 3,
+              "belowAlong" : 3,
+              "belowEnd" : 3
+            },
+            "pointPlacementMethod" : "AroundPoint",
+            "pointPlacementPriorities" : {
+              "type" : "CIMStandardPointPlacementPriorities",
+              "aboveLeft" : 2,
+              "aboveCenter" : 2,
+              "aboveRight" : 1,
+              "centerLeft" : 3,
+              "centerRight" : 2,
+              "belowLeft" : 3,
+              "belowCenter" : 3,
+              "belowRight" : 2
+            },
+            "rotationType" : "Arithmetic",
+            "polygonPlacementMethod" : "AlwaysHorizontal"
+          },
+          "textSymbol" : {
+            "type" : "CIMSymbolReference",
+            "symbol" : {
+              "type" : "CIMTextSymbol",
+              "blockProgression" : "TTB",
+              "depth3D" : 1,
+              "extrapolateBaselines" : true,
+              "fontEffects" : "Normal",
+              "fontEncoding" : "Unicode",
+              "fontFamilyName" : "Tahoma",
+              "fontStyleName" : "Regular",
+              "fontType" : "Unspecified",
+              "haloSize" : 1,
+              "height" : 10,
+              "hinting" : "Default",
+              "horizontalAlignment" : "Left",
+              "kerning" : true,
+              "letterWidth" : 100,
+              "ligatures" : true,
+              "lineGapType" : "ExtraLeading",
+              "symbol" : {
+                "type" : "CIMPolygonSymbol",
+                "symbolLayers" : [
+                  {
+                    "type" : "CIMSolidFill",
+                    "enable" : true,
+                    "color" : {
+                      "type" : "CIMRGBColor",
+                      "values" : [
+                        0,
+                        0,
+                        0,
+                        100
+                      ]
+                    }
+                  }
+                ],
+                "angleAlignment" : "Map"
+              },
+              "textCase" : "Normal",
+              "textDirection" : "LTR",
+              "verticalAlignment" : "Bottom",
+              "verticalGlyphOrientation" : "Right",
+              "wordSpacing" : 100,
+              "billboardMode3D" : "FaceNearPlane"
+            }
+          },
+          "useCodedValue" : true,
+          "visibility" : true,
+          "iD" : -1
+        }
+      ],
+      "renderer" : {
+        "type" : "CIMClassBreaksRenderer",
+        "barrierWeight" : "High",
+        "classBreakType" : "GraduatedColor",
+        "colorRamp" : {
+          "type" : "CIMPolarContinuousColorRamp",
+          "colorSpace" : {
+            "type" : "CIMICCColorSpace",
+            "url" : "Default RGB"
+          },
+          "fromColor" : {
+            "type" : "CIMHSVColor",
+            "values" : [
+              60,
+              100,
+              96,
+              100
+            ]
+          },
+          "toColor" : {
+            "type" : "CIMHSVColor",
+            "values" : [
+              0,
+              100,
+              96,
+              100
+            ]
+          },
+          "interpolationSpace" : "HSV",
+          "polarDirection" : "Auto"
+        },
+        "field" : "HeatmapRangeCount",
+        "heading" : "HeatmapRangeCount",
+        "polygonSymbolColorTarget" : "Fill",
+        "drawGraduatedSymbolsAboveAllLayers" : true,
+        "authoringInfo" : {
+          "type" : "CIMClassBreaksRendererAuthoringInfo",
+          "numberOfHistogramBins" : 10,
+          "templateSymbol" : {
+            "type" : "CIMSymbolReference",
+            "symbol" : {
+              "type" : "CIMPolygonSymbol",
+              "symbolLayers" : [
+                {
+                  "type" : "CIMSolidStroke",
+                  "enable" : true,
+                  "capStyle" : "Round",
+                  "joinStyle" : "Round",
+                  "lineStyle3D" : "Strip",
+                  "miterLimit" : 10,
+                  "width" : 0,
+                  "height3D" : 1,
+                  "anchor3D" : "Center",
+                  "color" : {
+                    "type" : "CIMRGBColor",
+                    "values" : [
+                      110,
+                      110,
+                      110,
+                      0
+                    ]
+                  }
+                },
+                {
+                  "type" : "CIMSolidFill",
+                  "enable" : true,
+                  "color" : {
+                    "type" : "CIMHSVColor",
+                    "values" : [
+                      25.719999999999999,
+                      100,
+                      96,
+                      100
+                    ]
+                  }
+                }
+              ],
+              "angleAlignment" : "Map"
+            }
+          }
+        },
+        "classificationMethod" : "NaturalBreaks",
+        "breaks" : [
+          {
+            "type" : "CIMClassBreak",
+            "label" : "1 - 4",
+            "patch" : "Default",
+            "symbol" : {
+              "type" : "CIMSymbolReference",
+              "symbol" : {
+                "type" : "CIMPolygonSymbol",
+                "symbolLayers" : [
+                  {
+                    "type" : "CIMSolidStroke",
+                    "enable" : true,
+                    "capStyle" : "Round",
+                    "joinStyle" : "Round",
+                    "lineStyle3D" : "Strip",
+                    "miterLimit" : 10,
+                    "width" : 0,
+                    "height3D" : 1,
+                    "anchor3D" : "Center",
+                    "color" : {
+                      "type" : "CIMRGBColor",
+                      "values" : [
+                        110,
+                        110,
+                        110,
+                        0
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "CIMSolidFill",
+                    "enable" : true,
+                    "color" : {
+                      "type" : "CIMHSVColor",
+                      "values" : [
+                        60,
+                        100,
+                        96,
+                        100
+                      ]
+                    }
+                  }
+                ],
+                "angleAlignment" : "Map"
+              }
+            },
+            "upperBound" : 4
+          },
+          {
+            "type" : "CIMClassBreak",
+            "label" : "5 - 9",
+            "patch" : "Default",
+            "symbol" : {
+              "type" : "CIMSymbolReference",
+              "symbol" : {
+                "type" : "CIMPolygonSymbol",
+                "symbolLayers" : [
+                  {
+                    "type" : "CIMSolidStroke",
+                    "enable" : true,
+                    "capStyle" : "Round",
+                    "joinStyle" : "Round",
+                    "lineStyle3D" : "Strip",
+                    "miterLimit" : 10,
+                    "width" : 0,
+                    "height3D" : 1,
+                    "anchor3D" : "Center",
+                    "color" : {
+                      "type" : "CIMRGBColor",
+                      "values" : [
+                        110,
+                        110,
+                        110,
+                        0
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "CIMSolidFill",
+                    "enable" : true,
+                    "color" : {
+                      "type" : "CIMHSVColor",
+                      "values" : [
+                        51.43,
+                        100,
+                        96,
+                        100
+                      ]
+                    }
+                  }
+                ],
+                "angleAlignment" : "Map"
+              }
+            },
+            "upperBound" : 9
+          },
+          {
+            "type" : "CIMClassBreak",
+            "label" : "10 - 15",
+            "patch" : "Default",
+            "symbol" : {
+              "type" : "CIMSymbolReference",
+              "symbol" : {
+                "type" : "CIMPolygonSymbol",
+                "symbolLayers" : [
+                  {
+                    "type" : "CIMSolidStroke",
+                    "enable" : true,
+                    "capStyle" : "Round",
+                    "joinStyle" : "Round",
+                    "lineStyle3D" : "Strip",
+                    "miterLimit" : 10,
+                    "width" : 0,
+                    "height3D" : 1,
+                    "anchor3D" : "Center",
+                    "color" : {
+                      "type" : "CIMRGBColor",
+                      "values" : [
+                        110,
+                        110,
+                        110,
+                        0
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "CIMSolidFill",
+                    "enable" : true,
+                    "color" : {
+                      "type" : "CIMHSVColor",
+                      "values" : [
+                        42.859999999999999,
+                        100,
+                        96,
+                        100
+                      ]
+                    }
+                  }
+                ],
+                "angleAlignment" : "Map"
+              }
+            },
+            "upperBound" : 15
+          },
+          {
+            "type" : "CIMClassBreak",
+            "label" : "16 - 23",
+            "patch" : "Default",
+            "symbol" : {
+              "type" : "CIMSymbolReference",
+              "symbol" : {
+                "type" : "CIMPolygonSymbol",
+                "symbolLayers" : [
+                  {
+                    "type" : "CIMSolidStroke",
+                    "enable" : true,
+                    "capStyle" : "Round",
+                    "joinStyle" : "Round",
+                    "lineStyle3D" : "Strip",
+                    "miterLimit" : 10,
+                    "width" : 0,
+                    "height3D" : 1,
+                    "anchor3D" : "Center",
+                    "color" : {
+                      "type" : "CIMRGBColor",
+                      "values" : [
+                        110,
+                        110,
+                        110,
+                        0
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "CIMSolidFill",
+                    "enable" : true,
+                    "color" : {
+                      "type" : "CIMHSVColor",
+                      "values" : [
+                        34.280000000000001,
+                        100,
+                        96,
+                        100
+                      ]
+                    }
+                  }
+                ],
+                "angleAlignment" : "Map"
+              }
+            },
+            "upperBound" : 23
+          },
+          {
+            "type" : "CIMClassBreak",
+            "label" : "24 - 34",
+            "patch" : "Default",
+            "symbol" : {
+              "type" : "CIMSymbolReference",
+              "symbol" : {
+                "type" : "CIMPolygonSymbol",
+                "symbolLayers" : [
+                  {
+                    "type" : "CIMSolidStroke",
+                    "enable" : true,
+                    "capStyle" : "Round",
+                    "joinStyle" : "Round",
+                    "lineStyle3D" : "Strip",
+                    "miterLimit" : 10,
+                    "width" : 0,
+                    "height3D" : 1,
+                    "anchor3D" : "Center",
+                    "color" : {
+                      "type" : "CIMRGBColor",
+                      "values" : [
+                        110,
+                        110,
+                        110,
+                        0
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "CIMSolidFill",
+                    "enable" : true,
+                    "color" : {
+                      "type" : "CIMHSVColor",
+                      "values" : [
+                        25.719999999999999,
+                        100,
+                        96,
+                        100
+                      ]
+                    }
+                  }
+                ],
+                "angleAlignment" : "Map"
+              }
+            },
+            "upperBound" : 34
+          },
+          {
+            "type" : "CIMClassBreak",
+            "label" : "35 - 50",
+            "patch" : "Default",
+            "symbol" : {
+              "type" : "CIMSymbolReference",
+              "symbol" : {
+                "type" : "CIMPolygonSymbol",
+                "symbolLayers" : [
+                  {
+                    "type" : "CIMSolidStroke",
+                    "enable" : true,
+                    "capStyle" : "Round",
+                    "joinStyle" : "Round",
+                    "lineStyle3D" : "Strip",
+                    "miterLimit" : 10,
+                    "width" : 0,
+                    "height3D" : 1,
+                    "anchor3D" : "Center",
+                    "color" : {
+                      "type" : "CIMRGBColor",
+                      "values" : [
+                        110,
+                        110,
+                        110,
+                        0
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "CIMSolidFill",
+                    "enable" : true,
+                    "color" : {
+                      "type" : "CIMHSVColor",
+                      "values" : [
+                        17.140000000000001,
+                        100,
+                        96,
+                        100
+                      ]
+                    }
+                  }
+                ],
+                "angleAlignment" : "Map"
+              }
+            },
+            "upperBound" : 50
+          },
+          {
+            "type" : "CIMClassBreak",
+            "label" : "51 - 80",
+            "patch" : "Default",
+            "symbol" : {
+              "type" : "CIMSymbolReference",
+              "symbol" : {
+                "type" : "CIMPolygonSymbol",
+                "symbolLayers" : [
+                  {
+                    "type" : "CIMSolidStroke",
+                    "enable" : true,
+                    "capStyle" : "Round",
+                    "joinStyle" : "Round",
+                    "lineStyle3D" : "Strip",
+                    "miterLimit" : 10,
+                    "width" : 0,
+                    "height3D" : 1,
+                    "anchor3D" : "Center",
+                    "color" : {
+                      "type" : "CIMRGBColor",
+                      "values" : [
+                        110,
+                        110,
+                        110,
+                        0
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "CIMSolidFill",
+                    "enable" : true,
+                    "color" : {
+                      "type" : "CIMHSVColor",
+                      "values" : [
+                        8.5700000000000003,
+                        100,
+                        96,
+                        100
+                      ]
+                    }
+                  }
+                ],
+                "angleAlignment" : "Map"
+              }
+            },
+            "upperBound" : 80
+          },
+          {
+            "type" : "CIMClassBreak",
+            "label" : "81 - 112",
+            "patch" : "Default",
+            "symbol" : {
+              "type" : "CIMSymbolReference",
+              "symbol" : {
+                "type" : "CIMPolygonSymbol",
+                "symbolLayers" : [
+                  {
+                    "type" : "CIMSolidStroke",
+                    "enable" : true,
+                    "capStyle" : "Round",
+                    "joinStyle" : "Round",
+                    "lineStyle3D" : "Strip",
+                    "miterLimit" : 10,
+                    "width" : 0,
+                    "height3D" : 1,
+                    "anchor3D" : "Center",
+                    "color" : {
+                      "type" : "CIMRGBColor",
+                      "values" : [
+                        110,
+                        110,
+                        110,
+                        0
+                      ]
+                    }
+                  },
+                  {
+                    "type" : "CIMSolidFill",
+                    "enable" : true,
+                    "color" : {
+                      "type" : "CIMHSVColor",
+                      "values" : [
+                        0,
+                        100,
+                        96,
+                        100
+                      ]
+                    }
+                  }
+                ],
+                "angleAlignment" : "Map"
+              }
+            },
+            "upperBound" : 112
+          }
+        ],
+        "minimumBreak" : 1,
+        "showInAscendingOrder" : true,
+        "defaultSymbolPatch" : "Default",
+        "defaultSymbol" : {
+          "type" : "CIMSymbolReference",
+          "symbol" : {
+            "type" : "CIMPolygonSymbol",
+            "symbolLayers" : [
+              {
+                "type" : "CIMSolidStroke",
+                "enable" : true,
+                "capStyle" : "Round",
+                "joinStyle" : "Round",
+                "lineStyle3D" : "Strip",
+                "miterLimit" : 10,
+                "width" : 0.69999999999999996,
+                "height3D" : 1,
+                "anchor3D" : "Center",
+                "color" : {
+                  "type" : "CIMRGBColor",
+                  "values" : [
+                    110,
+                    110,
+                    110,
+                    100
+                  ]
+                }
+              },
+              {
+                "type" : "CIMSolidFill",
+                "enable" : true,
+                "color" : {
+                  "type" : "CIMRGBColor",
+                  "values" : [
+                    130,
+                    130,
+                    130,
+                    100
+                  ]
+                }
+              }
+            ],
+            "angleAlignment" : "Map"
+          }
+        },
+        "defaultLabel" : "<out of range>",
+        "numberFormat" : {
+          "type" : "CIMNumericFormat",
+          "alignmentOption" : "esriAlignLeft",
+          "alignmentWidth" : 0,
+          "roundingOption" : "esriRoundNumberOfDecimals",
+          "roundingValue" : 0,
+          "zeroPad" : true
+        },
+        "alwaysUpdateClassLabels" : true,
+        "sampleSize" : 10000,
+        "normalizationType" : "Nothing",
+        "exclusionLabel" : "<excluded>",
+        "exclusionSymbol" : {
+          "type" : "CIMSymbolReference",
+          "symbol" : {
+            "type" : "CIMPolygonSymbol",
+            "symbolLayers" : [
+              {
+                "type" : "CIMSolidStroke",
+                "enable" : true,
+                "capStyle" : "Round",
+                "joinStyle" : "Round",
+                "lineStyle3D" : "Strip",
+                "miterLimit" : 10,
+                "width" : 0.69999999999999996,
+                "height3D" : 1,
+                "anchor3D" : "Center",
+                "color" : {
+                  "type" : "CIMRGBColor",
+                  "values" : [
+                    110,
+                    110,
+                    110,
+                    100
+                  ]
+                }
+              },
+              {
+                "type" : "CIMSolidFill",
+                "enable" : true,
+                "color" : {
+                  "type" : "CIMRGBColor",
+                  "values" : [
+                    255,
+                    0,
+                    0,
+                    100
+                  ]
+                }
+              }
+            ],
+            "angleAlignment" : "Map"
+          }
+        },
+        "useExclusionSymbol" : false,
+        "exclusionSymbolPatch" : "Default"
+      },
+      "scaleSymbols" : true,
+      "snappable" : true
+    },
+    {
+      "type" : "CIMVectorTileLayer",
+      "name" : "World Terrain Base",
+      "uRI" : "CIMPATH=f2ccfa7c0b424791aa461aa30c6e9164.json",
+      "sourceModifiedTime" : {
+        "type" : "TimeInstant"
+      },
+      "useSourceMetadata" : true,
+      "layerType" : "BasemapBackground",
+      "showLegends" : true,
+      "visibility" : true,
+      "displayCacheType" : "Permanent",
+      "maxDisplayCacheAge" : 5,
+      "showPopups" : true,
+      "serviceLayerID" : -1,
+      "refreshRate" : -1,
+      "refreshRateUnit" : "esriTimeUnitsSeconds",
+      "webMapLayerID" : "VectorTile_5522",
+      "blendingMode" : "Alpha",
+      "allowDrapingOnIntegratedMesh" : false,
+      "dataConnection" : {
+        "type" : "CIMVectorTileDataConnection",
+        "uRI" : "https://cdn.arcgis.com/sharing/rest/content/items/33064a20de0c48d2bb61efa8faca93a8/resources/styles/root.json"
+      }
+    },
+    {
+      "type" : "CIMTiledServiceLayer",
+      "name" : "World Hillshade",
+      "uRI" : "CIMPATH=b39bcde9bd164ae5a60e08af75e8497f.json",
+      "sourceModifiedTime" : {
+        "type" : "TimeInstant"
+      },
+      "useSourceMetadata" : true,
+      "description" : "Elevation/World_Hillshade",
+      "layerType" : "BasemapBackground",
+      "showLegends" : true,
+      "visibility" : true,
+      "displayCacheType" : "Permanent",
+      "maxDisplayCacheAge" : 5,
+      "showPopups" : true,
+      "serviceLayerID" : -1,
+      "refreshRate" : -1,
+      "refreshRateUnit" : "esriTimeUnitsSeconds",
+      "webMapLayerID" : "World_Hillshade_2428",
+      "blendingMode" : "Alpha",
+      "allowDrapingOnIntegratedMesh" : false,
+      "serviceConnection" : {
+        "type" : "CIMAGSServiceConnection",
+        "objectName" : "Elevation/World_Hillshade",
+        "objectType" : "MapServer",
+        "url" : "https://services.arcgisonline.com/arcgis/rest/services/Elevation/World_Hillshade/MapServer",
+        "serverConnection" : {
+          "type" : "CIMInternetServerConnection",
+          "anonymous" : true,
+          "hideUserProperty" : true,
+          "url" : "https://services.arcgisonline.com/arcgis/services"
+        }
+      },
+      "transparentColor" : {
+        "type" : "CIMRGBColor",
+        "values" : [
+          254,
+          254,
+          254,
+          100
+        ]
+      },
+      "backgroundColor" : {
+        "type" : "CIMRGBColor",
+        "values" : [
+          254,
+          254,
+          254,
+          100
+        ]
+      }
+    }
+  ],
+  "binaryReferences" : [
+    {
+      "type" : "CIMBinaryReference",
+      "uRI" : "CIMPATH=Metadata/17981dacbc77446dd32d40284fa106dd.xml",
+      "data" : "<?xml version=\"1.0\"?>\r\n<metadata xml:lang=\"en\"><Esri><CreaDate>20251023</CreaDate><CreaTime>16374000</CreaTime><ArcGISFormat>1.0</ArcGISFormat><SyncOnce>TRUE</SyncOnce></Esri><dataIdInfo><idCitation><resTitle>Map</resTitle></idCitation></dataIdInfo><Binary><Thumbnail><Data EsriPropertyType=\"PictureX\">/9j/4AAQSkZJRgABAQEAAAAAAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0a\r\nHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIy\r\nMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCADIASwDAREA\r\nAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQA\r\nAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3\r\nODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWm\r\np6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEA\r\nAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSEx\r\nBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElK\r\nU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3\r\nuLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD3QRse\r\n1a3RiosQqR1FO4rMjkXK1UWRJFetDIKACgCr9gj3FgzA7s9vUn+pq+dk8qIjp/O0coDuGTzmlzvs\r\nPlRLa2ogdjtHzc/jSbuO1i1SAKACgBwZl6Ej6UmkxptEq3Ui981LpotVJIkF43cCo9mi1WY8Xg7r\r\n+tL2RXthftg/un86PZh7ZB9rH9w/nS9n5h7XyD7X6J+tP2Ye18hpuX9AKlqEU23sHPJkEl9jgufo\r\nBXjYniDAYd8rd35GsaNWRXe9PZSfcmvDxHGNrqjT+bf/AAxrHCfzMi86aVsA4z2Arx45zmmOqezh\r\nO1+iX9fmbexpQV2i3b2CE7pFBYnODX1uW5KqD9tiXzT823Y5p1ObSOiNBIUjXARR+Fe822SopDgA\r\n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</Data></Thumbnail></Binary></metadata>\r\n"
+    },
+    {
+      "type" : "CIMBinaryReference",
+      "uRI" : "CIMPATH=Metadata/6349a637d290652c232e74f6b510be92.xml",
+      "data" : "<?xml version=\"1.0\"?>\r\n<metadata xml:lang=\"en\">\r\n\t<Esri>\r\n\t\t<CreaDate>20251025</CreaDate>\r\n\t\t<CreaTime>13593500</CreaTime>\r\n\t\t<ArcGISFormat>1.0</ArcGISFormat>\r\n\t\t<SyncOnce>TRUE</SyncOnce>\r\n\t</Esri>\r\n</metadata>\r\n"
+    },
+    {
+      "type" : "CIMBinaryReference",
+      "uRI" : "CIMPATH=Metadata/ca908e1362fe5a09183aa558f29fa9f4.xml",
+      "data" : "<?xml version=\"1.0\"?>\r\n<metadata xml:lang=\"en\">\r\n\t<Esri>\r\n\t\t<CreaDate>20251025</CreaDate>\r\n\t\t<CreaTime>13581400</CreaTime>\r\n\t\t<ArcGISFormat>1.0</ArcGISFormat>\r\n\t\t<SyncOnce>TRUE</SyncOnce>\r\n\t</Esri>\r\n</metadata>\r\n"
+    },
+    {
+      "type" : "CIMBinaryReference",
+      "uRI" : "CIMPATH=Metadata/d307639c2afa6791d651a7dcc42fbb9a.xml",
+      "data" : "<?xml version=\"1.0\"?>\r\n<metadata xml:lang=\"en\">\r\n\t<Esri>\r\n\t\t<CreaDate>20251025</CreaDate>\r\n\t\t<CreaTime>13590900</CreaTime>\r\n\t\t<ArcGISFormat>1.0</ArcGISFormat>\r\n\t\t<SyncOnce>TRUE</SyncOnce>\r\n\t</Esri>\r\n</metadata>\r\n"
+    },
+    {
+      "type" : "CIMBinaryReference",
+      "uRI" : "CIMPATH=Metadata/ffd8ef29544be31b7e8a4a38f9be0e17.xml",
+      "data" : "<?xml version=\"1.0\"?>\r\n<metadata xml:lang=\"en\">\r\n\t<Esri>\r\n\t\t<CreaDate>20251025</CreaDate>\r\n\t\t<CreaTime>13592600</CreaTime>\r\n\t\t<ArcGISFormat>1.0</ArcGISFormat>\r\n\t\t<SyncOnce>TRUE</SyncOnce>\r\n\t</Esri>\r\n</metadata>\r\n"
+    }
+  ],
+  "tableDefinitions" : [
+    {
+      "type" : "CIMStandaloneTable",
+      "name" : "BIOTICS_ELEMENT_NATIONAL",
+      "uRI" : "CIMPATH=Map/BIOTICS_ELEMENT_NATIONAL_csv.json",
+      "sourceModifiedTime" : {
+        "type" : "TimeInstant",
+        "start" : -62135596800000
+      },
+      "metadataURI" : "CIMPATH=Metadata/d307639c2afa6791d651a7dcc42fbb9a.xml",
+      "useSourceMetadata" : true,
+      "displayField" : "NATIONAL_SCIENTIFIC_NAME",
+      "editable" : true,
+      "dataConnection" : {
+        "type" : "CIMStandardDataConnection",
+        "workspaceConnectionString" : "DATABASE=.\\EBAR_SAR_Heatmap.gdb",
+        "workspaceFactory" : "FileGDB",
+        "dataset" : "BIOTICS_ELEMENT_NATIONAL",
+        "datasetType" : "esriDTTable"
+      },
+      "autoGenerateRowTemplates" : true,
+      "serviceTableID" : -1,
+      "showPopups" : true
+    },
+    {
+      "type" : "CIMStandaloneTable",
+      "name" : "RangeMap",
+      "uRI" : "CIMPATH=Map/RangeMap_csv.json",
+      "sourceModifiedTime" : {
+        "type" : "TimeInstant",
+        "start" : -62135596800000
+      },
+      "metadataURI" : "CIMPATH=Metadata/ffd8ef29544be31b7e8a4a38f9be0e17.xml",
+      "useSourceMetadata" : true,
+      "displayField" : "rangeversion",
+      "editable" : true,
+      "dataConnection" : {
+        "type" : "CIMStandardDataConnection",
+        "workspaceConnectionString" : "DATABASE=.\\EBAR_SAR_Heatmap.gdb",
+        "workspaceFactory" : "FileGDB",
+        "dataset" : "RangeMap",
+        "datasetType" : "esriDTTable"
+      },
+      "autoGenerateRowTemplates" : true,
+      "serviceTableID" : -1,
+      "showPopups" : true
+    },
+    {
+      "type" : "CIMStandaloneTable",
+      "name" : "RangeMapEcoshape",
+      "uRI" : "CIMPATH=Map/RangeMapEcoshape_csv.json",
+      "sourceModifiedTime" : {
+        "type" : "TimeInstant",
+        "start" : -62135596800000
+      },
+      "metadataURI" : "CIMPATH=Metadata/6349a637d290652c232e74f6b510be92.xml",
+      "useSourceMetadata" : true,
+      "displayField" : "presence",
+      "editable" : true,
+      "dataConnection" : {
+        "type" : "CIMStandardDataConnection",
+        "workspaceConnectionString" : "DATABASE=.\\EBAR_SAR_Heatmap.gdb",
+        "workspaceFactory" : "FileGDB",
+        "dataset" : "RangeMapEcoshape",
+        "datasetType" : "esriDTTable"
+      },
+      "autoGenerateRowTemplates" : true,
+      "serviceTableID" : -1,
+      "showPopups" : true
+    }
+  ],
+  "elevationSurfaceLayerDefinitions" : [
+    {
+      "type" : "CIMElevationSurfaceLayer",
+      "name" : "Ground",
+      "uRI" : "CIMPATH=Map/27cdd8c4d9604a229c328148e8871669.json",
+      "sourceModifiedTime" : {
+        "type" : "TimeInstant"
+      },
+      "useSourceMetadata" : true,
+      "description" : "Ground",
+      "expanded" : true,
+      "layer3DProperties" : {
+        "type" : "CIM3DLayerProperties",
+        "castShadows" : true,
+        "isLayerLit" : true,
+        "layerFaceCulling" : "None",
+        "preloadTextureCutoffHigh" : 0.29999999999999999,
+        "preloadTextureCutoffLow" : 0.59999999999999998,
+        "textureCutoffHigh" : 0.29999999999999999,
+        "textureCutoffLow" : 0.59999999999999998,
+        "useCompressedTextures" : true,
+        "verticalExaggeration" : 1,
+        "exaggerationMode" : "ScaleZ",
+        "lighting" : "OneSideDataNormal",
+        "optimizeMarkerTransparency" : true
+      },
+      "layerType" : "Operational",
+      "showLegends" : false,
+      "visibility" : true,
+      "displayCacheType" : "Permanent",
+      "maxDisplayCacheAge" : 5,
+      "showPopups" : true,
+      "serviceLayerID" : -1,
+      "refreshRate" : -1,
+      "refreshRateUnit" : "esriTimeUnitsSeconds",
+      "blendingMode" : "Alpha",
+      "allowDrapingOnIntegratedMesh" : true,
+      "elevationMode" : "BaseGlobeSurface",
+      "verticalExaggeration" : 1,
+      "color" : {
+        "type" : "CIMRGBColor",
+        "values" : [
+          255,
+          255,
+          255,
+          100
+        ]
+      },
+      "surfaceTINShadingMode" : "Smooth"
+    }
+  ]
+}

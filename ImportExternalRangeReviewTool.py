@@ -349,14 +349,18 @@ class ImportExternalRangeReviewTool:
         # removals
         if param_additions_only == 'false':
             EBARUtils.displayMessage(messages, 'Processing Ecoshape removals')
+            # # debug
+            # EBARUtils.displayMessage(messages, 'range_presence_dict: ' + str(range_presence_dict))
+            # EBARUtils.displayMessage(messages, 'external_presence_dict: ' + str(external_presence_dict))
+            # EBARUtils.displayMessage(messages, 'external_usagetype_dict: ' + str(external_usagetype_dict))
             # loop all existing
             for range_ecoshape_id in range_presence_dict:
                 if (range_ecoshape_id not in external_presence_dict and
                     range_ecoshape_id not in external_usagetype_dict):
                     # create review remove record
                     with arcpy.da.InsertCursor(param_geodatabase + '/EcoshapeReview',
-                                            ['EcoshapeID', 'ReviewID', 'RemovalReason', 'EcoshapeReviewNotes',
-                                             'UseForMapGen', 'Markup', 'Username']) as cursor:
+                                               ['EcoshapeID', 'ReviewID', 'RemovalReason', 'EcoshapeReviewNotes',
+                                                'UseForMapGen', 'Markup', 'Username']) as cursor:
                         cursor.insertRow([range_ecoshape_id, review_id, 'O', 'Not in ' + param_review_label, 1, 'R',
                                           param_username])
                     remove_count+= 1

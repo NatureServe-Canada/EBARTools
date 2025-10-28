@@ -17,6 +17,7 @@ import arcpy.management
 import EBARUtils
 import arcpy
 import datetime
+import shutil
 
 
 class GenerateHeatmapTool:
@@ -133,24 +134,104 @@ class GenerateHeatmapTool:
             md.accessConstraints = 'Publicly shareable under CC BY 4.0 (<a href=' + \
                 '"https://creativecommons.org/licenses/by/4.0/">https://creativecommons.org/licenses/by/4.0/</a>)'
 
-            # export species to CSV
-            # export range map ecoshapes
-            EBARUtils.displayMessage(messages, 'Exporting Species to CSV')
-            EBARUtils.ExportRangeMapEcoshapesToCSV('range_map_ecoshape_view' + param_range_map_id,
-                                                   [param_range_map_id], zip_folder, 'RangeMapEcoshape.csv', md)
-            EBARUtils.ExportHeatmapSpeciesToCSV(param_geodatabase, zip_folder, 'BIOTICS_ELEMENT_NATIONAL.csv')
-
-            # make zip and copy static outputs
+            # make zip folder and copy existing outputs
+            EBARUtils.displayMessage(messages, 'Creating ZIP folder and copying files')
             zip_folder = EBARUtils.temp_folder + '/EBAR_SAR_Heatmap'
             EBARUtils.createReplaceFolder(zip_folder)
+            shutil.copyfile(EBARUtils.resources_folder + '/EBAR Heatmap Documentation.pdf',
+                            zip_folder + '/EBAR Heatmap Documentation.pdf')
+            shutil.copyfile(EBARUtils.download_folder + '/' + jpg + '.jpg', zip_folder + '/' + jpg + '.jpg')
+
+            # make file gdb for usability in Pro (also export to shapefile and CSV for compatability)
+            arcpy.CreateFileGDB_management(zip_folder, 'EBAR_SAR_Heatmap.gdb')
+            filegdb = zip_folder + '/EBAR_SAR_Heatmap.gdb'
+
+            # export species
+            EBARUtils.displayMessage(messages, 'Exporting Species')
+            EBARUtils.ExportPublishedSARDistinctSpeciesToTable(param_geodatabase, EBARUtils.download_folder, jpg + '.csv', md)
+            #EBARUtils.ExportPublishedSARDistinctSpeciesToTable(param_geodatabase, filegdb, 'BIOTICS_ELEMENT_NATIONAL', md)
+            arcpy.TableToTable_conversion(EBARUtils.download_folder + '/' + jpg + '.csv', filegdb,
+                                          'BIOTICS_ELEMENT_NATIONAL')
+            EBARUtils.displayMessage(messages, 'CSV: ' + EBARUtils.download_url + '/' + jpg + '.csv')
+            shutil.copyfile(EBARUtils.download_folder + '/' + jpg + '.csv',
+                            zip_folder + '/' + 'BIOTICS_ELEMENT_NATIONAL.csv')
+
+            # export RangeMap
+            EBARUtils.displayMessage(messages, 'Exporting RangeMap')
+            #arcpy.TableToTable_conversion(param_geodatabase + '/s_PublishedSARRangeMap', zip_folder, 'RangeMap.csv')
+            EBARUtils.ExportPublishedSARRangeMapsToTable(param_geodatabase, zip_folder, 'RangeMap.csv', md)
+            #arcpy.TableToTable_conversion(param_geodatabase + '/s_PublishedSARRangeMap', filegdb, 'RangeMap')
+            arcpy.TableToTable_conversion(zip_folder + '/RangeMap.csv', filegdb, 'RangeMap')
+            
+            # export RangeMapEcoshape
+            EBARUtils.displayMessage(messages, 'Exporting RangeMapEcoshape')
+            # arcpy.TableToTable_conversion(param_geodatabase + '/s_PublishedSARRangeMapEcoshape', zip_folder,
+            #                               'RangeMapEcoshape.csv')
+            EBARUtils.ExportPublishedSARRangeMapEcoshapesToTable(param_geodatabase, zip_folder, 'RangeMapEcoshape.csv',
+                                                                 md)
+            # arcpy.TableToTable_conversion(param_geodatabase + '/s_PublishedSARRangeMapEcoshape', filegdb,
+            #                               'RangeMapEcoshape')
+            arcpy.TableToTable_conversion(zip_folder + '/RangeMapEcoshape.csv', filegdb, 'RangeMapEcoshape')
+
+            # # export PublishedSARRangeCount
+            # EBARUtils.displayMessage(messages, 'Exporting PublishedSARRangeCount')
+            # # arcpy.TableToTable_conversion(param_geodatabase + '/s_PublishedSARRangeCount', zip_folder,
+            # #                               'PublishedSARRangeCount.csv')
+            # EBARUtils.ExportPublishedSARRangeCountToTable(param_geodatabase, zip_folder, 'PublishedSARRangeCount.csv',
+            #                                               md)
+            # # arcpy.TableToTable_conversion(param_geodatabase + '/s_PublishedSARRangeCount', filegdb,
+            # #                               'PublishedSARRangeCount')
+            # arcpy.TableToTable_conversion(zip_folder + '/PublishedSARRangeCount.csv', filegdb,
+            #                               'PublishedSARRangeCount')
+            
+            # # export PublishedSARRangeCountByEcoshape
+            # EBARUtils.displayMessage(messages, 'Exporting PublishedSARRangeCountByEcoshape')
+            # # arcpy.TableToTable_conversion(param_geodatabase + '/s_PublishedSARRangeCountByEcoshape', zip_folder,
+            # #                               'PublishedSARRangeCountByEcoshape.csv')
+            # EBARUtils.ExportPublishedSARRangeCountByEcoshape(param_geodatabase, zip_folder,
+            #                                                  'PublishedSARRangeCountByEcoshape.csv', md)
+            # # arcpy.TableToTable_conversion(param_geodatabase + '/s_PublishedSARRangeCountByEcoshape', filegdb,
+            # #                               'PublishedSARRangeCountByEcoshape')
+            # arcpy.TableToTable_conversion(zip_folder + '/PublishedSARRangeCountByEcoshape.csv', filegdb,
+            #                               'PublishedSARRangeCountByEcoshape')
+            
+            # export HeatmapEcoshapeOverview
+            EBARUtils.displayMessage(messages, 'Exporting HeatmapEcoshapeOverview')
+            # arcpy.MakeFeatureLayer_management(param_geodatabase + '/EcoshapeOverview', 'CdnEcoshapes',
+            #                                   'JurisdictionID NOT IN (14, 15)')
+            # arcpy.CopyFeatures_management('CdnEcoshapes', zip_folder + '/EcoshapeOverview.shp')
+            EBARUtils.ExportCanadianEcoshapeOverviewsToShapefile(param_geodatabase, zip_folder,
+                                                                 'HeatmapEcoshapeOverview.shp', md)
+            # arcpy.CopyFeatures_management('CdnEcoshapes', filegdb + '/EcoshapeOverview')
+            EBARUtils.ExportCanadianEcoshapeOverviewsToFC(param_geodatabase, filegdb, 'HeatmapEcoshapeOverview', md)
+
+            # create table relationships
+            EBARUtils.displayMessage(messages, 'Creating relationships')
+            arcpy.CreateRelationshipClass_management(filegdb + '/HeatmapEcoshapeOverview',
+                                                     filegdb + '/RangeMapEcoshape',
+                                                     filegdb + '/HeatmapEcoshapeOverview_RangeMapEcoshape', 'SIMPLE',
+                                                     'RangeMapEcoshape', 'HeatmapEcoshapeOverview', 'NONE',
+                                                     'ONE_TO_MANY', 'NONE', 'EcoshapeID', 'EcoshapeID')
+            arcpy.CreateRelationshipClass_management(filegdb + '/RangeMap', filegdb + '/RangeMapEcoshape',
+                                                     filegdb + '/RangeMap_RangeMapEcoshape', 'SIMPLE',
+                                                     'RangeMapEcoshape', 'RangeMap', 'NONE', 'ONE_TO_MANY', 'NONE',
+                                                     'RangeMapID', 'RangeMapID')
+            arcpy.CreateRelationshipClass_management(filegdb + '/BIOTICS_ELEMENT_NATIONAL', filegdb + '/RangeMap',
+                                                     filegdb + '/BIOTICS_ELEMENT_NATIONAL_RangeMap', 'SIMPLE',
+                                                     'RangeMap', 'BIOTICS_ELEMENT_NATIONAL', 'NONE', 'ONE_TO_MANY',
+                                                     'NONE', 'SpeciesID', 'SpeciesID')
+            
+            # export APRX and MAPX from templates
+            EBARUtils.displayMessage(messages, 'Copying map')
+            shutil.copyfile(EBARUtils.resources_folder + '/EBAR_SAR_Heatmap.aprx',
+                            zip_folder + '/EBAR_SAR_Heatmap.aprx')
+            shutil.copyfile(EBARUtils.resources_folder + '/EBAR_SAR_Heatmap.mapx',
+                            zip_folder + '/EBAR_SAR_Heatmap.mapx')
+
+            # zip
             EBARUtils.createZip(zip_folder, EBARUtils.download_folder + '/EBAR_SAR_Heatmap.zip', None)
-            EBARUtils.addToZip(EBARUtils.download_folder + '/EBAR_SAR_Heatmap.zip',
-                               EBARUtils.resources_folder + '/EBAR Heatmap Documentation.pdf')
-            EBARUtils.addToZip(EBARUtils.download_folder + '/EBAR_SAR_Heatmap.zip',
-                               EBARUtils.download_folder + '/' + jpg + '.jpg')
-            EBARUtils.addToZip(EBARUtils.download_folder + '/EBAR_SAR_Heatmap.zip',
-                               EBARUtils.download_folder + '/' + jpg + '.csv')
-            EBARUtils.displayMessage(messages, 'Download zip: ' + EBARUtils.download_url + '/' + jpg + '.zip')
+            #shutil.make_archive(EBARUtils.download_folder + '/EBAR_SAR_Heatmap.zip', 'zip', zip_folder, zip_folder)
+            EBARUtils.displayMessage(messages, 'GIS Data: ' + EBARUtils.download_url + '/EBAR_SAR_Heatmap.zip')
 
         return
 

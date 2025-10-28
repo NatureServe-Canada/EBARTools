@@ -775,7 +775,7 @@ class ImportExternalRangeReview(object):
             param_geodatabase = parameters[0].valueAsText
             jur_list = []
             with arcpy.da.SearchCursor(param_geodatabase + '/Jurisdiction', ['JurisdictionName'],
-                                       "JurisdictionAbbreviation NOT IN ('AC', 'NF', 'LB')",
+                                       "JurisdictionAbbreviation NOT IN ('AC', 'NF', 'LB', 'CA')",
                                        sql_clause=(None,'ORDER BY JurisdictionName')) as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     jur_list.append(row['JurisdictionName'])

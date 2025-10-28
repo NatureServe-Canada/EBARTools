@@ -26,8 +26,8 @@ import json
 # shared folders and addresses
 resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
 temp_folder = 'C:/GIS/EBAR/temp'
-download_folder = 'D:/GIS/EBAR/pub/download'
-#download_folder = 'F:/download'
+#download_folder = 'D:/GIS/EBAR/pub/download'
+download_folder = 'F:/download'
 download_url = 'https://gis.natureserve.ca/download'
 #nsx_species_search_url = 'https://explorer.natureserve.org/api/data/search'
 nsx_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/'
@@ -557,11 +557,23 @@ def createReplaceFolder(folder):
 
 
 def createZip(zip_folder, zip_output_file, only_include_extension):
-    """create zip file, optionally with just files """
-    path = pathlib.Path(zip_folder)
-    os.chdir(path.parent)
-    zip_folder_name = os.path.basename(zip_folder)
+    """create zip file, optionally with just files with a particular extension"""
+    # path = pathlib.Path(zip_folder)
+    # os.chdir(path.parent)
+    # zip_folder_name = os.path.basename(zip_folder)
     zipf = zipfile.ZipFile(zip_output_file, 'w', zipfile.ZIP_DEFLATED)
+    # for root, dirs, files in os.walk(zip_folder):
+    #     for file in files:
+    #         include = True
+    #         # check optional include extension
+    #         if only_include_extension:
+    #             if file[-len(only_include_extension):] != only_include_extension:
+    #                 include = False
+    #         # always exclude lock files
+    #         if file[-5:] == '.lock':
+    #             include = False
+    #         if include:
+    #             zipf.write(zip_folder_name + '/' + file)
     for root, dirs, files in os.walk(zip_folder):
         for file in files:
             include = True
@@ -570,10 +582,14 @@ def createZip(zip_folder, zip_output_file, only_include_extension):
                 if file[-len(only_include_extension):] != only_include_extension:
                     include = False
             # always exclude lock files
+            # # debug
+            # print('file: ' + file)
+            # print('last 5: ' + file[-5:])
             if file[-5:] == '.lock':
                 include = False
             if include:
-                zipf.write(zip_folder_name + '/' + file)
+                file_path = os.path.join(root, file)
+                zipf.write(file_path, os.path.relpath(file_path, zip_folder))
     zipf.close()
     # attempt to overcome GP service holding a hook into the folder
     del zip_folder
@@ -774,8 +790,10 @@ def ExportEcoshapeOverviewsToShapefile(ecoshape_overview_layer, range_map_ecosha
     ecoshape_overview_md.save()
 
 
-def ExportHeatmapSpeciesToCSV(geodatabase, output_folder, output_csv, metadata):
+def ExportPublishedSARDistinctSpeciesToTable(geodatabase, output_folder, output_table, metadata):
     field_mappings = arcpy.FieldMappings()
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARDistinctSpecies',
+                                              'SpeciesID', 'SpeciesID', 'LONG'))
     field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARDistinctSpecies',
                                               'ELEMENT_NATIONAL_ID', 'ELEMENT_NATIONAL_ID', 'LONG'))
     field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARDistinctSpecies',
@@ -823,8 +841,175 @@ def ExportHeatmapSpeciesToCSV(geodatabase, output_folder, output_csv, metadata):
                                               'TEXT'))
     field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARDistinctSpecies',
                                               'NSX_URL', 'NSX_URL', 'TEXT'))
-    # arcpy.ExportTable_conversion(geodatabase + '/s_PublishedSARDistinctSpecies',
-    #                              download_folder + '/' + jpg + '.csv', field_mapping=field_mappings)
+    arcpy.ExportTable_conversion(geodatabase + '/s_PublishedSARDistinctSpecies',
+                                 output_folder + '/' + output_table, field_mapping=field_mappings)
+    # if arcpy.Exists(output_folder + '/' + output_table + '.xml'):
+    #     arcpy.Delete_management(output_folder + '/' + output_table + '.xml')
+    if arcpy.Exists(output_folder + '/schema.ini'):
+        arcpy.Delete_management(output_folder + '/schema.ini')
+    if arcpy.Exists(output_folder + '/info'):
+        arcpy.Delete_management(output_folder + '/info')
+    species_md = arcpy.metadata.Metadata(output_folder + '/' + output_table)
+    metadata.title = 'EBAR ' + output_table
+    metadata.summary = 'Table of species/element attributes for EBAR from the BIOTICS database'
+    species_md.copy(metadata)
+    species_md.save()
+
+
+def ExportPublishedSARRangeMapsToTable(geodatabase, output_folder, output_table, metadata):
+    field_mappings = arcpy.FieldMappings()
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARRangeMap',
+                                              'RangeMapID', 'RangeMapID', 'LONG'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARRangeMap',
+                                              'SpeciesID', 'SpeciesID', 'LONG'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARRangeMap',
+                                              'RangeVersion', 'RangeVersion', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARRangeMap',
+                                              'RangeStage', 'RangeStage', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARRangeMap',
+                                              'RangeDate', 'RangeDate', 'DATE'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARRangeMap',
+                                              'RangeMapScope', 'RangeMapScope', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARRangeMap',
+                                              'RangeMapNotes', 'RangeMapNotes', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARRangeMap',
+                                              'RangeMapComments', 'RangeMapComments', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARRangeMap',
+                                              'ReviewerComments', 'ReviewerComments', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARRangeMap',
+                                              'SynonymsUsed', 'SynonymsUsed', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARRangeMap',
+                                              'DifferentiateUsageType', 'DifferentiateUsageType', 'TEXT'))
+    arcpy.ExportTable_conversion(geodatabase + '/s_PublishedSARRangeMap',
+                                 output_folder + '/' + output_table, field_mapping=field_mappings)
+    # if arcpy.Exists(output_folder + '/' + output_table + '.xml'):
+    #     arcpy.Delete_management(output_folder + '/' + output_table + '.xml')
+    if arcpy.Exists(output_folder + '/schema.ini'):
+        arcpy.Delete_management(output_folder + '/schema.ini')
+    if arcpy.Exists(output_folder + '/info'):
+        arcpy.Delete_management(output_folder + '/info')
+    range_map_md = arcpy.metadata.Metadata(output_folder + '/' + output_table)
+    metadata.title = 'EBAR ' + output_table
+    metadata.summary = 'Table of EBAR Range Maps'
+    range_map_md.copy(metadata)
+    range_map_md.save()
+
+
+def ExportPublishedSARRangeMapEcoshapesToTable(geodatabase, output_folder, output_table, metadata):
+    field_mappings = arcpy.FieldMappings()
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARRangeMapEcoshape',
+                                              'RangeMapID', 'RangeMapID', 'LONG'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARRangeMapEcoshape',
+                                              'EcoshapeID', 'EcoshapeID', 'LONG'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARRangeMapEcoshape',
+                                              'Presence', 'Presence', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARRangeMapEcoshape',
+                                              'UsageType', 'UsageType', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARRangeMapEcoshape',
+                                              'RangeMapEcoshapeNotes', 'RangeMapEcoshapeNotes', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARRangeMapEcoshape',
+                                              'MinDate', 'MinDate', 'DATE'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARRangeMapEcoshape',
+                                              'MaxDate', 'MaxDate', 'DATE'))
+    arcpy.ExportTable_conversion(geodatabase + '/s_PublishedSARRangeMapEcoshape',
+                                 output_folder + '/' + output_table, field_mapping=field_mappings)
+    # if arcpy.Exists(output_folder + '/' + output_table + '.xml'):
+    #     arcpy.Delete_management(output_folder + '/' + output_table + '.xml')
+    if arcpy.Exists(output_folder + '/schema.ini'):
+        arcpy.Delete_management(output_folder + '/schema.ini')
+    if arcpy.Exists(output_folder + '/info'):
+        arcpy.Delete_management(output_folder + '/info')
+    range_map_ecoshape_md = arcpy.metadata.Metadata(output_folder + '/' + output_table)
+    metadata.title = 'EBAR ' + output_table
+    metadata.summary = 'Table of EBAR Ecoshapes for each Range Map'
+    range_map_ecoshape_md.copy(metadata)
+    range_map_ecoshape_md.save()
+
+
+def ExportPublishedSARRangeCountToTable(geodatabase, output_folder, output_table, metadata):
+    field_mappings = arcpy.FieldMappings()
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARRangeCount',
+                                              'RangeCount', 'RangeCount', 'BIGINTEGER'))
+    arcpy.ExportTable_conversion(geodatabase + '/s_PublishedSARRangeCount',
+                                 output_folder + '/' + output_table, field_mapping=field_mappings)
+    # if arcpy.Exists(output_folder + '/' + output_table + '.xml'):
+    #     arcpy.Delete_management(output_folder + '/' + output_table + '.xml')
+    if arcpy.Exists(output_folder + '/schema.ini'):
+        arcpy.Delete_management(output_folder + '/schema.ini')
+    if arcpy.Exists(output_folder + '/info'):
+        arcpy.Delete_management(output_folder + '/info')
+    range_count_ecoshape_md = arcpy.metadata.Metadata(output_folder + '/' + output_table)
+    metadata.title = 'EBAR ' + output_table
+    metadata.summary = 'Table of overall range counts for Canadian Species at Risk Heatmap'
+    range_count_ecoshape_md.copy(metadata)
+    range_count_ecoshape_md.save()
+
+
+def ExportPublishedSARRangeCountByEcoshape(geodatabase, output_folder, output_table, metadata):
+    field_mappings = arcpy.FieldMappings()
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARRangeCountByEcoshape',
+                                              'EcoshapeID', 'EcoshapeID', 'LONG'))
+    field_mappings.addFieldMap(createFieldMap(geodatabase + '/s_PublishedSARRangeCountByEcoshape',
+                                              'Count', 'Count', 'BIGINTEGER'))
+    arcpy.ExportTable_conversion(geodatabase + '/s_PublishedSARRangeCountByEcoshape',
+                                 output_folder + '/' + output_table, field_mapping=field_mappings)
+    # if arcpy.Exists(output_folder + '/' + output_table + '.xml'):
+    #     arcpy.Delete_management(output_folder + '/' + output_table + '.xml')
+    if arcpy.Exists(output_folder + '/schema.ini'):
+        arcpy.Delete_management(output_folder + '/schema.ini')
+    if arcpy.Exists(output_folder + '/info'):
+        arcpy.Delete_management(output_folder + '/info')
+    range_count_ecoshape_md = arcpy.metadata.Metadata(output_folder + '/' + output_table)
+    metadata.title = 'EBAR ' + output_table
+    metadata.summary = 'Table of range counts by Ecoshape for Canadian Species at Risk Heatmap'
+    range_count_ecoshape_md.copy(metadata)
+    range_count_ecoshape_md.save()
+
+
+def ExportCanadianEcoshapeOverviewsToShapefile(geodatabase, output_folder, output_shapefile, metadata):
+    input_fcpath = geodatabase + '/s_PublishedSAREcoshapeOverview'
+    field_mappings = arcpy.FieldMappings()
+    field_mappings.addFieldMap(createFieldMap(input_fcpath, 'EcoshapeID', 'EcoshapeID', 'LONG'))
+    # shorter names needed for shapefile fields
+    field_mappings.addFieldMap(createFieldMap(input_fcpath, 'EcoshapeName','EcoName', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(input_fcpath, 'ParentEcoregion', 'ParentEco', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(input_fcpath, 'ParentEcoregionFR', 'ParentEcoF', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(input_fcpath, 'Ecozone', 'Ecozone', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(input_fcpath, 'EcozoneFR', 'EcozoneFR', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(input_fcpath, 'MosaicVersion', 'MosaicVer', 'TEXT'))
+    # these columns were calculated from Ecoshape not EcoshapeOverview, so exclude to avoid confusion
+    # field_mappings.addFieldMap(createFieldMap(input_fcpath, 'TerrestrialArea', 'TerrArea', 'DOUBLE'))
+    # field_mappings.addFieldMap(createFieldMap(input_fcpath, 'TotalArea', 'TotalArea', 'DOUBLE'))
+    arcpy.FeatureClassToFeatureClass_conversion(input_fcpath, output_folder, output_shapefile,
+                                                field_mapping=field_mappings)
+    ecoshape_overview_md = arcpy.metadata.Metadata(output_folder + '/' + output_shapefile)
+    metadata.title = 'EBAR ' + output_shapefile
+    metadata.summary = 'Polygons shapefile of generalized EBAR Ecoshapes for heatmap species'
+    ecoshape_overview_md.copy(metadata)
+    ecoshape_overview_md.save()
+
+
+def ExportCanadianEcoshapeOverviewsToFC(geodatabase, filegdb, output_fc, metadata):
+    input_fcpath = geodatabase + '/s_PublishedSAREcoshapeOverview'
+    field_mappings = arcpy.FieldMappings()
+    field_mappings.addFieldMap(createFieldMap(input_fcpath, 'EcoshapeID', 'EcoshapeID', 'LONG'))
+    field_mappings.addFieldMap(createFieldMap(input_fcpath, 'EcoshapeName','EcoshapeName', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(input_fcpath, 'HeatmapRangeCount', 'HeatmapRangeCount', 'LONG'))
+    field_mappings.addFieldMap(createFieldMap(input_fcpath, 'HeatmapScinames', 'HeatmapScinames', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(input_fcpath, 'ParentEcoregion', 'ParentEcoregion', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(input_fcpath, 'ParentEcoregionFR', 'ParentEcoregionFR', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(input_fcpath, 'Ecozone', 'Ecozone', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(input_fcpath, 'EcozoneFR', 'EcozoneFR', 'TEXT'))
+    field_mappings.addFieldMap(createFieldMap(input_fcpath, 'MosaicVersion', 'MosaicVersion', 'TEXT'))
+    # these columns were calculated from Ecoshape not EcoshapeOverview, so exclude to avoid confusion
+    # field_mappings.addFieldMap(createFieldMap(input_fcpath, 'TerrestrialArea', 'TerrestrialArea', 'DOUBLE'))
+    # field_mappings.addFieldMap(createFieldMap(input_fcpath, 'TotalArea', 'TotalArea', 'DOUBLE'))
+    arcpy.FeatureClassToFeatureClass_conversion(input_fcpath, filegdb, output_fc, field_mapping=field_mappings)
+    ecoshape_overview_md = arcpy.metadata.Metadata(filegdb + '/' + output_fc)
+    metadata.title = 'EBAR ' + output_fc
+    metadata.summary = 'Polygons feature class of generalized EBAR Ecoshapes for heatmap species'
+    ecoshape_overview_md.copy(metadata)
+    ecoshape_overview_md.save()
 
 
 def getTaxonAttributes(global_unique_id, element_global_id, range_map_id, messages):

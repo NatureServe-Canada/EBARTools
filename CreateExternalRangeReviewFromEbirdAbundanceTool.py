@@ -46,6 +46,8 @@ class CreateExternalRangeReviewFromEbirdAbundanceTool:
         # make variables for parms
         EBARUtils.displayMessage(messages, 'Processing parameters')
         param_geodatabase = parameters[0].valueAsText
+        # param_range_map_id = parameters[1].valueAsText
+        # EBARUtils.displayMessage(messages, 'Range Map ID: ' + param_range_map_id)
         param_ebird_full_year_raster = parameters[1].valueAsText
         EBARUtils.displayMessage(messages, 'Full Year Raster: ' + param_ebird_full_year_raster)
         param_ebird_breeding_season_raster = parameters[2].valueAsText
@@ -54,7 +56,7 @@ class CreateExternalRangeReviewFromEbirdAbundanceTool:
         EBARUtils.displayMessage(messages, 'Label: ' + param_label)
         param_percent_of_population_cutoff = parameters[4].valueAsText
         EBARUtils.displayMessage(messages, 'Percent of Population Cutoff: ' + param_percent_of_population_cutoff)
-        # param_year = parameters[4].valueAsText
+        # param_year = parameters[5].valueAsText
         # EBARUtils.displayMessage(messages, 'Year: ' + param_year)
 
         # use passed geodatabase as workspace for temp outputs
@@ -99,6 +101,22 @@ class CreateExternalRangeReviewFromEbirdAbundanceTool:
             self.ProcessRaster(messages, param_ebird_breeding_season_raster, param_percent_of_population_cutoff,
                                param_label, False)
             
+        # # process removals based on param_range_map_id
+        # output_table = param_label + '_' + param_percent_of_population_cutoff
+        # row = None
+        # with arcpy.da.SearchCursor(param_geodatabase + '/RangeMapEcoshape', ['EcoshapeID'],
+        #                            'RangeMapID = ' + param_range_map_id +
+        #                            ' AND EcoshapeID NOT IN (SELECT EcoshapeID FROM ' + output_table + ')') as cursor:
+        #     for row in EBARUtils.searchCursor(cursor):
+        #         # insert row
+        #         with arcpy.da.InsertCursor(output_table,
+        #                                    ['EcoshapeID', 'Presence']) as insert_cursor:
+        #             insert_cursor.insertRow([row['EcoshapeID'], 'R'])
+        #         del insert_cursor
+        # if row:
+        #     del row
+        # del cursor
+
         # export to CSV
         arcpy.ExportTable_conversion(param_geodatabase + '/' + param_label + '_' + param_percent_of_population_cutoff,
                                      EBARUtils.download_folder + '/' + param_label + '_' +
@@ -261,17 +279,19 @@ if __name__ == '__main__':
     cerrfea = CreateExternalRangeReviewFromEbirdAbundanceTool()
     # hard code parameters for debugging
     param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value = 'D:/GIS/EBAR/EBAR.gdb' #'C:/GIS/EBAR/nsc-gis-ebarkba.sde'
+    param_geodatabase.value = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde' #'D:/GIS/EBAR/EBAR.gdb'
+    # param_range_map_id = arcpy.Parameter()
+    # param_range_map_id.value = 4803
     param_ebird_full_year_raster = arcpy.Parameter()
-    param_ebird_full_year_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/wesgre_abundance_seasonal_full-year_mean_2023.tif"
+    param_ebird_full_year_raster.value = "C:/GIS/EBAR/EBARTools/samples/solsan_abundance_seasonal_full-year_mean_2022.tif"
     param_ebird_breeding_season_raster = arcpy.Parameter()
-    param_ebird_breeding_season_raster.value = "D:/GIS/eBird/eBird Status and Trends/eBird Raster Files/wesgre_abundance_seasonal_breeding_mean_2023.tif"
+    param_ebird_breeding_season_raster.value = "C:/GIS/EBAR/EBARTools/samples//solsan_abundance_seasonal_breeding_mean_2022.tif"
     param_label = arcpy.Parameter()
-    param_label.value = 'wesgre'
+    param_label.value = 'solsan'
     param_percent_of_population_cutoff = arcpy.Parameter()
     param_percent_of_population_cutoff.value = 5
     # param_year = arcpy.Parameter()
     # param_year.value = 2023
-    parameters = [param_geodatabase, param_ebird_full_year_raster, param_ebird_breeding_season_raster,
-                  param_label, param_percent_of_population_cutoff] #, param_year]
+    parameters = [param_geodatabase, param_ebird_full_year_raster,
+                  param_ebird_breeding_season_raster, param_label, param_percent_of_population_cutoff] #, param_year]
     cerrfea.runCreateExternalRangeReviewFromEbirdAbundanceTool(parameters, None)
