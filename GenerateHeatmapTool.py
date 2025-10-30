@@ -222,11 +222,23 @@ class GenerateHeatmapTool:
                                                      'NONE', 'SpeciesID', 'SpeciesID')
             
             # export APRX and MAPX from templates
-            EBARUtils.displayMessage(messages, 'Copying map')
+            EBARUtils.displayMessage(messages, 'Copying ArcGIS Pro project')
             shutil.copyfile(EBARUtils.resources_folder + '/EBAR_SAR_Heatmap.aprx',
                             zip_folder + '/EBAR_SAR_Heatmap.aprx')
-            shutil.copyfile(EBARUtils.resources_folder + '/EBAR_SAR_Heatmap.mapx',
-                            zip_folder + '/EBAR_SAR_Heatmap.mapx')
+
+            # updating map symbology
+            EBARUtils.displayMessage(messages, 'Updating symbology to reflect latest values')
+            aprx = arcpy.mp.ArcGISProject(zip_folder + '/EBAR_SAR_Heatmap.aprx')
+            mp = aprx.listMaps('EBAR_SAR_Heatmap')[0]
+            layer = mp.listLayers('HeatmapEcoshapeOverview')[0]
+            symbology = layer.symbology
+            renderer = symbology.renderer
+            renderer.classificationField = 'HeatmapRangeCount'
+            for brk in renderer.classBreaks:
+                brk.symbol.outlineWidth = 0 #outlineColor = {'RGB' : [255, 255, 255, 0]}
+            layer.symbology = symbology
+            # mapx doesn't seem to have same path smarts as aprx, so exclude
+            # mp.exportToMAPX(zip_folder + '/EBAR_SAR_Heatmap.mapx')
 
             # zip
             EBARUtils.createZip(zip_folder, EBARUtils.download_folder + '/EBAR_SAR_Heatmap.zip', None)
