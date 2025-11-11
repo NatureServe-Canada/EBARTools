@@ -1170,7 +1170,7 @@ def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_i
     ecoshape_overview_layer = map.listLayers('EBARTemplateRemovedEcoshapes')[0]
     ecoshape_overview_layer_md = ecoshape_overview_layer.metadata
     metadata.title = 'EBAR EcoshapeOverview.shp'
-    metadata.summary = 'Polygons shapefile of generalized ecoshapes for EBAR for selected species'
+    metadata.summary = 'Polygons shapefile of generalized removed ecoshapes for EBAR for selected species'
     ecoshape_overview_layer_md.copy(metadata)
     ecoshape_overview_layer_md.save()
     ecoshape_overview_layer.name = 'EBAR' + element_global_id + 'RemovedEcoshapes'
