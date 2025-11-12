@@ -19,6 +19,7 @@ import zipfile
 import csv
 import requests
 import json
+import deepl
 
 #from xarray import where
 
@@ -164,6 +165,11 @@ breeding_land_use_classes = ['breeding',
 
 # for portal connections from code
 portal_file = 'C:/Users/rgreene/Documents/Portal.txt'
+
+
+# DeepL key
+deepl_key_file = 'C:/GIS/EBAR/DeepL/DeepL.txt'
+deepl_key = None
 
 
 def displayMessage(messages, msg):
@@ -1682,3 +1688,15 @@ def percentPopulationCutoff(input_polygon, total_pop, cutoff_percent):
     if row:
         del row
     return prev_pop
+
+
+def translateENtoFRUsingDeepL(input_text):
+    # get key from file
+    # reuse deepl_key across calls to this function
+    global deepl_key
+    if not deepl_key:
+        dk_file = open(deepl_key_file)
+        deepl_key = dk_file.read()
+        dk_file.close()
+    deepl_client = deepl.DeepLClient(deepl_key)
+    return deepl_client.translate_text(input_text, source_lang="EN", target_lang="FR")
