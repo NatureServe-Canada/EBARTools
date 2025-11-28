@@ -882,7 +882,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                        [table_name_prefix + temp_pairwise_intersect + '.MaxDate', 'FIRST'],
                                        [table_name_prefix + temp_pairwise_intersect + '.CoordinatesObscured', 'FIRST'],
                                        [table_name_prefix + temp_pairwise_intersect + '.EORank', 'FIRST'],
-                                       [table_name_prefix + temp_pairwise_intersect + '.DatasetSourceUniqueID', 'FIRST']])
+                                       [table_name_prefix + temp_pairwise_intersect + '.DatasetSourceUniqueID', 'FIRST'],
+                                       [table_name_prefix + temp_pairwise_intersect + '.BreedingAndBehaviourCode', 'FIRST']])
             # simplify point-derived polygons in batches to avoid issues with performance and memory usage
             result = arcpy.GetCount_management(temp_dissolve)
             polygon_count = int(result[0])
@@ -942,7 +943,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                     'MaxDate',
                                                     'CoordinatesObscured',
                                                     'EORank',
-                                                    'DatasetSourceUniqueID']) as insert_cursor:
+                                                    'DatasetSourceUniqueID',
+                                                    'BreedingAndBehaviourCode']) as insert_cursor:
                             # kludge because arc ends up with different field names under Enterprise gdb after joining
                             field_names = [f.name for f in arcpy.ListFields(temp_batch) if f.aliasName in
                                            ['FIRST_' + table_name_prefix + temp_pairwise_intersect + '.RangeMapID',
@@ -974,7 +976,11 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                             'FIRST_' + table_name_prefix + temp_pairwise_intersect +
                                             '.DatasetSourceUniqueID',
                                             'FIRST_' + table_name_prefix + temp_pairwise_intersect +
-                                            '.datasetsourceuniqueid']]
+                                            '.datasetsourceuniqueid',
+                                            'FIRST_' + table_name_prefix + temp_pairwise_intersect +
+                                            '.BreedingAndBehaviourCode',
+                                            'FIRST_' + table_name_prefix + temp_pairwise_intersect +
+                                            '.breedingandbehaviourcode']]
                             # for field_name in field_names:
                             #     EBARUtils.displayMessage(messages, field_name)
                             with arcpy.da.SearchCursor(temp_batch,
@@ -989,7 +995,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                         field_names[7],
                                                         field_names[8],
                                                         field_names[9],
-                                                        field_names[10]]) as search_cursor:
+                                                        field_names[10],
+                                                        field_names[11]]) as search_cursor:
                                 search_row = None
                                 for search_row in EBARUtils.searchCursor(search_cursor):
                                     insert_cursor.insertRow([search_row['SHAPE@'],
@@ -1003,7 +1010,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                              search_row[field_names[7]],
                                                              search_row[field_names[8]],
                                                              search_row[field_names[9]],
-                                                             search_row[field_names[10]]])
+                                                             search_row[field_names[10]],
+                                                             search_row[field_names[11]]])
                                 if search_row:
                                     del search_row
                                 del search_cursor
@@ -1022,7 +1030,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                         'MaxDate',
                                         'CoordinatesObscured',
                                         'EORank',
-                                        'DatasetSourceUniqueID']) as insert_cursor:
+                                        'DatasetSourceUniqueID',
+                                        'BreedingAndBehaviourCode']) as insert_cursor:
                 with arcpy.da.SearchCursor('pairwise_intersect_layer',
                                            ['SHAPE@',
                                             table_name_prefix + temp_pairwise_intersect + '.RangeMapID',
@@ -1035,7 +1044,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                             table_name_prefix + temp_pairwise_intersect + '.MaxDate',
                                             table_name_prefix + temp_pairwise_intersect + '.CoordinatesObscured',
                                             table_name_prefix + temp_pairwise_intersect + '.EORank',
-                                            table_name_prefix + temp_pairwise_intersect + '.DatasetSourceUniqueID'],
+                                            table_name_prefix + temp_pairwise_intersect + '.DatasetSourceUniqueID',
+                                            table_name_prefix + temp_pairwise_intersect + '.BreedingAndBehaviourCode'],
                                            table_name_prefix + temp_pairwise_intersect + ".OriginalGeometryType <> 'P'") as search_cursor:
                     search_row = None
                     for search_row in EBARUtils.searchCursor(search_cursor):
@@ -1061,7 +1071,9 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                 search_row[table_name_prefix +
                                                            temp_pairwise_intersect + '.EORank'],
                                                 search_row[table_name_prefix +
-                                                           temp_pairwise_intersect + '.DatasetSourceUniqueID']])
+                                                           temp_pairwise_intersect + '.DatasetSourceUniqueID'],
+                                                search_row[table_name_prefix +
+                                                           temp_pairwise_intersect + '.BreedingAndBehaviourCode']])
                     if search_row:
                         del search_row
                     del search_cursor
