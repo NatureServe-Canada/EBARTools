@@ -167,6 +167,24 @@ class PrepareNSXProTransferTool:
             for allowed_prec in sorted(count_dict.keys()):
                 EBARUtils.displayMessage(messages, str(allowed_prec) + ' sq. mile(s) - ' + str(count_dict[allowed_prec]))
 
+        # export to file geodatabase
+        EBARUtils.displayMessage(messages, 'Exporting to File Geodatabase')
+        output_gdb = 'NSXProTransfer' + str(datetime.datetime.now().day) + datetime.datetime.now().strftime('%b') + \
+            str(datetime.datetime.now().year)
+        arcpy.CreateFileGDB_management(EBARUtils.temp_folder, output_gdb)
+        output_gdb_folder = EBARUtils.download_folder + '/' + output_gdb
+        arcpy.ExportFeatures_conversion(param_geodatabase + '/NSXProInputPoint',
+                                        output_gdb_folder + '/NSXProInputPoint')
+        arcpy.ExportFeatures_conversion(param_geodatabase + '/NSXProInputPolygon',
+                                        output_gdb_folder + '/NSXProInputPolygon')
+        arcpy.ExportTable_conversion(param_geodatabase + '/NSXProDatasetSource',
+                                     output_gdb_folder + '/NSXProDatasetSource')
+
+        # zip and provide link
+        EBARUtils.createZip(output_gdb_folder, EBARUtils.download_folder + '/' + output_gdb + '.zip')
+        EBARUtils.displayMessage(messages,
+                                 'Zipped file geodatabase: ' + EBARUtils.download_url + '/' + output_gdb + '.zip')
+
         # end time
         end_time = datetime.datetime.now()
         EBARUtils.displayMessage(messages, 'End time: ' + str(end_time))
