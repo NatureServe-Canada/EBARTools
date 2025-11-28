@@ -20,6 +20,7 @@ from numpy import diff
 import EBARUtils
 import arcpy
 import datetime
+import StaticTranslations
 
 
 class GenerateRangeMapTool:
@@ -254,13 +255,17 @@ class GenerateRangeMapTool:
             # create RangeMap record
             with arcpy.da.InsertCursor('range_map_view',
                                        ['SpeciesID', 'RangeVersion', 'RangeStage', 'RangeDate', 'RangeMapNotes',
-                                        'IncludeInEBARReviewer', 'RangeMapScope', 'SynonymsUsed',
-                                        'DifferentiateUsageType']) as cursor:
+                                        'RangeMapNotes_FR', 'IncludeInEBARReviewer', 'RangeMapScope',
+                                        'RangeMapScope_FR', 'SynonymsUsed', 'DifferentiateUsageType']) as cursor:
                 notes = 'Primary Species Name - ' + param_species
+                notes_fr = "Nom principal de l'espèce - " + param_species
                 if len(secondary_names) > 0:
                     notes += '; Synonyms - ' + secondary_names
+                    notes_fr += 'Synonymes - ' + secondary_names
                 object_id = cursor.insertRow([species_id, param_version, param_stage, datetime.datetime.now(),
-                                              notes, 0, scope, synonyms_used, differentiate_usage_type])
+                                              notes, notes_fr, 0, scope,
+                                              StaticTranslations.range_map_scope_translation(scope), synonyms_used,
+                                              differentiate_usage_type])
             del cursor
             range_map_id = EBARUtils.getUniqueID(param_geodatabase + '/RangeMap', 'RangeMapID', object_id)
             EBARUtils.displayMessage(messages, 'Range Map record created')
