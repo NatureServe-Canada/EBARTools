@@ -33,7 +33,6 @@ download_url = 'https://gis.natureserve.ca/download'
 #nsx_species_search_url = 'https://explorer.natureserve.org/api/data/search'
 nsx_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/'
 # ebird_download_url = 'https://st-download.ebird.org/v1/fetch'
-# ebird_api_key = 'er3uu61e43io'
 log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
 #log_folder = 'D:/GIS/EBAR/temp'
 
@@ -564,7 +563,7 @@ def createReplaceFolder(folder):
 
 def createZip(zip_folder, zip_output_file, only_include_extension):
     """create zip file, optionally with just files with a particular extension"""
-    # path = pathlib.Path(zip_folder)
+    path = pathlib.Path(zip_folder)
     # os.chdir(path.parent)
     # zip_folder_name = os.path.basename(zip_folder)
     zipf = zipfile.ZipFile(zip_output_file, 'w', zipfile.ZIP_DEFLATED)
@@ -588,14 +587,11 @@ def createZip(zip_folder, zip_output_file, only_include_extension):
                 if file[-len(only_include_extension):] != only_include_extension:
                     include = False
             # always exclude lock files
-            # # debug
-            # print('file: ' + file)
-            # print('last 5: ' + file[-5:])
             if file[-5:] == '.lock':
                 include = False
             if include:
                 file_path = os.path.join(root, file)
-                zipf.write(file_path, os.path.relpath(file_path, zip_folder))
+                zipf.write(file_path, os.path.relpath(root, path.parent) + '/' + file)
     zipf.close()
     # attempt to overcome GP service holding a hook into the folder
     del zip_folder
