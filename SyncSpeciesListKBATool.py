@@ -99,6 +99,8 @@ class SyncSpeciesListKBATool:
                           "BeyondNAmerica",
                           "BeyondUSCanada",
                           "AOO_N_COSEWIC",
+                          "Range_G_COSEWIC", 
+                          "Range_N_COSEWIC",
                           "Range_G_IUCN",
                           "Range_N_IUCN",
                           "Range_N_ECCC",
