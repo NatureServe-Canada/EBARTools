@@ -250,12 +250,13 @@ def _name_cursor(cursor):
 def getUniqueID(table, id_field, object_id):
     """Retrieve the Unique ID based on the ObjectID"""
     unique_id = None
+    row = None
     with arcpy.da.SearchCursor(table, [id_field], 'OBJECTID = ' + str(object_id)) as search_cursor:
-        row = None
         for row in searchCursor(search_cursor):
             unique_id = row[id_field]
-        if row:
-            del row
+    del search_cursor
+    if row:
+        del row
     return unique_id
 
 
@@ -270,6 +271,7 @@ def checkAddInputDataset(geodatabase, dataset_name, dataset_source_id, date_rece
                                str(dataset_source_id) + " AND DateReceived = date '" + date_received + "'") as cursor:
         for row in searchCursor(cursor):
             input_dataset_id = row['InputDatasetID']
+        del cursor
         if input_dataset_id:
             del row
             return input_dataset_id, True
@@ -281,6 +283,7 @@ def checkAddInputDataset(geodatabase, dataset_name, dataset_source_id, date_rece
         # object_id = cursor.insertRow([dataset_name, dataset_source_id, date_received, restrictions])
         object_id = cursor.insertRow([dataset_name, dataset_source_id, date_received,
                                       sensitive_ecoogical_data_cat, dataset_citation])
+    del cursor
     input_dataset_id = getUniqueID(geodatabase + '/InputDataset', 'InputDatasetID', object_id)
     return input_dataset_id, False
 
@@ -307,8 +310,9 @@ def readSpecies(geodatabase):
                                ['NATIONAL_SCIENTIFIC_NAME', 'SpeciesID']) as cursor:
         for row in searchCursor(cursor):
             species_dict[row['NATIONAL_SCIENTIFIC_NAME'].lower()] = row['SpeciesID']
-        if len(species_dict) > 0:
-            del row
+    del cursor
+    if len(species_dict) > 0:
+        del row
     return species_dict
 
 
@@ -319,8 +323,9 @@ def readEcosystems(geodatabase):
                                ['IVC_SCIENTIFIC_NAME', 'EcosystemID']) as cursor:
         for row in searchCursor(cursor):
             ecosystems_dict[row['IVC_SCIENTIFIC_NAME'].lower()] = row['EcosystemID']
-        if len(ecosystems_dict) > 0:
-            del row
+    del cursor
+    if len(ecosystems_dict) > 0:
+        del row
     return ecosystems_dict
 
 
@@ -330,6 +335,7 @@ def readSynonyms(geodatabase):
     with arcpy.da.SearchCursor(geodatabase + '/Synonym', ['SynonymName', 'SynonymID']) as cursor:
         for row in searchCursor(cursor):
             synonym_id_dict[row['SynonymName'].lower()] = row['SynonymID']
+    del cursor
     if len(synonym_id_dict) > 0:
         del row
     return synonym_id_dict
@@ -341,6 +347,7 @@ def readSynonymSpecies(geodatabase):
     with arcpy.da.SearchCursor(geodatabase + '/Synonym', ['SynonymName', 'SpeciesID']) as cursor:
         for row in searchCursor(cursor):
             synonym_species_id_dict[row['SynonymName'].lower()] = row['SpeciesID']
+    del cursor
     if len(synonym_species_id_dict) > 0:
         del row
     return synonym_species_id_dict
@@ -353,6 +360,7 @@ def readElementSpecies(geodatabase):
                                ['ELEMENT_NATIONAL_ID', 'SpeciesID']) as cursor:
         for row in searchCursor(cursor):
             element_species_dict[row['ELEMENT_NATIONAL_ID']] = row['SpeciesID']
+    del cursor
     if len(element_species_dict) > 0:
         del row
     return element_species_dict
@@ -367,6 +375,7 @@ def readElementEcosystem(geodatabase):
         for row in searchCursor(cursor):
             element_ecosystem_dict[row['ELEMENT_NATIONAL_ID']] = row['EcosystemID']
             #element_ecosystem_dict[row['ELEMENT_GLOBAL_ID']] = row['EcosystemID']
+    del cursor
     if len(element_ecosystem_dict) > 0:
         del row
     return element_ecosystem_dict
@@ -400,9 +409,10 @@ def checkSpecies(scientific_name, geodatabase):
             species_id = row['SpeciesID']
             if row['AUTHOR_NAME']:
                 author_name = row['AUTHOR_NAME']
-        if species_id:
-            # found
-            del row
+    del cursor
+    if species_id:
+        # found
+        del row
     return species_id, author_name
 
 
@@ -434,9 +444,9 @@ def readDatasetSourceUniqueIDs(geodatabase, table_name_prefix, dataset_source_id
         for row in searchCursor(cursor):
             #unique_ids_dict[row[source_id_field] + ' - ' + str(row[species_id_field])] = row[spatial_id_field]
             unique_ids_dict[row[source_id_field]] = row[spatial_id_field]
+    del cursor
     if len(unique_ids_dict) > 0:
         del row
-    del cursor
     arcpy.Delete_management(feature_layer)
     return unique_ids_dict
 
@@ -523,8 +533,9 @@ def readDatasetSources(geodatabase, dataset_source_type):
                                 sql_clause=(None, 'ORDER BY DatasetSourceName')) as cursor:
         for row in searchCursor(cursor):
             source_list.append(row['DatasetSourceName'])
-        if len(source_list) > 0:
-            del row
+    del cursor
+    if len(source_list) > 0:
+        del row
     return source_list
 
 
@@ -1115,6 +1126,7 @@ def getTaxonAttributes(global_unique_id, element_global_id, range_map_id, messag
         attributes_dict['us_subnational_ranks'] = 'Cannot access'
         attributes_dict['mx_subnational_ranks'] = 'Cannot access'
         attributes_dict['esa_status'] = 'Cannot access'
+        row = None
         with arcpy.da.SearchCursor('biotics_view',
                                    ['G_RANK', 'G_RANK_REVIEW_DATE', 'N_RANK', 'N_RANK_REVIEW_DATE',
                                    'COSEWIC_STATUS', 'SARA_STATUS']) as cursor:
@@ -1131,6 +1143,9 @@ def getTaxonAttributes(global_unique_id, element_global_id, range_map_id, messag
                     attributes_dict['cosewic_status'] = row['COSEWIC_STATUS']
                 if row['SARA_STATUS']:
                     attributes_dict['sara_status'] = row['SARA_STATUS']
+        del cursor
+        if row:
+            del row
 
     return attributes_dict
 
@@ -1224,8 +1239,9 @@ def buildJurisdictionList(geodatabase, jurisdictions_list):
             if jur_not_provided:
                 # if not passed in, set to all jurisdictions
                 jurisdictions_list.append(row['JurisdictionName'])
-        if len(jur_name_dict) > 0:
-            del row
+    del cursor
+    if len(jur_name_dict) > 0:
+        del row
     # convert names to comma-separated list of ids
     jur_ids_comma = '('
     for jur_name in jurisdictions_list:
@@ -1243,8 +1259,9 @@ def getJurisidictionAbbreviation(geodatabase, jurisdiction_name):
                                "JurisdictionName = '" + jurisdiction_name + "'") as cursor:
         for row in searchCursor(cursor):
             abbrev = row['JurisdictionAbbreviation']
-        if abbrev:
-            del row
+    del cursor
+    if abbrev:
+        del row
     return abbrev
 
 
@@ -1267,10 +1284,10 @@ def getDetailsForRangeMap(geodatabase, range_map_id):
             range_date = row['RangeDate']
             publish = row['Publish']
             include_in_download_table = row['IncludeInDownloadTable']
+    del cursor
     if species_id:
         # found
         del row
-    del cursor
 
     # primary and secondary in comma-separated list
     if species_id:
@@ -1279,10 +1296,10 @@ def getDetailsForRangeMap(geodatabase, range_map_id):
                                    'RangeMapID = ' + str(range_map_id)) as cursor:
             for row in searchCursor(cursor):
                 species_ids += ',' + str(row['SpeciesID'])
+        del cursor
         if species_ids != str(species_id):
             # found at least one
             del row
-        del cursor
 
     return species_id, species_ids, scope, range_date, publish, include_in_download_table
 
@@ -1299,8 +1316,8 @@ def getRelatedRangeMapIDs(geodatabase, range_map_id):
         for row in searchCursor(cursor):
             primary_species_id = row['SpeciesID']
             scope = row['RangeMapScope']
-    del row
     del cursor
+    del row
 
     # secondary
     with arcpy.da.SearchCursor(geodatabase + '/SecondarySpecies', ['SpeciesID'],
@@ -1308,16 +1325,16 @@ def getRelatedRangeMapIDs(geodatabase, range_map_id):
         for row in searchCursor(cursor):
             # add to dict with unmatched flag
             secondary_species[row['SpeciesID']] = False
+    del cursor
     if len(secondary_species) > 0:
         # found at least one
         del row
-    del cursor
 
     # get related
+    row = None
     with arcpy.da.SearchCursor(geodatabase + '/RangeMap', ['RangeMapID'],
                                'SpeciesID = ' + str(primary_species_id) + " AND RangeMapScope = '" + scope +
                                "'") as cursor:
-        row = None
         for row in searchCursor(cursor):
             # ensure SecondarySpecies, if any, also match
             sec_row = None
@@ -1326,8 +1343,14 @@ def getRelatedRangeMapIDs(geodatabase, range_map_id):
                 for sec_row in searchCursor(sec_cursor):
                     # add/update dict with matched flag
                     secondary_species[sec_row['SpeciesID']] = True
+            del sec_cursor
+            if sec_row:
+                del sec_row
             if all(secondary_species.values()):
-                range_map_ids + ',' +  str(row['RangeMapID']) 
+                range_map_ids + ',' +  str(row['RangeMapID'])
+    del cursor
+    if row:
+        del row
 
     return range_map_ids
 
@@ -1395,11 +1418,11 @@ def inputSelectAndBuffer(geodatabase, input_features, range_map_id, table_name_p
     # line above does not always behave as expected against enterprise gdb, probably due to outer join!
     # build list of excluded records
     excluded_ids = ''
+    row = None
     with arcpy.da.SearchCursor(input_features + '_layer',
                                [table_name_prefix + input_features + '.' + input_features + 'ID',
                                 table_name_prefix + 'InputFeedback.ExcludeFromRangeMapID',
                                 table_name_prefix + 'InputFeedback.ExcludeFromAllRangeMaps']) as cursor:
-        row = None
         for row in searchCursor(cursor):
             exclude = False
             if row[table_name_prefix + 'InputFeedback.ExcludeFromRangeMapID']:
@@ -1412,9 +1435,9 @@ def inputSelectAndBuffer(geodatabase, input_features, range_map_id, table_name_p
                 if len(excluded_ids) > 0:
                     excluded_ids += ','
                 excluded_ids += str(row[table_name_prefix + input_features + '.' + input_features + 'ID'])
+    del cursor
     if row:
         del row
-    del cursor
     arcpy.RemoveJoin_management(input_features + '_layer', table_name_prefix + 'InputFeedback')
     if len(excluded_ids) > 0:
         arcpy.SelectLayerByAttribute_management(input_features + '_layer', 'REMOVE_FROM_SELECTION',
@@ -1479,8 +1502,9 @@ def checkReview(range_map_view, table_name_prefix):
             if row[table_name_prefix + 'Review.DateCompleted']:
                 review_completed = True
                 break
-        if review_found:
-            del row
+    del cursor
+    if review_found:
+        del row
     # check for reviews in progress
     if review_found:
         arcpy.AddJoin_management(range_map_view, table_name_prefix + 'Review.ReviewID', 'EcoshapeReview', 'ReviewID',
@@ -1490,8 +1514,9 @@ def checkReview(range_map_view, table_name_prefix):
             for row in searchCursor(cursor):
                 ecoshape_review = True
                 break
-            if ecoshape_review:
-                del row
+        del cursor
+        if ecoshape_review:
+            del row
         arcpy.RemoveJoin_management(range_map_view, table_name_prefix + 'EcoshapeReview')
     arcpy.RemoveJoin_management(range_map_view, table_name_prefix + 'Review')
     # return
@@ -1507,8 +1532,9 @@ def checkPublished(range_map_view):
             if row['Publish']:
                 if row['Publish'] == 1:
                     published = True
-        if row:
-            del row
+    del cursor
+    if row:
+        del row
     return published
 
 
@@ -1521,18 +1547,19 @@ def checkMarkedForDelete(range_map_view):
             if row['RangeStage']:
                 if row['RangeStage'].lower() == 'delete':
                     marked = True
-        if row:
-            del row
+    del cursor
+    if row:
+        del row
     return marked
 
 
 def readSubnationalSpeciesFields(geodatabase, subnation_code):
     """retrieve in subnational species field values into dict within dict"""
     subnational_species_dict = {}
+    row = None
     with arcpy.da.SearchCursor(geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
                                ['SpeciesID', subnation_code + '_S_RANK', subnation_code + '_ROUNDED_S_RANK',
                                 subnation_code + '_DATASEN', subnation_code + '_DATASEN_CAT']) as cursor:
-        row = None
         for row in searchCursor(cursor):
             values_dict = {}
             values_dict['S_RANK'] = row[subnation_code + '_S_RANK']
@@ -1541,8 +1568,9 @@ def readSubnationalSpeciesFields(geodatabase, subnation_code):
             values_dict['EST_DATASEN_CAT'] = row[subnation_code + '_DATASEN_CAT']
             values_dict['changed'] = False
             subnational_species_dict[row['SpeciesID']] = values_dict
-        if row:
-            del row
+    del cursor
+    if row:
+        del row
     return subnational_species_dict
 
 
@@ -1560,9 +1588,9 @@ def updateSubnationalSpeciesFields(geodatabase, subnation_code, subnational_spec
                                   subnational_species_dict[row['SpeciesID']]['ROUNDED_S_RANK'],
                                   subnational_species_dict[row['SpeciesID']]['EST_DATA_SENS'],
                                   subnational_species_dict[row['SpeciesID']]['EST_DATASEN_CAT']])
+    del cursor
     if count > 0:
         del row
-    del cursor
     return count
 
 
@@ -1609,9 +1637,9 @@ def appendUsingCursor(append_from, append_to, field_dict=None, skip_fields_lower
             with arcpy.da.InsertCursor(append_to, to_fields) as insert_cursor:
                 insert_cursor.insertRow(values)
             del insert_cursor
+    del cursor
     if row:
         del row
-    del cursor
 
 
 def checkInputRelatedRecords(table, where_clause):
@@ -1629,11 +1657,14 @@ def checkSFEO(geodatabase, input_table, id_field, id_value):
     where_clause = 'DatasetSourceID = (SELECT DatasetSourceID FROM InputDataset WHERE InputDatasetID = ' + \
         '(SELECT InputDatasetID FROM ' + input_table + ' WHERE ' + id_field + ' = ' + id_value + '))'
     ret = False
+    row = None
     with arcpy.da.SearchCursor(geodatabase + '/DatasetSource', ['DatasetType'], where_clause) as cursor:
         for row in searchCursor(cursor):
             if row['DatasetType'] in ('Element Occurrences', 'Source Features'):
                 ret = True
-    del row, cursor
+    del cursor
+    if row:
+        del row
     return ret
 
 
@@ -1696,3 +1727,26 @@ def translateENtoFRUsingDeepL(input_text):
         dk_file.close()
     deepl_client = deepl.DeepLClient(deepl_key)
     return deepl_client.translate_text(input_text, source_lang="EN", target_lang="FR")
+
+
+def readDatasetSourceTranslations(geodatabase):
+    """return a list of dataset source names for the given type"""
+    source_fr_dict = {}
+    with arcpy.da.SearchCursor(geodatabase + '/DatasetSource',
+                               ['DatasetSourceName', 'DatasetSourceName_FR']) as cursor:
+        for row in searchCursor(cursor):
+            fr_name = row['DatasetSourceName']
+            if row['DatasetSourceName_FR']:
+                fr_name = row['DatasetSourceName_FR']
+            source_fr_dict[row['DatasetSourceName']] = fr_name
+    del cursor
+    if len(source_fr_dict) > 0:
+        del row
+    return source_fr_dict
+
+
+# controlling process - for testing
+if __name__ == '__main__':
+    input_text_list = ['Primary Species']
+    for input_text in input_text_list:
+        print(translateENtoFRUsingDeepL(input_text))

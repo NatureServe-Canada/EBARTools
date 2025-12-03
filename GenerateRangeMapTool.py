@@ -256,16 +256,14 @@ class GenerateRangeMapTool:
             with arcpy.da.InsertCursor('range_map_view',
                                        ['SpeciesID', 'RangeVersion', 'RangeStage', 'RangeDate', 'RangeMapNotes',
                                         'RangeMapNotes_FR', 'IncludeInEBARReviewer', 'RangeMapScope',
-                                        'RangeMapScope_FR', 'SynonymsUsed', 'DifferentiateUsageType']) as cursor:
+                                        'SynonymsUsed', 'DifferentiateUsageType']) as cursor:
                 notes = 'Primary Species Name - ' + param_species
                 notes_fr = "Nom principal de l'espèce - " + param_species
                 if len(secondary_names) > 0:
                     notes += '; Synonyms - ' + secondary_names
                     notes_fr += 'Synonymes - ' + secondary_names
                 object_id = cursor.insertRow([species_id, param_version, param_stage, datetime.datetime.now(),
-                                              notes, notes_fr, 0, scope,
-                                              StaticTranslations.range_map_scope_translation(scope), synonyms_used,
-                                              differentiate_usage_type])
+                                              notes, notes_fr, 0, scope, synonyms_used, differentiate_usage_type])
             del cursor
             range_map_id = EBARUtils.getUniqueID(param_geodatabase + '/RangeMap', 'RangeMapID', object_id)
             EBARUtils.displayMessage(messages, 'Range Map record created')
@@ -467,7 +465,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         update_row = None
         with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape',
                                    ['EcoshapeID', 'RangeMapEcoshapeID', 'RangeMapID', 'Presence',
-                                    'UsageType', 'RangeMapEcoshapeNotes', 'MigrantStatus'],
+                                    'UsageType', 'RangeMapEcoshapeNotes', 'RangeMapEcoshapeNotes_FR', 'MigrantStatus'],
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
             for update_row in EBARUtils.updateCursor(update_cursor):
                 # check for ecoshape "remove" reviews
@@ -503,6 +501,9 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                 id_field_name = [f.name for f in arcpy.ListFields(temp_ecoshape_countby_source) if f.aliasName ==
                                  'EcoshapeID'][0]
                 summary = ''
+                summary_fr = ''
+                # use dict for optional DatasetSourceName translations
+                source_fr_dict = EBARUtils.readDatasetSourceTranslations(param_geodatabase)
                 with arcpy.da.SearchCursor(temp_ecoshape_countby_source, field_names,
                                            id_field_name + ' = ' + str(update_row['EcoshapeID'])) as search_cursor:
                     presence = update_row['Presence']
@@ -515,7 +516,9 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     for search_row in EBARUtils.searchCursor(search_cursor):
                         if len(summary) > 0:
                             summary += ', '
+                            summary_fr += ', '
                         summary += str(search_row[field_names[2]]) + ' ' + search_row[field_names[0]]
+                        summary_fr += str(search_row[field_names[2]]) + ' ' + source_fr_dict[search_row[field_names[0]]]
                         if search_row[field_names[4]]:
                             min_year = search_row[field_names[4]].year
                             max_year = search_row[field_names[4]].year
@@ -525,13 +528,17 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                 if search_row[field_names[3]].year < min_year:
                                     min_year = search_row[field_names[3]].year
                             summary += ' ('
+                            summary_fr += ' ('
                             if min_year < max_year:
                                 summary += str(min_year) + '-'
+                                summary_fr += str(min_year) + '-'
                             summary += str(max_year) + ')'
+                            summary_fr += str(max_year) + ')'
                 if len(summary) > 0:
                     del search_row
                 del search_cursor
                 summary = 'Input records - ' + summary
+                summary_fr = 'Enregistrements saisis - ' + summary_fr
                 # check for ecoshape "update" reviews
                 if len(prev_range_map_ids) > 0:
                     search_row = None
@@ -561,31 +568,41 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                 usage_type = None
                             migrant_status = search_row[table_name_prefix + 'EcoshapeReview.MigrantStatus']
                             # get expert name and publish settings to populate reviewer comments
+                            expert_comment = None
                             with arcpy.da.SearchCursor(param_geodatabase + '/Expert',
                                                         ['ExpertName', 'PublishName', 'PublishComments'],
                                                         "Username = '" + search_row[table_name_prefix +
                                                         'EcoshapeReview.Username'] + "'") as expert_cursor:
-                                expert_comment = None
                                 summary += '; Expert Ecoshape Review'
+                                summary_fr += "; Avis d'experts Ecoshape"
                                 for expert_row in EBARUtils.searchCursor(expert_cursor):
                                     if expert_row['PublishName']:
                                         expert_comment = expert_row['ExpertName']
+                                        expert_comment_fr = expert_row['ExpertName']
                                     else:
                                         expert_comment = 'Anonymous'
+                                        expert_comment_fr = 'Anonyme'
                                     expert_comment += ' Reviewer Comment - '
+                                    expert_comment_fr += ' Commentaire du réviseur - '
                                     if expert_row['PublishComments']:
                                         expert_comment += search_row[table_name_prefix + \
                                             'EcoshapeReview.EcoshapeReviewNotes']
+                                        expert_comment_fr += EBARUtils.translateENtoFRUsingDeepL(
+                                            search_row[table_name_prefix + 'EcoshapeReview.EcoshapeReviewNotes'])
                                     else:
                                         expert_comment += 'Unpublished'
+                                        expert_comment_fr += 'Non publié'
                                     summary += '<br>' + expert_comment
-                                if expert_comment:
-                                    del expert_row
+                                    summary_fr += '<br>' + expert_comment
+                            del expert_cursor
+                            if expert_comment:
+                                del expert_row
                     if search_row:
                         del search_row
                     del search_cursor
                 update_cursor.updateRow([update_row['EcoshapeID'], update_row['RangeMapEcoshapeID'],
-                                         update_row['RangeMapID'], presence, usage_type, summary, migrant_status])
+                                         update_row['RangeMapID'], presence, usage_type, summary, summary_fr,
+                                         migrant_status])
         if update_row:
             del update_row
         del update_cursor
@@ -639,27 +656,36 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                     'EcoshapeReview.Username'] + "'") as expert_cursor:
                             expert_comment = None
                             notes = 'Expert Ecoshape Review'
+                            notes_fr = "Avis d'experts Ecoshape"
                             for expert_row in EBARUtils.searchCursor(expert_cursor):
                                 if expert_row['PublishName']:
                                     expert_comment = expert_row['ExpertName']
+                                    expert_comment_fr = expert_row['ExpertName']
                                 else:
                                     expert_comment = 'Anonymous'
+                                    expert_comment_fr = 'Anonyme'
                                 expert_comment += ' Reviewer Comment - '
+                                expert_comment_fr += ' Commentaire du réviseur - '
                                 if expert_row['PublishComments']:
                                     expert_comment += search_row[table_name_prefix + \
                                         'EcoshapeReview.EcoshapeReviewNotes']
+                                    expert_comment_fr += EBARUtils.translateENtoFRUsingDeepL(
+                                        search_row[table_name_prefix + 'EcoshapeReview.EcoshapeReviewNotes'])
                                 else:
                                     expert_comment += 'Unpublished'
+                                    expert_comment_fr += 'Non publié'
                                 notes += '<br>' + expert_comment
+                                notes_fr += '<br>' + expert_comment
                             if expert_comment:
                                 del expert_row
                         with arcpy.da.InsertCursor(param_geodatabase + '/RangeMapEcoshape',
                                                    ['RangeMapID', 'EcoshapeID', 'Presence',
-                                                    'RangeMapEcoshapeNotes', 'MigrantStatus']) as insert_cursor:
+                                                    'RangeMapEcoshapeNotes', 'RangeMapEcoshapeNotes_FR',
+                                                    'MigrantStatus']) as insert_cursor:
                             insert_cursor.insertRow([range_map_id,
                                                      search_row[table_name_prefix + 'EcoshapeReview.EcoshapeID'],
                                                      search_row[table_name_prefix + 'EcoshapeReview.Markup'],
-                                                     notes,
+                                                     notes, notes_fr,
                                                      search_row[table_name_prefix + 'EcoshapeReview.MigrantStatus']])
                     del update_cursor
             if search_row:
@@ -1125,6 +1151,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         #star_rating_sum = 0
         experts_comments = []
         experts = []
+        experts_comments_fr = []
+        experts_fr = []
         anonymous_count = 0
         if len(prev_range_map_ids) > 0:
             row = None
@@ -1145,18 +1173,26 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                         for expert_row in EBARUtils.searchCursor(expert_cursor):
                             if expert_row['PublishName']:
                                 expert_name =  expert_row['ExpertName']
+                                expert_name_fr =  expert_row['ExpertName']
                             else:
                                 expert_name = 'Anonymous'
+                                expert_name_fr = 'Anonyme'
                                 anonymous_count += 1
                             experts.append(expert_name)
+                            experts_fr.append(expert_name_fr)
                             expert_comment = expert_name
+                            expert_comment_fr = expert_name_fr
                             expert_comment += ' Reviewer Comment - '
+                            expert_comment_fr += ' Commentaire du réviseur - '
                             if expert_row['PublishComments']:
                                 if row['ReviewNotes']:
                                     expert_comment += row['ReviewNotes']
+                                    expert_comment_fr += EBARUtils.translateENtoFRUsingDeepL(row['ReviewNotes'])
                             else:
                                 expert_comment += 'Unpublished'
+                                expert_comment_fr += 'Non publié'
                             experts_comments.append(expert_comment)
+                            experts_comments_fr.append(expert_comment_fr)
                     if expert_comment:
                         del expert_row
                     del expert_cursor
@@ -1191,8 +1227,9 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         EBARUtils.displayMessage(messages, 'Updating Range Map record with Overall Summary')
         update_row = None
         with arcpy.da.UpdateCursor('range_map_view',
-                                   ['RangeMetadata', 'RangeDate', 'RangeMapNotes', 'RangeMapScope', 'SynonymsUsed',
-                                    'ReviewerComments', 'DifferentiateUsageType'],
+                                   ['RangeMetadata', 'RangeMetadata_FR', 'RangeDate', 'RangeMapNotes',
+                                    'RangeMapNotes_FR', 'RangeMapScope', 'SynonymsUsed',
+                                    'ReviewerComments', 'ReviewerComments_FR', 'DifferentiateUsageType'],
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
             for update_row in update_cursor:
                 # Metadata
@@ -1227,33 +1264,46 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                 if len(summary) > 0:
                     del search_row
                 del search_cursor
+                summary_fr = 'Enregistrements saisis - ' + summary
                 summary = 'Input Records - ' + summary
                 # expert reviews
+                summary_fr += "; Avis d'experts - "
                 summary += '; Expert Reviews - '
                 first = True
                 for expert_name in experts:
                     if expert_name != 'Anonymous':
                         if not first:
+                            summary_fr += ', '
                             summary += ', '
                         first = False
+                        summary_fr += expert_name
                         summary += expert_name
                 if anonymous_count > 0:
                     if not first:
+                        summary_fr += ', '
                         summary += ', '
+                    summary_fr += str(anonymous_count) + ' Anonyme'
                     summary += str(anonymous_count) + ' Anonymous'
+                reviewer_comments_fr = ''
                 reviewer_comments = ''
                 for expert_comment in experts_comments:
                     if len(reviewer_comments) > 0:
+                        reviewer_comments_fr += '<br>'
                         reviewer_comments += '<br>'
+                    reviewer_comments_fr += expert_comment_fr
                     reviewer_comments += expert_comment
                 # Notes
+                notes_fr = 'Espèce primaire - ' + param_species
                 notes = 'Primary Species - ' + param_species
                 if len(secondary_names) > 0:
+                    notes_fr += '; Espèces secondaires - ' + secondary_names
                     notes += '; Secondary Species - ' + secondary_names
                 if len(synonym_authors) > 0:
+                    notes_fr += '; Synonymes - ' + synonym_authors
                     notes += '; Synonyms - ' + synonym_authors
-                update_cursor.updateRow([summary, datetime.datetime.now(), notes, scope, synonyms_used,
-                                         reviewer_comments, differentiate_usage_type])
+                update_cursor.updateRow([summary, summary_fr, datetime.datetime.now(), notes, notes_fr, scope,
+                                         synonyms_used, reviewer_comments, reviewer_comments_fr,
+                                         differentiate_usage_type])
         if update_row:
             del update_row
         del update_cursor
