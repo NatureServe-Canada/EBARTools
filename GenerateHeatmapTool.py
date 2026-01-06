@@ -45,7 +45,7 @@ class GenerateHeatmapTool:
 
         # settings
         arcpy.gp.overwriteOutput = True
-        arcgis_pro_project = EBARUtils.resources_folder + '/EBARMapLayoutsBackup.aprx'
+        arcgis_pro_project = EBARUtils.resources_folder + '/EBARMapLayoutsEN.aprx'
 
         # make variables for parms
         EBARUtils.displayMessage(messages, 'Processing parameters')

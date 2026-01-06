@@ -32,7 +32,7 @@ class PublishRangeMapTool:
 
         # settings
         #arcpy.gp.overwriteOutput = True
-        arcgis_pro_project = EBARUtils.resources_folder + '/EBARMapLayoutsBackup.aprx'
+        arcgis_pro_project = EBARUtils.resources_folder + '/EBARMapLayoutsEN.aprx'
         pdf_template_file_en = EBARUtils.resources_folder + '/pdf_template_en.html'
         pdf_template_file_fr = EBARUtils.resources_folder + '/pdf_template_fr.html'
         #reviewers_by_taxa_file = 'C:/Users/rgree/OneDrive/EBAR/EBAR Maps/TestReviewersByTaxa.txt'
