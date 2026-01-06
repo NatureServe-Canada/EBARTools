@@ -148,7 +148,8 @@ class ImportTabularDataTool:
         try:
             for file_line in reader:
                 # check/add point for current line
-                input_point_id, status, max_date, bbc_bad = self.CheckAddPoint(id_dict, bad_dict, param_geodatabase,
+                # input_point_id, status, max_date, bbc_bad = self.CheckAddPoint(id_dict, bad_dict, param_geodatabase,
+                object_id, status, max_date, bbc_bad = self.CheckAddPoint(id_dict, bad_dict, param_geodatabase,
                                                                                input_dataset_id, species_dict,
                                                                                synonym_dict, synonym_species_dict,
                                                                                file_line, field_dict, no_match_list,
@@ -482,12 +483,13 @@ class ImportTabularDataTool:
         # save_start = datetime.datetime.now()
         # update or insert
         if update:
+            row = None
             with arcpy.da.UpdateCursor(geodatabase + '/InputPoint', [
                     'SHAPE@XY', 'InputDatasetID', 'URI', 'License', 'SpeciesID', 'SynonymID', 'MaxDate',
                     'CoordinatesObscured', 'Accuracy', 'IndividualCount', 'Geoprivacy', 'TaxonGeoprivacy',
                     'BreedingAndBehaviourCode', 'OriginalInstitutionCode', 'Rightsholder', 'PartialDate'
-            ], "InputPointID = " + str(id_dict[unique_id_species])) as cursor:
-                row = None
+            ], "ObjectID = " + str(id_dict[unique_id_species])) as cursor:
+            #], "InputPointID = " + str(id_dict[unique_id_species])) as cursor:
                 for row in EBARUtils.updateCursor(cursor):
                     partial_text = 'N'
                     if partial:
@@ -496,11 +498,12 @@ class ImportTabularDataTool:
                         output_point, input_dataset_id, uri, license, species_id, synonym_id, max_date,
                         coordinates_obscured, accuracy, individual_count, geoprivacy, taxon_geoprivacy, breeding_code,
                         original_institution_code, rightsholder, partial_text])
-                if row:
-                    del row
+            if row:
+                del row
+            del cursor
             # ## NT perf debug
-            # save_time = datetime.datetime.now() - save_start
-            # EBARUtils.displayMessage(messages, 'Save: ' + str(save_time))
+            # save_insert_time = datetime.datetime.now() - save_start
+            # EBARUtils.displayMessage(messages, 'Save update: ' + str(save_insert_time))
             return id_dict[unique_id_species], 'updated', max_date, bad_bbc
         else:
             # insert, set new id and return
@@ -509,20 +512,26 @@ class ImportTabularDataTool:
                 'MaxDate', 'CoordinatesObscured', 'Accuracy', 'IndividualCount', 'Geoprivacy', 'TaxonGeoprivacy',
                 'BreedingAndBehaviourCode', 'OriginalInstitutionCode', 'Rightsholder'
             ]
-            with arcpy.da.InsertCursor(geodatabase + '/InputPoint', point_fields) as cursor:
+            with arcpy.da.InsertCursor(geodatabase + '/InputPoint', point_fields, load_only=False) as cursor:
                 object_id = cursor.insertRow([
                     output_point, input_dataset_id,
                     str(file_line[field_dict['unique_id']]), uri, license, species_id, synonym_id, max_date,
                     coordinates_obscured, accuracy, individual_count, geoprivacy, taxon_geoprivacy, breeding_code,
                     original_institution_code, rightsholder
                 ])
-            input_point_id = EBARUtils.getUniqueID(geodatabase + '/InputPoint', 'InputPointID', object_id)
-            # add to list of DatasetSourceUniqueIDs in case same batch has duplicates within
-            id_dict[unique_id_species] = input_point_id
+            del cursor
+            #input_point_id = EBARUtils.getUniqueID(geodatabase + '/InputPoint', 'InputPointID', object_id)
             # ## NT perf debug
-            # save_time = datetime.datetime.now() - save_start
-            # EBARUtils.displayMessage(messages, 'Save: ' + str(save_time))
-            return input_point_id, 'new', max_date, bad_bbc
+            # save_getunique_time = datetime.datetime.now() - save_start
+            # EBARUtils.displayMessage(messages, 'Save getUniqueID: ' + str(save_getunique_time))
+            # add to list of DatasetSourceUniqueIDs in case same batch has duplicates within
+            #id_dict[unique_id_species] = input_point_id
+            id_dict[unique_id_species] = object_id
+            # ## NT perf debug
+            # save_insert_time = datetime.datetime.now() - save_start
+            # EBARUtils.displayMessage(messages, 'Save insert: ' + str(save_insert_time))
+            #return input_point_id, 'new', max_date, bad_bbc
+            return object_id, 'new', max_date, bad_bbc
 
 
 # # controlling process

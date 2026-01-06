@@ -250,12 +250,13 @@ def _name_cursor(cursor):
 def getUniqueID(table, id_field, object_id):
     """Retrieve the Unique ID based on the ObjectID"""
     unique_id = None
+    row = None
     with arcpy.da.SearchCursor(table, [id_field], 'OBJECTID = ' + str(object_id)) as search_cursor:
-        row = None
         for row in searchCursor(search_cursor):
             unique_id = row[id_field]
-        if row:
-            del row
+    if row:
+        del row
+    del search_cursor
     return unique_id
 
 
@@ -415,7 +416,8 @@ def readDatasetSourceUniqueIDs(geodatabase, table_name_prefix, dataset_source_id
         feature_class = 'InputPoint'
     else: # Polyline
         feature_class = 'InputLine'
-    id_field = feature_class + 'ID'
+    #id_field = feature_class + 'ID'
+    id_field = 'ObjectID'
     feature_layer = 'feature_layer'
     # also used to load bad records
     if bad:
