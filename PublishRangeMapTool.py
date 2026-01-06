@@ -64,8 +64,8 @@ class PublishRangeMapTool:
                                            '/rank_status_header_en.png')
         pdf_html_en = pdf_html_en.replace('[range_map_header_image]', EBARUtils.resources_folder +
                                            '/range_map_header_en.png')
-        pdf_html_en = pdf_html_en.replace('[reviews_header_image]', EBARUtils.resources_folder +
-                                          '/reviews_header_en.png')
+        # pdf_html_en = pdf_html_en.replace('[reviews_header_image]', EBARUtils.resources_folder +
+        #                                   '/reviews_header_en.png')
         pdf_html_en = pdf_html_en.replace('[credits_header_image]', EBARUtils.resources_folder +
                                           '/credits_header_en.png')
 
@@ -76,8 +76,6 @@ class PublishRangeMapTool:
                                           '/rank_status_header_fr.png')
         pdf_html_fr = pdf_html_fr.replace('[range_map_header_image]', EBARUtils.resources_folder +
                                           '/range_map_header_fr.png')
-        pdf_html_fr = pdf_html_fr.replace('[reviews_header_image]', EBARUtils.resources_folder +
-                                          '/reviews_header_fr.png')
         pdf_html_fr = pdf_html_fr.replace('[credits_header_image]', EBARUtils.resources_folder +
                                           '/credits_header_fr.png')
 
