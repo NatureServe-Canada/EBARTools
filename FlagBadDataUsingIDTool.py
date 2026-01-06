@@ -2,7 +2,7 @@
 
 # Project: Ecosytem-based Automated Range Mapping (EBAR)
 # Credits: Randal Greene, Gabrielle Miller
-# © NatureServe Canada 2021 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+# © NatureServe Canada 2026 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 # Program: FlagBadDataUsingIDTool.py
 # ArcGIS Python tool for flagging bad input data using an InputPoint/Line/PolygonID

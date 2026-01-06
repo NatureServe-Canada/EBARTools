@@ -2,7 +2,7 @@
 
 # Project: Ecosytem-based Automated Range Mapping (EBAR)
 # Credits: Randal Greene, Samantha Stefanoff
-# © NatureServe Canada 2024 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+# © NatureServe Canada 2026 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 # Program: FlagDuplicatesGBIFiNat.py
 # ArcGIS Python tool for flagging InputPoint/Line/Polygon records with the same provider unique identifier

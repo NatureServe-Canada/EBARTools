@@ -2,7 +2,7 @@
 
 # Project: Ecosytem-based Automated Range Mapping (EBAR)
 # Credits: Randal Greene, Chloe Debyser, Samantha Stefanoff
-# © NatureServe Canada 2023 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+# © NatureServe Canada 2026 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 # Program: SyncEcosystemListBioticsTool.py
 # ArcGIS Python tool for Synchronizing the BIOTICS_ECOSYSTEM and Ecosystem tables with Biotics

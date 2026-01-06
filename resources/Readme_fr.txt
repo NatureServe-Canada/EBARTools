@@ -1,107 +1,107 @@
-Ecosystem-based Automated Range (EBAR) ZIP package for selected species
-Copyright NatureServe Canada 2022 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+Ensemble de fichiers ZIP pour le project Cartographie automatisée des aires de répartissaient basée sur les écosystèmes (CAARBE) pour certaines espèces
+© NatureServe Canada 2026 sous CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/deed.fr)
 
-This ZIP package should contain the following files:
-- EBARxxxxx.pdf (map and metadata for EBAR for selected species)
-- EBARMethods.pdf (background information on range map production, ecoshape sources and related topics)
-- Ecoshape.* (files comprising polygons shapefile of original ecoshapes for EBAR for selected species)
-- EcoshapeOverview.* (files comprising polygons shapefile of generalized ecoshapes for EBAR for selected species)
-- UsageType.* (if applicable, files comprising polygons shapefile of usage type, of generalized ecoshapes for EBAR for selected species)
-- RangeMap.csv (table of species and range attributes for EBAR for selected species)
-- RangeMapEcoshape.csv (table of per-ecoshape attributes for EBAR for selected species)
-- Jurisdiction.csv (table of jurisdictions)
-- EBARxxxxx.aprx (ArcGIS Pro project file referencing the data files above, with appropriate joins)
-- EBARxxxxx.mapx (ArcGIS Pro map file referencing the data files above, with appropriate joins)
-- EBARxxxxxEcoshape.lyrx (ArcGIS Pro layer file, with suggested symbology and appropriate joins, referencing the original ecoshapes)
-- EBARxxxxxEcoshapeOverview.lyrx (ArcGIS Pro layer file, with suggested symbology and appropriate joins, referencing the generalized ecoshapes)
-- EBARxxxxxRemovedEcoshapes.lyrx (ArcGIS Pro layer file, with appropriate joins, showing only ecoshapes that were removed as a result of expet review, referencing the generalized ecoshapes)
-- EBARxxxxxUsageType.lyrx (if applicable, ArcGIS Pro layer file, with suggested symbology and appropriate joins, referencing usage type of generalized ecoshapes)
-- EBARxxxxx.mxd (ArcMap project file referencing the data files above)
-- EBARxxxxxEcoshape.lyr (ArcMap layer file, with suggested symbology and appropriate joins, referencing the original ecoshapes)
-- EBARxxxxxEcoshapeOverview.lyr (ArcMap layer file, with suggested symbology and appropriate joins, referencing the generalized ecoshapes)
-- EBARxxxxxRemovedEcoshapes.lyr (ArcMap layer file, with appropriate joins, showing only ecoshapes that were removed as a result of expet review, referencing the generalized ecoshapes)
-- EBARxxxxxUsageType.lyr (ArcMap layer file, with suggested symbology and appropriate joins, referencing usage type of generalized ecoshapes)
-[where xxxxx is the ELEMENT_GLOBAL_ID of the selected species]
+Cet ensemble de fichiers ZIP doit contenir les fichiers suivants :
+- EBARxxxxx.pdf (carte et métadonnées CAARBE pour certaines espèces)
+- EBARMethods.pdf (informations générales sur la production de cartes de répartition, les sources d'écocoupes et les sujets connexes)
+- Ecoshape.* (fichiers comprenant un fichier de formes polygonales des formes écologiques originales pour CAARBE pour certaines espèces)
+- EcoshapeOverview.* (fichiers comprenant un fichier de formes polygonales des formes écologiques généralisées pour CAARBE pour certaines espèces)
+- UsageType.* (le cas échéant, fichiers comprenant un fichier de formes polygonales du type d'utilisation, des formes écologiques généralisées pour CAARBE pour certaines espèces)
+- RangeMap.csv (tableau des espèces et des attributs de l'aire de répartition pour CAARBE pour certaines espèces)
+- RangeMapEcoshape.csv (tableau des attributs par forme écologique pour CAARBE pour certaines espèces)
+- Jurisdiction.csv (tableau des juridictions)
+- EBARxxxxx.aprx (fichier de projet ArcGIS Pro référençant les fichiers de données ci-dessus, avec les jointures appropriées)
+- EBARxxxxx.mapx (fichier de carte ArcGIS Pro référençant les fichiers de données ci-dessus, avec les jointures appropriées)
+- EBARxxxxxEcoshape.lyrx (fichier de couche ArcGIS Pro, avec la symbologie suggérée et les jointures appropriées, référençant les écosystèmes d'origine)
+- EBARxxxxxEcoshapeOverview.lyrx (fichier de couche ArcGIS Pro, avec la symbologie suggérée et les jointures appropriées, référençant les écosystèmes généralisés)
+- EBARxxxxxRemovedEcoshapes.lyrx (fichier de couche ArcGIS Pro, avec les jointures appropriées, affichant uniquement les écoformes qui ont été supprimées à la suite de l'examen par les experts, référençant les écoformes généralisées)
+- EBARxxxxxUsageType.lyrx (le cas échéant, fichier de couche ArcGIS Pro, avec la symbologie suggérée et les jointures appropriées, référençant le type d'utilisation des écoformes généralisées)
+- EBARxxxxx.mxd (fichier de projet ArcMap faisant référence aux fichiers de données ci-dessus)
+- EBARxxxxxEcoshape.lyr (fichier de couche ArcMap, avec la symbologie suggérée et les jointures appropriées, faisant référence aux formes écologiques d'origine)
+- EBARxxxxxEcoshapeOverview.lyr (fichier de couche ArcMap, avec la symbologie suggérée et les jointures appropriées, faisant référence aux formes écologiques généralisées)
+- EBARxxxxxRemovedEcoshapes.lyr (fichier de couche ArcMap, avec les jointures appropriées, affichant uniquement les formes écologiques qui ont été supprimées à la suite de l'examen par des experts, faisant référence aux formes écologiques généralisées)
+- EBARxxxxxUsageType.lyr (fichier de couche ArcMap, avec symbologie suggérée et jointures appropriées, référençant le type d'utilisation des formes écologiques généralisées)
+[où xxxxx est l'ELEMENT_GLOBAL_ID de l'espèce sélectionnée]
 
-The included data files are related as follows:
+Les fichiers de données inclus sont liés comme suit :
 RangeMap <-1---M-> RangeMapEcoshape
 Ecoshape/EcoshapeOverview <-1---M-> RangeMapEcoshape
 Jurisdiction <-1---M-> Ecoshape/EcoshapeOverview
 
-RangeMap fields:
-objectid - ArcGIS unique identifier
-RangeMapID - EBAR unique identifier
-RangeVersion - EBAR version number
-RangeStage - EBAR stage within the version (e.g. Auto-generated, Expert reviewed)
-RangeDate - date generated
-RangeMapScope - geographic scope (e.g. N=Canadian, A=North American, G=Global)
-RangeMetadata - numbers of input records by source, and count and details (if publishable) of expert reviews
-RangeMapNotes - details on the species name(s)
-RangeMapComments - additional notes
-SynonymsUsed - a list of the synonyms, if any, for the primary species under which the input data used was imported
-DifferentiateUsageType - 1 if the UsageType (Breeding, Possible Breeding, Migration) is differentiated per Ecoshape
-ELEMENT_NATIONAL_ID - NatureServe Biotics national unique identifier
-ELEMENT_GLOBAL_ID - NatureServe Biotics global unique identifier
-ELEMENT_CODE - NatureServe Biotics element identifier
-CATEGORY - NatureServe Biotics species category
-TAX_GROUP - NatureServe Biotics species taxa group
-FAMILY_COM - NatureServe Biotics species family common name
-GENUS - NatureServe Biotics species genus
-PHYLUM - NatureServe Biotics phylum
-CA_NNAME_LEVEL - NatureServe Biotics species Canadian name level
-NATIONAL_SCIENTIFIC_NAME - NatureServe Biotics Canadian species scientific name
-NATIONAL_ENGL_NAME - NatureServe Biotics Canadian species English name
-NATIONAL_FR_NAME - NatureServe Biotics Canadian species French name
-COSEWIC_NAME - NatureServe Biotics COSEWIC species name
-COSEWIC_ID - NatureServe Biotics COSEWIC species ID
-ENDEMISM_TYPE - NatureServe Biotics species endemism type
-GRANK - NatureServe Biotics species global rank
-NRANK_CA - NatureServe Biotics species Canadian national rank
-SRANKS_CA - NatureServe Biotics species Canadian subnational ranks
-NRANK_US - NatureServe Biotics species United States national rank
-SRANKS_US - NatureServe Biotics species United States subnational ranks
-NRANK_MX - NatureServe Biotics species Mexico national rank
-SRANKS_MX - NatureServe Biotics species Mexico subnational ranks
-SARA_STATUS - NatureServe Biotics species Canadian Species at Risk Act status
-COSEWIC_STATUS - NatureServe Biotics species Committee on the Status of Endangered Wildlife in Canada status
-ESA_STATUS - NatureServe Biotics species US Endangered Species Act status
+Champs RangeMap :
+objectid - identifiant unique ArcGIS
+RangeMapID - identifiant unique CAARBE
+RangeVersion - numéro de version CAARBE
+RangeStage - étape CAARBE dans la version (par exemple, généré automatiquement, examiné par des experts)
+RangeDate - date de génération
+RangeMapScope - portée géographique (par exemple, N = Canadien, A = Nord-américain, G = mondial)
+RangeMetadata - nombre d'enregistrements d'entrée par source, et nombre et détails (si publiables) des examens par des experts
+RangeMapNotes - détails sur le(s) nom(s) de l'espèce
+RangeMapComments - notes supplémentaires
+SynonymsUsed - liste des synonymes, le cas échéant, pour l'espèce principale sous laquelle les données d'entrée utilisées ont été importées
+DifferentiateUsageType - 1 si le type d'utilisation (reproduction, reproduction possible, migration) est différencié par forme écologique
+ELEMENT_NATIONAL_ID - identifiant unique national NatureServe Biotics
+ELEMENT_GLOBAL_ID - identifiant unique mondial NatureServe Biotics
+ELEMENT_CODE - identifiant d'élément NatureServe Biotics
+CATEGORY - catégorie d'espèce NatureServe Biotics
+TAX_GROUP - groupe taxonomique d'espèce NatureServe Biotics
+FAMILY_COM - nom commun de la famille d'espèce NatureServe Biotics
+GENUS - genre d'espèce NatureServe Biotics
+PHYLUM - embranchement NatureServe Biotics
+CA_NNAME_LEVEL - nom Canadien de l'espèce NatureServe Biotics
+NATIONAL_SCIENTIFIC_NAME - nom scientifique de l'espèce Canadienne NatureServe Biotics
+NATIONAL_ENGL_NAME - nom Anglais de l'espèce Canadienne NatureServe Biotics
+NATIONAL_FR_NAME - nom Français de l'espèce Canadienne NatureServe Biotics
+COSEWIC_NAME - nom de l'espèce COSEPAC NatureServe Biotics
+COSEWIC_ID - identifiant de l'espèce COSEPAC NatureServe Biotics
+ENDEMISM_TYPE - type d'endémisme de l'espèce NatureServe Biotics
+GRANK - classement mondial de l'espèce NatureServe Biotics
+NRANK_CA - classement national Canadien de l'espèce NatureServe Biotics
+SRANKS_CA - classements infranationaux Canadiens de l'espèce NatureServe Biotics
+NRANK_US - classement national Américain de l'espèce NatureServe Biotics
+SRANKS_US - NatureServe Biotics species United States subnational ranksclassements infranationaux Américains de l'espèce NatureServe Biotics
+NRANK_MX - NatureServe Biotics espèce rang national au Mexique
+SRANKS_MX - NatureServe Biotics espèce rangs infranationaux au Mexique
+SARA_STATUS - NatureServe Biotics espèce statut en vertu de la Loi sur les espèces en péril au Canada
+COSEWIC_STATUS - NatureServe Biotics espèce statut en vertu du Comité sur la situation des espèces en péril au Canada
+ESA_STATUS - NatureServe Biotics espèce statut en vertu de la Loi Américaine sur les espèces en voie de disparition
 
-RangeMapEcoshape fields:
-objectid - ArcGIS unique identifier
-RangeMapID - EBAR foreign key relating to the appropriate RangeMap record
-EcoshapeID - EBAR foreign key relating to the appropriate Ecoshape/EcoshapeOverview record
-Presence - the category of species presence in the Ecoshape (P=Present, X=Presence Expected, H=Historical, NULL=Removed*, see metadata PDF for definitions)
-UsageType - the species usage type in the Ecoshape (B=Breeding, P=Possible Breeding, M=Migration, see metadata PDF for definitions)
-RangeMapEcoshapeNotes - numbers of input records by source and reviewer comments, if publishable
-MinDate - the earliest date for all input records that overlap the Ecoshape
-MaxDate - the latest date for all input records that overlap the Ecoshape
+Champs RangeMapEcoshape :
+objectid - identifiant unique ArcGIS
+RangeMapID - clé étrangère CAARBE relative à l'enregistrement RangeMap approprié
+EcoshapeID - clé étrangère CAARBE relative à l'enregistrement Ecoshape/EcoshapeOverview approprié
+Presence - catégorie de présence de l'espèce dans l'Ecoshape (P = Présente, X = Présence attendue, H = Historique, NULL = Supprimée*, voir le PDF des métadonnées pour les définitions)
+UsageType - type d'utilisation de l'espèce dans l'Ecoshape (B = Reproduction, P = Reproduction possible, M = Migration, voir le PDF des métadonnées pour les définitions)
+RangeMapEcoshapeNotes - nombre d'enregistrements saisis par source et commentaires des réviseurs, s'ils peuvent être publiés
+MinDate - date la plus ancienne pour tous les enregistrements saisis qui chevauchent l'Ecoshape
+MaxDate - date la plus récente pour tous les enregistrements saisis qui chevauchent l'Ecoshape
 
-[*Ecoshapes removed during the expert review process are included with Presence=NULL and field RangeMapEcoshapeNotes containing reviewer comments, if publishable.]
+[*Les Ecoshapes supprimées au cours du processus de révision par des experts sont incluses avec Présence=NULL et le champ RangeMapEcoshapeNotes contenant les commentaires des réviseurs, s'ils peuvent être publiés.]
 
-Jurisdiction fields:
-objectid - ArcGIS unique identifier
-JurisID - EBAR unique identifier
-JurisAbbrev - two-letter code for the jurisdiction
-JurisName - full name for the jurisdiction
+Champs Jurisdiction :
+objectid - identifiant unique ArcGIS
+JurisID - identifiant unique CAARBE
+JurisAbbrev - code à deux lettres pour la juridiction
+JurisName - nom complet de la juridiction
 
-Ecoshape/EcoshapeOverview fields:
-FID - ArcGIS unique identifier
-EcoshapeID - EBAR unique identifier
-JurisID - EBAR foreign key relating to the appropriate Jurisdiction record
-EcoName - name of the ecoshape
-ParentEco - English name of the parent ecoregion
-ParentEcoF - French name of the parent ecoregion
-Ecozone - English name of the ecozone 
-EcozoneFR - French name of the ecozone
-MosaicVer - version of the ecoshape mosaic
-TerrArea - terrestrial area in square metres derived from Commission for Ecological Cooperation "Major Lakes and Reservoirs of North America"
-TotalArea - total area in square metres
+Champs Ecoshape/EcoshapeOverview :
+FID - identifiant unique ArcGIS
+EcoshapeID - identifiant unique CAARBE
+JurisID - clé étrangère CAARBE relative à l'enregistrement de la juridiction appropriée
+EcoName - nom de l'écoshape
+ParentEco - nom Anglais de l'écorégion parentale
+ParentEcoF - nom Français de l'écorégion parentale
+Ecozone - nom Anglais de l'écozone
+EcozoneFR - nom Français de l'écozone
+MosaicVer - version de la mosaïque de l'écoshape
+TerrArea - superficie terrestre en mètres carrés dérivée de la Commission de coopération écologique «Grands lacs et réservoirs d'Amérique du Nord»
+TotalArea - superficie totale en mètres carrés
 
-Disclaimer:
-- Please review our methods document at https://1drv.ms/b/s!Ajv6BHSXrqqqm4xipeEOQ67IfH77IQ?e=dqM1FO before using EBAR.
-- EBAR range data are relatively coarse scale and appropriate for screening and education purposes, but are not intended for all types of applications and analysis.
-- The absence of data in any geographic areas does not necessarily mean that a species is not present.
-- An ecoshape with a presence value does not necessarily mean that a species is present throughout the entire geographic area.
+Avertissement :
+- Veuillez consulter notre document sur les méthodes à l'adresse https://1drv.ms/b/s!Ajv6BHSXrqqqm4xipeEOQ67IfH77IQ?e=dqM1FO avant d'utiliser CAARBE.
+- Les données CAARBE sont relativement grossières et conviennent à des fins de dépistage et d'éducation, mais ne sont pas destinées à tous les types d'applications et d'analyses.
+- L'absence de données dans une zone géographique ne signifie pas nécessairement qu'une espèce n'y est pas présente.
+- Une forme écologique avec une valeur de présence ne signifie pas nécessairement qu'une espèce est présente dans toute la zone géographique.
 
-Multiple species citation: NatureServe Canada. 2023. Ecosystem-based Automated Range (EBAR). Ottawa, Canada. Retrieved on [insert date] from [insert url]
-Single species citation: NatureServe Canada. 2023. Ecosystem-based Automated Range (EBAR) for [insert species name, version, stage, and scope]. Ottawa, Canada. Retrieved on [insert date] from [insert url]
+Citation de plusieurs espèces : NatureServe Canada. 2026. Le project Cartographie automatisée des aires de répartissaient basée sur les écosystèmes (CAARBE). Ottawa, Canada. Consulté le [insérer la date] sur [insérer l'URL]
+Citation d'une seule espèce : NatureServe Canada. 2023. Le project Cartographie automatisée des aires de répartissaient basée sur les écosystèmes (CAARBE) pour [insérer le nom de l'espèce, la version, le stade et la portée]. Ottawa, Canada. Consulté le [insérer la date] sur [insérer l'URL]

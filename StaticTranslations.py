@@ -14,6 +14,18 @@ range_map_scope_translation = {
     'G': 'mondial'}
 
 
+presence_translation = {
+    'P': 'Présente',
+    'X': 'Présence attendue',
+    'H': 'Historique'}
+
+
+usage_type_translation = {
+    'B': 'Reproduction',
+    'P': 'Reproduction possible',
+    'M': 'Migration'}
+
+
 # controlling process - for testing
 if __name__ == '__main__':
     print(range_map_scope_translation['A'])

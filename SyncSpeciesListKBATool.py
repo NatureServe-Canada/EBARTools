@@ -2,7 +2,7 @@
 
 # Project: Key Biodiversity Areas (KBA) Canada
 # Credits: Meg Southee, Randal Greene
-# © WCS Canada / NatureServe Canada 2020 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+# © WCS Canada / NatureServe Canada 2026 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 # Program: SyncSpeciesListKBATool.py
 # ArcGIS Python tool to synchronize the Species table with KBA tracking information.

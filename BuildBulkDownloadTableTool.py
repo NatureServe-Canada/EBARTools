@@ -2,7 +2,7 @@
 
 # Project: Ecosytem-based Automated Range Mapping (EBAR)
 # Credits: Randal Greene, Christine Terwissen
-# © NatureServe Canada 2020 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+# © NatureServe Canada 2026 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 # Program: BuildBulkDownloadTableTool.py
 # ArcGIS Python tool for building html table of category/taxagroup download links

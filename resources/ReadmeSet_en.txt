@@ -1,5 +1,5 @@
 Ecosystem-based Automated Range (EBAR) ZIP package for selected species category/taxa group
-Copyright NatureServe Canada 2022 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+Copyright NatureServe Canada 2026 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 This ZIP package should contain the following files:
 - EBARxxxxx.pdf (map and metadata for EBAR for each species within category/taxa group)
@@ -99,5 +99,5 @@ Disclaimer:
 - The absence of data in any geographic areas does not necessarily mean that a species is not present.
 - An ecoshape with a presence value does not necessarily mean that a species is present throughout the entire geographic area.
 
-Multiple species citation: NatureServe Canada. 2023. Ecosystem-based Automated Range (EBAR). Ottawa, Canada. Retrieved on [insert date] from [insert url]
-Single species citation: NatureServe Canada. 2023. Ecosystem-based Automated Range (EBAR) for [insert species name, version, stage, and scope]. Ottawa, Canada. Retrieved on [insert date] from [insert url]
+Multiple species citation: NatureServe Canada. 2026. Ecosystem-based Automated Range (EBAR). Ottawa, Canada. Retrieved on [insert date] from [insert url]
+Single species citation: NatureServe Canada. 2026. Ecosystem-based Automated Range (EBAR) for [insert species name, version, stage, and scope]. Ottawa, Canada. Retrieved on [insert date] from [insert url]

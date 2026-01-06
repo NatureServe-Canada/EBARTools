@@ -2,7 +2,7 @@
 
 # Project: Ecosytem-based Automated Range Mapping (EBAR)
 # Credits: Randal Greene, Gabrielle Miller
-# © NatureServe Canada 2022 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+# © NatureServe Canada 2026 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 # Program: RecordInputFeedbackTool.py
 # ArcGIS Python tool for adding one or more records to the InputFeedback table
