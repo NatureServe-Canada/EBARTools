@@ -78,7 +78,7 @@ try:
                 original_row = None
                 where_clause = 'InputDatasetID IN (SELECT InputDatasetID FROM InputDataset WHERE ' + \
                     'DatasetSourceID = 1110)' + ' AND SpeciesID = ' + str(row['SpeciesID'])
-                with arcpy.da.SearchCursor(param_geodatabase + '\InputPoint', ['DatasetSourceUniqueID'],
+                with arcpy.da.SearchCursor(param_geodatabase + '/InputPoint', ['DatasetSourceUniqueID'],
                                             where_clause) as original_cursor:
                     for original_row in EBARUtils.searchCursor(original_cursor):
                         original_ids.append(original_row['DatasetSourceUniqueID'])
@@ -90,7 +90,7 @@ try:
                 unrestricted_row = None
                 where_clause = 'InputDatasetID IN (SELECT InputDatasetID FROM InputDataset WHERE ' + \
                     'DatasetSourceID = 1010)' + ' AND SpeciesID = ' + str(row['SpeciesID'])
-                with arcpy.da.SearchCursor(param_geodatabase + '\InputPoint', ['InputPointID',
+                with arcpy.da.SearchCursor(param_geodatabase + '/InputPoint', ['InputPointID',
                                                                                 'DatasetSourceUniqueID'],
                                             where_clause) as unrestricted_cursor:
                     for unrestricted_row in EBARUtils.searchCursor(unrestricted_cursor):
@@ -127,7 +127,7 @@ try:
                 org_row = None
                 where_clause = 'InputDatasetID IN (SELECT InputDatasetID FROM InputDataset WHERE ' + \
                     'DatasetSourceID = 5)' + ' AND SpeciesID = ' + str(row['SpeciesID'])
-                with arcpy.da.SearchCursor(param_geodatabase + '\InputPoint', ['InputPointID',
+                with arcpy.da.SearchCursor(param_geodatabase + '/InputPoint', ['InputPointID',
                                                                                 'DatasetSourceUniqueID'],
                                             where_clause) as org_cursor:
                     for org_row in EBARUtils.searchCursor(org_cursor):
@@ -189,7 +189,7 @@ try:
     #             unrestricted_row = None
     #             where_clause = 'InputDatasetID IN (SELECT InputDatasetID FROM InputDataset WHERE ' + \
     #                 'DatasetSourceID = 1010)' + ' AND SpeciesID = ' + str(row['SpeciesID'])
-    #             with arcpy.da.SearchCursor(param_geodatabase + '\InputPoint', ['DatasetSourceUniqueID'],
+    #             with arcpy.da.SearchCursor(param_geodatabase + '/InputPoint', ['DatasetSourceUniqueID'],
     #                                         where_clause) as unrestricted_cursor:
     #                 for unrestricted_row in EBARUtils.searchCursor(unrestricted_cursor):
     #                     unrestricted_ids.append(unrestricted_row['DatasetSourceUniqueID'])
@@ -201,7 +201,7 @@ try:
     #             org_row = None
     #             where_clause = 'InputDatasetID IN (SELECT InputDatasetID FROM InputDataset WHERE ' + \
     #                 'DatasetSourceID = 5)' + ' AND SpeciesID = ' + str(row['SpeciesID'])
-    #             with arcpy.da.SearchCursor(param_geodatabase + '\InputPoint', ['InputPointID',
+    #             with arcpy.da.SearchCursor(param_geodatabase + '/InputPoint', ['InputPointID',
     #                                                                            'DatasetSourceUniqueID'],
     #                                         where_clause) as org_cursor:
     #                 for org_row in EBARUtils.searchCursor(org_cursor):
@@ -247,7 +247,7 @@ try:
     #             gbif_row = None
     #             where_clause = 'InputDatasetID IN (SELECT InputDatasetID FROM InputDataset WHERE ' + \
     #                 'DatasetSourceID = 1)' + ' AND SpeciesID = ' + str(row['SpeciesID'])
-    #             with arcpy.da.SearchCursor(param_geodatabase + '\InputPoint', ['DatasetSourceUniqueID'],
+    #             with arcpy.da.SearchCursor(param_geodatabase + '/InputPoint', ['DatasetSourceUniqueID'],
     #                                         where_clause) as gbif_cursor:
     #                 for gbif_row in EBARUtils.searchCursor(gbif_cursor):
     #                     gbif_ids.append(gbif_row['DatasetSourceUniqueID'])
@@ -262,7 +262,7 @@ try:
     #             bison_row = None
     #             where_clause = 'InputDatasetID IN (SELECT InputDatasetID FROM InputDataset WHERE ' + \
     #                 'DatasetSourceID = 6)' + ' AND SpeciesID = ' + str(row['SpeciesID'])
-    #             with arcpy.da.SearchCursor(param_geodatabase + '\InputPoint', ['InputPointID',
+    #             with arcpy.da.SearchCursor(param_geodatabase + '/InputPoint', ['InputPointID',
     #                                                                            'DatasetSourceUniqueID'],
     #                                         where_clause) as bison_cursor:
     #                 for bison_row in EBARUtils.searchCursor(bison_cursor):
@@ -311,7 +311,7 @@ try:
     #             inatall_row = None
     #             where_clause = 'InputDatasetID IN (SELECT InputDatasetID FROM InputDataset WHERE ' + \
     #                 'DatasetSourceID IN (5, 1010, 1110))' + ' AND SpeciesID = ' + str(row['SpeciesID'])
-    #             with arcpy.da.SearchCursor(param_geodatabase + '\InputPoint', ['DatasetSourceUniqueID'],
+    #             with arcpy.da.SearchCursor(param_geodatabase + '/InputPoint', ['DatasetSourceUniqueID'],
     #                                         where_clause) as inatall_cursor:
     #                 for inatall_row in EBARUtils.searchCursor(inatall_cursor):
     #                     inatall_ids.append(inatall_row['DatasetSourceUniqueID'])
@@ -323,7 +323,7 @@ try:
     #             gbif_row = None
     #             where_clause = 'InputDatasetID IN (SELECT InputDatasetID FROM InputDataset WHERE ' + \
     #                 'DatasetSourceID = 1)' + ' AND SpeciesID = ' + str(row['SpeciesID'])
-    #             with arcpy.da.SearchCursor(param_geodatabase + '\InputPoint', ['InputPointID',
+    #             with arcpy.da.SearchCursor(param_geodatabase + '/InputPoint', ['InputPointID',
     #                                                                            'DatasetSourceUniqueID',
     #                                                                            'OriginalInstitutionCode',
     #                                                                            'URI'],
@@ -377,7 +377,7 @@ try:
     #             ebird_row = None
     #             where_clause = 'InputDatasetID IN (SELECT InputDatasetID FROM InputDataset WHERE ' + \
     #                 'DatasetSourceID = 1051)' + ' AND SpeciesID = ' + str(row['SpeciesID'])
-    #             with arcpy.da.SearchCursor(param_geodatabase + '\InputPoint', ['DatasetSourceUniqueID'],
+    #             with arcpy.da.SearchCursor(param_geodatabase + '/InputPoint', ['DatasetSourceUniqueID'],
     #                                        where_clause) as ebird_cursor:
     #                 for ebird_row in EBARUtils.searchCursor(ebird_cursor):
     #                     if ebird_row['DatasetSourceUniqueID']:
@@ -394,7 +394,7 @@ try:
     #             where_clause = 'InputDatasetID IN (SELECT InputDatasetID FROM InputDataset WHERE ' + \
     #                 'DatasetSourceID = 1)' + ' AND SpeciesID = ' + str(row['SpeciesID']) + \
     #                 "AND OriginalInstitutionCode = 'CLO'"
-    #             with arcpy.da.SearchCursor(param_geodatabase + '\InputPoint', ['InputPointID',
+    #             with arcpy.da.SearchCursor(param_geodatabase + '/InputPoint', ['InputPointID',
     #                                                                            'DatasetSourceUniqueID',
     #                                                                            'URI'],
     #                                         where_clause) as gbif_cursor:
