@@ -389,7 +389,11 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             field_names = [f.name for f in arcpy.ListFields(temp_ecoshape_max_polygon) if f.aliasName in
                            ['EcoshapeID', 'DatasetType',
                             'MAX_' + table_name_prefix + temp_pairwise_intersect + '.tempdate',
-                            'MAX_' + table_name_prefix + temp_pairwise_intersect + '.TempDate']]
+                            'MAX_' + table_name_prefix + temp_pairwise_intersect + '_tempdate',
+                            'MAX_' + table_name_prefix + temp_pairwise_intersect + '.TempDate',
+                            'MAX_' + table_name_prefix + temp_pairwise_intersect + '_TempDate']]
+            # field_names.append([f.name for f in arcpy.ListFields(temp_ecoshape_max_polygon) if f.name in
+            #                     ['MAX_' + temp_pairwise_intersect + '_TempDate']])
             id_field_name = [f.name for f in arcpy.ListFields(temp_ecoshape_max_polygon) if f.aliasName ==
                              'EcoshapeID'][0]
             with arcpy.da.SearchCursor(temp_ecoshape_max_polygon, field_names,
@@ -444,10 +448,16 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                  param_geodatabase + '/InputDataset', 'InputDatasetID', 'KEEP_COMMON')
         arcpy.AddJoin_management('pairwise_intersect_layer', 'DatasetSourceID',
                                  param_geodatabase + '/DatasetSource', 'DatasetSourceID', 'KEEP_COMMON')
+        # arcpy.Statistics_analysis('pairwise_intersect_layer', temp_ecoshape_countby_source,
+        #                           [['InputPointID', 'COUNT'], ['MinDate', 'MIN'], ['MaxDate', 'MAX'],
+        #                            ['MaxDate', 'MIN']],
+        #                           ['EcoshapeID', table_name_prefix + 'DatasetSource.DatasetSourceName',
+        #                            table_name_prefix + 'DatasetSource.DatasetType'])
         arcpy.Statistics_analysis('pairwise_intersect_layer', temp_ecoshape_countby_source,
                                   [['InputPointID', 'COUNT'], ['MinDate', 'MIN'], ['MaxDate', 'MAX'],
                                    ['MaxDate', 'MIN']],
-                                  ['EcoshapeID', table_name_prefix + 'DatasetSource.DatasetSourceName',
+                                  [table_name_prefix + temp_pairwise_intersect + '.EcoshapeID',
+                                   table_name_prefix + 'DatasetSource.DatasetSourceName',
                                    table_name_prefix + 'DatasetSource.DatasetType'])
         arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'DatasetSource')
         arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'InputDataset')
@@ -494,12 +504,20 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                ['DatasetSourceName', 'DatasetType', 'FREQUENCY', 'frequency',
                                 'MIN_MinDate', 'min_mindate',
                                 'MIN_' + table_name_prefix + temp_pairwise_intersect + '.mindate',
+                                'MIN_' + table_name_prefix + temp_pairwise_intersect + '_mindate',
                                 'MAX_MaxDate', 'max_maxdate',
                                 'MAX_' + table_name_prefix + temp_pairwise_intersect + '.maxdate',
+                                'MAX_' + table_name_prefix + temp_pairwise_intersect + '_maxdate',
                                 'MIN_MaxDate', 'min_maxdate',
-                                'MIN_' + table_name_prefix + temp_pairwise_intersect + '.maxdate']]
-                id_field_name = [f.name for f in arcpy.ListFields(temp_ecoshape_countby_source) if f.aliasName ==
-                                 'EcoshapeID'][0]
+                                'MIN_' + table_name_prefix + temp_pairwise_intersect + '.maxdate',
+                                'MIN_' + table_name_prefix + temp_pairwise_intersect + '_maxdate']]
+                # id_field_name = [f.name for f in arcpy.ListFields(temp_ecoshape_countby_source) if f.aliasName ==
+                #                  'EcoshapeID'][0]
+                # id_field_name = [f.name for f in arcpy.ListFields(temp_ecoshape_countby_source) if f.aliasName ==
+                #                  table_name_prefix + temp_pairwise_intersect + '_ecoshapeid'][0]
+                id_field_name = [f.name for f in arcpy.ListFields(temp_ecoshape_countby_source) if f.aliasName in
+                                 [table_name_prefix + temp_pairwise_intersect + '_ecoshapeid',
+                                  'EcoshapeID']][0]
                 summary = ''
                 summary_fr = ''
                 # use dict for optional DatasetSourceName translations
@@ -932,8 +950,10 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     # kludge because arc ends up with different field names under Enterprise gdb after joining
                     field_names = [f.name for f in arcpy.ListFields(temp_dissolve) if f.aliasName in
                                    ['FIRST_' + table_name_prefix + temp_pairwise_intersect + '.Accuracy',
+                                    'FIRST_' + table_name_prefix + temp_pairwise_intersect + '_accuracy',
                                     'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.accuracy',
                                     'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.OriginalGeometryType',                                    
+                                    'FIRST_' + table_name_prefix + temp_pairwise_intersect + '_originalgeometrytype',
                                     'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.originalgeometrytype']]
                     arcpy.SelectLayerByAttribute_management('dissolve_layer', 'NEW_SELECTION',
                                                             'objectid > ' + str(batch_size * (batch_count - 1)) +
@@ -1238,10 +1258,13 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                 field_names = [f.name for f in arcpy.ListFields(temp_overall_countby_source) if f.aliasName in
                                ['DatasetSourceName', 'FREQUENCY', 'frequency',
                                 'MIN_MinDate', 'min_mindate',
+                                'MIN_' + table_name_prefix + temp_pairwise_intersect + '_mindate',
                                 'MIN_' + table_name_prefix + temp_pairwise_intersect + '.mindate',
                                 'MAX_MaxDate', 'max_maxdate',
+                                'MAX_' + table_name_prefix + temp_pairwise_intersect + '_maxdate',
                                 'MAX_' + table_name_prefix + temp_pairwise_intersect + '.maxdate',
                                 'MIN_MaxDate', 'min_maxdate',
+                                'MIN_' + table_name_prefix + temp_pairwise_intersect + '_maxdate',
                                 'MIN_' + table_name_prefix + temp_pairwise_intersect + '.maxdate']]
                 summary = ''
                 with arcpy.da.SearchCursor(temp_overall_countby_source, field_names) as search_cursor:
@@ -1353,16 +1376,18 @@ if __name__ == '__main__':
     grm = GenerateRangeMapTool()
     # hard code parameters for debugging
     param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde'
+    param_geodatabase.value = r'D:\GIS\EBAR\EBARDevJan2026.gdb'
     param_species = arcpy.Parameter()
+    param_species.value = 'Marmota vancouverensis'
     param_secondary = arcpy.Parameter()
     #param_secondary.value = "'Schistochilopsis incisa var. opacifolia'" #"'Dodia tarandus';'Dodia verticalis'"
     param_version = arcpy.Parameter()
+    param_version.value = '0.1'
     param_stage = arcpy.Parameter()
-    param_stage.value = 'eBird Abundance Auto-reviewed TEST' #'Auto-generated TEST'
+    param_stage.value = 'Auto-generated TEST'
     param_scope = arcpy.Parameter()
     #param_scope.value = None
-    param_scope.value = 'Canadian'
+    param_scope.value = 'Global'
     param_jurisdictions_covered = arcpy.Parameter()
     param_jurisdictions_covered.value = None
     #param_jurisdictions_covered.value = "'British Columbia'"
@@ -1370,33 +1395,38 @@ if __name__ == '__main__':
     param_custom_polygons_covered.value = None
     #param_custom_polygons_covered.value = 'C:/GIS/EBAR/EBARServer.gdb/Custom'
     param_differentiate_usage_type = arcpy.Parameter()
-    param_differentiate_usage_type.value = 'true'
+    param_differentiate_usage_type.value = 'false'
     param_save_range_map_inputs = arcpy.Parameter()
+    param_save_range_map_inputs.value = 'true'
+    parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
+                    param_jurisdictions_covered, param_custom_polygons_covered, param_differentiate_usage_type,
+                    param_save_range_map_inputs]
+    grm.runGenerateRangeMapTool(parameters, None)
 
-    for version in ['1.1', '1.2', '1.5']:
-    #    for species in ['Ardea herodias', 'Botaurus exilis', 'Branta canadensis', 'Centronyx henslowii', 'Charadrius melodus', 'Falco peregrinus', 'Melanerpes lewis', 'Setophaga cerulea', 'Tringa solitaria', 'Zonotrichia querula']:
-    #for version in ['1.2', '1.3']:
-        #for species in ['Charadrius melodus']:
-        #for species in ['Ardea herodias', 'Branta canadensis', 'Charadrius melodus', 'Melanerpes lewis']:
-        for species in ['Botaurus exilis', 'Branta canadensis', 'Centronyx henslowii', 'Charadrius melodus', 'Falco peregrinus', 'Melanerpes lewis', 'Setophaga cerulea', 'Tringa solitaria', 'Zonotrichia querula']:
-            param_version.value = version
-            param_species.value = species
-            if species == 'Ardea herodias':
-                param_secondary.value = "'Ardea herodias fannini';'Ardea herodias herodias'"
-            elif species == 'Branta canadensis':
-                param_secondary.value = "'Branta canadensis occidentalis'"
-            elif species == 'Charadrius melodus':
-                param_secondary.value = "'Charadrius melodus circumcinctus';'Charadrius melodus melodus'"
-            elif species == 'Melanerpes lewis':
-                param_secondary.value = "'Melanerpes lewis pop. 1'"
-            else:
-                param_secondary.value = None
-            #if version == '1.1':
-            #    param_save_range_map_inputs.value = 'true'
-            #else:
-            param_save_range_map_inputs.value = 'false'
-            parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
-                          param_jurisdictions_covered, param_custom_polygons_covered, param_differentiate_usage_type,
-                          param_save_range_map_inputs]
-            grm.runGenerateRangeMapTool(parameters, None)
+    # for version in ['1.1', '1.2', '1.5']:
+    # #    for species in ['Ardea herodias', 'Botaurus exilis', 'Branta canadensis', 'Centronyx henslowii', 'Charadrius melodus', 'Falco peregrinus', 'Melanerpes lewis', 'Setophaga cerulea', 'Tringa solitaria', 'Zonotrichia querula']:
+    # #for version in ['1.2', '1.3']:
+    #     #for species in ['Charadrius melodus']:
+    #     #for species in ['Ardea herodias', 'Branta canadensis', 'Charadrius melodus', 'Melanerpes lewis']:
+    #     for species in ['Botaurus exilis', 'Branta canadensis', 'Centronyx henslowii', 'Charadrius melodus', 'Falco peregrinus', 'Melanerpes lewis', 'Setophaga cerulea', 'Tringa solitaria', 'Zonotrichia querula']:
+    #         param_version.value = version
+    #         param_species.value = species
+    #         if species == 'Ardea herodias':
+    #             param_secondary.value = "'Ardea herodias fannini';'Ardea herodias herodias'"
+    #         elif species == 'Branta canadensis':
+    #             param_secondary.value = "'Branta canadensis occidentalis'"
+    #         elif species == 'Charadrius melodus':
+    #             param_secondary.value = "'Charadrius melodus circumcinctus';'Charadrius melodus melodus'"
+    #         elif species == 'Melanerpes lewis':
+    #             param_secondary.value = "'Melanerpes lewis pop. 1'"
+    #         else:
+    #             param_secondary.value = None
+    #         #if version == '1.1':
+    #         #    param_save_range_map_inputs.value = 'true'
+    #         #else:
+    #         param_save_range_map_inputs.value = 'false'
+    #         parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
+    #                       param_jurisdictions_covered, param_custom_polygons_covered, param_differentiate_usage_type,
+    #                       param_save_range_map_inputs]
+    #         grm.runGenerateRangeMapTool(parameters, None)
     
