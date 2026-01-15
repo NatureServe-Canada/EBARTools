@@ -1726,7 +1726,7 @@ def translateENtoFRUsingDeepL(input_text):
         deepl_key = dk_file.read()
         dk_file.close()
     deepl_client = deepl.DeepLClient(deepl_key)
-    return deepl_client.translate_text(input_text, source_lang="EN", target_lang="FR")
+    return deepl_client.translate_text(input_text, source_lang="EN", target_lang="FR").text
 
 
 def readDatasetSourceTranslations(geodatabase):

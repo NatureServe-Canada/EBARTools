@@ -256,14 +256,15 @@ class GenerateRangeMapTool:
             with arcpy.da.InsertCursor('range_map_view',
                                        ['SpeciesID', 'RangeVersion', 'RangeStage', 'RangeDate', 'RangeMapNotes',
                                         'RangeMapNotes_FR', 'IncludeInEBARReviewer', 'RangeMapScope',
-                                        'SynonymsUsed', 'DifferentiateUsageType']) as cursor:
+                                        'RangeMapScope_FR', 'SynonymsUsed', 'DifferentiateUsageType']) as cursor:
                 notes = 'Primary Species Name - ' + param_species
                 notes_fr = "Nom principal de l'espèce - " + param_species
                 if len(secondary_names) > 0:
                     notes += '; Synonyms - ' + secondary_names
                     notes_fr += 'Synonymes - ' + secondary_names
                 object_id = cursor.insertRow([species_id, param_version, param_stage, datetime.datetime.now(),
-                                              notes, notes_fr, 0, scope, synonyms_used, differentiate_usage_type])
+                                              notes, notes_fr, 0, scope, StaticTranslations.range_map_scope_translation[scope],
+                                              synonyms_used, differentiate_usage_type])
             del cursor
             range_map_id = EBARUtils.getUniqueID(param_geodatabase + '/RangeMap', 'RangeMapID', object_id)
             EBARUtils.displayMessage(messages, 'Range Map record created')
@@ -606,12 +607,13 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                         expert_comment += search_row[table_name_prefix + \
                                             'EcoshapeReview.EcoshapeReviewNotes']
                                         expert_comment_fr += EBARUtils.translateENtoFRUsingDeepL(
-                                            search_row[table_name_prefix + 'EcoshapeReview.EcoshapeReviewNotes'])
+                                            search_row[table_name_prefix + 'EcoshapeReview.EcoshapeReviewNotes']) + \
+                                                ' (traduit par DeepL)'
                                     else:
                                         expert_comment += 'Unpublished'
                                         expert_comment_fr += 'Non publié'
                                     summary += '<br>' + expert_comment
-                                    summary_fr += '<br>' + expert_comment
+                                    summary_fr += '<br>' + expert_comment_fr
                             del expert_cursor
                             if expert_comment:
                                 del expert_row
@@ -688,12 +690,13 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                     expert_comment += search_row[table_name_prefix + \
                                         'EcoshapeReview.EcoshapeReviewNotes']
                                     expert_comment_fr += EBARUtils.translateENtoFRUsingDeepL(
-                                        search_row[table_name_prefix + 'EcoshapeReview.EcoshapeReviewNotes'])
+                                        search_row[table_name_prefix + 'EcoshapeReview.EcoshapeReviewNotes']) + \
+                                            ' (traduit par DeepL)'
                                 else:
                                     expert_comment += 'Unpublished'
                                     expert_comment_fr += 'Non publié'
                                 notes += '<br>' + expert_comment
-                                notes_fr += '<br>' + expert_comment
+                                notes_fr += '<br>' + expert_comment_fr
                             if expert_comment:
                                 del expert_row
                         with arcpy.da.InsertCursor(param_geodatabase + '/RangeMapEcoshape',
@@ -1207,7 +1210,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                             if expert_row['PublishComments']:
                                 if row['ReviewNotes']:
                                     expert_comment += row['ReviewNotes']
-                                    expert_comment_fr += EBARUtils.translateENtoFRUsingDeepL(row['ReviewNotes'])
+                                    expert_comment_fr += EBARUtils.translateENtoFRUsingDeepL(row['ReviewNotes']) + \
+                                        ' (traduit par DeepL)'
                             else:
                                 expert_comment += 'Unpublished'
                                 expert_comment_fr += 'Non publié'
@@ -1248,7 +1252,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         update_row = None
         with arcpy.da.UpdateCursor('range_map_view',
                                    ['RangeMetadata', 'RangeMetadata_FR', 'RangeDate', 'RangeMapNotes',
-                                    'RangeMapNotes_FR', 'RangeMapScope', 'SynonymsUsed',
+                                    'RangeMapNotes_FR', 'RangeMapScope', 'RangeMapScope_FR', 'SynonymsUsed',
                                     'ReviewerComments', 'ReviewerComments_FR', 'DifferentiateUsageType'],
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
             for update_row in update_cursor:
@@ -1325,8 +1329,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     notes_fr += '; Synonymes - ' + synonym_authors
                     notes += '; Synonyms - ' + synonym_authors
                 update_cursor.updateRow([summary, summary_fr, datetime.datetime.now(), notes, notes_fr, scope,
-                                         synonyms_used, reviewer_comments, reviewer_comments_fr,
-                                         differentiate_usage_type])
+                                         StaticTranslations.range_map_scope_translation[scope], synonyms_used,
+                                         reviewer_comments, reviewer_comments_fr, differentiate_usage_type])
         if update_row:
             del update_row
         del update_cursor
@@ -1384,7 +1388,7 @@ if __name__ == '__main__':
     param_version = arcpy.Parameter()
     param_version.value = '0.1'
     param_stage = arcpy.Parameter()
-    param_stage.value = 'Auto-generated TEST'
+    param_stage.value = 'Expert reviewed TEST' #'Auto-generated TEST'
     param_scope = arcpy.Parameter()
     #param_scope.value = None
     param_scope.value = 'Global'

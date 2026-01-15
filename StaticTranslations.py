@@ -11,7 +11,8 @@
 range_map_scope_translation = {
     'N': 'Canadien',
     'A': 'Nord-américain',
-    'G': 'mondial'}
+    'G': 'mondial',
+    None: None}
 
 
 presence_translation = {
@@ -23,7 +24,8 @@ presence_translation = {
 usage_type_translation = {
     'B': 'Reproduction',
     'P': 'Reproduction possible',
-    'M': 'Migration'}
+    'M': 'Migration',
+    None: None}
 
 
 # controlling process - for testing
