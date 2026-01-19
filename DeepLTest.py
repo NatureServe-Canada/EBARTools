@@ -30,4 +30,4 @@ import EBARUtils
 # print(EBARUtils.translateENtoFRUsingDeepL('Random text to be translated...'))
 # print(EBARUtils.translateENtoFRUsingDeepL('More text to be translated. This time with punctuation!'))
 # print(EBARUtils.translateENtoFRUsingDeepL('go to NatureServe Explorer'))
-print(EBARUtils.translateENtoFRUsingDeepL('translated by DeepL'))
+print(EBARUtils.translateENtoFRUsingDeepL('Low Star Rating'))

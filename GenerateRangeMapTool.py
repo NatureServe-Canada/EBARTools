@@ -254,17 +254,21 @@ class GenerateRangeMapTool:
             arcpy.SelectLayerByAttribute_management('range_map_view', 'CLEAR_SELECTION')
             # create RangeMap record
             with arcpy.da.InsertCursor('range_map_view',
-                                       ['SpeciesID', 'RangeVersion', 'RangeStage', 'RangeDate', 'RangeMapNotes',
-                                        'RangeMapNotes_FR', 'IncludeInEBARReviewer', 'RangeMapScope',
+                                       ['SpeciesID', 'RangeVersion', 'RangeStage', 'RangeStage_FR', 'RangeDate',
+                                        'RangeMapNotes', 'RangeMapNotes_FR', 'IncludeInEBARReviewer', 'RangeMapScope',
                                         'RangeMapScope_FR', 'SynonymsUsed', 'DifferentiateUsageType']) as cursor:
                 notes = 'Primary Species Name - ' + param_species
                 notes_fr = "Nom principal de l'espèce - " + param_species
+                stage_fr = None
+                if param_stage in StaticTranslations.range_stage_translation.keys():
+                    stage_fr = StaticTranslations.range_stage_translation[param_stage]
                 if len(secondary_names) > 0:
                     notes += '; Synonyms - ' + secondary_names
                     notes_fr += 'Synonymes - ' + secondary_names
-                object_id = cursor.insertRow([species_id, param_version, param_stage, datetime.datetime.now(),
-                                              notes, notes_fr, 0, scope, StaticTranslations.range_map_scope_translation[scope],
-                                              synonyms_used, differentiate_usage_type])
+                object_id = cursor.insertRow([species_id, param_version, param_stage, stage_fr,
+                                              datetime.datetime.now(), notes, notes_fr, 0, scope,
+                                              StaticTranslations.range_map_scope_translation[scope], synonyms_used,
+                                              differentiate_usage_type])
             del cursor
             range_map_id = EBARUtils.getUniqueID(param_geodatabase + '/RangeMap', 'RangeMapID', object_id)
             EBARUtils.displayMessage(messages, 'Range Map record created')
@@ -299,10 +303,9 @@ class GenerateRangeMapTool:
         EBARUtils.displayMessage(messages, 'Merging Buffered Points and Lines and Input Polygons')
         temp_all_inputs = 'TempAllInputs' + str(start_time.year) + str(start_time.month) + \
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
-        #arcpy.Merge_management([temp_point_buffer, temp_line_buffer, 'input_polygon_layer'], temp_all_inputs, None,
-        #                       'ADD_SOURCE_INFO')
-        arcpy.Merge_management([temp_point_buffer, temp_line_buffer, input_polygon_layer], temp_all_inputs, None,
-                               'ADD_SOURCE_INFO')
+        arcpy.Merge_management([temp_point_buffer, temp_line_buffer, input_polygon_layer], temp_all_inputs,
+                               add_source='ADD_SOURCE_INFO')
+        # arcpy.Merge_management([temp_point_buffer, input_polygon_layer], temp_all_inputs, add_source='ADD_SOURCE_INFO')
         EBARUtils.checkAddField(temp_all_inputs, 'RangeMapID', 'LONG')
         arcpy.CalculateField_management(temp_all_inputs, 'RangeMapID', range_map_id)
         EBARUtils.checkAddField(temp_all_inputs, 'OriginalGeometryType', 'TEXT')
@@ -391,6 +394,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                            ['EcoshapeID', 'DatasetType',
                             'MAX_' + table_name_prefix + temp_pairwise_intersect + '.tempdate',
                             'MAX_' + table_name_prefix + temp_pairwise_intersect + '_tempdate',
+                            'max_ebarkba_sde_' + temp_pairwise_intersect.lower() + '_tempdate',
                             'MAX_' + table_name_prefix + temp_pairwise_intersect + '.TempDate',
                             'MAX_' + table_name_prefix + temp_pairwise_intersect + '_TempDate']]
             # field_names.append([f.name for f in arcpy.ListFields(temp_ecoshape_max_polygon) if f.name in
@@ -506,12 +510,15 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                 'MIN_MinDate', 'min_mindate',
                                 'MIN_' + table_name_prefix + temp_pairwise_intersect + '.mindate',
                                 'MIN_' + table_name_prefix + temp_pairwise_intersect + '_mindate',
+                                'min_ebarkba_sde_' + temp_pairwise_intersect.lower() + '_mindate',
                                 'MAX_MaxDate', 'max_maxdate',
                                 'MAX_' + table_name_prefix + temp_pairwise_intersect + '.maxdate',
                                 'MAX_' + table_name_prefix + temp_pairwise_intersect + '_maxdate',
+                                'max_ebarkba_sde_' + temp_pairwise_intersect.lower() + '_maxdate',
                                 'MIN_MaxDate', 'min_maxdate',
                                 'MIN_' + table_name_prefix + temp_pairwise_intersect + '.maxdate',
-                                'MIN_' + table_name_prefix + temp_pairwise_intersect + '_maxdate']]
+                                'MIN_' + table_name_prefix + temp_pairwise_intersect + '_maxdate',
+                                'min_ebarkba_sde_' + temp_pairwise_intersect.lower() + '_maxdate']]
                 # id_field_name = [f.name for f in arcpy.ListFields(temp_ecoshape_countby_source) if f.aliasName ==
                 #                  'EcoshapeID'][0]
                 # id_field_name = [f.name for f in arcpy.ListFields(temp_ecoshape_countby_source) if f.aliasName ==
@@ -955,9 +962,11 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                    ['FIRST_' + table_name_prefix + temp_pairwise_intersect + '.Accuracy',
                                     'FIRST_' + table_name_prefix + temp_pairwise_intersect + '_accuracy',
                                     'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.accuracy',
+                                    'first_ebarkba_sde_' + temp_pairwise_intersect.lower() + '_accuracy',
                                     'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.OriginalGeometryType',                                    
                                     'FIRST_' + table_name_prefix + temp_pairwise_intersect + '_originalgeometrytype',
-                                    'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.originalgeometrytype']]
+                                    'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.originalgeometrytype',
+                                    'first_ebarkba_sde_' + temp_pairwise_intersect.lower() + '_originalgeometrytype']]
                     arcpy.SelectLayerByAttribute_management('dissolve_layer', 'NEW_SELECTION',
                                                             'objectid > ' + str(batch_size * (batch_count - 1)) +
                                                             ' AND objectid <= ' + str(batch_size * batch_count) +
@@ -1001,34 +1010,48 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                             field_names = [f.name for f in arcpy.ListFields(temp_batch) if f.aliasName in
                                            ['FIRST_' + table_name_prefix + temp_pairwise_intersect + '.RangeMapID',
                                             'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.rangemapid',
+                                            'first_ebarkba_sde_' + temp_pairwise_intersect.lower() + '_rangemapid',
                                             'FIRST_' + table_name_prefix + temp_pairwise_intersect +
                                             '.OriginalGeometryType',
                                             'FIRST_' + table_name_prefix + temp_pairwise_intersect +
                                             '.originalgeometrytype',
+                                            'first_ebarkba_sde_' + temp_pairwise_intersect.lower() +
+                                            '_originalgeometrytype',
                                             'FIRST_' + table_name_prefix +
                                             'BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME',
                                             'FIRST_' + table_name_prefix +
                                             'BIOTICS_ELEMENT_NATIONAL.national_scientific_name',
+                                            'first_ebarkba_sde_biotics_element_national_national_scientific_name',
                                             'FIRST_' + table_name_prefix + 'Synonym.SynonymName',
                                             'FIRST_' + table_name_prefix + 'Synonym.synonymname',
+                                            'first_ebarkba_sde_synonym_synonymname',
                                             'FIRST_' + table_name_prefix + 'DatasetSource.DatasetSourceName',
                                             'FIRST_' + table_name_prefix + 'DatasetSource.datasetsourcename',
+                                            'first_ebarkba_sde_datasetsource_datasetsourcename',
                                             'FIRST_' + table_name_prefix + 'DatasetSource.DatasetType',
                                             'FIRST_' + table_name_prefix + 'DatasetSource.datasettype',
+                                            'first_ebarkba_sde_datasetsource_datasettype',
                                             'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.Accuracy',
                                             'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.accuracy',
+                                            'first_ebarkba_sde_' + temp_pairwise_intersect.lower() + '_accuracy',
                                             'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.MaxDate',
                                             'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.maxdate',
+                                            'first_ebarkba_sde_' + temp_pairwise_intersect.lower() + '_maxdate',
                                             'FIRST_' + table_name_prefix + temp_pairwise_intersect +
                                             '.CoordinatesObscured',
                                             'FIRST_' + table_name_prefix + temp_pairwise_intersect +
                                             '.coordinatesobscured',
+                                            'first_ebarkba_sde_' + temp_pairwise_intersect.lower() +
+                                            '_coordinatesobscured',
                                             'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.EORank',
                                             'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.eorank',
+                                            'first_ebarkba_sde_' + temp_pairwise_intersect.lower() + '_eorank',
                                             'FIRST_' + table_name_prefix + temp_pairwise_intersect +
                                             '.DatasetSourceUniqueID',
                                             'FIRST_' + table_name_prefix + temp_pairwise_intersect +
-                                            '.datasetsourceuniqueid']]
+                                            '.datasetsourceuniqueid',
+                                            'first_ebarkba_sde_' + temp_pairwise_intersect.lower() +
+                                            '_datasetsourceuniqueid']]
                             # for field_name in field_names:
                             #     EBARUtils.displayMessage(messages, field_name)
                             with arcpy.da.SearchCursor(temp_batch,
@@ -1264,12 +1287,15 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                 'MIN_MinDate', 'min_mindate',
                                 'MIN_' + table_name_prefix + temp_pairwise_intersect + '_mindate',
                                 'MIN_' + table_name_prefix + temp_pairwise_intersect + '.mindate',
+                                'min_ebarkba_sde_' + temp_pairwise_intersect.lower() + '_mindate',
                                 'MAX_MaxDate', 'max_maxdate',
                                 'MAX_' + table_name_prefix + temp_pairwise_intersect + '_maxdate',
                                 'MAX_' + table_name_prefix + temp_pairwise_intersect + '.maxdate',
+                                'max_ebarkba_sde_' + temp_pairwise_intersect.lower() + '_maxdate',
                                 'MIN_MaxDate', 'min_maxdate',
                                 'MIN_' + table_name_prefix + temp_pairwise_intersect + '_maxdate',
-                                'MIN_' + table_name_prefix + temp_pairwise_intersect + '.maxdate']]
+                                'MIN_' + table_name_prefix + temp_pairwise_intersect + '.maxdate',
+                                'min_ebarkba_sde_' + temp_pairwise_intersect.lower() + '_maxdate']]
                 summary = ''
                 with arcpy.da.SearchCursor(temp_overall_countby_source, field_names) as search_cursor:
                     for search_row in EBARUtils.searchCursor(search_cursor):
@@ -1380,15 +1406,15 @@ if __name__ == '__main__':
     grm = GenerateRangeMapTool()
     # hard code parameters for debugging
     param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value = r'D:\GIS\EBAR\EBARDevJan2026.gdb'
+    param_geodatabase.value = r'C:\GIS\EBAR\nsc-gis-ebarkba.sde' #'D:\GIS\EBAR\EBARDevJan2026.gdb'
     param_species = arcpy.Parameter()
-    param_species.value = 'Marmota vancouverensis'
+    param_species.value = 'Triacanthella copelandi' #Marmota vancouverensis'
     param_secondary = arcpy.Parameter()
     #param_secondary.value = "'Schistochilopsis incisa var. opacifolia'" #"'Dodia tarandus';'Dodia verticalis'"
     param_version = arcpy.Parameter()
-    param_version.value = '0.1'
+    param_version.value = '0.1T'
     param_stage = arcpy.Parameter()
-    param_stage.value = 'Expert reviewed TEST' #'Auto-generated TEST'
+    param_stage.value = 'Expert Reviewed (Low Star Rating)' #'Auto-generated Translation TEST' #'Expert reviewed TEST' #'Auto-generated TEST'
     param_scope = arcpy.Parameter()
     #param_scope.value = None
     param_scope.value = 'Global'
@@ -1401,10 +1427,10 @@ if __name__ == '__main__':
     param_differentiate_usage_type = arcpy.Parameter()
     param_differentiate_usage_type.value = 'false'
     param_save_range_map_inputs = arcpy.Parameter()
-    param_save_range_map_inputs.value = 'true'
+    param_save_range_map_inputs.value = 'false'
     parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
-                    param_jurisdictions_covered, param_custom_polygons_covered, param_differentiate_usage_type,
-                    param_save_range_map_inputs]
+                  param_jurisdictions_covered, param_custom_polygons_covered, param_differentiate_usage_type,
+                  param_save_range_map_inputs]
     grm.runGenerateRangeMapTool(parameters, None)
 
     # for version in ['1.1', '1.2', '1.5']:

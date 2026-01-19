@@ -18,6 +18,7 @@ import io
 import csv
 import EBARUtils
 import datetime
+import StaticTranslations
 
 
 class SyncSpeciesListBioticsTool:
@@ -51,141 +52,145 @@ class SyncSpeciesListBioticsTool:
             skipped = 0
             # fields that are sync'd whenever changed, overwriting values on update
             regular_fields = ['ELEMENT_GLOBAL_ID',
-                            'ELEMENT_NATIONAL_ID',
-                            'ELEMENT_CODE',
-                            'CLASSIFICATION_STATUS',
-                            'CATEGORY',
-                            'TAX_GROUP',
-                            'FAMILY_COM',
-                            'GENUS',
-                            'CA_NNAME_LEVEL',
-                            'NATIONAL_SCIENTIFIC_NAME',
-                            'NATIONAL_ENGL_NAME',
-                            'NATIONAL_FR_NAME',
-                            'G_RANK',
-                            'ROUNDED_G_RANK',
-                            'G_RANK_REVIEW_DATE',
-                            'N_RANK',
-                            'ROUNDED_N_RANK',
-                            'N_RANK_REVIEW_DATE',
-                            'BCD_STYLE_N_RANK',
-                            'SARA_STATUS',
-                            'SARA_STATUS_DATE',
-                            'COSEWIC_ID',
-                            'COSEWIC_STATUS',
-                            'COSEWIC_DATE',
-                            'INTERP_COSEWIC',
-                            'INTERP_COSEWIC_DATE',
-                            'COSEWIC_SUMMARY',
-                            'COSEWIC_NAME',
-                            'ENGLISH_COSEWIC_COM_NAME',
-                            'FRENCH_COSEWIC_COM_NAME',
-                            'CA_ORIGIN',
-                            'CA_REGULARITY',
-                            'CA_CONFIDENCE',
-                            'CA_PRESENCE',
-                            'CA_POPULATION',
-                            'SHORT_CITATION_AUTHOR',
-                            'SHORT_CITATION_YEAR',
-                            'AUTHOR_NAME',
-                            'MAJOR_HABITAT',
-                            'KINGDOM',
-                            'FAMILY',
-                            'PHYLUM',
-                            'CLASS',
-                            'TAX_ORDER',
-                            'GLOBAL_SCIENTIFIC_NAME',
-                            'GLOBAL_SYNONYMS',
-                            'GLOBAL_ENGL_NAME',
-                            'GLOB_FR_NAME',
-                            'GLOBAL_UNIQUE_IDENTIFIER',
-                            'G_RANK_CHANGE_DATE',
-                            'N_RANK_CHANGE_DATE',
-                            'CURRENT_DISTRIBUTION',
-                            'CA_DIST_COMPLETE',
-                            'TOTAL_EOS_CANADA',
-                            'AB_EOS',
-                            'AB_SFS',
-                            'BC_EOS',
-                            'BC_SFS',
-                            'MB_EOS',
-                            'MB_SFS',
-                            'NT_EOS',
-                            'NT_SFS',
-                            'ON_EOS',
-                            'ON_SFS',
-                            'SK_EOS',
-                            'SK_SFS',
-                            'YT_EOS',
-                            'YT_SFS',
-                            'NATN_NRK_ALL_ENTS',
-                            'US_STATES',
-                            'CA_DISTRIBUTION_COMMENTS',
-                            'TAX_COM',
-                            'INACTIVE_IND',
-                            'N_ENDEMISM_DESC',
-                            'G_JURIS_ENDEM_DESC',
-                            'FORMATTED_FULL_CITATION',
-                            'COSEWIC_ASSESS_CRITERIA',
-                            'KBA_GROUP']
+                              'ELEMENT_NATIONAL_ID',
+                              'ELEMENT_CODE',
+                              'CLASSIFICATION_STATUS',
+                              'CATEGORY',
+                              'TAX_GROUP',
+                              'FAMILY_COM',
+                              'GENUS',
+                              'CA_NNAME_LEVEL',
+                              'NATIONAL_SCIENTIFIC_NAME',
+                              'NATIONAL_ENGL_NAME',
+                              'NATIONAL_FR_NAME',
+                              'G_RANK',
+                              'ROUNDED_G_RANK',
+                              'G_RANK_REVIEW_DATE',
+                              'N_RANK',
+                              'ROUNDED_N_RANK',
+                              'N_RANK_REVIEW_DATE',
+                              'BCD_STYLE_N_RANK',
+                              'SARA_STATUS',
+                              'SARA_STATUS_DATE',
+                              'COSEWIC_ID',
+                              'COSEWIC_STATUS',
+                              'COSEWIC_DATE',
+                              'INTERP_COSEWIC',
+                              'INTERP_COSEWIC_DATE',
+                              'COSEWIC_SUMMARY',
+                              'COSEWIC_NAME',
+                              'ENGLISH_COSEWIC_COM_NAME',
+                              'FRENCH_COSEWIC_COM_NAME',
+                              'CA_ORIGIN',
+                              'CA_REGULARITY',
+                              'CA_CONFIDENCE',
+                              'CA_PRESENCE',
+                              'CA_POPULATION',
+                              'SHORT_CITATION_AUTHOR',
+                              'SHORT_CITATION_YEAR',
+                              'AUTHOR_NAME',
+                              'MAJOR_HABITAT',
+                              'KINGDOM',
+                              'FAMILY',
+                              'PHYLUM',
+                              'CLASS',
+                              'TAX_ORDER',
+                              'GLOBAL_SCIENTIFIC_NAME',
+                              'GLOBAL_SYNONYMS',
+                              'GLOBAL_ENGL_NAME',
+                              'GLOB_FR_NAME',
+                              'GLOBAL_UNIQUE_IDENTIFIER',
+                              'G_RANK_CHANGE_DATE',
+                              'N_RANK_CHANGE_DATE',
+                              'CURRENT_DISTRIBUTION',
+                              'CA_DIST_COMPLETE',
+                              'TOTAL_EOS_CANADA',
+                              'AB_EOS',
+                              'AB_SFS',
+                              'BC_EOS',
+                              'BC_SFS',
+                              'MB_EOS',
+                              'MB_SFS',
+                              'NT_EOS',
+                              'NT_SFS',
+                              'ON_EOS',
+                              'ON_SFS',
+                              'SK_EOS',
+                              'SK_SFS',
+                              'YT_EOS',
+                              'YT_SFS',
+                              'NATN_NRK_ALL_ENTS',
+                              'US_STATES',
+                              'CA_DISTRIBUTION_COMMENTS',
+                              'TAX_COM',
+                              'INACTIVE_IND',
+                              'N_ENDEMISM_DESC',
+                              'G_JURIS_ENDEM_DESC',
+                              'FORMATTED_FULL_CITATION',
+                              'COSEWIC_ASSESS_CRITERIA',
+                              'KBA_GROUP']
             # fields that only get overwritten on update if they are currently null
             # this is to avoid overwriting a value from a CDC recevied as part of an input point/line/polygon import
             special_fields = ['AB_DATASEN',
-                            'AB_DATASEN_CAT',
-                            'BC_DATASEN',
-                            'BC_DATASEN_CAT',
-                            'LB_DATASEN',
-                            'LB_DATASEN_CAT',
-                            'MB_DATASEN',
-                            'MB_DATASEN_CAT',
-                            'NB_DATASEN',
-                            'NB_DATASEN_CAT',
-                            'NF_DATASEN',
-                            'NF_DATASEN_CAT',
-                            'NS_DATASEN',
-                            'NS_DATASEN_CAT',
-                            'NT_DATASEN',
-                            'NT_DATASEN_CAT',
-                            'NU_DATASEN',
-                            'NU_DATASEN_CAT',
-                            'ON_DATASEN',
-                            'ON_DATASEN_CAT',
-                            'PE_DATASEN',
-                            'PE_DATASEN_CAT',
-                            'QC_DATASEN',
-                            'QC_DATASEN_CAT',
-                            'SK_DATASEN',
-                            'SK_DATASEN_CAT',
-                            'YT_DATASEN',
-                            'YT_DATASEN_CAT',
-                            'AB_S_RANK',
-                            'AB_ROUNDED_S_RANK',
-                            'BC_S_RANK',
-                            'BC_ROUNDED_S_RANK',
-                            'LB_S_RANK',
-                            'LB_ROUNDED_S_RANK',
-                            'MB_S_RANK',
-                            'MB_ROUNDED_S_RANK',
-                            'NB_S_RANK',
-                            'NB_ROUNDED_S_RANK',
-                            'NF_S_RANK',
-                            'NF_ROUNDED_S_RANK',
-                            'NS_S_RANK',
-                            'NS_ROUNDED_S_RANK',
-                            'NT_S_RANK',
-                            'NT_ROUNDED_S_RANK',
-                            'NU_S_RANK',
-                            'NU_ROUNDED_S_RANK',
-                            'ON_S_RANK',
-                            'ON_ROUNDED_S_RANK',
-                            'PE_S_RANK',
-                            'PE_ROUNDED_S_RANK',
-                            'QC_S_RANK',
-                            'QC_ROUNDED_S_RANK',
-                            'SK_S_RANK',
-                            'SK_ROUNDED_S_RANK',
-                            'YT_S_RANK',
-                            'YT_ROUNDED_S_RANK']
+                              'AB_DATASEN_CAT',
+                              'BC_DATASEN',
+                              'BC_DATASEN_CAT',
+                              'LB_DATASEN',
+                              'LB_DATASEN_CAT',
+                              'MB_DATASEN',
+                              'MB_DATASEN_CAT',
+                              'NB_DATASEN',
+                              'NB_DATASEN_CAT',
+                              'NF_DATASEN',
+                              'NF_DATASEN_CAT',
+                              'NS_DATASEN',
+                              'NS_DATASEN_CAT',
+                              'NT_DATASEN',
+                              'NT_DATASEN_CAT',
+                              'NU_DATASEN',
+                              'NU_DATASEN_CAT',
+                              'ON_DATASEN',
+                              'ON_DATASEN_CAT',
+                              'PE_DATASEN',
+                              'PE_DATASEN_CAT',
+                              'QC_DATASEN',
+                              'QC_DATASEN_CAT',
+                              'SK_DATASEN',
+                              'SK_DATASEN_CAT',
+                              'YT_DATASEN',
+                              'YT_DATASEN_CAT',
+                              'AB_S_RANK',
+                              'AB_ROUNDED_S_RANK',
+                              'BC_S_RANK',
+                              'BC_ROUNDED_S_RANK',
+                              'LB_S_RANK',
+                              'LB_ROUNDED_S_RANK',
+                              'MB_S_RANK',
+                              'MB_ROUNDED_S_RANK',
+                              'NB_S_RANK',
+                              'NB_ROUNDED_S_RANK',
+                              'NF_S_RANK',
+                              'NF_ROUNDED_S_RANK',
+                              'NS_S_RANK',
+                              'NS_ROUNDED_S_RANK',
+                              'NT_S_RANK',
+                              'NT_ROUNDED_S_RANK',
+                              'NU_S_RANK',
+                              'NU_ROUNDED_S_RANK',
+                              'ON_S_RANK',
+                              'ON_ROUNDED_S_RANK',
+                              'PE_S_RANK',
+                              'PE_ROUNDED_S_RANK',
+                              'QC_S_RANK',
+                              'QC_ROUNDED_S_RANK',
+                              'SK_S_RANK',
+                              'SK_ROUNDED_S_RANK',
+                              'YT_S_RANK',
+                              'YT_ROUNDED_S_RANK']
+            french_fields = ['CATEGORY_FR',
+                             'TAX_GROUP_FR',
+                             'FAMILY_COM_FR',
+                             'CA_NNAME_LEVEL_FR']
             all_fields = regular_fields + special_fields
             for file_line in reader:
                 element_national_id = int(float(file_line['ELEMENT_NATIONAL_ID']))
@@ -193,8 +198,9 @@ class SyncSpeciesListBioticsTool:
                 if element_national_id in element_species_dict:
                     # update if changed
                     changed = False
-                    with arcpy.da.UpdateCursor(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL', all_fields + ['NSX_URL'],
-                                            'ELEMENT_NATIONAL_ID = ' + str(element_national_id)) as update_cursor:
+                    with arcpy.da.UpdateCursor(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
+                                               all_fields + ['NSX_URL'] + french_fields,
+                                               'ELEMENT_NATIONAL_ID = ' + str(element_national_id)) as update_cursor:
                         update_row = None
                         for update_row in EBARUtils.updateCursor(update_cursor):
                             update_values = []
@@ -226,7 +232,23 @@ class SyncSpeciesListBioticsTool:
                             # calc NSX_URL from GUID
                             update_values.append('https://explorer.natureserve.org/Taxon/' +
                                                 file_line['GLOBAL_UNIQUE_IDENTIFIER'])
-
+                            # translate French fields (use English if not in translation dict; periodically update latter)
+                            category_fr = file_line['CATEGORY']
+                            if file_line['CATEGORY'] in StaticTranslations.biotics_category_translation.keys():
+                                category_fr = StaticTranslations.biotics_category_translation[file_line['CATEGORY']]
+                            update_values.append(category_fr)
+                            tax_group_fr = file_line['TAX_GROUP']
+                            if file_line['TAX_GROUP'] in StaticTranslations.biotics_taxa_group_translation.keys():
+                                tax_group_fr = StaticTranslations.biotics_taxa_group_translation[file_line['TAX_GROUP']]
+                            update_values.append(tax_group_fr)
+                            family_com_fr = file_line['FAMILY_COM']
+                            if file_line['FAMILY_COM'] in StaticTranslations.biotics_family_com_translation.keys():
+                                family_com_fr = StaticTranslations.biotics_family_com_translation[file_line['FAMILY_COM']]
+                            update_values.append(family_com_fr)
+                            ca_nname_level_fr = file_line['CA_NNAME_LEVEL']
+                            if file_line['CA_NNAME_LEVEL'] in StaticTranslations.biotics_ca_nname_level_translation.keys():
+                                ca_nname_level_fr = StaticTranslations.biotics_ca_nname_level_translation[file_line['CA_NNAME_LEVEL']]
+                            update_values.append(ca_nname_level_fr)
                             if changed:
                                 updated += 1
                                 update_cursor.updateRow(update_values)
@@ -248,7 +270,7 @@ class SyncSpeciesListBioticsTool:
                         species_id = EBARUtils.getUniqueID(param_geodatabase + '/Species', 'SpeciesID', object_id)
                         all_fields.append('SpeciesID')
                         with arcpy.da.InsertCursor(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
-                                                all_fields + ['NSX_URL']) as insert_cursor:
+                                                   all_fields + ['NSX_URL'] + french_fields) as insert_cursor:
                             insert_values = []
                             for field in all_fields:
                                 if field == 'SpeciesID':
@@ -260,6 +282,23 @@ class SyncSpeciesListBioticsTool:
                             # calc NSX_URL from GUID
                             insert_values.append('https://explorer.natureserve.org/Taxon/' +
                                                 file_line['GLOBAL_UNIQUE_IDENTIFIER'])
+                            # translate French fields (use English if not in translation dict; periodically update latter)
+                            category_fr = file_line['CATEGORY']
+                            if file_line['CATEGORY'] in StaticTranslations.biotics_category_translation.keys():
+                                category_fr = StaticTranslations.biotics_category_translation[file_line['CATEGORY']]
+                            insert_values.append(category_fr)
+                            tax_group_fr = file_line['TAX_GROUP']
+                            if file_line['TAX_GROUP'] in StaticTranslations.biotics_taxa_group_translation.keys():
+                                tax_group_fr = StaticTranslations.biotics_taxa_group_translation[file_line['TAX_GROUP']]
+                            insert_values.append(tax_group_fr)
+                            family_com_fr = file_line['FAMILY_COM']
+                            if file_line['FAMILY_COM'] in StaticTranslations.biotics_family_com_translation.keys():
+                                family_com_fr = StaticTranslations.biotics_family_com_translation[file_line['FAMILY_COM']]
+                            insert_values.append(family_com_fr)
+                            ca_nname_level_fr = file_line['CA_NNAME_LEVEL']
+                            if file_line['CA_NNAME_LEVEL'] in StaticTranslations.biotics_ca_nname_level_translation.keys():
+                                ca_nname_level_fr = StaticTranslations.biotics_ca_nname_level_translation[file_line['CA_NNAME_LEVEL']]
+                            insert_values.append(ca_nname_level_fr)
                             insert_cursor.insertRow(insert_values)
                         all_fields.remove('SpeciesID')
                         added += 1
@@ -285,7 +324,7 @@ if __name__ == '__main__':
     ssl = SyncSpeciesListBioticsTool()
     # hard code parameters for debugging
     param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value = 'D:/GIS/EBAR/EBARDev2.gdb'
+    param_geodatabase.value = r'D:\GIS\EBAR\EBARDevJan2026.gdb'
     #param_geodatabase.value = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde'
     param_csvs = arcpy.Parameter()
     param_csvs.value = "'D:/GIS/EBAR/EBARTools/Samples/BioticsSpeciesExample.csv';'D:/GIS/EBAR/EBARTools/Samples/BioticsSpeciesExample.csv'"
