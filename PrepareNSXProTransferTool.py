@@ -255,14 +255,14 @@ class PrepareNSXProTransferTool:
         arcpy.Delete_management('input_lyr')
 
 
-# # controlling process
-# if __name__ == '__main__':
-#     pnpt = PrepareNSXProTransferTool()
-#     # hard code parameters for debugging
-#     param_geodatabase = arcpy.Parameter()
-#     param_geodatabase.value = 'C:/GIS/EBAR/NSXProDebug.gdb'
-#     parameters = [param_geodatabase]
-#     pnpt.runPrepareNSXProTransferTool(parameters, None)
+# controlling process
+if __name__ == '__main__':
+    pnpt = PrepareNSXProTransferTool()
+    # hard code parameters for debugging
+    param_geodatabase = arcpy.Parameter()
+    param_geodatabase.value = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde' #'C:/GIS/EBAR/NSXProDebug.gdb'
+    parameters = [param_geodatabase]
+    pnpt.runPrepareNSXProTransferTool(parameters, None)
 
     # # redirect output to file
     # dtnow = datetime.datetime.utcnow()
