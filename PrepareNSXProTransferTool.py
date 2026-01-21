@@ -46,7 +46,7 @@ class PrepareNSXProTransferTool:
             # record counts
             count_dict = {}
 
-            # apply species susceptible to persecution and harm (STPH) rules then permissions
+            # apply elements susceptible to harm (ESTH) rules then permissions
             # reset to NULLs in case rules/datasets have changed since last transfer
             EBARUtils.displayMessage(messages, 'Resetting transfer fields')
             arcpy.MakeTableView_management(param_geodatabase + '/' + spatial_input, 'input_view',
@@ -60,81 +60,81 @@ class PrepareNSXProTransferTool:
             # jurisdiction-level rules are handled by prov/territory, with NF and LB separated
             jurs = ['BC', 'AB', 'SK', 'MB', 'ON', 'QC', 'NB', 'PE', 'NS', 'NF', 'LB', 'NU', 'NT', 'YT']
 
-            # join STPH table to jurisdiction
-            arcpy.MakeTableView_management(param_geodatabase + '/SpeciesSTPH', 'stph_view')
-            arcpy.AddJoin_management('stph_view', 'JurisdictionID', param_geodatabase + '/Jurisdiction',
+            # join ESTH table to jurisdiction
+            arcpy.MakeTableView_management(param_geodatabase + '/ESTH', 'esth_view')
+            arcpy.AddJoin_management('esth_view', 'JurisdictionID', param_geodatabase + '/Jurisdiction',
                                      'JurisdictionID', 'KEEP_COMMON')
 
             # process rules in five steps, keep coarsest of all rules and don't overrid previous exclude
-            # 1. iNaturalist.ca Canada-wide STPHs
-            EBARUtils.displayMessage(messages, 'Applying iNaturalist.ca Canada-wide STPHs')
+            # 1. iNaturalist.ca Canada-wide ESTHs
+            EBARUtils.displayMessage(messages, 'Applying iNaturalist.ca Canada-wide ESTHs')
             row = None
-            with arcpy.da.SearchCursor('stph_view', [table_name_prefix + 'SpeciesSTPH.SpeciesID',
-                                                     table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles'],
+            with arcpy.da.SearchCursor('esth_view', [table_name_prefix + 'ESTH.SpeciesID',
+                                                     table_name_prefix + 'ESTH.AllowedPrecisionSquareMiles'],
                                        table_name_prefix + "Jurisdiction.JurisdictionAbbreviation = 'CA' AND " +
-                                       table_name_prefix + "SpeciesSTPH.ObscuredForiNatca = 'Y'") as cursor:
+                                       table_name_prefix + "ESTH.ObscuredForiNatca = 'Y'") as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     self.applyJurisdictionSpecies(param_geodatabase, table_name_prefix, spatial_input, jurs,
-                                                  row[table_name_prefix + 'SpeciesSTPH.SpeciesID'], None,
-                                                  row[table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles'],
+                                                  row[table_name_prefix + 'ESTH.SpeciesID'], None,
+                                                  row[table_name_prefix + 'ESTH.AllowedPrecisionSquareMiles'],
                                                   count_dict, messages)
             if row:
                 del row
             del cursor
 
-            # 2. iNaturalist.ca by jurisdiction STPHs
-            EBARUtils.displayMessage(messages, 'Applying iNaturalist.ca Jurisdictional STPHs')
+            # 2. iNaturalist.ca by jurisdiction ESTHs
+            EBARUtils.displayMessage(messages, 'Applying iNaturalist.ca Jurisdictional ESTHs')
             row = None
-            with arcpy.da.SearchCursor('stph_view', [table_name_prefix + 'SpeciesSTPH.SpeciesID',
-                                                     table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles',
+            with arcpy.da.SearchCursor('esth_view', [table_name_prefix + 'ESTH.SpeciesID',
+                                                     table_name_prefix + 'ESTH.AllowedPrecisionSquareMiles',
                                                      table_name_prefix + 'Jurisdiction.JurisdictionAbbreviation'],
                                        table_name_prefix + "Jurisdiction.JurisdictionAbbreviation <> 'CA' AND " +
-                                       table_name_prefix + "SpeciesSTPH.ObscuredForiNatca = 'Y'") as cursor:
+                                       table_name_prefix + "ESTH.ObscuredForiNatca = 'Y'") as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     self.applyJurisdictionSpecies(param_geodatabase, table_name_prefix, spatial_input,
                                                   [row[table_name_prefix + 'Jurisdiction.JurisdictionAbbreviation']],
-                                                  row[table_name_prefix + 'SpeciesSTPH.SpeciesID'], None,
-                                                  row[table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles'],
+                                                  row[table_name_prefix + 'ESTH.SpeciesID'], None,
+                                                  row[table_name_prefix + 'ESTH.AllowedPrecisionSquareMiles'],
                                                   count_dict, messages)
             if row:
                 del row
             del cursor
 
-            # 3. NSC/CDC Canada-wide STPHs
-            EBARUtils.displayMessage(messages, 'Applying NSC/CDC Canada-wide STPHs')
+            # 3. NSC/CDC Canada-wide ESTHs
+            EBARUtils.displayMessage(messages, 'Applying NSC/CDC Canada-wide ESTHs')
             row = None
-            with arcpy.da.SearchCursor('stph_view', [table_name_prefix + 'SpeciesSTPH.SpeciesID',
-                                                     table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles'],
+            with arcpy.da.SearchCursor('esth_view', [table_name_prefix + 'ESTH.SpeciesID',
+                                                     table_name_prefix + 'ESTH.AllowedPrecisionSquareMiles'],
                                        table_name_prefix + "Jurisdiction.JurisdictionAbbreviation = 'CA' AND " +
-                                       table_name_prefix + "SpeciesSTPH.ObscuredForNSC = 'Y'") as cursor:
+                                       table_name_prefix + "ESTH.ObscuredForNSC = 'Y'") as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     self.applyJurisdictionSpecies(param_geodatabase, table_name_prefix, spatial_input, jurs,
-                                                  row[table_name_prefix + 'SpeciesSTPH.SpeciesID'], None,
-                                                  row[table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles'],
+                                                  row[table_name_prefix + 'ESTH.SpeciesID'], None,
+                                                  row[table_name_prefix + 'ESTH.AllowedPrecisionSquareMiles'],
                                                   count_dict, messages)
             if row:
                 del row
             del cursor
 
-            # 4. NSC/CDC by jurisdiction STPHs
-            EBARUtils.displayMessage(messages, 'Applying NSC/CDC Jurisdictional STPHs')
+            # 4. NSC/CDC by jurisdiction ESTHs
+            EBARUtils.displayMessage(messages, 'Applying NSC/CDC Jurisdictional ESTHs')
             row = None
-            with arcpy.da.SearchCursor('stph_view', [table_name_prefix + 'SpeciesSTPH.SpeciesID',
-                                                     table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles',
+            with arcpy.da.SearchCursor('esth_view', [table_name_prefix + 'ESTH.SpeciesID',
+                                                     table_name_prefix + 'ESTH.AllowedPrecisionSquareMiles',
                                                      table_name_prefix + 'Jurisdiction.JurisdictionAbbreviation'],
                                        table_name_prefix + "Jurisdiction.JurisdictionAbbreviation <> 'CA' AND " +
-                                       table_name_prefix + "SpeciesSTPH.ObscuredForNSC = 'Y'") as cursor:
+                                       table_name_prefix + "ESTH.ObscuredForNSC = 'Y'") as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     self.applyJurisdictionSpecies(param_geodatabase, table_name_prefix, spatial_input,
                                                   [row[table_name_prefix + 'Jurisdiction.JurisdictionAbbreviation']],
-                                                  row[table_name_prefix + 'SpeciesSTPH.SpeciesID'], None,
-                                                  row[table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles'],
+                                                  row[table_name_prefix + 'ESTH.SpeciesID'], None,
+                                                  row[table_name_prefix + 'ESTH.AllowedPrecisionSquareMiles'],
                                                   count_dict, messages)
             if row:
                 del row
             del cursor
 
-            arcpy.Delete_management('stph_view')
+            arcpy.Delete_management('esth_view')
 
             # 5. EBAR provider permissions
             EBARUtils.displayMessage(messages, 'Applying EBAR provider permissions')
