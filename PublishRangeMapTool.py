@@ -115,7 +115,8 @@ class PublishRangeMapTool:
                                    ['NATIONAL_SCIENTIFIC_NAME', 'NATIONAL_ENGL_NAME', 'NATIONAL_FR_NAME',
                                     'ELEMENT_NATIONAL_ID', 'ELEMENT_GLOBAL_ID', 'ELEMENT_CODE', 
                                     'GLOBAL_UNIQUE_IDENTIFIER', 'G_JURIS_ENDEM_DESC', 'AUTHOR_NAME',
-                                    'FORMATTED_FULL_CITATION', 'COSEWIC_NAME', 'COSEWIC_ID']) as cursor:
+                                    'FORMATTED_FULL_CITATION', 'COSEWIC_NAME', 'COSEWIC_ID',
+                                    'ENGLISH_COSEWIC_COM_NAME', 'FRENCH_COSEWIC_COM_NAME']) as cursor:
             for row in EBARUtils.searchCursor(cursor):
                 author_name = ''
                 if row['AUTHOR_NAME']:
@@ -134,6 +135,12 @@ class PublishRangeMapTool:
                 cosewic_id = ''
                 if row['COSEWIC_ID']:
                     cosewic_id = row['COSEWIC_ID']
+                english_cosewic_com_name = ''
+                if row['ENGLISH_COSEWIC_COM_NAME']:
+                    english_cosewic_com_name = row['ENGLISH_COSEWIC_COM_NAME']
+                french_cosewic_com_name = ''
+                if row['FRENCH_COSEWIC_COM_NAME']:
+                    french_cosewic_com_name = row['FRENCH_COSEWIC_COM_NAME']
                 # English
                 pdf_html_en = pdf_html_en.replace('[BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME]',
                                                   row['NATIONAL_SCIENTIFIC_NAME'])
@@ -153,6 +160,10 @@ class PublishRangeMapTool:
                                                   cosewic_name)
                 pdf_html_en = pdf_html_en.replace('[BIOTICS_ELEMENT_NATIONAL.COSEWIC_ID]',
                                                   cosewic_id)
+                pdf_html_en = pdf_html_en.replace('[BIOTICS_ELEMENT_NATIONAL.ENGLISH_COSEWIC_COM_NAME]',
+                                                  english_cosewic_com_name)
+                pdf_html_en = pdf_html_en.replace('[BIOTICS_ELEMENT_NATIONAL.FRENCH_COSEWIC_COM_NAME]',
+                                                  french_cosewic_com_name)
                 # French
                 pdf_html_fr = pdf_html_fr.replace('[BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME]',
                                                   row['NATIONAL_SCIENTIFIC_NAME'])
@@ -172,6 +183,10 @@ class PublishRangeMapTool:
                                                   cosewic_name)
                 pdf_html_fr = pdf_html_fr.replace('[BIOTICS_ELEMENT_NATIONAL.COSEWIC_ID]',
                                                   cosewic_id)
+                pdf_html_fr = pdf_html_fr.replace('[BIOTICS_ELEMENT_NATIONAL.ENGLISH_COSEWIC_COM_NAME]',
+                                                  english_cosewic_com_name)
+                pdf_html_fr = pdf_html_fr.replace('[BIOTICS_ELEMENT_NATIONAL.FRENCH_COSEWIC_COM_NAME]',
+                                                  french_cosewic_com_name)
             del row
 
         # get input citations
