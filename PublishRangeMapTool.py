@@ -32,7 +32,8 @@ class PublishRangeMapTool:
 
         # settings
         #arcpy.gp.overwriteOutput = True
-        arcgis_pro_project = EBARUtils.resources_folder + '/EBARMapLayoutsEN.aprx'
+        arcgis_pro_project_en = EBARUtils.resources_folder + '/EBARMapLayoutsEN.aprx'
+        arcgis_pro_project_fr = EBARUtils.resources_folder + '/EBARMapLayoutsFR.aprx'
         pdf_template_file_en = EBARUtils.resources_folder + '/pdf_template_en.html'
         pdf_template_file_fr = EBARUtils.resources_folder + '/pdf_template_fr.html'
         #reviewers_by_taxa_file = 'C:/Users/rgree/OneDrive/EBAR/EBAR Maps/TestReviewersByTaxa.txt'
@@ -48,10 +49,10 @@ class PublishRangeMapTool:
 
         # replace metadata html tags with real data
         EBARUtils.displayMessage(messages, 'Filling metadata templates')
-        pdf_template_en = open(pdf_template_file_en)
+        pdf_template_en = open(pdf_template_file_en, encoding="utf-8")
         pdf_html_en = pdf_template_en.read()
         pdf_template_en.close()
-        pdf_template_fr = open(pdf_template_file_fr)
+        pdf_template_fr = open(pdf_template_file_fr, encoding="utf-8")
         pdf_html_fr = pdf_template_fr.read()
         pdf_template_fr.close()
 
@@ -334,10 +335,12 @@ class PublishRangeMapTool:
         EBARUtils.displayMessage(messages, 'Generating JPG maps')
         for suffix in ('_en', '_fr'):
             if suffix == '_fr':
+                aprx = arcpy.mp.ArcGISProject(arcgis_pro_project_fr)
                 # temporarily switch locale for date/time formatting
                 original_lc_time = locale.getlocale(locale.LC_TIME)
                 locale.setlocale(locale.LC_TIME, 'fr-ca')
-            aprx = arcpy.mp.ArcGISProject(arcgis_pro_project)
+            else:
+                aprx = arcpy.mp.ArcGISProject(arcgis_pro_project_en)
             map = aprx.listMaps('range map landscape terrain')[0]
             polygon_layer = map.listLayers('ecoshaperangemap')[0]
             polygon_layer.definitionQuery = 'rangemapid = ' + param_range_map_id + ' and presence is not null'
@@ -363,9 +366,12 @@ class PublishRangeMapTool:
             layout.exportToJPEG(EBARUtils.download_folder + '/EBAR' + element_global_id + suffix + '.jpg', 300,
                                 clip_to_elements=False)
             if suffix == '_fr':
+                pdf_html_fr = pdf_html_fr.replace('[map_image]', EBARUtils.download_folder + '/EBAR' +
+                                                  element_global_id + suffix + '.jpg')
                 locale.setlocale(locale.LC_TIME, original_lc_time)
-            pdf_html_en = pdf_html_en.replace('[map_image]', EBARUtils.download_folder + '/EBAR' + element_global_id +
-                                              suffix + '.jpg')
+            else:
+                pdf_html_en = pdf_html_en.replace('[map_image]', EBARUtils.download_folder + '/EBAR' +
+                                                  element_global_id + suffix + '.jpg')
 
         # generate pdf
         EBARUtils.displayMessage(messages, 'Generating PDFs')
@@ -526,7 +532,8 @@ if __name__ == '__main__':
     #    prm.runPublishRangeMapTool(parameters, None)
     
     #non_spatial_batch_ids = [4703,4704,4705,4706,4707,4708,4709,4710,4711,4712] #,4713,4714,4715,4716,4717,4718,4719,4720,4721,4722,4723,4724,4725,4726,4727,4728,4729,4730,4731,4732]
-    non_spatial_batch_ids = list(range(4765, 4774)) #[4733]
+    #non_spatial_batch_ids = list(range(4765, 4774)) #[4733]
+    non_spatial_batch_ids = [4918]
     for id in non_spatial_batch_ids:
         # hard code parameters for debugging
         param_range_map_id = arcpy.Parameter()
