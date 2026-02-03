@@ -198,6 +198,10 @@ class SyncSpeciesListBioticsTool:
                 if element_national_id in element_species_dict:
                     # update if changed
                     changed = False
+                    # wrap updates overcome
+                    # RuntimeError: Objects in this class cannot be updated outside an edit session [BIOTICS_ELEMENT_NATIONAL]
+                    edit = arcpy.da.Editor(param_geodatabase)
+                    edit.startEditing(with_undo=False, multiuser_mode=False)
                     with arcpy.da.UpdateCursor(param_geodatabase + '/BIOTICS_ELEMENT_NATIONAL',
                                                all_fields + ['NSX_URL'] + french_fields,
                                                'ELEMENT_NATIONAL_ID = ' + str(element_national_id)) as update_cursor:
@@ -254,6 +258,11 @@ class SyncSpeciesListBioticsTool:
                                 update_cursor.updateRow(update_values)
                         if update_row:
                             del update_row
+                    # wrap updates overcome
+                    # RuntimeError: Objects in this class cannot be updated outside an edit session [BIOTICS_ELEMENT_NATIONAL]
+                    if changed:
+                        edit.stopOperation()
+                    edit.stopEditing(save_changes=True)
                 else:
                     # create new Species and BIOTICS_ELEMENT_NATIONAL records
                     # first check for existing scientific name

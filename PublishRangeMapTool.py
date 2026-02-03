@@ -348,10 +348,7 @@ class PublishRangeMapTool:
                 usage_type_layer.definitionQuery = 'rangemapid = ' + param_range_map_id
             else:
                 usage_type_layer.visible = False
-            if suffix == '_en':
-                layout = aprx.listLayouts('range map landscape terrain watermark en')[0]
-            else:
-                layout = aprx.listLayouts('range map landscape terrain watermark fr')[0]
+            layout = aprx.listLayouts('range map landscape terrain watermark')[0]
             map_frame = layout.listElements('mapframe_element')[0]
             extent = map_frame.getLayerExtent(polygon_layer, False, True)
             x_buffer = (extent.XMax - extent.XMin) / 20.0

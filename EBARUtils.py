@@ -25,7 +25,7 @@ import deepl
 
 
 # shared folders and addresses
-resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
+resources_folder = 'C:/GIS/EBAR/EBARToolsTranslation/resources'
 temp_folder = 'C:/GIS/EBAR/temp'
 #download_folder = 'D:/GIS/EBAR/pub/download'
 download_folder = 'F:/download'
