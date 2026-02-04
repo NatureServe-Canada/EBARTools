@@ -20,6 +20,7 @@ import csv
 import requests
 import json
 import deepl
+import locale
 
 #from xarray import where
 
@@ -1031,18 +1032,28 @@ def getTaxonAttributes(global_unique_id, element_global_id, range_map_id, messag
     # default return values
     attributes_dict = {}
     attributes_dict['reviewed_grank'] = ''
+    attributes_dict['reviewed_grank_fr'] = ''
     attributes_dict['ca_rank'] = 'None'
+    attributes_dict['ca_rank_fr'] = 'Aucun'
     attributes_dict['us_rank'] = 'None'
+    attributes_dict['us_rank_fr'] = 'Aucun'
     attributes_dict['mx_rank'] = 'None'
+    attributes_dict['mx_rank_fr'] = 'Aucun'
     attributes_dict['ca_subnational_list'] = []
     attributes_dict['us_subnational_list'] = []
     attributes_dict['mx_subnational_list'] = []
     attributes_dict['ca_subnational_ranks'] = 'None'
+    attributes_dict['ca_subnational_ranks_fr'] = 'Aucun'
     attributes_dict['us_subnational_ranks'] = 'None'
+    attributes_dict['us_subnational_ranks_fr'] = 'Aucun'
     attributes_dict['mx_subnational_ranks'] = 'None'
+    attributes_dict['mx_subnational_ranks_fr'] = 'Aucun'
     attributes_dict['sara_status'] = 'None'
+    attributes_dict['sara_status_fr'] = 'Aucun'
     attributes_dict['cosewic_status'] = 'None'
+    attributes_dict['cosewic_status_fr'] = 'Aucun'
     attributes_dict['esa_status'] = 'None'
+    attributes_dict['esa_status_fr'] = 'Aucun'
 
     # get attributes from NSE Species Search API
     #displayMessage(messages, 'Getting attributes from NatureServe Explorer Species Search API')
@@ -1070,54 +1081,81 @@ def getTaxonAttributes(global_unique_id, element_global_id, range_map_id, messag
         attributes_dict['g_rank'] = results['grank']
         if results['grankReviewDate']:
             extract_date, partial = extractDate(results['grankReviewDate'])
-            attributes_dict['reviewed_grank'] = ' (reviewed ' + \
-                extract_date.strftime('%B %d, %Y') + ')'
+            attributes_dict['reviewed_grank'] = ' (reviewed ' +  extract_date.strftime('%B %d, %Y') + ')'
+            original_lc_time = locale.getlocale(locale.LC_TIME)
+            locale.setlocale(locale.LC_TIME, 'fr-ca')
+            attributes_dict['reviewed_grank_fr'] = ' (révisée ' + extract_date.strftime('%d %B %Y') + ')'
+            locale.setlocale(locale.LC_TIME, original_lc_time)
         for key in results:
             if key == 'elementNationals':
                 for en in results[key]:
                     if en['nation']['isoCode'] == 'CA':
                         reviewed = ''
+                        reviewed_fr = ''
                         if en['nrankReviewYear']:
                             reviewed = ' (reviewed ' + str(en['nrankReviewYear']) + ')'
+                            reviewed_fr = ' (révisée ' + str(en['nrankReviewYear']) + ')'
                         attributes_dict['ca_rank'] = en['nrank'] + reviewed
+                        attributes_dict['ca_rank_fr'] = en['nrank'] + reviewed_fr
                         for esn in en['elementSubnationals']:
                             attributes_dict['ca_subnational_list'].append(esn['subnation']['subnationCode'] +
                                 '=' + esn['srank'])
                     if en['nation']['isoCode'] == 'US':
                         reviewed = ''
+                        reviewed_fr = ''
                         if en['nrankReviewYear']:
                             reviewed = ' (reviewed ' + str(en['nrankReviewYear']) + ')'
+                            reviewed_fr = ' (révisée ' + str(en['nrankReviewYear']) + ')'
                         attributes_dict['us_rank'] = en['nrank'] + reviewed
+                        attributes_dict['us_rank_fr'] = en['nrank'] + reviewed_fr
                         for esn in en['elementSubnationals']:
                             attributes_dict['us_subnational_list'].append(esn['subnation']['subnationCode'] +
                                 '=' + esn['srank'])
                     if en['nation']['isoCode'] == 'MX':
                         reviewed = ''
+                        reviewed_fr = ''
                         if en['nrankReviewYear']:
                             reviewed = ' (reviewed ' + str(en['nrankReviewYear']) + ')'
+                            reviewed_fr = ' (révisée ' + str(en['nrankReviewYear']) + ')'
                         attributes_dict['mx_rank'] = en['nrank'] + reviewed
+                        attributes_dict['mx_rank_fr'] = en['nrank'] + reviewed_fr
                         for esn in en['elementSubnationals']:
                             attributes_dict['mx_subnational_list'].append(esn['subnation']['subnationCode'] +
                                 '=' + esn['srank'])
         if results['speciesGlobal']['saraStatus']:
             attributes_dict['sara_status'] = results['speciesGlobal']['saraStatus']
+            attributes_dict['sara_status_fr'] = results['speciesGlobal']['saraStatus']
             if results['speciesGlobal']['saraStatusDate']:
                 extract_date, partial = extractDate(results['speciesGlobal']['saraStatusDate'])
-                attributes_dict['sara_status'] += ' (' + \
-                    extract_date.strftime('%B %d, %Y') + ')'
+                attributes_dict['sara_status'] += ' (' +  extract_date.strftime('%B %d, %Y') + ')'
+                original_lc_time = locale.getlocale(locale.LC_TIME)
+                locale.setlocale(locale.LC_TIME, 'fr-ca')
+                attributes_dict['sara_status_fr'] += ' (' +  extract_date.strftime('%d %B %Y') + ')'
+                locale.setlocale(locale.LC_TIME, original_lc_time)
         if results['speciesGlobal']['cosewic']:
             if results['speciesGlobal']['cosewic']['cosewicDescEn']:
                 attributes_dict['cosewic_status'] = results['speciesGlobal']['cosewic']['cosewicDescEn']
+            if results['speciesGlobal']['cosewic']['cosewicDescFr']:
+                attributes_dict['cosewic_status_fr'] = results['speciesGlobal']['cosewic']['cosewicDescFr']
+            else:
+                attributes_dict['cosewic_status_fr'] = results['speciesGlobal']['cosewic']['cosewicDescEn']
                 if results['speciesGlobal']['cosewicDate']:
                     extract_date, partial = extractDate(results['speciesGlobal']['cosewicDate'])
-                    attributes_dict['cosewic_status'] += ' (' + \
-                        extract_date.strftime('%B %d, %Y') + ')'
+                    attributes_dict['cosewic_status'] += ' (' +  extract_date.strftime('%B %d, %Y') + ')'
+                    original_lc_time = locale.getlocale(locale.LC_TIME)
+                    locale.setlocale(locale.LC_TIME, 'fr-ca')
+                    attributes_dict['cosewic_status_fr'] += ' (' +  extract_date.strftime('%d %B %Y') + ')'
+                    locale.setlocale(locale.LC_TIME, original_lc_time)
         if results['speciesGlobal']['interpretedUsesa']:
             attributes_dict['esa_status'] = results['speciesGlobal']['interpretedUsesa']
+            attributes_dict['esa_status_fr'] = results['speciesGlobal']['interpretedUsesa']
             if results['speciesGlobal']['usesaDate']:
                 extract_date, partial = extractDate(results['speciesGlobal']['usesaDate'])
-                attributes_dict['esa_status'] += ' (' + \
-                    extract_date.strftime('%B %d, %Y') + ')'
+                attributes_dict['esa_status'] += ' (' +  extract_date.strftime('%B %d, %Y') + ')'
+                original_lc_time = locale.getlocale(locale.LC_TIME)
+                locale.setlocale(locale.LC_TIME, 'fr-ca')
+                attributes_dict['esa_status_fr'] += ' (' +  extract_date.strftime('%d %B %Y') + ')'
+                locale.setlocale(locale.LC_TIME, original_lc_time)
 
     else:
         # get from BIOTICS table
@@ -1136,10 +1174,20 @@ def getTaxonAttributes(global_unique_id, element_global_id, range_map_id, messag
                 if row['G_RANK_REVIEW_DATE']:
                     attributes_dict['reviewed_grank'] = ' (reviewed ' + \
                         row['G_RANK_REVIEW_DATE'].strftime('%B %d, %Y') + ')'
+                    original_lc_time = locale.getlocale(locale.LC_TIME)
+                    locale.setlocale(locale.LC_TIME, 'fr-ca')
+                    attributes_dict['reviewed_grank_fr'] = ' (révisée ' + \
+                        row['G_RANK_REVIEW_DATE'].strftime('%d %B %Y') + ')'
+                    locale.setlocale(locale.LC_TIME, original_lc_time)
                 attributes_dict['ca_rank'] = row['N_RANK']
                 if row['N_RANK_REVIEW_DATE']:
                     attributes_dict['ca_rank'] += ' (reviewed ' + \
                         row['N_RANK_REVIEW_DATE'].strftime('%B %d, %Y') + ')'
+                    original_lc_time = locale.getlocale(locale.LC_TIME)
+                    locale.setlocale(locale.LC_TIME, 'fr-ca')
+                    attributes_dict['ca_rank_fr'] = ' (révisée ' + \
+                        row['N_RANK_REVIEW_DATE'].strftime('%d %B %Y') + ')'
+                    locale.setlocale(locale.LC_TIME, original_lc_time)
                 if row['COSEWIC_STATUS']:
                     attributes_dict['cosewic_status'] = row['COSEWIC_STATUS']
                 if row['SARA_STATUS']:

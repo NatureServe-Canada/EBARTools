@@ -19,6 +19,8 @@ import datetime
 import pdfkit
 import shutil
 import locale
+import StaticTranslations
+
 
 class PublishRangeMapTool:
     """Create JPG, PDF and Spatial Data (Zip) for a Range Map"""
@@ -248,10 +250,14 @@ class PublishRangeMapTool:
         differentiate_usage_type = False
         row = None
         with arcpy.da.SearchCursor('range_map_view',
-                                   ['SpeciesID', 'RangeVersion', 'RangeStage', 'RangeDate', 'RangeMapScope',
-                                    'RangeMapNotes', 'RangeMetadata', 'RangeMapComments', 'ReviewerComments',
+                                   ['SpeciesID', 'RangeVersion', 'RangeStage', 'RangeStage_FR', 'RangeDate',
+                                    'RangeMapScope', 'RangeMapNotes', 'RangeMapNotes_FR', 'RangeMetadata',
+                                    'RangeMetadata_FR', 'RangeMapComments', 'RangeMapComments_FR', 'ReviewerComments',
                                     'IncludeInDownloadTable', 'DifferentiateUsageType']) as cursor:
             for row in EBARUtils.searchCursor(cursor):
+                if row['DifferentiateUsageType']:
+                    differentiate_usage_type = True
+                # English
                 range_map_scope = EBARUtils.scope_dict[row['RangeMapScope']]
                 comment = ''
                 if row['RangeMapComments']:
@@ -266,9 +272,6 @@ class PublishRangeMapTool:
                         suffix = 'N'
                     comment += '<a href="' + EBARUtils.download_url + '/EBAR' + element_global_id + suffix + \
                         '.zip" target="_blank">Please see spatial data for Ecoshape-level reviewer comments</a>.'
-                if row['DifferentiateUsageType']:
-                    differentiate_usage_type = True
-                # English
                 pdf_html_en = pdf_html_en.replace('[RangeMap.RangeDate]', row['RangeDate'].strftime('%B %d, %Y'))
                 pdf_html_en = pdf_html_en.replace('[RangeMap.RangeVersion]', row['RangeVersion'])
                 pdf_html_en = pdf_html_en.replace('[RangeMap.RangeStage]', row['RangeStage'])
@@ -278,16 +281,30 @@ class PublishRangeMapTool:
                 pdf_html_en = pdf_html_en.replace('[RangeMap.RangeMapComments]', comment)
                 # French
                 # temporarily switch locale for date/time formatting
+                range_map_scope_fr = StaticTranslations.range_map_scope_translation[row['RangeMapScope']]
+                comment_fr = ''
+                if row['RangeMapComments_FR']:
+                    comment_fr += row['RangeMapComments_FR']
+                if len(comment_fr) == 0:
+                    comment_fr = 'Aucun'
+                if row['IncludeInDownloadTable'] == 1:
+                    if len(comment_fr) > 0:
+                        comment_fr += '<br>'
+                    suffix = ''
+                    if range_map_scope == 'Canadien':
+                        suffix = 'N'
+                    comment_fr += '<a href="' + EBARUtils.download_url + '/EBAR' + element_global_id + suffix + \
+                        '.zip" target="_blank">Veuillez consulter les données spatiales pour les commentaires des réviseurs au niveau d''Ecoshape</a>.'
                 original_lc_time = locale.getlocale(locale.LC_TIME)
                 locale.setlocale(locale.LC_TIME, 'fr-ca')
                 pdf_html_fr = pdf_html_fr.replace('[RangeMap.RangeDate]', row['RangeDate'].strftime('%d %B %Y'))
                 locale.setlocale(locale.LC_TIME, original_lc_time)
                 pdf_html_fr = pdf_html_fr.replace('[RangeMap.RangeVersion]', row['RangeVersion'])
-                pdf_html_fr = pdf_html_fr.replace('[RangeMap.RangeStage]', row['RangeStage'])
-                pdf_html_fr = pdf_html_fr.replace('[RangeMap.RangeMapScope]', range_map_scope)
-                pdf_html_fr = pdf_html_fr.replace('[RangeMap.RangeMapNotes]', row['RangeMapNotes'])
-                pdf_html_fr = pdf_html_fr.replace('[RangeMap.RangeMetadata]', row['RangeMetadata'])
-                pdf_html_fr = pdf_html_fr.replace('[RangeMap.RangeMapComments]', comment)
+                pdf_html_fr = pdf_html_fr.replace('[RangeMap.RangeStage]', row['RangeStage_FR'])
+                pdf_html_fr = pdf_html_fr.replace('[RangeMap.RangeMapScope]', range_map_scope_fr)
+                pdf_html_fr = pdf_html_fr.replace('[RangeMap.RangeMapNotes]', row['RangeMapNotes_FR'])
+                pdf_html_fr = pdf_html_fr.replace('[RangeMap.RangeMetadata]', row['RangeMetadata_FR'])
+                pdf_html_fr = pdf_html_fr.replace('[RangeMap.RangeMapComments]', comment_fr)
         if range_map_scope:
             del row
         del cursor
@@ -320,16 +337,16 @@ class PublishRangeMapTool:
         pdf_html_en = pdf_html_en.replace('[NSE.esaStatus]', attributes['esa_status'])
         # French
         pdf_html_fr = pdf_html_fr.replace('[NSE.grank]', attributes['g_rank'])
-        pdf_html_fr = pdf_html_fr.replace('[NSE.grankReviewDate]', attributes['reviewed_grank'])
-        pdf_html_fr = pdf_html_fr.replace('[NSE.CARank]', attributes['ca_rank'])
-        pdf_html_fr = pdf_html_fr.replace('[NSE.USRank]', attributes['us_rank'])
-        pdf_html_fr = pdf_html_fr.replace('[NSE.MXRank]', attributes['mx_rank'])
-        pdf_html_fr = pdf_html_fr.replace('[NSE.CASubnationalRanks]', attributes['ca_subnational_ranks'])
-        pdf_html_fr = pdf_html_fr.replace('[NSE.USSubnationalRanks]', attributes['us_subnational_ranks'])
-        pdf_html_fr = pdf_html_fr.replace('[NSE.MXSubnationalRanks]', attributes['mx_subnational_ranks'])
-        pdf_html_fr = pdf_html_fr.replace('[NSE.saraStatus]', attributes['sara_status'])
-        pdf_html_fr = pdf_html_fr.replace('[NSE.cosewicStatus]', attributes['cosewic_status'])
-        pdf_html_fr = pdf_html_fr.replace('[NSE.esaStatus]', attributes['esa_status'])
+        pdf_html_fr = pdf_html_fr.replace('[NSE.grankReviewDate]', attributes['reviewed_grank_fr'])
+        pdf_html_fr = pdf_html_fr.replace('[NSE.CARank]', attributes['ca_rank_fr'])
+        pdf_html_fr = pdf_html_fr.replace('[NSE.USRank]', attributes['us_rank_fr'])
+        pdf_html_fr = pdf_html_fr.replace('[NSE.MXRank]', attributes['mx_rank_fr'])
+        pdf_html_fr = pdf_html_fr.replace('[NSE.CASubnationalRanks]', attributes['ca_subnational_ranks_fr'])
+        pdf_html_fr = pdf_html_fr.replace('[NSE.USSubnationalRanks]', attributes['us_subnational_ranks_fr'])
+        pdf_html_fr = pdf_html_fr.replace('[NSE.MXSubnationalRanks]', attributes['mx_subnational_ranks_fr'])
+        pdf_html_fr = pdf_html_fr.replace('[NSE.saraStatus]', attributes['sara_status_fr'])
+        pdf_html_fr = pdf_html_fr.replace('[NSE.cosewicStatus]', attributes['cosewic_status_fr'])
+        pdf_html_fr = pdf_html_fr.replace('[NSE.esaStatus]', attributes['esa_status_fr'])
 
         # generate jpg and insert into pdf template
         EBARUtils.displayMessage(messages, 'Generating JPG maps')
