@@ -28,12 +28,12 @@ class PackageECCCPrioritySpeciesTool:
         # export range maps, with biotics/species additions
         EBARUtils.displayMessage(messages, 'Exporting RangeMap records to CSV')
         EBARUtils.ExportRangeMapToCSV('range_map_view_pkg', range_map_ids, attributes_dict, zip_folder, 'RangeMap.csv',
-                                      metadata)
+                                      metadata, '_en')
 
         # export range map ecoshapes
         EBARUtils.displayMessage(messages, 'Exporting RangeMapEcoshape records to CSV')
         EBARUtils.ExportRangeMapEcoshapesToCSV('range_map_ecoshape_view', range_map_ids, zip_folder,
-                                               'RangeMapEcoshape.csv', metadata)
+                                               'RangeMapEcoshape.csv', metadata, '_en')
 
         # export ecoshapes
         EBARUtils.displayMessage(messages, 'Exporting Ecoshape polygons to shapefile')
@@ -161,7 +161,7 @@ class PackageECCCPrioritySpeciesTool:
             differentiate_usage_type = False
             if row[11]:
                 differentiate_usage_type = True
-            EBARUtils.updateArcGISProTemplate(zip_folder, element_global_id, md, row[8], differentiate_usage_type)
+            EBARUtils.updateArcGISProTemplate(zip_folder, element_global_id, md, row[8], differentiate_usage_type, '_en')
 
         if row:
             self.processPackage(messages, range_map_ids, attributes_dict, zip_folder, md)
