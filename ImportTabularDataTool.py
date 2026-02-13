@@ -525,26 +525,29 @@ class ImportTabularDataTool:
             return input_point_id, 'new', max_date, bad_bbc
 
 
-# # controlling process
-# if __name__ == '__main__':
-#     itd = ImportTabularDataTool()
-#     # hard code parameters for debugging
-#     param_geodatabase = arcpy.Parameter()
-#     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
-#     param_raw_data_file = arcpy.Parameter()
-#     param_raw_data_file.value = 'C:/GIS/EBAR/BBA/QC Northern/naturecounts_data_test.csv'
-#     param_dataset_name = arcpy.Parameter()
-#     param_dataset_name.value = 'QC Northen BBA Test4'
-#     param_dataset_source = arcpy.Parameter()
-#     param_dataset_source.value = 'QC Breeding Bird Atlas'
-#     param_date_received = arcpy.Parameter()
-#     param_date_received.value = 'July 20, 2022'
-#     # param_restrictions = arcpy.Parameter()
-#     # param_restrictions.value = 'Non-restricted'
-#     param_sensitive_ecoogical_data_cat = arcpy.Parameter()
-#     param_sensitive_ecoogical_data_cat.value = 'Proprietary'
-#     param_dataset_citation = arcpy.Parameter()
-#     param_dataset_citation.value = 'Test Citation'
-#     parameters = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_source,
-#                   param_date_received, param_sensitive_ecoogical_data_cat, param_dataset_citation] # param_restrictions]
-#     itd.runImportTabularDataTool(parameters, None)
+# controlling process
+if __name__ == '__main__':
+    itd = ImportTabularDataTool()
+    # hard code parameters for debugging
+    param_geodatabase = arcpy.Parameter()
+    param_geodatabase.value = r'D:\GIS\EBAR\EBARDevJan2026.gdb'
+    param_raw_data_file = arcpy.Parameter()
+    param_raw_data_file.value = r'C:\Users\rgree\Downloads\c0082175251120083545085_GBIF_Clip_ExportTable.csv'
+    param_dataset_name = arcpy.Parameter()
+    param_dataset_name.value = 'GBIF TEST'
+    param_dataset_source = arcpy.Parameter()
+    param_dataset_source.value = 'GBIF'
+    param_date_received = arcpy.Parameter()
+    param_date_received.value = 'July 20, 2022'
+    # param_restrictions = arcpy.Parameter()
+    # param_restrictions.value = 'Non-restricted'
+    param_sensitive_ecoogical_data_cat = arcpy.Parameter()
+    param_sensitive_ecoogical_data_cat.value = None # 'Proprietary'
+    param_dataset_citation = arcpy.Parameter()
+    param_dataset_citation.value = 'GBIF.org (8 January 2026) GBIF Occurrence Download https://doi.org/10.15468/dl.rb8yfk'
+    param_data_file_encoding = arcpy.Parameter()
+    param_data_file_encoding.value = 'UTF8'
+    parameters = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_source,
+                  param_date_received, param_sensitive_ecoogical_data_cat, param_dataset_citation,
+                  param_data_file_encoding] # param_restrictions]
+    itd.runImportTabularDataTool(parameters, None)

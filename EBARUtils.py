@@ -797,7 +797,7 @@ def ExportRangeMapEcoshapesToCSV(range_map_ecoshape_view, range_map_ids, output_
     else: # _fr
         field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'RangeMapID', 'IDCarteRepartition', 'LONG'))
         field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'EcoshapeID', 'IDEcoshape', 'LONG'))
-        field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'Presence', 'Présence', 'TEXT'))
+        field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'Presence', 'Presence', 'TEXT'))
         field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'UsageType', 'TypeUtilisation', 'TEXT'))
         field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'RangeMapEcoshapeNotes',
                                                   'NotesCarteRepartitionEcoshape', 'TEXT'))
@@ -1333,6 +1333,7 @@ def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_i
         #aprx.updateConnectionProperties(zip_folder, '.')
         map = aprx.listMaps('EBARTemplate')[0]
         map.name = 'EBAR' + element_global_id
+
         # set layer metadata and properties, saving each to a layer file
         # UsageType
         usage_type_layer = map.listLayers('EBARTemplateUsageType')[0]
@@ -1347,6 +1348,7 @@ def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_i
             usage_type_layer.saveACopy(zip_folder + '/EBAR' + element_global_id + 'UsageType.lyrx')
         else:
             map.removeLayer(usage_type_layer)
+
         # EcoshapeOverview
         ecoshape_overview_layer = map.listLayers('EBARTemplateEcoshapeOverview')[0]
         ecoshape_overview_layer_md = ecoshape_overview_layer.metadata
@@ -1357,6 +1359,7 @@ def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_i
         ecoshape_overview_layer.name = 'EBAR' + element_global_id + 'EcoshapeOverview'
         ecoshape_overview_layer.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
         ecoshape_overview_layer.saveACopy(zip_folder + '/EBAR' + element_global_id + 'EcoshapeOverview.lyrx')
+
         # RemovedEcoshapes (uses same shapefile as above)
         ecoshape_overview_layer = map.listLayers('EBARTemplateRemovedEcoshapes')[0]
         ecoshape_overview_layer_md = ecoshape_overview_layer.metadata
@@ -1367,6 +1370,7 @@ def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_i
         ecoshape_overview_layer.name = 'EBAR' + element_global_id + 'RemovedEcoshapes'
         ecoshape_overview_layer.definitionQuery = '"RangeMapID" = ' + str(range_map_id) + ' AND Presence IS NULL'
         ecoshape_overview_layer.saveACopy(zip_folder + '/EBAR' + element_global_id + 'RemovedEcoshapes.lyrx')
+
         # Ecoshape
         ecoshape_layer = map.listLayers('EBARTemplateEcoshape')[0]
         ecoshape_layer_md = ecoshape_overview_layer.metadata
@@ -1377,14 +1381,17 @@ def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_i
         ecoshape_layer.name = 'EBAR' + element_global_id + 'Ecoshape'
         ecoshape_layer.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
         ecoshape_layer.saveACopy(zip_folder + '/EBAR' + element_global_id + 'Ecoshape.lyrx')
+
         # RangeMap
         range_map_table = map.listTables('EBARTemplateRangeMap')[0]
         range_map_table.name = 'EBAR' + element_global_id + 'RangeMap'
         range_map_table.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
+
         # RangeMapEcoshape
         range_map_ecoshape_table = map.listTables('EBARTemplateRangeMapEcoshape')[0]
         range_map_ecoshape_table.name = 'EBAR' + element_global_id + 'RangeMapEcoshape'
         range_map_ecoshape_table.definitionQuery = '"RangeMapID" = ' + str(range_map_id)
+
         # save project
         aprx.save()
         # also save map file
@@ -1403,15 +1410,16 @@ def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_i
 
     else: # _fr
         # copy template and set project and map properties
-        shutil.copyfile(resources_folder + '/EBARTemplate.aprx', zip_folder + '/CAARBE' + element_global_id + '.aprx')
+        shutil.copyfile(resources_folder + '/CAARBETemplate.aprx', zip_folder + '/CAARBE' + element_global_id + '.aprx')
         aprx = arcpy.mp.ArcGISProject(zip_folder + '/CAARBE' + element_global_id + '.aprx')
         aprx.homeFolder = zip_folder
         #aprx.updateConnectionProperties(zip_folder, '.')
-        map = aprx.listMaps('EBARTemplate')[0]
+        map = aprx.listMaps('CAARBETemplate')[0]
         map.name = 'CAARBE' + element_global_id
+
         # set layer metadata and properties, saving each to a layer file
         # UsageType
-        usage_type_layer = map.listLayers('EBARTemplateUsageType')[0]
+        usage_type_layer = map.listLayers('CAARBETemplateTypeUtilisation')[0]
         if differentiate_usage_type:
             usage_type_layer_md = usage_type_layer.metadata
             metadata.title = 'TypeUtilisation CAARBE.shp'
@@ -1420,12 +1428,23 @@ def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_i
             usage_type_layer_md.copy(metadata)
             usage_type_layer_md.save()
             usage_type_layer.name = 'CAARBE' + element_global_id + 'TypeUtilisation'
+            # conprop_dict = usage_type_layer.connectionProperties
+            # new_conprop_dict = usage_type_layer.connectionProperties
+            # new_conprop_dict['source']['source']['dataset'] = 'ApercuEcoshape'
+            # new_conprop_dict['source']['destination']['dataset'] = 'Juridiction.csv'
+            # new_conprop_dict['destination']['dataset'] = 'CarteRepartitionEcoshape.csv'
+            # new_conprop_dict['source']['primary_key'] = 'IDJuri'
+            # new_conprop_dict['source']['foreign_key'] = 'IDJuri'
+            # new_conprop_dict['destination']['primary_key'] = 'IDEcoshape'
+            # new_conprop_dict['destination']['foreign_key'] = 'ApercuEcoshape.IDEcoshape'
+            # usage_type_layer.updateConnectionProperties(conprop_dict, new_conprop_dict, True, False)
             usage_type_layer.definitionQuery = '"IDCarteRepartition" = ' + str(range_map_id)
             usage_type_layer.saveACopy(zip_folder + '/CAARBE' + element_global_id + 'TypeUtilisation.lyrx')
         else:
             map.removeLayer(usage_type_layer)
+
         # EcoshapeOverview
-        ecoshape_overview_layer = map.listLayers('EBARTemplateEcoshapeOverview')[0]
+        ecoshape_overview_layer = map.listLayers('CAARBETemplateApercuEcoshape')[0]
         ecoshape_overview_layer_md = ecoshape_overview_layer.metadata
         metadata.title = 'ApercuEcoshape CAARBE.shp'
         metadata.summary = 'Fichier shapefile des polygones des écoshapes généralisés pour CAARBE pour certaines ' + \
@@ -1433,10 +1452,21 @@ def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_i
         ecoshape_overview_layer_md.copy(metadata)
         ecoshape_overview_layer_md.save()
         ecoshape_overview_layer.name = 'CAARBE' + element_global_id + 'ApercuEcoshape'
+        # conprop_dict = ecoshape_overview_layer.connectionProperties
+        # new_conprop_dict = ecoshape_overview_layer.connectionProperties
+        # new_conprop_dict['source']['source']['dataset'] = 'ApercuEcoshape'
+        # new_conprop_dict['source']['destination']['dataset'] = 'Juridiction.csv'
+        # new_conprop_dict['destination']['dataset'] = 'CarteRepartitionEcoshape.csv'
+        # new_conprop_dict['source']['primary_key'] = 'IDJuri'
+        # new_conprop_dict['source']['foreign_key'] = 'IDJuri'
+        # new_conprop_dict['destination']['primary_key'] = 'IDEcoshape'
+        # new_conprop_dict['destination']['foreign_key'] = 'ApercuEcoshape.IDEcoshape'
+        # ecoshape_overview_layer.updateConnectionProperties(conprop_dict, new_conprop_dict, True, False)
         ecoshape_overview_layer.definitionQuery = '"IDCarteRepartition" = ' + str(range_map_id)
         ecoshape_overview_layer.saveACopy(zip_folder + '/CAARBE' + element_global_id + 'ApercuEcoshape.lyrx')
+
         # RemovedEcoshapes (uses same shapefile as above)
-        ecoshape_overview_layer = map.listLayers('EBARTemplateRemovedEcoshapes')[0]
+        ecoshape_overview_layer = map.listLayers('CAARBETemplateEcoshapesSupprime')[0]
         ecoshape_overview_layer_md = ecoshape_overview_layer.metadata
         metadata.title = 'ApercuEcoshape CAARBE.shp'
         metadata.summary = 'Fichier shapefile des polygones des écoshapes généralisés supprimés pour CAARBE pour ' + \
@@ -1444,26 +1474,67 @@ def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_i
         ecoshape_overview_layer_md.copy(metadata)
         ecoshape_overview_layer_md.save()
         ecoshape_overview_layer.name = 'CAARBE' + element_global_id + 'EcoshapesSupprime'
-        ecoshape_overview_layer.definitionQuery = '"IDCarteRepartition" = ' + str(range_map_id) + ' AND Presence IS NULL'
+        # conprop_dict = ecoshape_overview_layer.connectionProperties
+        # new_conprop_dict = ecoshape_overview_layer.connectionProperties
+        # new_conprop_dict['source']['source']['dataset'] = 'ApercuEcoshape'
+        # new_conprop_dict['source']['destination']['dataset'] = 'Juridiction.csv'
+        # new_conprop_dict['destination']['dataset'] = 'CarteRepartitionEcoshape.csv'
+        # new_conprop_dict['source']['primary_key'] = 'IDJuri'
+        # new_conprop_dict['source']['foreign_key'] = 'IDJuri'
+        # new_conprop_dict['destination']['primary_key'] = 'IDEcoshape'
+        # new_conprop_dict['destination']['foreign_key'] = 'ApercuEcoshape.IDEcoshape'
+        # ecoshape_overview_layer.updateConnectionProperties(conprop_dict, new_conprop_dict, True, False)
+        ecoshape_overview_layer.definitionQuery = '"IDCarteRepartition" = ' + str(range_map_id) + \
+            ' AND Presence IS NULL'
         ecoshape_overview_layer.saveACopy(zip_folder + '/CAARBE' + element_global_id + 'EcoshapesSupprime.lyrx')
+
         # Ecoshape
-        ecoshape_layer = map.listLayers('EBARTemplateEcoshape')[0]
+        ecoshape_layer = map.listLayers('CAARBETemplateEcoshape')[0]
         ecoshape_layer_md = ecoshape_overview_layer.metadata
         metadata.title = 'Ecoshape CAARBE.shp'
-        metadata.summary = 'Polygons shapefile of original ecoshapes for EBAR for selected species'
+        metadata.summary = "Fichier shapefile des polygones des écoshapes d'origine pour CAARBE pour certaines espèces"
         ecoshape_layer_md.copy(metadata)
         ecoshape_layer_md.save()
         ecoshape_layer.name = 'CAARBE' + element_global_id + 'Ecoshape'
+        # conprop_dict = ecoshape_layer.connectionProperties
+        # new_conprop_dict = ecoshape_layer.connectionProperties
+        # new_conprop_dict['source']['source']['dataset'] = 'Ecoshape'
+        # new_conprop_dict['source']['destination']['dataset'] = 'Juridiction.csv'
+        # new_conprop_dict['destination']['dataset'] = 'CarteRepartitionEcoshape.csv'
+        # new_conprop_dict['source']['primary_key'] = 'IDJuri'
+        # new_conprop_dict['source']['foreign_key'] = 'IDJuri'
+        # new_conprop_dict['destination']['primary_key'] = 'IDEcoshape'
+        # new_conprop_dict['destination']['foreign_key'] = 'Ecoshape.IDEcoshape'
+        # ecoshape_layer.updateConnectionProperties(conprop_dict, new_conprop_dict, True, False)
         ecoshape_layer.definitionQuery = '"IDCarteRepartition" = ' + str(range_map_id)
         ecoshape_layer.saveACopy(zip_folder + '/CAARBE' + element_global_id + 'Ecoshape.lyrx')
+
         # RangeMap
-        range_map_table = map.listTables('EBARTemplateRangeMap')[0]
+        range_map_table = map.listTables('CAARBETemplateCarteRepartition')[0]
         range_map_table.name = 'CAARBE' + element_global_id + 'CarteRepartition'
+        # conprop_dict = range_map_table.connectionProperties
+        # new_conprop_dict = range_map_table.connectionProperties
+        # new_conprop_dict['dataset'] = 'CarteRepartition.csv'
+        # range_map_table.updateConnectionProperties(conprop_dict, new_conprop_dict, True, False)
         range_map_table.definitionQuery = '"IDCarteRepartition" = ' + str(range_map_id)
+
         # RangeMapEcoshape
-        range_map_ecoshape_table = map.listTables('EBARTemplateRangeMapEcoshape')[0]
+        range_map_ecoshape_table = map.listTables('CAARBETemplateCarteRepartitionEcoshape')[0]
         range_map_ecoshape_table.name = 'CAARBE' + element_global_id + 'CarteRepartitionEcoshape'
+        # conprop_dict = range_map_ecoshape_table.connectionProperties
+        # new_conprop_dict = range_map_ecoshape_table.connectionProperties
+        # new_conprop_dict['dataset'] = 'CarteRepartitionEcoshape.csv'
+        # range_map_ecoshape_table.updateConnectionProperties(conprop_dict, new_conprop_dict, True, False)
         range_map_ecoshape_table.definitionQuery = '"IDCarteRepartition" = ' + str(range_map_id)
+
+        # # Jurisdiction
+        # jurisdiction_table = map.listTables('Jurisdiction')[0]
+        # jurisdiction_table.name = 'Juridiction'
+        # conprop_dict = jurisdiction_table.connectionProperties
+        # new_conprop_dict = jurisdiction_table.connectionProperties
+        # new_conprop_dict['dataset'] = 'Juridiction.csv'
+        # jurisdiction_table.updateConnectionProperties(conprop_dict, new_conprop_dict, True, False)
+
         # save project
         aprx.save()
         # also save map file

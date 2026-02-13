@@ -255,6 +255,10 @@ class PublishRangeMapTool:
                                     'RangeMetadata_FR', 'RangeMapComments', 'RangeMapComments_FR', 'ReviewerComments',
                                     'IncludeInDownloadTable', 'DifferentiateUsageType']) as cursor:
             for row in EBARUtils.searchCursor(cursor):
+                if not row['RangeStage_FR']:
+                    EBARUtils.displayMessage(messages, 'ERROR: RangeMap has not been translated to French! ' +
+                                             'Please rerun the Generate Range Map tool or use bulk translation.')
+                    return
                 if row['DifferentiateUsageType']:
                     differentiate_usage_type = True
                 # English
@@ -470,6 +474,9 @@ class PublishRangeMapTool:
                                                                  zip_folder, 'EcoshapeOverview.shp', md, False, suffix)
 
                 else:  # _fr
+                    # generate metadata
+                    EBARUtils.displayMessage(messages, 'Generating metadata')
+                    md = arcpy.metadata.Metadata()
                     md.tags = 'Répartition des Espèces, NatureServe Canada, ' + \
                         'Cartographie automatisée des aires de répartissaient basée sur les écosystèmes'
                     md.description = 'Voir CAARBE' + element_global_id + '.pdf pour la carte et les métadonnées ' + \
@@ -489,7 +496,7 @@ class PublishRangeMapTool:
                     shutil.copyfile(EBARUtils.resources_folder + '/EBARMethods' + suffix +'.pdf', zip_folder + '/MethodsCAARBE.pdf')
                     shutil.copyfile(EBARUtils.download_folder + '/CAARBE' + element_global_id + '.pdf',
                                     zip_folder + '/CAARBE' + element_global_id + '.pdf')
-                    shutil.copyfile(EBARUtils.resources_folder + '/Jurisdiction.csv', zip_folder + '/Juridiction.csv')
+                    shutil.copyfile(EBARUtils.resources_folder + '/Juridiction.csv', zip_folder + '/Juridiction.csv')
                     jurisdiction_md = arcpy.metadata.Metadata(zip_folder + '/Juridiction.csv')
                     md.title = 'Juridiction CAARBE.csv'
                     md.summary = 'Tableau des juridictions'
@@ -518,7 +525,7 @@ class PublishRangeMapTool:
                     EBARUtils.ExportEcoshapeOverviewsToShapefile('ecoshape_overview_layer' + suffix + param_range_map_id,
                                                                  'range_map_ecoshape_view' + suffix + param_range_map_id,
                                                                  zip_folder, 'ApercuEcoshape.shp', md, False, suffix)
-
+                    
                 # update ArcGIS Pro template
                 EBARUtils.displayMessage(messages, 'Updating ArcGIS Pro template')
                 EBARUtils.updateArcGISProTemplate(zip_folder, element_global_id, md, param_range_map_id,
@@ -540,7 +547,6 @@ class PublishRangeMapTool:
                                     zip_folder + '/EBAR' + element_global_id + 'Ecoshape.lyr')
 
                 # zip
-                EBARUtils.displayMessage(messages, 'Creating ZIP')
                 if suffix == '_en':
                     EBARUtils.createZip(zip_folder,
                                         EBARUtils.download_folder + '/EBAR' + element_global_id + '.zip',
@@ -591,7 +597,7 @@ if __name__ == '__main__':
     prm = PublishRangeMapTool()
     
     #spatial_batch_ids = [2727,4282,4303,4308,4313,4314,4320,4321,4322,4323,4324,4325,4333,4335,4337,4338,4339,4340,4341,4347,4350,4358,4360,4361,4362,4363,4364,4366,4368,4369,4370,4371,4374,4376,4378,4383,4386,4389,4391,4408,4424,4430,4432,4439,4440,4441,4443,4445,4447,4448,4449,4450,4451,4452,4455,4456,4457,4459,4461,4463,4464,4465,4468,4472,4475,4477,4480,4481,4482,4486,4487,4494,4500,4504,4507,4508,4511,4512,4513,4514,4515,4516,4518,4519,4520,4521,4522,4523,4524,4526,4527,4528,4529,4530,4531,4532,4533,4534,4535,4536,4537,4538,4539,4540,4541,4545,4546,4547,4548,4549,4550,4551,4552,4553,4554,4556,4557,4558,4559,4561,4562,4563,4564,4566,4567,4568,4569,4570,4571,4572,4574,4575,4576,4577,4578,4587,4595,4599,4611,4615]
-    spatial_batch_ids = [4918]
+    spatial_batch_ids = [3850]
     for id in spatial_batch_ids:
        # hard code parameters for debugging
        param_range_map_id = arcpy.Parameter()

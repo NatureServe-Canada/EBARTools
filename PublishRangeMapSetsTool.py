@@ -198,7 +198,8 @@ class PublishRangeMapSetsTool:
                     differentiate_usage_type = False
                     if row[11]:
                         differentiate_usage_type = True
-                    EBARUtils.updateArcGISProTemplate(zip_folder, element_global_id, md, row[8], differentiate_usage_type, suffix)
+                    EBARUtils.updateArcGISProTemplate(zip_folder, element_global_id, md, row[8],
+                                                      differentiate_usage_type, suffix)
 
             if row:
                 # final category_taxagroup
