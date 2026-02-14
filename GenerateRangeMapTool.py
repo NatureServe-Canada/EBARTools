@@ -1425,7 +1425,7 @@ if __name__ == '__main__':
     param_custom_polygons_covered.value = None
     #param_custom_polygons_covered.value = 'C:/GIS/EBAR/EBARServer.gdb/Custom'
     param_differentiate_usage_type = arcpy.Parameter()
-    param_differentiate_usage_type.value = 'false'
+    param_differentiate_usage_type.value = 'true'
     param_save_range_map_inputs = arcpy.Parameter()
     param_save_range_map_inputs.value = 'false'
     parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
