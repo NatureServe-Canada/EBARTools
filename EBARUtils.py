@@ -673,17 +673,18 @@ def ExportRangeMapToCSV(range_map_view, range_map_ids, attributes_dict, output_f
                                                   'LONG'))
         field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.RangeVersion', 'VersionRepartition',
                                                   'TEXT'))
-        field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.RangeStage', 'EtapeRepartition', 'TEXT'))
+        field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.RangeStage_FR', 'EtapeRepartition',
+                                                  'TEXT'))
         field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.RangeDate', 'DateRepartition', 'DATE'))
-        field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.RangeMapScope', 'PorteeCarteRepartition',
+        field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.RangeMapScope_FR',
+                                                  'PorteeCarteRepartition', 'TEXT'))
+        field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.RangeMetadata_FR', 'MetadonneesPortee',
                                                   'TEXT'))
-        field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.RangeMetadata', 'MetadonneesPortee',
-                                                  'TEXT'))
-        field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.RangeMapNotes', 'NotesCarteRepartition',
-                                                  'TEXT'))
-        field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.RangeMapComments',
+        field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.RangeMapNotes_FR',
+                                                  'NotesCarteRepartition', 'TEXT'))
+        field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.RangeMapComments_FR',
                                                   'CommentairesCarteRepartition', 'TEXT'))
-        field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.ReviewerComments',
+        field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.ReviewerComments_FR',
                                                   'CommentairesReviseurs', 'TEXT'))
         field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.SynonymsUsed', 'SynonymesUtilisee',
                                                   'TEXT'))
@@ -799,7 +800,7 @@ def ExportRangeMapEcoshapesToCSV(range_map_ecoshape_view, range_map_ids, output_
         field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'EcoshapeID', 'IDEcoshape', 'LONG'))
         field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'Presence', 'Presence', 'TEXT'))
         field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'UsageType', 'TypeUtilisation', 'TEXT'))
-        field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'RangeMapEcoshapeNotes',
+        field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'RangeMapEcoshapeNotes_FR',
                                                   'NotesCarteRepartitionEcoshape', 'TEXT'))
         field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'MinDate', 'DateMin', 'DATE'))
         field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'MaxDate', 'DateMax', 'DATE'))

@@ -197,7 +197,8 @@ class SyncSpeciesListBioticsTool:
                 EBARUtils.displayMessage(messages, 'ELEMENT_NATIONAL_ID: ' + str(element_national_id))
                 if element_national_id in element_species_dict:
                     # update if changed
-                    changed = False
+                    # temporarily change this for one-time updating of translated french fields!!!
+                    changed = True # False
                     # wrap updates overcome
                     # RuntimeError: Objects in this class cannot be updated outside an edit session [BIOTICS_ELEMENT_NATIONAL]
                     edit = arcpy.da.Editor(param_geodatabase)

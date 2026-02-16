@@ -28,11 +28,26 @@ for range_map_id in range_map_ids:
                 summary_fr = summary_fr.replace('Anonymous', 'Anonyme')
             reviewer_comments_fr = update_row['ReviewerComments']
             if reviewer_comments_fr:
-                # reviewer_comments_fr = reviewer_comments_fr.replace('Reviewer Comment', 'Commentaire du réviseur')
-                # reviewer_comments_fr = reviewer_comments_fr.replace('Anonymous', 'Anonyme')
-                # reviewer_comments_fr = reviewer_comments_fr.replace('Unpublished', 'Non publié')
-                reviewer_comments_fr = EBARUtils.translateENtoFRUsingDeepL(reviewer_comments_fr) + \
-                    ' (traduit par DeepL)'
+                sections = reviewer_comments_fr.split('<br>')
+                reviewer_comments_fr = ''
+                used_deepl = False
+                for section in sections:
+                    # each subsection is a reviewer comment
+                    subsections = section.split(' - ')
+                    prefix = subsections[0]
+                    prefix = prefix.replace('Reviewer Comment', 'Commentaire du réviseur')
+                    prefix = prefix.replace('Anonymous', 'Anonyme')
+                    postfix = subsections[1]
+                    if postfix == 'Unpublished':
+                        postfix = 'Non publié'
+                    else:
+                        postfix = EBARUtils.translateENtoFRUsingDeepL(postfix)
+                        used_deepl = True
+                    if len(reviewer_comments_fr) > 0:
+                        reviewer_comments_fr += '<br>'
+                    reviewer_comments_fr += prefix + ' - ' + postfix
+                if used_deepl:
+                    reviewer_comments_fr += ' (traduit par DeepL)'
             update_cursor.updateRow([update_row['RangeStage'], stage_fr, update_row['RangeMapScope'],
                                      StaticTranslations.range_map_scope_translation[update_row['RangeMapScope']],
                                      update_row['RangeMapNotes'], notes_fr, update_row['RangeMetadata'], summary_fr,
@@ -45,10 +60,29 @@ for range_map_id in range_map_ids:
         for update_row in EBARUtils.updateCursor(update_cursor):
             notes_fr = update_row['RangeMapEcoshapeNotes']
             if notes_fr:
-                # notes_fr = notes_fr.replace('Input Records', 'Enregistrements saisis')
-                # notes_fr = notes_fr.replace('Expert Ecoshape Review', "Avis d'experts Ecoshape")
-                # notes_fr = notes_fr.replace('Reviewer Comment', 'Commentaire du réviseur')
-                # notes_fr = notes_fr.replace('Anonymous', 'Anonyme')
-                # notes_fr = notes_fr.replace('Unpublished', 'Non publié')
+                sections = notes_fr.split('<br>')
+                used_deepl = False
+                # first subsection is the Input Records
+                input_records = sections[0]
+                notes_fr = input_records.replace('Input Records', 'Enregistrements saisis')
+                # SHOULD ALSO INCORPORATE TRANSLATED DatasetSourceNames!!!
+                notes_fr = notes_fr.replace('Expert Ecoshape Review', "Avis d'experts Ecoshape")
+                if len(sections) > 1:
+                    # each subsequent section is a reviewer comment
+                    for section in sections[1:]:
+                        subsections = section.split(' - ')
+                        prefix = subsections[0]
+                        prefix = prefix.replace('Reviewer Comment', 'Commentaire du réviseur')
+                        prefix = prefix.replace('Anonymous', 'Anonyme')
+                        postfix = subsections[1]
+                        if postfix == 'Unpublished':
+                            postfix = 'Non publié'
+                        else:
+                            postfix = EBARUtils.translateENtoFRUsingDeepL(postfix)
+                            used_deepl = True
+                        notes_fr += '<br>' + prefix + ' - ' + postfix
+                if used_deepl:
+                    reviewer_comments_fr += ' (traduit par DeepL)'
+
                 notes_fr = EBARUtils.translateENtoFRUsingDeepL(notes_fr) + ' (traduit par DeepL)'
             update_cursor.updateRow([update_row['RangeMapEcoshapeNotes'], notes_fr])
