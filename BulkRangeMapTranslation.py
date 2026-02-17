@@ -24,6 +24,7 @@ for range_map_id in range_map_ids:
             summary_fr = update_row['RangeMetadata']
             if summary_fr:
                 summary_fr = summary_fr.replace('Input Records', 'Enregistrements saisis')
+                summary_fr = summary_fr.replace('Input records', 'Enregistrements saisis')
                 summary_fr = summary_fr.replace('Expert Reviews', "Avis d'experts")
                 summary_fr = summary_fr.replace('Anonymous', 'Anonyme')
             reviewer_comments_fr = update_row['ReviewerComments']
@@ -56,33 +57,32 @@ for range_map_id in range_map_ids:
     # RangeMapEcoshape
     with arcpy.da.UpdateCursor(geodatabase + '/RangeMapEcoshape',
                                ['RangeMapEcoshapeNotes', 'RangeMapEcoshapeNotes_FR'],
-                               'RangeMapID = ' + str(range_map_id)) as update_cursor:
+                               'RangeMapID = ' + str(range_map_id),
+                               sql_clause=[None, 'ORDER BY RangeMapEcoshapeID ASC']) as update_cursor:
         for update_row in EBARUtils.updateCursor(update_cursor):
+            #print(update_row['RangeMapEcoshapeNotes'])
             notes_fr = update_row['RangeMapEcoshapeNotes']
             if notes_fr:
                 sections = notes_fr.split('<br>')
                 used_deepl = False
-                # first subsection is the Input Records
-                input_records = sections[0]
-                notes_fr = input_records.replace('Input Records', 'Enregistrements saisis')
+                notes_fr = sections[0]
+                notes_fr = notes_fr.replace('Input records', 'Enregistrements saisis')
                 # SHOULD ALSO INCORPORATE TRANSLATED DatasetSourceNames!!!
                 notes_fr = notes_fr.replace('Expert Ecoshape Review', "Avis d'experts Ecoshape")
-                if len(sections) > 1:
-                    # each subsequent section is a reviewer comment
-                    for section in sections[1:]:
-                        subsections = section.split(' - ')
-                        prefix = subsections[0]
-                        prefix = prefix.replace('Reviewer Comment', 'Commentaire du réviseur')
-                        prefix = prefix.replace('Anonymous', 'Anonyme')
-                        postfix = subsections[1]
-                        if postfix == 'Unpublished':
-                            postfix = 'Non publié'
-                        else:
-                            postfix = EBARUtils.translateENtoFRUsingDeepL(postfix)
-                            used_deepl = True
-                        notes_fr += '<br>' + prefix + ' - ' + postfix
+                # each subsequent section is a reviewer comment
+                for section in sections[1:]:
+                    subsections = section.split(' - ')
+                    prefix = subsections[0]
+                    prefix = prefix.replace('Reviewer Comment', 'Commentaire du réviseur')
+                    prefix = prefix.replace('Anonymous', 'Anonyme')
+                    prefix = prefix.replace('Expert Ecoshape Review', "Avis d'experts Ecoshape")
+                    postfix = subsections[1]
+                    if postfix == 'Unpublished':
+                        postfix = 'Non publié'
+                    else:
+                        postfix = EBARUtils.translateENtoFRUsingDeepL(postfix)
+                        used_deepl = True
+                    notes_fr += '<br>' + prefix + ' - ' + postfix
                 if used_deepl:
-                    reviewer_comments_fr += ' (traduit par DeepL)'
-
-                notes_fr = EBARUtils.translateENtoFRUsingDeepL(notes_fr) + ' (traduit par DeepL)'
+                    notes_fr += ' (traduit par DeepL)'
             update_cursor.updateRow([update_row['RangeMapEcoshapeNotes'], notes_fr])
