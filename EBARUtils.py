@@ -696,17 +696,17 @@ def ExportRangeMapToCSV(range_map_view, range_map_ids, attributes_dict, output_f
                                                   'ID_ELEMENT_MONDIAL', 'LONG'))
         field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.ELEMENT_CODE',
                                                   'CODE_ELEMENT', 'TEXT'))
-        field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.CATEGORY',
+        field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.CATEGORY_FR',
                                                   'CATEGORIE', 'TEXT'))
-        field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.TAX_GROUP',
+        field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.TAX_GROUP_FR',
                                                   'GROUPE_TAX', 'TEXT'))
-        field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.FAMILY_COM',
+        field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.FAMILY_COM_FR',
                                                   'COM_FAMILLE', 'TEXT'))
-        field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.GENUS',
+        field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.GENUS_FR',
                                                   'GENRE', 'TEXT'))
         field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.PHYLUM',
                                                   'EMBRANCHEMENT', 'TEXT'))
-        field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.CA_NNAME_LEVEL',
+        field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.CA_NNAME_LEVEL_FR',
                                                   'NIVEAU_NOMN_CA', 'TEXT'))
         field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME',
                                                   'NOM_SCIENTIFIQUE_NATIONAL', 'TEXT'))

@@ -34,7 +34,7 @@ class PublishRangeMapSetsTool:
             # export range map, with biotics/species additions
             EBARUtils.displayMessage(messages, 'Exporting RangeMap records to CSV')
             EBARUtils.ExportRangeMapToCSV('range_map_view' + category_taxagroup, range_map_ids, attributes_dict,
-                                            zip_folder, 'RangeMap.csv', metadata, suffix)
+                                          zip_folder, 'RangeMap.csv', metadata, suffix)
 
             # export range map ecoshapes
             EBARUtils.displayMessage(messages, 'Exporting RangeMapEcoshape records to CSV')
@@ -109,24 +109,35 @@ class PublishRangeMapSetsTool:
             # generate metadata
             EBARUtils.displayMessage(messages, 'Generating metadata for ' + suffix)
             md = arcpy.metadata.Metadata()
-            md.tags = 'Species Range, NatureServe Canada, Ecosystem-based Automated Range'
-            md.description = 'See EBARxxxxx.pdf for per-species map and additional metadata, RangeMap.csv ' + \
-                'for species attributes for each ELEMENT_GLOBAL_ID (xxxxx), and ' + \
-                'EBARMethods.pdf for additional details. <a href="https://explorer.natureserve.org/">Go to ' + \
-                'NatureServe Explorer</a> for information about the species.'
-            md.credits = 'Copyright NatureServe Canada ' + str(datetime.datetime.now().year)
-            md.accessConstraints = 'Publicly shareable under CC BY 4.0 (<a href=' + \
-                '"https://creativecommons.org/licenses/by/4.0/">https://creativecommons.org/licenses/by/4.0/</a>)'
+            if suffix == '_en':
+                md.tags = 'Species Range, NatureServe Canada, Ecosystem-based Automated Range'
+                md.description = 'See EBARxxxxx.pdf for per-species map and additional metadata, RangeMap.csv ' + \
+                    'for species attributes for each ELEMENT_GLOBAL_ID (xxxxx), and ' + \
+                    'EBARMethods.pdf for additional details. <a href="https://explorer.natureserve.org/">Go to ' + \
+                    'NatureServe Explorer</a> for information about the species.'
+                md.credits = 'Copyright NatureServe Canada ' + str(datetime.datetime.now().year)
+                md.accessConstraints = 'Publicly shareable under CC BY 4.0 (<a href=' + \
+                    '"https://creativecommons.org/licenses/by/4.0/">https://creativecommons.org/licenses/by/4.0/</a>)'
+            else: #_fr
+                md.tags = 'Répartition des Espèces, NatureServe Canada, ' + \
+                    'Cartographie automatisée des aires de répartissaient basée sur les écosystèmes'
+                md.description = 'See CAARBExxxxx.pdf pour la carte et les métadonnées ' + \
+                        'supplémentaires, et CAARBEMethods.pdf pour plus de détails. <a href="' + nsx_url + \
+                        '"> Rendez-vous sur NatureServe Explorer</a>  pour obtenir des informations sur les espèces.'
+                md.credits = '© NatureServe Canada ' + str(datetime.datetime.now().year)
+                md.accessConstraints = 'Partageable publiquement sous licence CC BY 4.0  (<a href=' + \
+                    '"https://creativecommons.org/licenses/by/4.0/deed.fr">' + \
+                    'https://creativecommons.org/licenses/by/4.0/deed.fr</a>)'
 
             # use EBAR BIOTICS table if can't get taxon API
             arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/4', 'biotics_view')
 
             # loop all RangeMap records where IncludeInDownloadTable is populated and Publish=1
             arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/11', 'range_map_view',
-                                        'IncludeInDownloadTable IN (1, 2, 3, 4) AND Publish = 1')
+                                           'IncludeInDownloadTable IN (1, 2, 3, 4) AND Publish = 1')
             # join BIOTICS_ELEMENT_NATIONAL to RangeMap
             arcpy.AddJoin_management('range_map_view', 'SpeciesID', EBARUtils.ebar_feature_service + '/4', 'SpeciesID',
-                                    'KEEP_COMMON')
+                                     'KEEP_COMMON')
             category_taxagroup = ''
             processed = 0
             # use Python sorted (sql_clause ORDER BY doesn't work), which precludes use of EBARUtils.SearchCursor
@@ -135,29 +146,31 @@ class PublishRangeMapSetsTool:
                 where_clause = "L4BIOTICS_ELEMENT_NATIONAL.CATEGORY = '" + param_category + "'"
             if param_taxagroup:
                 if where_clause:
-                    where_clause += "AND L4BIOTICS_ELEMENT_NATIONAL.TAX_GROUP = '" + param_taxagroup.replace("'", "''") + "'"
+                    where_clause += "AND L4BIOTICS_ELEMENT_NATIONAL.TAX_GROUP = '" + \
+                        param_taxagroup.replace("'", "''") + "'"
                 else:
-                    where_clause = "L4BIOTICS_ELEMENT_NATIONAL.TAX_GROUP = '" + param_taxagroup.replace("'", "''") + "'"
+                    where_clause = "L4BIOTICS_ELEMENT_NATIONAL.TAX_GROUP = '" + \
+                        param_taxagroup.replace("'", "''") + "'"
             row = None
             for row in sorted(arcpy.da.SearchCursor('range_map_view',
-                            ['L4BIOTICS_ELEMENT_NATIONAL.CATEGORY',
-                            'L4BIOTICS_ELEMENT_NATIONAL.TAX_GROUP',
-                            'L4BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME',
-                            'L4BIOTICS_ELEMENT_NATIONAL.NATIONAL_ENGL_NAME',
-                            'L4BIOTICS_ELEMENT_NATIONAL.NATIONAL_FR_NAME',
-                            'L4BIOTICS_ELEMENT_NATIONAL.ELEMENT_GLOBAL_ID',
-                            'L4BIOTICS_ELEMENT_NATIONAL.GLOBAL_UNIQUE_IDENTIFIER',
-                            'L11RangeMap.RangeMapScope',
-                            'L11RangeMap.RangeMapID',
-                            'L11RangeMap.IncludeInDownloadTable',
-                            'L4BIOTICS_ELEMENT_NATIONAL.SpeciesID',
-                            'L11RangeMap.DifferentiateUsageType'], where_clause)):
+                                                    ['L4BIOTICS_ELEMENT_NATIONAL.CATEGORY',
+                                                     'L4BIOTICS_ELEMENT_NATIONAL.TAX_GROUP',
+                                                     'L4BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME',
+                                                     'L4BIOTICS_ELEMENT_NATIONAL.NATIONAL_ENGL_NAME',
+                                                     'L4BIOTICS_ELEMENT_NATIONAL.NATIONAL_FR_NAME',
+                                                     'L4BIOTICS_ELEMENT_NATIONAL.ELEMENT_GLOBAL_ID',
+                                                     'L4BIOTICS_ELEMENT_NATIONAL.GLOBAL_UNIQUE_IDENTIFIER',
+                                                     'L11RangeMap.RangeMapScope',
+                                                     'L11RangeMap.RangeMapID',
+                                                     'L11RangeMap.IncludeInDownloadTable',
+                                                     'L4BIOTICS_ELEMENT_NATIONAL.SpeciesID',
+                                                     'L11RangeMap.DifferentiateUsageType'], where_clause)):
                 if row[0] + ' - ' + row[1] != category_taxagroup:
                     # new category_taxagroup
                     if category_taxagroup != '':
                         # previous category_taxagroup
                         self.processCategoryTaxaGroup(messages, category_taxagroup, range_map_ids, attributes_dict,
-                                                    zip_folder, md, only_deficient_partial)
+                                                      zip_folder, md, only_deficient_partial, suffix)
                     # if all range maps in group have no spatial data then exclude spatial download
                     only_deficient_partial = True
                     processed += 1

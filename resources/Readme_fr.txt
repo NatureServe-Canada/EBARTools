@@ -18,7 +18,7 @@ Cet ensemble de fichiers ZIP doit contenir les fichiers suivants :
 - CAARBExxxxxTypeUtilisation.lyrx (le cas échéant, fichier de couche ArcGIS Pro, avec la symbologie suggérée et les jointures appropriées, référençant le type d'utilisation des écoshapes généralisées)
 [où xxxxx est l'ELEMENT_GLOBAL_ID de l'espèce sélectionnée]
 
-Les fichiers de projet ArcMap sont disponsible dans les fichiers ZIP anglais
+Les fichiers de projet ArcMap (.mxd) sont disponsible dans les fichiers ZIP anglais
 
 Les fichiers de données inclus sont liés comme suit :
 RangeMap <-1---M-> RangeMapEcoshape
