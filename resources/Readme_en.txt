@@ -6,7 +6,6 @@ This ZIP package should contain the following files:
 - EBARMethods.pdf (background information on range map production, ecoshape sources and related topics)
 - Ecoshape.* (files comprising polygons shapefile of original ecoshapes for EBAR for selected species)
 - EcoshapeOverview.* (files comprising polygons shapefile of generalized ecoshapes for EBAR for selected species)
-- UsageType.* (if applicable, files comprising polygons shapefile of usage type, of generalized ecoshapes for EBAR for selected species)
 - RangeMap.csv (table of species and range attributes for EBAR for selected species)
 - RangeMapEcoshape.csv (table of per-ecoshape attributes for EBAR for selected species)
 - Jurisdiction.csv (table of jurisdictions)

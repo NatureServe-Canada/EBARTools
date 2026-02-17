@@ -2,100 +2,98 @@ Ensemble de fichiers ZIP pour le project Cartographie automatisée des aires de 
 © NatureServe Canada 2026 sous CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/deed.fr)
 
 Cet ensemble de fichiers ZIP doit contenir les fichiers suivants :
-- EBARxxxxx.pdf (carte et métadonnées CAARBE pour certaines espèces)
-- EBARMethods.pdf (informations générales sur la production de cartes de répartition, les sources d'écoshapes et les sujets connexes)
+- CAARBExxxxx.pdf (carte et métadonnées CAARBE pour certaines espèces)
+- MethodsCAARBE.pdf (informations générales sur la production de cartes de répartition, les sources d'écoshapes et les sujets connexes)
 - Ecoshape.* (fichiers comprenant un fichier de formes polygonales des formes écologiques originales pour CAARBE pour certaines espèces)
-- EcoshapeOverview.* (fichiers comprenant un fichier de formes polygonales des écoshapes généralisées pour CAARBE pour certaines espèces)
+- AppercuEcoshape.* (fichiers comprenant un fichier de formes polygonales des écoshapes généralisées pour CAARBE pour certaines espèces)
 - UsageType.* (le cas échéant, fichiers comprenant un fichier de formes polygonales du type d'utilisation, des écoshapes généralisées pour CAARBE pour certaines espèces)
-- RangeMap.csv (tableau des espèces et des attributs de l'aire de répartition pour CAARBE pour certaines espèces)
-- RangeMapEcoshape.csv (tableau des attributs par écoshape pour CAARBE pour certaines espèces)
-- Jurisdiction.csv (tableau des juridictions)
-- EBARxxxxx.aprx (fichier de projet ArcGIS Pro référençant les fichiers de données ci-dessus, avec les jointures appropriées)
-- EBARxxxxx.mapx (fichier de carte ArcGIS Pro référençant les fichiers de données ci-dessus, avec les jointures appropriées)
-- EBARxxxxxEcoshape.lyrx (fichier de couche ArcGIS Pro, avec la symbologie suggérée et les jointures appropriées, référençant les écoshapes d'origine)
-- EBARxxxxxEcoshapeOverview.lyrx (fichier de couche ArcGIS Pro, avec la symbologie suggérée et les jointures appropriées, référençant les écoshapes généralisés)
-- EBARxxxxxRemovedEcoshapes.lyrx (fichier de couche ArcGIS Pro, avec les jointures appropriées, affichant uniquement les écoshapes qui ont été supprimées à la suite de l'examen par les experts, référençant les écoshapes généralisées)
-- EBARxxxxxUsageType.lyrx (le cas échéant, fichier de couche ArcGIS Pro, avec la symbologie suggérée et les jointures appropriées, référençant le type d'utilisation des écoshapes généralisées)
-- EBARxxxxx.mxd (fichier de projet ArcMap faisant référence aux fichiers de données ci-dessus)
-- EBARxxxxxEcoshape.lyr (fichier de couche ArcMap, avec la symbologie suggérée et les jointures appropriées, faisant référence aux écoshapes d'origine)
-- EBARxxxxxEcoshapeOverview.lyr (fichier de couche ArcMap, avec la symbologie suggérée et les jointures appropriées, faisant référence aux écoshapes généralisées)
-- EBARxxxxxRemovedEcoshapes.lyr (fichier de couche ArcMap, avec les jointures appropriées, affichant uniquement les formes écologiques qui ont été supprimées à la suite de l'examen par des experts, faisant référence aux écoshapes généralisées)
-- EBARxxxxxUsageType.lyr (fichier de couche ArcMap, avec symbologie suggérée et jointures appropriées, référençant le type d'utilisation des écoshapes généralisées)
+- CarteRepartition.csv (tableau des espèces et des attributs de l'aire de répartition pour CAARBE pour certaines espèces)
+- CarteRepartitionEcoshape.csv (tableau des attributs par écoshape pour CAARBE pour certaines espèces)
+- Juridiction.csv (tableau des juridictions)
+- CAARBExxxxx.aprx (fichier de projet ArcGIS Pro référençant les fichiers de données ci-dessus, avec les jointures appropriées)
+- CAARBExxxxx.mapx (fichier de carte ArcGIS Pro référençant les fichiers de données ci-dessus, avec les jointures appropriées)
+- CAARBExxxxxEcoshape.lyrx (fichier de couche ArcGIS Pro, avec la symbologie suggérée et les jointures appropriées, référençant les écoshapes d'origine)
+- CAARBExxxxxAppercuEcoshape.lyrx (fichier de couche ArcGIS Pro, avec la symbologie suggérée et les jointures appropriées, référençant les écoshapes généralisés)
+- CAARBExxxxxEcoshapesSupprime.lyrx (fichier de couche ArcGIS Pro, avec les jointures appropriées, affichant uniquement les écoshapes qui ont été supprimées à la suite de l'examen par les experts, référençant les écoshapes généralisées)
+- CAARBExxxxxTypeUtilisation.lyrx (le cas échéant, fichier de couche ArcGIS Pro, avec la symbologie suggérée et les jointures appropriées, référençant le type d'utilisation des écoshapes généralisées)
 [où xxxxx est l'ELEMENT_GLOBAL_ID de l'espèce sélectionnée]
+
+Les fichiers de projet ArcMap sont disponsible dans les fichiers ZIP anglais
 
 Les fichiers de données inclus sont liés comme suit :
 RangeMap <-1---M-> RangeMapEcoshape
 Ecoshape/EcoshapeOverview <-1---M-> RangeMapEcoshape
 Jurisdiction <-1---M-> Ecoshape/EcoshapeOverview
 
-Champs RangeMap :
+Champs CarteRepartition :
 objectid - identifiant unique ArcGIS
-RangeMapID - identifiant unique CAARBE
-RangeVersion - numéro de version CAARBE
-RangeStage - étape CAARBE dans la version (par exemple, généré automatiquement, examiné par des experts)
-RangeDate - date de génération
-RangeMapScope - portée géographique (par exemple, N = Canadien, A = Nord-américain, G = mondial)
-RangeMetadata - nombre d'enregistrements d'entrée par source, et nombre et détails (si publiables) des examens par des experts
-RangeMapNotes - détails sur le(s) nom(s) de l'espèce
-RangeMapComments - notes supplémentaires
-SynonymsUsed - liste des synonymes, le cas échéant, pour l'espèce principale sous laquelle les données d'entrée utilisées ont été importées
-DifferentiateUsageType - 1 si le type d'utilisation (reproduction, reproduction possible, migration) est différencié par écoshape
-ELEMENT_NATIONAL_ID - identifiant unique national NatureServe Biotics
-ELEMENT_GLOBAL_ID - identifiant unique mondial NatureServe Biotics
-ELEMENT_CODE - identifiant d'élément NatureServe Biotics
-CATEGORY - catégorie d'espèce NatureServe Biotics
-TAX_GROUP - groupe taxonomique d'espèce NatureServe Biotics
-FAMILY_COM - nom commun de la famille d'espèce NatureServe Biotics
-GENUS - genre d'espèce NatureServe Biotics
-PHYLUM - embranchement NatureServe Biotics
-CA_NNAME_LEVEL - nom Canadien de l'espèce NatureServe Biotics
-NATIONAL_SCIENTIFIC_NAME - nom scientifique de l'espèce Canadienne NatureServe Biotics
-NATIONAL_ENGL_NAME - nom Anglais de l'espèce Canadienne NatureServe Biotics
-NATIONAL_FR_NAME - nom Français de l'espèce Canadienne NatureServe Biotics
-COSEWIC_NAME - nom de l'espèce COSEPAC NatureServe Biotics
-COSEWIC_ID - identifiant de l'espèce COSEPAC NatureServe Biotics
-ENDEMISM_TYPE - type d'endémisme de l'espèce NatureServe Biotics
-GRANK - classement mondial de l'espèce NatureServe Biotics
-NRANK_CA - classement national Canadien de l'espèce NatureServe Biotics
-SRANKS_CA - classements infranationaux Canadiens de l'espèce NatureServe Biotics
-NRANK_US - classement national Américain de l'espèce NatureServe Biotics
-SRANKS_US - NatureServe Biotics species United States subnational ranksclassements infranationaux Américains de l'espèce NatureServe Biotics
-NRANK_MX - NatureServe Biotics espèce rang national au Mexique
-SRANKS_MX - NatureServe Biotics espèce rangs infranationaux au Mexique
-SARA_STATUS - NatureServe Biotics espèce statut en vertu de la Loi sur les espèces en péril au Canada
-COSEWIC_STATUS - NatureServe Biotics espèce statut en vertu du Comité sur la situation des espèces en péril au Canada
-ESA_STATUS - NatureServe Biotics espèce statut en vertu de la Loi Américaine sur les espèces en voie de disparition
+IDCarteRepartition - identifiant unique CAARBE
+VersionRepartition - numéro de version CAARBE
+EtapeRepartition - étape CAARBE dans la version (par exemple, généré automatiquement, examiné par des experts)
+DateRepartition - date de génération
+PorteeCarteRepartition - portée géographique (par exemple, N = Canadien, A = Nord-américain, G = mondial)
+MetadonneesPortee - nombre d'enregistrements d'entrée par source, et nombre et détails (si publiables) des examens par des experts
+NotesCarteRepartition - détails sur le(s) nom(s) de l'espèce
+CommentairesCarteRepartition - notes supplémentaires
+SynonymesUtilisee - liste des synonymes, le cas échéant, pour l'espèce principale sous laquelle les données d'entrée utilisées ont été importées
+TypeUtilisationDifferencie - 1 si le type d'utilisation (reproduction, reproduction possible, migration) est différencié par écoshape
+ID_ELEMENT_NATIONAL - identifiant unique national NatureServe Biotics
+ID_ELEMENT_MONDIAL - identifiant unique mondial NatureServe Biotics
+CODE_ELEMENT - identifiant d'élément NatureServe Biotics
+CATEGORIE - catégorie d'espèce NatureServe Biotics
+GROUPE_TAX - groupe taxonomique d'espèce NatureServe Biotics
+COM_FAMILLE - nom commun de la famille d'espèce NatureServe Biotics
+GENRE - genre d'espèce NatureServe Biotics
+EMBRANCHEMENT - embranchement NatureServe Biotics
+NIVEAU_NOMN_CA - nom Canadien de l'espèce NatureServe Biotics
+NOM_SCIENTIFIQUE_NATIONAL - nom scientifique de l'espèce Canadienne NatureServe Biotics
+NOM_ANGL_NATIONAL - nom Anglais de l'espèce Canadienne NatureServe Biotics
+NOM_FR_NATIONAL - nom Français de l'espèce Canadienne NatureServe Biotics
+NOM_COSEPAC - nom de l'espèce COSEPAC NatureServe Biotics
+ID_COSEPAC - identifiant de l'espèce COSEPAC NatureServe Biotics
+TYPE_ENDEMISME - type d'endémisme de l'espèce NatureServe Biotics
+CLASSEMENTM - classement mondial de l'espèce NatureServe Biotics
+CLASSEMENTN_CA - classement national Canadien de l'espèce NatureServe Biotics
+CLASSEMENTS_CA - classements infranationaux Canadiens de l'espèce NatureServe Biotics
+CLASSEMENTN_EU - classement national Américain de l'espèce NatureServe Biotics
+CLASSEMENTS_EU - NatureServe Biotics species United States subnational ranksclassements infranationaux Américains de l'espèce NatureServe Biotics
+CLASSEMENTN_MX - NatureServe Biotics espèce rang national au Mexique
+CLASSEMENTS_MX - NatureServe Biotics espèce rangs infranationaux au Mexique
+STATUT_LEP - NatureServe Biotics espèce statut en vertu de la Loi sur les espèces en péril au Canada
+STATUT_COSEPAC - NatureServe Biotics espèce statut en vertu du Comité sur la situation des espèces en péril au Canada
+STATUT_ESA - NatureServe Biotics espèce statut en vertu de la Loi Américaine sur les espèces en voie de disparition
 
-Champs RangeMapEcoshape :
+Champs CarteRepartitionEcoshape :
 objectid - identifiant unique ArcGIS
-RangeMapID - clé étrangère CAARBE relative à l'enregistrement RangeMap approprié
-EcoshapeID - clé étrangère CAARBE relative à l'enregistrement Ecoshape/EcoshapeOverview approprié
+IDCarteRepartition - clé étrangère CAARBE relative à l'enregistrement RangeMap approprié
+IDEcoshape - clé étrangère CAARBE relative à l'enregistrement Ecoshape/EcoshapeOverview approprié
 Presence - catégorie de présence de l'espèce dans l'écoshape (P = Présente, X = Présence attendue, H = Historique, NULL = Supprimée*, voir le PDF des métadonnées pour les définitions)
-UsageType - type d'utilisation de l'espèce dans l'écoshape (B = Reproduction, P = Reproduction possible, M = Migration, voir le PDF des métadonnées pour les définitions)
-RangeMapEcoshapeNotes - nombre d'enregistrements saisis par source et commentaires des réviseurs, s'ils peuvent être publiés
-MinDate - date la plus ancienne pour tous les enregistrements saisis qui chevauchent l'écoshape
-MaxDate - date la plus récente pour tous les enregistrements saisis qui chevauchent l'écoshape
+TypeUtilisation - type d'utilisation de l'espèce dans l'écoshape (B = Reproduction, P = Reproduction possible, M = Migration, voir le PDF des métadonnées pour les définitions)
+NotesCarteRepartitionEcoshape - nombre d'enregistrements saisis par source et commentaires des réviseurs, s'ils peuvent être publiés
+DateMin - date la plus ancienne pour tous les enregistrements saisis qui chevauchent l'écoshape
+DateMax - date la plus récente pour tous les enregistrements saisis qui chevauchent l'écoshape
 
 [*Les écoshapes supprimées au cours du processus de révision par des experts sont incluses avec Présence=NULL et le champ RangeMapEcoshapeNotes contenant les commentaires des réviseurs, s'ils peuvent être publiés.]
 
-Champs Jurisdiction :
+Champs Juridiction :
 objectid - identifiant unique ArcGIS
-JurisID - identifiant unique CAARBE
-JurisAbbrev - code à deux lettres pour la juridiction
-JurisName - nom complet de la juridiction
+IDJuri - identifiant unique CAARBE
+JuriAbbrev - code à deux lettres pour la juridiction
+JuriNomE - nom Anglais de la juridiction
+JuriNomF - nom Français de la juridiction
 
-Champs Ecoshape/EcoshapeOverview :
+Champs Ecoshape/ApercuEcoshape :
 FID - identifiant unique ArcGIS
 EcoshapeID - identifiant unique CAARBE
-JurisID - clé étrangère CAARBE relative à l'enregistrement de la juridiction appropriée
-EcoName - nom de l'écoshape
+IDEcoshape - clé étrangère CAARBE relative à l'enregistrement de la juridiction appropriée
+NomEco - nom de l'écoshape
 ParentEco - nom Anglais de l'écorégion parentale
 ParentEcoF - nom Français de l'écorégion parentale
 Ecozone - nom Anglais de l'écozone
 EcozoneFR - nom Français de l'écozone
-MosaicVer - version de la mosaïque d'écoshape
-TerrArea - superficie terrestre en mètres carrés dérivée de la Commission de coopération écologique «Grands lacs et réservoirs d'Amérique du Nord»
-TotalArea - superficie totale en mètres carrés
+VerMosaiq - version de la mosaïque d'écoshape
+SuperTerr - superficie terrestre en mètres carrés dérivée de la Commission de coopération écologique «Grands lacs et réservoirs d'Amérique du Nord»
+SuperTot - superficie totale en mètres carrés
 
 Avertissement :
 - Veuillez consulter notre document sur les méthodes à l'adresse https://1drv.ms/b/s!Ajv6BHSXrqqqm4xipeEOQ67IfH77IQ?e=dqM1FO avant d'utiliser CAARBE.
