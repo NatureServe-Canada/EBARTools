@@ -346,22 +346,33 @@ class ImportTabularDataTool:
             max_date, partial = EBARUtils.extractDate(file_line[field_dict['date']])
         if not max_date:
             # separate ymd fields
+            partial = True
+            month = False
             if field_dict['year']:
                 if file_line[field_dict['year']] not in ('NA', ''):
-                    max_year = int(file_line[field_dict['year']])
+                    # first check for min-max range (i.e., yyyy-yyyy)
+                    if (len(file_line[field_dict['year']]) == 9) and ('-' in file_line[field_dict['year']]):
+                        max_year = int(file_line[field_dict['year']][-4:])
+                    else:
+                        max_year = int(file_line[field_dict['year']])
                     max_month = 1
                     if field_dict['month']:
                         if file_line[field_dict['month']] not in ('NA', ''):
                             max_month = int(file_line[field_dict['month']])
+                            month = True
                     max_day = 1
                     if field_dict['day']:
                         if file_line[field_dict['day']] not in ('NA', ''):
                             max_day = int(file_line[field_dict['day']])
+                            if month:
+                                partial = False
                     if max_year >= 1500:
                         if max_month <= 0 or max_month > 12:
                             max_month = 1
+                            partial = True
                         if max_day <= 0 or max_day > 31:
                             max_day = 1
+                            partial = True
                         max_date = datetime.datetime(max_year, max_month, max_day)
 
         # reject fossils records
@@ -507,14 +518,17 @@ class ImportTabularDataTool:
             point_fields = [
                 'SHAPE@XY', 'InputDatasetID', 'DatasetSourceUniqueID', 'URI', 'License', 'SpeciesID', 'SynonymID',
                 'MaxDate', 'CoordinatesObscured', 'Accuracy', 'IndividualCount', 'Geoprivacy', 'TaxonGeoprivacy',
-                'BreedingAndBehaviourCode', 'OriginalInstitutionCode', 'Rightsholder'
+                'BreedingAndBehaviourCode', 'OriginalInstitutionCode', 'Rightsholder', 'PartialDate'
             ]
-            with arcpy.da.InsertCursor(geodatabase + '/InputPoint', point_fields) as cursor:
+            with arcpy.da.InsertCursor(geodatabase + '/InputPoint', point_fields, load_only=False) as cursor:
+                partial_text = 'N'
+                if partial:
+                    partial_text = 'Y'
                 object_id = cursor.insertRow([
                     output_point, input_dataset_id,
                     str(file_line[field_dict['unique_id']]), uri, license, species_id, synonym_id, max_date,
                     coordinates_obscured, accuracy, individual_count, geoprivacy, taxon_geoprivacy, breeding_code,
-                    original_institution_code, rightsholder
+                    original_institution_code, rightsholder, partial_text
                 ])
             input_point_id = EBARUtils.getUniqueID(geodatabase + '/InputPoint', 'InputPointID', object_id)
             # add to list of DatasetSourceUniqueIDs in case same batch has duplicates within
