@@ -274,8 +274,11 @@ class SyncSpeciesListBioticsTool:
                         EBARUtils.displayMessage(messages, msg)
                         skipped += 1
                     else:
-                        with arcpy.da.InsertCursor(param_geodatabase + '/Species',
-                                                ['ActiveEBAR']) as insert_cursor:
+                        # wrap updates overcome
+                        # RuntimeError: Objects in this class cannot be updated outside an edit session [Species]
+                        edit = arcpy.da.Editor(param_geodatabase)
+                        edit.startEditing(with_undo=False, multiuser_mode=False)
+                        with arcpy.da.InsertCursor(param_geodatabase + '/Species', ['ActiveEBAR']) as insert_cursor:
                             object_id = insert_cursor.insertRow([1])
                         species_id = EBARUtils.getUniqueID(param_geodatabase + '/Species', 'SpeciesID', object_id)
                         all_fields.append('SpeciesID')
@@ -312,6 +315,11 @@ class SyncSpeciesListBioticsTool:
                             insert_cursor.insertRow(insert_values)
                         all_fields.remove('SpeciesID')
                         added += 1
+                        # wrap updates overcome
+                        # RuntimeError: Objects in this class cannot be updated outside an edit session [Species]
+                        if changed:
+                            edit.stopOperation()
+                        edit.stopEditing(save_changes=True)
                 count += 1
 
             # # calculate NSX_URL
