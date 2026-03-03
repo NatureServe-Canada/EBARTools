@@ -25,12 +25,23 @@ import locale
 #from xarray import where
 
 
+# # shared folders and addresses
+# #resources_folder = 'C:/GIS/EBAR/EBARToolsTranslation/resources'
+# resources_folder = 'D:/GIS/EBAR/EBARTools/resources'
+# temp_folder = 'D:/GIS/EBAR/temp'
+# download_folder = 'D:/GIS/EBAR/pub/download'
+# #download_folder = 'F:/download'
+# download_url = 'https://gis.natureserve.ca/download'
+# #nsx_species_search_url = 'https://explorer.natureserve.org/api/data/search'
+# nsx_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/'
+# # ebird_download_url = 'https://st-download.ebird.org/v1/fetch'
+# log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
+# #log_folder = 'D:/GIS/EBAR/temp'
 # shared folders and addresses
-#resources_folder = 'C:/GIS/EBAR/EBARToolsTranslation/resources'
-resources_folder = 'D:/GIS/EBAR/EBARTools/resources'
-temp_folder = 'D:/GIS/EBAR/temp'
-download_folder = 'D:/GIS/EBAR/pub/download'
-#download_folder = 'F:/download'
+resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
+temp_folder = 'C:/GIS/EBAR/temp'
+#download_folder = 'D:/GIS/EBAR/pub/download'
+download_folder = 'F:/download'
 download_url = 'https://gis.natureserve.ca/download'
 #nsx_species_search_url = 'https://explorer.natureserve.org/api/data/search'
 nsx_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/'
@@ -446,6 +457,11 @@ def readDatasetSourceUniqueIDs(geodatabase, table_name_prefix, dataset_source_id
         for row in searchCursor(cursor):
             #unique_ids_dict[row[source_id_field] + ' - ' + str(row[species_id_field])] = row[spatial_id_field]
             unique_ids_dict[row[source_id_field]] = row[spatial_id_field]
+            # # DEBUG
+            # if row[source_id_field] == '2250952883':
+            #     displayMessage(None, 'DatasetSourceUnique: ' + row[source_id_field])
+            #     displayMessage(None, 'InputPointID: ' + str(row[spatial_id_field]))
+            #     displayMessage(None, 'InputPointID value for key 2250952883: ' + str(unique_ids_dict[row[source_id_field]]))
     del cursor
     if len(unique_ids_dict) > 0:
         del row

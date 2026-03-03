@@ -344,6 +344,9 @@ class ImportTabularDataTool:
         if field_dict['date']:
             # date field
             max_date, partial = EBARUtils.extractDate(file_line[field_dict['date']])
+            # # DEBUG
+            # EBARUtils.displayMessage(messages, 'max_date: ' + str(max_date))
+            # EBARUtils.displayMessage(messages, 'partial: ' + str(partial))
         if not max_date:
             # separate ymd fields
             partial = True
@@ -393,6 +396,8 @@ class ImportTabularDataTool:
         delete = False
         update = False
         if unique_id_species in id_dict:
+            # # DEBUG
+            # EBARUtils.displayMessage(messages, 'Found unique_id_species : ' + str(unique_id_species))
             # already exists
             if quality_grade.lower() not in ('research', '1', 'true'):
                 # delete it because it has been downgraded
@@ -493,6 +498,9 @@ class ImportTabularDataTool:
         # save_start = datetime.datetime.now()
         # update or insert
         if update:
+            # # DEBUG
+            # EBARUtils.displayMessage(messages, 'Updating unique_id_species: ' + str(unique_id_species))
+            # EBARUtils.displayMessage(messages, 'Updating InputPointID: ' + str(id_dict[unique_id_species]))
             with arcpy.da.UpdateCursor(geodatabase + '/InputPoint', [
                     'SHAPE@XY', 'InputDatasetID', 'URI', 'License', 'SpeciesID', 'SynonymID', 'MaxDate',
                     'CoordinatesObscured', 'Accuracy', 'IndividualCount', 'Geoprivacy', 'TaxonGeoprivacy',
@@ -507,6 +515,8 @@ class ImportTabularDataTool:
                         output_point, input_dataset_id, uri, license, species_id, synonym_id, max_date,
                         coordinates_obscured, accuracy, individual_count, geoprivacy, taxon_geoprivacy, breeding_code,
                         original_institution_code, rightsholder, partial_text])
+                    # # DEBUG
+                    # EBARUtils.displayMessage(messages, 'Made it to Update!')
                 if row:
                     del row
             # ## NT perf debug
@@ -544,15 +554,15 @@ if __name__ == '__main__':
     itd = ImportTabularDataTool()
     # hard code parameters for debugging
     param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value = r'D:\GIS\EBAR\EBARDevJan2026.gdb'
+    param_geodatabase.value = r'C:\GIS\EBAR\nsc-gis-ebarkba.sde' #'D:\GIS\EBAR\EBARDevJan2026.gdb'
     param_raw_data_file = arcpy.Parameter()
-    param_raw_data_file.value = r'C:\Users\rgree\Downloads\c0082175251120083545085_GBIF_Clip_ExportTable.csv'
+    param_raw_data_file.value = r'C:\Users\sstefanoff\Downloads\HBJBL_GBIF_forImport_Jan2026\HBJBL_GBIF_forImport_Jan2026\GBIF_test.csv' #'D:\GIS\EBAR\GBIF\GBIF_test.csv'  #'C:\Users\rgree\Downloads\c0082175251120083545085_GBIF_Clip_ExportTable.csv'
     param_dataset_name = arcpy.Parameter()
-    param_dataset_name.value = 'GBIF TEST'
+    param_dataset_name.value = 'GBIF_HBJBL_full_species' #'GBIF TEST'
     param_dataset_source = arcpy.Parameter()
     param_dataset_source.value = 'GBIF'
     param_date_received = arcpy.Parameter()
-    param_date_received.value = 'July 20, 2022'
+    param_date_received.value = 'January 8, 2026'
     # param_restrictions = arcpy.Parameter()
     # param_restrictions.value = 'Non-restricted'
     param_sensitive_ecoogical_data_cat = arcpy.Parameter()
