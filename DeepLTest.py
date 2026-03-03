@@ -30,4 +30,4 @@ import EBARUtils
 # print(EBARUtils.translateENtoFRUsingDeepL('Random text to be translated...'))
 # print(EBARUtils.translateENtoFRUsingDeepL('More text to be translated. This time with punctuation!'))
 # print(EBARUtils.translateENtoFRUsingDeepL('go to NatureServe Explorer'))
-print(EBARUtils.translateENtoFRUsingDeepL('pigeons and doves'))
+print(EBARUtils.translateENtoFRUsingDeepL('For example, it would be inappropriate to translate some input data names and references and they have been provided in English.'))

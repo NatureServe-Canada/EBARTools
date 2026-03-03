@@ -1,6 +1,8 @@
 Ensemble de fichiers ZIP pour le project Cartographie automatisée des aires de répartissaient basée sur les écosystèmes (CAARBE) pour certaines espèces
 © NatureServe Canada 2026 sous CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/deed.fr)
 
+Avertissement : Les versions anglaises des produits et documents CAARBE sont les versions officielles, car il n'existe pas toujours de traductions françaises officielles pour certains termes. Par exemple, il serait inapproprié de traduire certains noms et références de données d'entrée, car ceux-ci ont été fournis en anglais.
+
 Cet ensemble de fichiers ZIP doit contenir les fichiers suivants :
 - CAARBExxxxx.pdf (carte et métadonnées CAARBE pour certaines espèces)
 - MethodsCAARBE.pdf (informations générales sur la production de cartes de répartition, les sources d'écoshapes et les sujets connexes)

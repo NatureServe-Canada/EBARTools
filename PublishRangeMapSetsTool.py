@@ -39,19 +39,19 @@ class PublishRangeMapSetsTool:
             # export range map ecoshapes
             EBARUtils.displayMessage(messages, 'Exporting RangeMapEcoshape records to CSV')
             EBARUtils.ExportRangeMapEcoshapesToCSV('range_map_ecoshape_view' + category_taxagroup, range_map_ids,
-                                                zip_folder, 'RangeMapEcoshape.csv', metadata, suffix)
+                                                   zip_folder, 'RangeMapEcoshape.csv', metadata, suffix)
 
             # export ecoshapes
             EBARUtils.displayMessage(messages, 'Exporting Ecoshape polygons to shapefile')
             EBARUtils.ExportEcoshapesToShapefile('ecoshape_layer' + category_taxagroup,
-                                                'range_map_ecoshape_view' + category_taxagroup, zip_folder, 
-                                                'Ecoshape.shp', metadata, False, suffix)
+                                                 'range_map_ecoshape_view' + category_taxagroup, zip_folder, 
+                                                 'Ecoshape.shp', metadata, False, suffix)
 
             # export overview ecoshapes
             EBARUtils.displayMessage(messages, 'Exporting EcoshapeOverview polygons to shapefile')
             EBARUtils.ExportEcoshapeOverviewsToShapefile('ecoshape_overview_layer' + category_taxagroup,
-                                                        'range_map_ecoshape_view' + category_taxagroup, zip_folder,
-                                                        'EcoshapeOverview.shp', metadata, False, suffix)
+                                                         'range_map_ecoshape_view' + category_taxagroup, zip_folder,
+                                                         'EcoshapeOverview.shp', metadata, False, suffix)
             if suffix == '_en':
                 # copy ArcMap template
                 EBARUtils.displayMessage(messages, 'Copying ArcMap template')
@@ -122,8 +122,9 @@ class PublishRangeMapSetsTool:
                 md.tags = 'Répartition des Espèces, NatureServe Canada, ' + \
                     'Cartographie automatisée des aires de répartissaient basée sur les écosystèmes'
                 md.description = 'See CAARBExxxxx.pdf pour la carte et les métadonnées ' + \
-                        'supplémentaires, et CAARBEMethods.pdf pour plus de détails. <a href="' + nsx_url + \
-                        '"> Rendez-vous sur NatureServe Explorer</a>  pour obtenir des informations sur les espèces.'
+                    'supplémentaires, et CAARBEMethods.pdf pour plus de détails. ' + \
+                    '<a href="https://explorer.natureserve.org/"> Rendez-vous sur NatureServe Explorer</a> ' + \
+                    'pour obtenir des informations sur les espèces.'
                 md.credits = '© NatureServe Canada ' + str(datetime.datetime.now().year)
                 md.accessConstraints = 'Partageable publiquement sous licence CC BY 4.0  (<a href=' + \
                     '"https://creativecommons.org/licenses/by/4.0/deed.fr">' + \
