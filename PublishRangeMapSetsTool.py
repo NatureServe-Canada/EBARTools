@@ -82,7 +82,7 @@ class PublishRangeMapSetsTool:
                                 EBARUtils.download_folder + '/EBAR - ' + category_taxagroup + ' - All PDFs.zip',
                                 '.pdf')
         else: # _fr
-            EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/CAARB - ' + \
+            EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/CAARBE - ' + \
                 category_taxagroup + ' - tous les PDFs.zip')
             EBARUtils.createZip(zip_folder,
                                 EBARUtils.download_folder + '/EBAR - ' + category_taxagroup + ' - tous les PDFs.zip',

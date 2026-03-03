@@ -789,8 +789,8 @@ def ExportRangeMapToCSV(range_map_view, range_map_ids, attributes_dict, output_f
         metadata.title = 'EBAR '+ output_csv
         metadata.summary = 'Table of species and range attributes for EBAR for selected species'
     else: # _fr
-        metadata.title = 'CAARBE '+ output_csv
-        metadata.summary = 'Tableau des espèces et des attributs de répartition pour CAARBE pour certaines espèces'
+        metadata.title = 'CAARBÉ '+ output_csv
+        metadata.summary = 'Tableau des espèces et des attributs de répartition pour CAARBÉ pour certaines espèces'
     range_map_md.copy(metadata)
     range_map_md.save()
 
@@ -828,10 +828,10 @@ def ExportRangeMapEcoshapesToCSV(range_map_ecoshape_view, range_map_ids, output_
     range_map_ecoshape_md = arcpy.metadata.Metadata(output_folder + '/' + output_csv)
     if suffix == '_en':
         metadata.title = 'EBAR ' + output_csv
-        metadata.summary = 'Tableau des attributs par écoshape pour CAARBE pour certaines espèces'
-    else: # _fr
-        metadata.title = 'CAARBE ' + output_csv
         metadata.summary = 'Table of per-ecoshape attributes for EBAR for selected species'
+    else: # _fr
+        metadata.title = 'CAARBÉ ' + output_csv
+        metadata.summary = 'Tableau des attributs par écoshape pour CAARBÉ pour certaines espèces'
     range_map_ecoshape_md.copy(metadata)
     range_map_ecoshape_md.save()
 
@@ -875,8 +875,8 @@ def ExportEcoshapesToShapefile(ecoshape_layer, range_map_ecoshape_view, output_f
         metadata.title = 'EBAR ' + output_shapefile
         metadata.summary = 'Polygons shapefile of original ecoshapes for EBAR for selected species'
     else: # _fr
-        metadata.title = 'CAARBE ' + output_shapefile
-        metadata.summary = "Fichier shapefile des polygones des écoshapes d'origine pour CAARBE pour certaines espèces"
+        metadata.title = 'CAARBÉ ' + output_shapefile
+        metadata.summary = "Fichier shapefile des polygones des écoshapes d'origine pour CAARBÉ pour certaines espèces"
     ecoshape_md.copy(metadata)
     ecoshape_md.save()
 
@@ -939,8 +939,8 @@ def ExportEcoshapeOverviewsToShapefile(ecoshape_overview_layer, range_map_ecosha
         metadata.title = 'EBAR ' + output_shapefile
         metadata.summary = 'Polygons shapefile of generalized ecoshapes for EBAR for selected species'
     else: # _fr
-        metadata.title = 'CAARBE ' + output_shapefile
-        metadata.summary = 'Fichier shapefile des polygones des écoshapes généralisés pour CAARBE pour certaines ' + \
+        metadata.title = 'CAARBÉ ' + output_shapefile
+        metadata.summary = 'Fichier shapefile des polygones des écoshapes généralisés pour CAARBÉ pour certaines ' + \
             'espèces'
     ecoshape_overview_md.copy(metadata)
     ecoshape_overview_md.save()
@@ -1441,7 +1441,7 @@ def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_i
             usage_type_layer_md = usage_type_layer.metadata
             metadata.title = 'TypeUtilisation CAARBE.shp'
             metadata.summary = "Fichier shapefile des polygones du type d'utilisation pour les écoshapes " + \
-                "généralisés pour CAARBE pour certaines espèces"
+                "généralisés pour CAARBÉ pour certaines espèces"
             usage_type_layer_md.copy(metadata)
             usage_type_layer_md.save()
             usage_type_layer.name = 'CAARBE' + element_global_id + 'TypeUtilisation'
@@ -1464,7 +1464,7 @@ def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_i
         ecoshape_overview_layer = map.listLayers('CAARBETemplateApercuEcoshape')[0]
         ecoshape_overview_layer_md = ecoshape_overview_layer.metadata
         metadata.title = 'ApercuEcoshape CAARBE.shp'
-        metadata.summary = 'Fichier shapefile des polygones des écoshapes généralisés pour CAARBE pour certaines ' + \
+        metadata.summary = 'Fichier shapefile des polygones des écoshapes généralisés pour CAARBÉ pour certaines ' + \
             'espèces'
         ecoshape_overview_layer_md.copy(metadata)
         ecoshape_overview_layer_md.save()
@@ -1486,7 +1486,7 @@ def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_i
         ecoshape_overview_layer = map.listLayers('CAARBETemplateEcoshapesSupprime')[0]
         ecoshape_overview_layer_md = ecoshape_overview_layer.metadata
         metadata.title = 'ApercuEcoshape CAARBE.shp'
-        metadata.summary = 'Fichier shapefile des polygones des écoshapes généralisés supprimés pour CAARBE pour ' + \
+        metadata.summary = 'Fichier shapefile des polygones des écoshapes généralisés supprimés pour CAARBÉ pour ' + \
             'certaines espèces'
         ecoshape_overview_layer_md.copy(metadata)
         ecoshape_overview_layer_md.save()
@@ -1509,7 +1509,7 @@ def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_i
         ecoshape_layer = map.listLayers('CAARBETemplateEcoshape')[0]
         ecoshape_layer_md = ecoshape_overview_layer.metadata
         metadata.title = 'Ecoshape CAARBE.shp'
-        metadata.summary = "Fichier shapefile des polygones des écoshapes d'origine pour CAARBE pour certaines espèces"
+        metadata.summary = "Fichier shapefile des polygones des écoshapes d'origine pour CAARBÉ pour certaines espèces"
         ecoshape_layer_md.copy(metadata)
         ecoshape_layer_md.save()
         ecoshape_layer.name = 'CAARBE' + element_global_id + 'Ecoshape'

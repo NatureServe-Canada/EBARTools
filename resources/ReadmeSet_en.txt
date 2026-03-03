@@ -78,7 +78,8 @@ Jurisdiction fields:
 objectid - ArcGIS unique identifier
 JurisID - EBAR unique identifier
 JurisAbbrev - two-letter code for the jurisdiction
-JurisName - full name for the jurisdiction
+JurisNameE - full name for the jurisdiction
+JurisNameF - full French name for the jurisdiction
 
 Ecoshape/EcoshapeOverview fields:
 FID - ArcGIS unique identifier
