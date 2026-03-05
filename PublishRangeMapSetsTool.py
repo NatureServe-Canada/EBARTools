@@ -191,7 +191,7 @@ class PublishRangeMapSetsTool:
                         shutil.copyfile(EBARUtils.resources_folder + '/EBARMethods_en.pdf', zip_folder + '/EBARMethods.pdf')
                         shutil.copyfile(EBARUtils.resources_folder + '/Jurisdiction.csv', zip_folder + '/Jurisdiction.csv')
 
-                    else: # fr
+                    else: # _fr
                         # make zip folder
                         category_taxagroup = StaticTranslations.biotics_category_translation(row[0]) + ' - ' + \
                             StaticTranslations.biotics_taxa_group_translation(row[1])

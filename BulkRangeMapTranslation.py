@@ -23,8 +23,7 @@ for range_map_id in range_map_ids:
                 notes_fr = notes_fr.replace('Synonyms', 'Synonymes')
             summary_fr = update_row['RangeMetadata']
             if summary_fr:
-                summary_fr = summary_fr.replace('Input Records', 'Enregistrements saisis')
-                summary_fr = summary_fr.replace('Input records', 'Enregistrements saisis')
+                summary_fr = summary_fr.replace('Input Records', "Enregistrements d'entrée")
                 summary_fr = summary_fr.replace('Expert Reviews', "Avis d'experts")
                 summary_fr = summary_fr.replace('Anonymous', 'Anonyme')
             reviewer_comments_fr = update_row['ReviewerComments']
@@ -66,16 +65,16 @@ for range_map_id in range_map_ids:
                 sections = notes_fr.split('<br>')
                 used_deepl = False
                 notes_fr = sections[0]
-                notes_fr = notes_fr.replace('Input records', 'Enregistrements saisis')
+                notes_fr = notes_fr.replace('Input records', "Enregistrements d'entrée")
                 # SHOULD ALSO INCORPORATE TRANSLATED DatasetSourceNames!!!
-                notes_fr = notes_fr.replace('Expert Ecoshape Review', "Avis d'experts Ecoshape")
+                notes_fr = notes_fr.replace('Expert Ecoshape Review', "Avis d'experts écoshape")
                 # each subsequent section is a reviewer comment
                 for section in sections[1:]:
                     subsections = section.split(' - ')
                     prefix = subsections[0]
                     prefix = prefix.replace('Reviewer Comment', 'Commentaire du réviseur')
                     prefix = prefix.replace('Anonymous', 'Anonyme')
-                    prefix = prefix.replace('Expert Ecoshape Review', "Avis d'experts Ecoshape")
+                    prefix = prefix.replace('Expert Ecoshape Review', "Avis d'experts écoshape")
                     postfix = subsections[1]
                     if postfix == 'Unpublished':
                         postfix = 'Non publié'

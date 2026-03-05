@@ -25,29 +25,29 @@ import locale
 #from xarray import where
 
 
-# # shared folders and addresses
-# #resources_folder = 'C:/GIS/EBAR/EBARToolsTranslation/resources'
-# resources_folder = 'D:/GIS/EBAR/EBARTools/resources'
-# temp_folder = 'D:/GIS/EBAR/temp'
-# download_folder = 'D:/GIS/EBAR/pub/download'
-# #download_folder = 'F:/download'
-# download_url = 'https://gis.natureserve.ca/download'
-# #nsx_species_search_url = 'https://explorer.natureserve.org/api/data/search'
-# nsx_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/'
-# # ebird_download_url = 'https://st-download.ebird.org/v1/fetch'
-# log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
-# #log_folder = 'D:/GIS/EBAR/temp'
 # shared folders and addresses
-resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
-temp_folder = 'C:/GIS/EBAR/temp'
-#download_folder = 'D:/GIS/EBAR/pub/download'
-download_folder = 'F:/download'
+#resources_folder = 'C:/GIS/EBAR/EBARToolsTranslation/resources'
+resources_folder = 'D:/GIS/EBAR/EBARTools/resources'
+temp_folder = 'D:/GIS/EBAR/temp'
+download_folder = 'D:/GIS/EBAR/pub/download'
+#download_folder = 'F:/download'
 download_url = 'https://gis.natureserve.ca/download'
 #nsx_species_search_url = 'https://explorer.natureserve.org/api/data/search'
 nsx_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/'
 # ebird_download_url = 'https://st-download.ebird.org/v1/fetch'
 log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
 #log_folder = 'D:/GIS/EBAR/temp'
+# # shared folders and addresses
+# resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
+# temp_folder = 'C:/GIS/EBAR/temp'
+# #download_folder = 'D:/GIS/EBAR/pub/download'
+# download_folder = 'F:/download'
+# download_url = 'https://gis.natureserve.ca/download'
+# #nsx_species_search_url = 'https://explorer.natureserve.org/api/data/search'
+# nsx_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/'
+# # ebird_download_url = 'https://st-download.ebird.org/v1/fetch'
+# log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
+# #log_folder = 'D:/GIS/EBAR/temp'
 
 
 # various services
@@ -718,7 +718,7 @@ def ExportRangeMapToCSV(range_map_view, range_map_ids, attributes_dict, output_f
                                                   'GROUPE_TAX', 'TEXT'))
         field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.FAMILY_COM_FR',
                                                   'COM_FAMILLE', 'TEXT'))
-        field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.GENUS_FR',
+        field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.GENUS',
                                                   'GENRE', 'TEXT'))
         field_mappings.addFieldMap(createFieldMap(range_map_view, 'L4BIOTICS_ELEMENT_NATIONAL.PHYLUM',
                                                   'EMBRANCHEMENT', 'TEXT'))
@@ -772,15 +772,26 @@ def ExportRangeMapToCSV(range_map_view, range_map_ids, attributes_dict, output_f
                 # row[1] is the RangeMapID
                 row[0] = row[1]
                 row.append(attributes_dict[row[1]]['g_rank'])
-                row.append(attributes_dict[row[1]]['ca_rank'])
-                row.append(attributes_dict[row[1]]['ca_subnational_ranks'])
-                row.append(attributes_dict[row[1]]['us_rank'])
-                row.append(attributes_dict[row[1]]['us_subnational_ranks'])
-                row.append(attributes_dict[row[1]]['mx_rank'])
-                row.append(attributes_dict[row[1]]['mx_subnational_ranks'])
-                row.append(attributes_dict[row[1]]['sara_status'])
-                row.append(attributes_dict[row[1]]['cosewic_status'])
-                row.append(attributes_dict[row[1]]['esa_status'])
+                if suffix == '_en':
+                    row.append(attributes_dict[row[1]]['ca_rank'])
+                    row.append(attributes_dict[row[1]]['ca_subnational_ranks'])
+                    row.append(attributes_dict[row[1]]['us_rank'])
+                    row.append(attributes_dict[row[1]]['us_subnational_ranks'])
+                    row.append(attributes_dict[row[1]]['mx_rank'])
+                    row.append(attributes_dict[row[1]]['mx_subnational_ranks'])
+                    row.append(attributes_dict[row[1]]['sara_status'])
+                    row.append(attributes_dict[row[1]]['cosewic_status'])
+                    row.append(attributes_dict[row[1]]['esa_status'])
+                else: # _fr
+                    row.append(attributes_dict[row[1]]['ca_rank_fr'])
+                    row.append(attributes_dict[row[1]]['ca_subnational_ranks_fr'])
+                    row.append(attributes_dict[row[1]]['us_rank_fr'])
+                    row.append(attributes_dict[row[1]]['us_subnational_ranks_fr'])
+                    row.append(attributes_dict[row[1]]['mx_rank_fr'])
+                    row.append(attributes_dict[row[1]]['mx_subnational_ranks_fr'])
+                    row.append(attributes_dict[row[1]]['sara_status_fr'])
+                    row.append(attributes_dict[row[1]]['cosewic_status_fr'])
+                    row.append(attributes_dict[row[1]]['esa_status_fr'])
                 all.append(row)
             writer.writerows(all)
     arcpy.Delete_management(output_folder + '/temp.csv')

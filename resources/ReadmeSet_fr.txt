@@ -5,16 +5,16 @@ Avertissement : Les versions anglaises des produits et documents CAARBÉ sont le
 
 Ces fichiers compressés (ZIP) doivent contenir les fichiers suivants :
 - CAARBExxxxx.pdf (cartes et métadonnées de la CAARBÉ des espèces sélectionnées)
-- MethodsCAARBE.pdf (informations générales sur la production des cartes de répartition, les sources des unités écosystémiques et les sujets connexes)
-- Ecoshape.* (fichiers comprenant des fichiers de forme (SHP) des tous les polygones précis des unités écosystémiques de la CAARBÉ)
-- AppercuEcoshape.* (fichiers comprenant des fichiers de forme (SHP) des tous les polygones généralisés des unités écosystémiques de la CAARBÉ)
+- MethodsCAARBE.pdf (informations générales sur la production des cartes de répartition, les sources des écoshapes et les sujets connexes)
+- Ecoshape.* (fichiers comprenant des fichiers de forme (SHP) des tous les polygones précis des écoshapes de la CAARBÉ)
+- EcoshapeApercu.* (fichiers comprenant des fichiers de forme (SHP) des tous les polygones généralisés des écoshapes de la CAARBÉ)
 - CarteRepartition.csv (tableau des espèces et attributs de la CAARBÉ pour toutes les espèces au sein de la catégorie/groupe taxonomique)
-- CarteRepartitionEcoshape.csv (tableau des attributs par unité écosystémique de la CAARBÉ pour toutes les espèces au sein de la catégorie/groupe taxonomique)
+- CarteRepartitionEcoshape.csv (tableau des attributs par écoshape de la CAARBÉ pour toutes les espèces au sein de la catégorie/groupe taxonomique)
 - Juridiction.csv (tableau des juridictions)
 - CAARBExxxxx.aprx (fichier du projet ArcGIS Pro référençant les fichiers de données ci-dessus, avec les jointures appropriées pour chaque espèce au sein de la catégorie/groupe taxonomique)
 - CAARBExxxxx.mapx (fichier de carte ArcGIS Pro référençant les fichiers de données ci-dessus, avec les jointures appropriées pour chaque espèce au sein de la catégorie/groupe taxonomique)
 - CAARBExxxxxEcoshape.lyrx (fichier de couche ArcGIS Pro, avec la symbologie suggérée et les jointures appropriées, référençant les écoshapes d'origine pour chaque espèce au sein de la catégorie/groupe taxonomique)
-- CAARBExxxxxAppercuEcoshape.lyrx (fichier de couche ArcGIS Pro, avec la symbologie suggérée et les jointures appropriées, référençant les écoshapes généraliséspour chaque espèce au sein de la catégorie/groupe taxonomique)
+- CAARBExxxxxEcoshapeApercu.lyrx (fichier de couche ArcGIS Pro, avec la symbologie suggérée et les jointures appropriées, référençant les écoshapes généralisés pour chaque espèce au sein de la catégorie/groupe taxonomique)
 - CAARBExxxxxEcoshapesSupprime.lyrx (fichier de couche ArcGIS Pro, avec les jointures appropriées, affichant uniquement les écoshapes qui ont été supprimées à la suite de l'examen par les experts, référençant les écoshapes généralisées pour chaque espèce au sein de la catégorie/groupe taxonomique)
 - CAARBExxxxxTypeUtilisation.lyrx (si applicable, fichier de couche ArcGIS Pro, avec la symbologie suggérée et les jointures appropriées, référençant le type d'utilisation des écoshapes généralisées pour chaque espèce au sein de la catégorie/groupe taxonomique)
 [où xxxxx est l'ELEMENT_GLOBAL_ID de l'espèce sélectionnée]
@@ -92,7 +92,7 @@ ParentEco - nom anglais de l'écorégion parentale
 ParentEcoF - nom français de l'écorégion parentale
 Ecozone - nom anglais de l'écozone
 EcozoneFR - nom français de l'écozone
-VerMosaiq - version de la mosaïque d'écoshape
+VerMosaiq - version de la mosaïque des écoshapes
 SuperTerr - superficie terrestre en mètres carrés dérivée de la Commission de coopération écologique «Grands lacs et réservoirs d'Amérique du Nord»
 SuperTot - superficie totale en mètres carrés
 
