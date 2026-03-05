@@ -17,6 +17,7 @@ import EBARUtils
 import shutil
 import arcpy
 import datetime
+import StaticTranslations
 
 
 class PublishRangeMapSetsTool:
@@ -85,7 +86,7 @@ class PublishRangeMapSetsTool:
             EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/CAARBE - ' + \
                 category_taxagroup + ' - tous les PDFs.zip')
             EBARUtils.createZip(zip_folder,
-                                EBARUtils.download_folder + '/EBAR - ' + category_taxagroup + ' - tous les PDFs.zip',
+                                EBARUtils.download_folder + '/CAARBE - ' + category_taxagroup + ' - tous les PDFs.zip',
                                 '.pdf')
 
     def runPublishRangeMapSetsTool(self, parameters, messages):
@@ -122,7 +123,7 @@ class PublishRangeMapSetsTool:
                 md.tags = 'Répartition des Espèces, NatureServe Canada, ' + \
                     'Cartographie automatisée des aires de répartissaient basée sur les écosystèmes'
                 md.description = 'See CAARBExxxxx.pdf pour la carte et les métadonnées ' + \
-                    'supplémentaires, et CAARBEMethods.pdf pour plus de détails. ' + \
+                    'supplémentaires, et MethodsCAARBE.pdf pour plus de détails. ' + \
                     '<a href="https://explorer.natureserve.org/"> Rendez-vous sur NatureServe Explorer</a> ' + \
                     'pour obtenir des informations sur les espèces.'
                 md.credits = '© NatureServe Canada ' + str(datetime.datetime.now().year)
@@ -178,16 +179,30 @@ class PublishRangeMapSetsTool:
                     range_map_ids = []
                     attributes_dict = {}
 
-                    # make zip folder
-                    category_taxagroup = row[0] + ' - ' + row[1]
-                    EBARUtils.displayMessage(messages, 'Category - Taxa Group: ' + category_taxagroup)
-                    zip_folder = EBARUtils.temp_folder + '/EBAR - ' + category_taxagroup
-                    EBARUtils.createReplaceFolder(zip_folder)
+                    if suffix == '_en':
+                        # make zip folder
+                        category_taxagroup = row[0] + ' - ' + row[1]
+                        EBARUtils.displayMessage(messages, 'Category - Taxa Group: ' + category_taxagroup)
+                        zip_folder = EBARUtils.temp_folder + '/EBAR - ' + category_taxagroup
+                        EBARUtils.createReplaceFolder(zip_folder)
 
-                    # copy static resources
-                    shutil.copyfile(EBARUtils.resources_folder + '/ReadmeSet.txt', zip_folder + '/Readme.txt')
-                    shutil.copyfile(EBARUtils.resources_folder + '/EBARMethods.pdf', zip_folder + '/EBARMethods.pdf')
-                    shutil.copyfile(EBARUtils.resources_folder + '/Jurisdiction.csv', zip_folder + '/Jurisdiction.csv')
+                        # copy static resources
+                        shutil.copyfile(EBARUtils.resources_folder + '/ReadmeSet_en.txt', zip_folder + '/Readme.txt')
+                        shutil.copyfile(EBARUtils.resources_folder + '/EBARMethods_en.pdf', zip_folder + '/EBARMethods.pdf')
+                        shutil.copyfile(EBARUtils.resources_folder + '/Jurisdiction.csv', zip_folder + '/Jurisdiction.csv')
+
+                    else: # fr
+                        # make zip folder
+                        category_taxagroup = StaticTranslations.biotics_category_translation(row[0]) + ' - ' + \
+                            StaticTranslations.biotics_taxa_group_translation(row[1])
+                        EBARUtils.displayMessage(messages, 'Category - Taxa Group: ' + category_taxagroup)
+                        zip_folder = EBARUtils.temp_folder + '/CAARBE - ' + category_taxagroup
+                        EBARUtils.createReplaceFolder(zip_folder)
+
+                        # copy static resources
+                        shutil.copyfile(EBARUtils.resources_folder + '/ReadmeSet_fr.txt', zip_folder + '/Lisez-moi.txt')
+                        shutil.copyfile(EBARUtils.resources_folder + '/EBARMethods.pdf', zip_folder + '/MethodsCAARBE.pdf')
+                        shutil.copyfile(EBARUtils.resources_folder + '/Juridiction.csv', zip_folder + '/Juridiction.csv')
 
                 # copy pdf
                 EBARUtils.displayMessage(messages, 'Range Map ID: ' + str(row[8]))

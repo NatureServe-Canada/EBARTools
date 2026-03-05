@@ -486,7 +486,7 @@ class PublishRangeMapTool:
                     md.tags = 'Répartition des Espèces, NatureServe Canada, ' + \
                         'Cartographie automatisée des aires de répartissaient basée sur les écosystèmes'
                     md.description = 'Voir CAARBE' + element_global_id + '.pdf pour la carte et les métadonnées ' + \
-                        'supplémentaires, et CAARBEMethods.pdf pour plus de détails. <a href="' + nsx_url + \
+                        'supplémentaires, et MethodsCAARBE.pdf pour plus de détails. <a href="' + nsx_url + \
                         '"> Rendez-vous sur NatureServe Explorer</a>  pour obtenir des informations sur les espèces.'
                     md.credits = '© NatureServe Canada ' + str(datetime.datetime.now().year)
                     md.accessConstraints = 'Partageable publiquement sous licence CC BY 4.0  (<a href=' + \
@@ -530,7 +530,7 @@ class PublishRangeMapTool:
                     EBARUtils.displayMessage(messages, 'Exporting EcoshapeOverview polygons to shapefile')
                     EBARUtils.ExportEcoshapeOverviewsToShapefile('ecoshape_overview_layer' + suffix + param_range_map_id,
                                                                  'range_map_ecoshape_view' + suffix + param_range_map_id,
-                                                                 zip_folder, 'ApercuEcoshape.shp', md, False, suffix)
+                                                                 zip_folder, 'EcoshapeApercu.shp', md, False, suffix)
                     
                 # update ArcGIS Pro template
                 EBARUtils.displayMessage(messages, 'Updating ArcGIS Pro template')
