@@ -195,21 +195,34 @@ class PublishRangeMapTool:
         # get input citations
         EBARUtils.displayMessage(messages, 'Getting Input Citations from database')
         input_references = ''
+        input_references_fr = ''
         previous_dataset_source_name = ''
         arcpy.MakeTableView_management(EBARUtils.ebar_summary_service + '/7', 'citation_view',
                                        'RangeMapID = ' + param_range_map_id)
         # Nov 2024 - could now be multiple citations per source because InputDataset can have one
         # see database view s_InputCitationsByRangeMap, including DISTINCT clause!
         with arcpy.da.SearchCursor('citation_view', ['DatasetSourceName', 'DatasetSourceCitation',
-                                                     'DatasetSourceWebsite', 'DatasetCitation']) as cursor:
+                                                     'DatasetSourceWebsite', 'DatasetCitation',
+                                                     'DatasetSourceName_FR', 'DatasetSourceCitation_FR',
+                                                     'DatasetCitation_FR']) as cursor:
             row = None
             for row in EBARUtils.searchCursor(cursor):
                 dataset_source_name = row['DatasetSourceName']
+                dataset_source_name_fr = row['DatasetSourceName']
+                if row['DatasetSourceName_FR']:
+                    dataset_source_name_fr = row['DatasetSourceName_FR']
                 dataset_source_website = row['DatasetSourceWebsite']
                 primary_citation = row['DatasetSourceCitation']
+                primary_citation_fr = row['DatasetSourceCitation']
+                if row['DatasetSourceCitation_FR']:
+                    primary_citation_fr = row['DatasetSourceCitation_FR']
                 secondary_citation = row['DatasetCitation']
+                secondary_citation_fr = row['DatasetCitation']
+                if row['DatasetCitation_FR']:
+                    secondary_citation_fr = row['DatasetCitation_FR']
                 if dataset_source_name != previous_dataset_source_name:
                     citations_list = []
+                    citations_list_fr = []
                 # primary citation should never be NULL
                 if not primary_citation:
                     EBARUtils.displayMessage('ERROR: ' + dataset_source_name + ' has no Citation')
@@ -218,31 +231,41 @@ class PublishRangeMapTool:
                     citations_list.append(primary_citation)
                     if len (input_references) > 0:
                         input_references += '<br>'
+                        input_references_fr += '<br>'
                     input_references += dataset_source_name + ' - '
+                    input_references_fr += dataset_source_name_fr + ' - '
                     # use website if provided as link for citation
                     if dataset_source_website:
                         input_references += ' <a href="' + dataset_source_website + '">' + \
                             primary_citation + '</a>'
+                        input_references_fr += ' <a href="' + dataset_source_website + '">' + \
+                            primary_citation_fr + '</a>'
                     else:
                         input_references += primary_citation
+                        input_references_fr += primary_citation_fr
                 # secondary citation can be NULL
                 if secondary_citation:
                     if secondary_citation not in citations_list:
                         citations_list.append(secondary_citation)
                         input_references += '<br>'
+                        input_references_fr += '<br>'
                         input_references += dataset_source_name + ' - '
+                        input_references_fr += dataset_source_name_fr + ' - '
                         # use website if provided as link for citation
                         if dataset_source_website:
                             input_references += ' <a href="' + dataset_source_website + '">' + \
                                 secondary_citation + '</a>'
+                            input_references_fr += ' <a href="' + dataset_source_website + '">' + \
+                                secondary_citation_fr + '</a>'
                         else:
                             input_references += secondary_citation
+                            input_references_fr += secondary_citation_fr
                 # handle multiple citations per source
                 previous_dataset_source_name = dataset_source_name
             if row:
                 del row
         pdf_html_en = pdf_html_en.replace('[InputReferences]', input_references)
-        pdf_html_fr = pdf_html_fr.replace('[InputReferences]', input_references)
+        pdf_html_fr = pdf_html_fr.replace('[InputReferences]', input_references_fr)
 
         # get range map data from database
         EBARUtils.displayMessage(messages, 'Getting RangeMap data from database')

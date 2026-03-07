@@ -70,9 +70,9 @@ IDCarteRepartition - clé étrangère CAARBÉ relative à l'enregistrement Carte
 IDEcoshape - clé étrangère CAARBÉ relative à l'enregistrement Ecoshape/EcoshapeApercu approprié
 Presence - catégorie de présence de l'espèce dans l'écoshape (P = Présente, X = Présence attendue, H = Historique, NULL = Supprimée*, voir le PDF des métadonnées pour les définitions)
 TypeUtilisation - type d'utilisation de l'espèce dans l'écoshape (B = Reproduction, P = Reproduction possible, M = Migration, voir le PDF des métadonnées pour les définitions)
-NotesCarteRepartitionEcoshape - nombre d'enregistrements saisis par source et commentaires des réviseurs, s'ils peuvent être publiés
-DateMin - date la plus ancienne pour tous les enregistrements saisis qui chevauchent l'écoshape
-DateMax - date la plus récente pour tous les enregistrements saisis qui chevauchent l'écoshape
+NotesCarteRepartitionEcoshape - nombre d'enregistrements d'entrée par source et commentaires des réviseurs, s'ils peuvent être publiés
+DateMin - date la plus ancienne pour tous les enregistrements d'entrée qui chevauchent l'écoshape
+DateMax - date la plus récente pour tous les enregistrements d'entrée qui chevauchent l'écoshape
 
 [*Les écoshapes supprimées au cours du processus de révision par des experts sont incluses avec Présence=NULL et le champ RangeMapEcoshapeNotes contenant les commentaires des réviseurs, s'ils peuvent être publiés.]
 

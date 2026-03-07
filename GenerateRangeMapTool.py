@@ -564,7 +564,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     del search_row
                 del search_cursor
                 summary = 'Input records - ' + summary
-                summary_fr = 'Enregistrements saisis - ' + summary_fr
+                summary_fr = "Enregistrements d'entrée - " + summary_fr
                 # check for ecoshape "update" reviews
                 if len(prev_range_map_ids) > 0:
                     search_row = None
@@ -1297,11 +1297,14 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                 'MIN_' + table_name_prefix + temp_pairwise_intersect + '.maxdate',
                                 'min_ebarkba_sde_' + temp_pairwise_intersect.lower() + '_maxdate']]
                 summary = ''
+                summary_fr = ''
                 with arcpy.da.SearchCursor(temp_overall_countby_source, field_names) as search_cursor:
                     for search_row in EBARUtils.searchCursor(search_cursor):
                         if len(summary) > 0:
                             summary += ', '
+                            summary_fr += ', '
                         summary += str(search_row[field_names[1]]) + ' ' + search_row[field_names[0]]
+                        summary_fr += str(search_row[field_names[1]]) + ' ' + source_fr_dict[search_row[field_names[0]]]
                         if search_row[field_names[3]]:
                             min_year = search_row[field_names[3]].year
                             max_year = search_row[field_names[3]].year
@@ -1311,49 +1314,52 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                 if search_row[field_names[2]].year < min_year:
                                     min_year = search_row[field_names[2]].year
                             summary += ' ('
+                            summary_fr += ' ('
                             if min_year < max_year:
                                 summary += str(min_year) + '-'
+                                summary_fr += str(min_year) + '-'
                             summary += str(max_year) + ')'
+                            summary_fr += str(max_year) + ')'
                 if len(summary) > 0:
                     del search_row
                 del search_cursor
-                summary_fr = 'Enregistrements saisis - ' + summary
                 summary = 'Input Records - ' + summary
+                summary_fr = "Enregistrements d'entrée - " + summary_fr
                 # expert reviews
-                summary_fr += "; Avis d'experts - "
                 summary += '; Expert Reviews - '
+                summary_fr += "; Avis d'experts - "
                 first = True
                 for expert_name in experts:
                     if expert_name != 'Anonymous':
                         if not first:
-                            summary_fr += ', '
                             summary += ', '
+                            summary_fr += ', '
                         first = False
-                        summary_fr += expert_name
                         summary += expert_name
+                        summary_fr += expert_name
                 if anonymous_count > 0:
                     if not first:
-                        summary_fr += ', '
                         summary += ', '
-                    summary_fr += str(anonymous_count) + ' Anonyme'
+                        summary_fr += ', '
                     summary += str(anonymous_count) + ' Anonymous'
-                reviewer_comments_fr = ''
+                    summary_fr += str(anonymous_count) + ' Anonyme'
                 reviewer_comments = ''
+                reviewer_comments_fr = ''
                 for expert_comment in experts_comments:
                     if len(reviewer_comments) > 0:
-                        reviewer_comments_fr += '<br>'
                         reviewer_comments += '<br>'
-                    reviewer_comments_fr += expert_comment_fr
+                        reviewer_comments_fr += '<br>'
                     reviewer_comments += expert_comment
+                    reviewer_comments_fr += expert_comment_fr
                 # Notes
-                notes_fr = 'Espèce primaire - ' + param_species
                 notes = 'Primary Species - ' + param_species
+                notes_fr = 'Espèce primaire - ' + param_species
                 if len(secondary_names) > 0:
-                    notes_fr += '; Espèces secondaires - ' + secondary_names
                     notes += '; Secondary Species - ' + secondary_names
+                    notes_fr += '; Espèces secondaires - ' + secondary_names
                 if len(synonym_authors) > 0:
-                    notes_fr += '; Synonymes - ' + synonym_authors
                     notes += '; Synonyms - ' + synonym_authors
+                    notes_fr += '; Synonymes - ' + synonym_authors
                 update_cursor.updateRow([summary, summary_fr, datetime.datetime.now(), notes, notes_fr, scope,
                                          StaticTranslations.range_map_scope_translation[scope], synonyms_used,
                                          reviewer_comments, reviewer_comments_fr, differentiate_usage_type])
