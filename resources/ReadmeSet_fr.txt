@@ -42,7 +42,7 @@ ID_ELEMENT_NATIONAL - identifiant unique national dans Biotics de NatureServe
 ID_ELEMENT_MONDIAL - identifiant unique mondial dans Biotics de NatureServe
 CODE_ELEMENT - identifiant de l'élément dans Biotics de NatureServe 
 CATEGORIE - catégorie des espèces dans Biotics de NatureServe
-GROUPE_TAX - groupe taxonomiquedes espèces dans Biotics de NatureServe
+GROUPE_TAX - groupe taxonomique des espèces dans Biotics de NatureServe
 COM_FAMILLE - nom commun de la famille des espèces dans Biotics de NatureServe
 GENRE - genre des espèces dans Biotics de NatureServe
 EMBRANCHEMENT - embranchement des espèces dans Biotics de NatureServe

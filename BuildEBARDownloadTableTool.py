@@ -16,6 +16,7 @@
 import EBARUtils
 import arcpy
 import datetime
+import StaticTranslations
 
 
 class BuildEBARDownloadTableTool:
@@ -30,6 +31,7 @@ class BuildEBARDownloadTableTool:
 
         # settings
         output_file = EBARUtils.download_folder + '/EBARDownloadTables.html'
+        output_file_fr = EBARUtils.download_folder + '/EBARDownloadTables_FR.html'
 
         # html header
         html = '''<!doctype html>
@@ -70,6 +72,8 @@ class BuildEBARDownloadTableTool:
         }
     </style>
 	<body>'''
+        html_fr = html
+
         # loop all RangeMap records where IncludeInDownloadTable is populated
         arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/11', 'range_map_view',
                                        'IncludeInDownloadTable IN (1, 2, 3, 4) AND Publish = 1')
@@ -92,8 +96,12 @@ class BuildEBARDownloadTableTool:
                     # table footer for previous table
                     html += '''
         </tbody></table>'''
+                    html_fr += '''
+        </tbody></table>'''
                 # table header
                 category_taxa = row[0] + ' - ' + row[1]
+                category_taxa_fr = StaticTranslations.biotics_category_translation(row[0]) + ' - ' + \
+                    StaticTranslations.biotics_taxa_group_translation(row[1])
                 EBARUtils.displayMessage(messages, category_taxa + ' table')
                 html += '''
         <h4>''' + category_taxa + '''</h4>
@@ -101,11 +109,23 @@ class BuildEBARDownloadTableTool:
             <tr>
     	        <th>Scientific Name</th>
                 <th>English Name</th>
-                <th>Nom Francais</th>
+                <th>French Name</th>
                 <th>Scope</th>
                 <th>Status</th>
                 <th>PDF Link</th>
                 <th>GIS Data Link</th>
+            </tr>'''
+                html_fr += '''
+        <h4>''' + category_taxa_fr + '''</h4>
+        <table><tbody>
+            <tr>
+    	        <th>Nom scientifique</th>
+                <th>Nom anglais</th>
+                <th>Nom français</th>
+                <th>Portée</th>
+                <th>État</th>
+                <th>Lien PDF</th>
+                <th>Lien de données SIG</th>
             </tr>'''
             # table row
             french_name = ''
@@ -116,16 +136,21 @@ class BuildEBARDownloadTableTool:
                 scope = 'Canadian'
             if row[6] == 'A':
                 scope = 'North American'
+            scope_fr = StaticTranslations.range_map_scope_translation(row[6])
             element_global_id = str(row[5])
             if scope == 'Canadian':
                 element_global_id += 'N'
             status = 'Expert Reviewed'
+            status_fr = 'Examiné par des experts'
             if row[7] == 2:
                 status = 'Insufficient Data'
+                status_fr = 'Données insuffisantes'
             if row[7] == 3:
                 status = 'Partially Reviewed'
+                status_fr = 'Examen partiel'
             if row[7] == 4:
                 status = 'Low Star Rating'
+                status_fr = "Faible nombre d'étoiles"
             html += '''
             <tr>
                 <td>''' + row[2] + '''</td>
@@ -134,19 +159,42 @@ class BuildEBARDownloadTableTool:
                 <td>''' + scope + '''</td>
                 <td>''' + status + '''</td>
                 <td><a href="https://gis.natureserve.ca/download/EBAR''' + element_global_id + \
-                    '''.pdf" target="_blank">View PDF</a></td>'''
+                    '''.pdf" target="_blank">PDF EN</a> <a href="https://gis.natureserve.ca/download/CAARBE''' + \
+                        element_global_id + '''.pdf" target="_blank">PDF FR</a></td>'''
+            html_fr += '''
+            <tr>
+                <td>''' + row[2] + '''</td>
+                <td>''' + row[3] + '''</td>
+                <td>''' + french_name + '''</td>
+                <td>''' + scope_fr + '''</td>
+                <td>''' + status_fr + '''</td>
+                <td><a href="https://gis.natureserve.ca/download/CAARBE''' + element_global_id + \
+                    '''.pdf" target="_blank">PDF FR</a> <a href="https://gis.natureserve.ca/download/EBAR''' + \
+                        element_global_id + '''.pdf" target="_blank">PDF EN</a></td>'''
             if row[7] == 1:
                 html += '''
                 <td><a href="https://gis.natureserve.ca/download/EBAR''' + element_global_id + \
-                    '''.zip" target="_blank">Download GIS Data</a></td>'''
+                    '''.zip" target="_blank">GIS EN</a> <a href="https://gis.natureserve.ca/download/CAARBE''' + \
+                        element_global_id + '''.zip" target="_blank">SIG FR</a></td>'''
+                html_fr += '''
+                <td><a href="https://gis.natureserve.ca/download/CAARBe''' + element_global_id + \
+                    '''.zip" target="_blank">SIG FR</a> <a href="https://gis.natureserve.ca/download/EBAR''' + \
+                        element_global_id + '''.zip" target="_blank">GIS EN</a></td>'''
             else:
                 html += '''
                 <td></td>'''
+                html_fr += '''
+                <td></td>'''
             html += '''
+            </tr>'''
+            html_fr += '''
             </tr>'''
             EBARUtils.displayMessage(messages, element_global_id)
         # table footer for final table
         html += '''
+		</tbody></table>
+	</body>'''
+        html_fr += '''
 		</tbody></table>
 	</body>'''
                 
@@ -155,6 +203,9 @@ class BuildEBARDownloadTableTool:
         file = open(output_file, 'w')
         file.write(html)
         file.close()
+        file_fr = open(output_file_fr, 'w')
+        file_fr.write(html_fr)
+        file_fr.close()
 
 
 # # controlling process

@@ -20,7 +20,8 @@ range_stage_translation = {
     'Expert Reviewed (Insufficient Data)': 'Examiné par des experts (données insuffisantes)',
     'Expert Reviewed (Low Star Rating - National)': "Examiné par des experts (faible nombre d'étoiles - national)",
     'Expert Reviewed (Low Star Rating)': "Examiné par des experts (faible nombre d'étoiles)",
-    'Expert Reviewed (National)': 'Examiné par des experts (national)'}
+    'Expert Reviewed (National)': 'Examiné par des experts (national)',
+    'Partially Reviewed': 'Examen partiel'}
 
 
 presence_translation = {
