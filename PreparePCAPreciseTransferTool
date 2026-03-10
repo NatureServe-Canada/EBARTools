@@ -4,26 +4,27 @@
 # Credits: Randal Greene, Samantha Stefanoff
 # © NatureServe Canada 2026 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
-# Program: PrepareNSXProTransferTool.py
-# ArcGIS Python tool for setting InputPoint/Polygon fields used by the NSXProTransfer service
+# Program: PreparePCAPreciseTransferTool.py
+# ArcGIS Python tool for setting InputPoint/Polygon fields used for exporting for transfer to NatureServe
+# NSXPro and GeoData Portal for Parks Canada Agency
 
 # Notes:
 # - Relies on views in server geodatabase, so not possible to use/debug with local file gdb
+# - Modeling after PrepareNSXProTransferTool.py, slightly simplifed because PCA is always provided precise and we just
+# need to set the Sensitive flag for ESTH and 
 
 # import Python packages
-import sys
-import traceback
 import EBARUtils
 import arcpy
 import datetime
 
 
-class PrepareNSXProTransferTool:
+class PreparePCAPreciseTransferTool:
     """Set InputPoint/Polygon fields used by the NSXProTransfer service"""
     def __init__(self):
         pass
 
-    def runPrepareNSXProTransferTool(self, parameters, messages):
+    def runPreparePCAPreciseTransferTool(self, parameters, messages):
         # start time
         start_time = datetime.datetime.now()
         EBARUtils.displayMessage(messages, 'Start time: ' + str(start_time))
@@ -43,18 +44,20 @@ class PrepareNSXProTransferTool:
             EBARUtils.displayMessage(messages, 'Processing ' + spatial_input)
 
             # record counts
-            count_dict = {}
+            count = 0
 
             # apply elements susceptible to harm (ESTH) rules then permissions
-            # reset to NULLs in case rules/datasets have changed since last transfer
-            EBARUtils.displayMessage(messages, 'Resetting transfer fields')
-            arcpy.MakeTableView_management(param_geodatabase + '/' + spatial_input, 'input_view',
-                                           #'NSXProTransfer IS NOT NULL OR AllowedPrecisionSquareMiles IS NOT NULL')
-                                           'PermitNSXProTransfer IS NOT NULL OR AllowedPrecisionSquareMiles IS NOT NULL')
-            #arcpy.CalculateField_management('input_view', 'NSXProTransfer', 'None')
-            arcpy.CalculateField_management('input_view', 'PermitNSXProTransfer', 'None')
-            arcpy.CalculateField_management('input_view', 'AllowedPrecisionSquareMiles', 'None')
-            arcpy.Delete_management('input_view')
+            # # reset to NULLs in case rules/datasets have changed since last transfer
+            # EBARUtils.displayMessage(messages, 'Resetting transfer fields')
+            # arcpy.AddIndex_management(param_geodatabase + '/' + spatial_input, ['PCAPreciseSensitive'],
+            #                           'pca_sensitive_index')
+            # arcpy.MakeTableView_management(param_geodatabase + '/' + spatial_input, 'input_view',
+            #                                'PermitPCAPreciseTransfer IS NOT NULL OR PCAPreciseSensitive IS NOT NULL')
+            # arcpy.RemoveIndex_management(param_geodatabase + '/' + spatial_input, 'pca_precise_index')
+            # arcpy.RemoveIndex_management(param_geodatabase + '/' + spatial_input, 'pca_sensitive_index')
+            # arcpy.CalculateField_management('input_view', 'PermitPCAPreciseTransfer', 'None')
+            # arcpy.CalculateField_management('input_view', 'PCAPreciseSensitive', 'None')
+            # arcpy.Delete_management('input_view')
 
             # jurisdiction-level rules are handled by prov/territory, with NF and LB separated
             jurs = ['BC', 'AB', 'SK', 'MB', 'ON', 'QC', 'NB', 'PE', 'NS', 'NF', 'LB', 'NU', 'NT', 'YT']
@@ -64,19 +67,17 @@ class PrepareNSXProTransferTool:
             arcpy.AddJoin_management('esth_view', 'JurisdictionID', param_geodatabase + '/Jurisdiction',
                                      'JurisdictionID', 'KEEP_COMMON')
 
-            # process rules in five steps, keep coarsest of all rules and don't override previous exclude
+            # process rules in five steps, don't overrid previous sensitive
             # 1. iNaturalist.ca Canada-wide ESTHs
             EBARUtils.displayMessage(messages, 'Applying iNaturalist.ca Canada-wide ESTHs')
             row = None
-            with arcpy.da.SearchCursor('esth_view', [table_name_prefix + 'ESTH.SpeciesID',
-                                                     table_name_prefix + 'ESTH.AllowedPrecisionSquareMiles'],
+            with arcpy.da.SearchCursor('esth_view', [table_name_prefix + 'ESTH.SpeciesID'],
                                        table_name_prefix + "Jurisdiction.JurisdictionAbbreviation = 'CA' AND " +
                                        table_name_prefix + "ESTH.ObscuredForiNatca = 'Y'") as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     self.applyJurisdictionSpecies(param_geodatabase, table_name_prefix, spatial_input, jurs,
                                                   row[table_name_prefix + 'ESTH.SpeciesID'], None,
-                                                  row[table_name_prefix + 'ESTH.AllowedPrecisionSquareMiles'],
-                                                  count_dict, messages)
+                                                  count)
             if row:
                 del row
             del cursor
@@ -85,7 +86,6 @@ class PrepareNSXProTransferTool:
             EBARUtils.displayMessage(messages, 'Applying iNaturalist.ca Jurisdictional ESTHs')
             row = None
             with arcpy.da.SearchCursor('esth_view', [table_name_prefix + 'ESTH.SpeciesID',
-                                                     table_name_prefix + 'ESTH.AllowedPrecisionSquareMiles',
                                                      table_name_prefix + 'Jurisdiction.JurisdictionAbbreviation'],
                                        table_name_prefix + "Jurisdiction.JurisdictionAbbreviation <> 'CA' AND " +
                                        table_name_prefix + "ESTH.ObscuredForiNatca = 'Y'") as cursor:
@@ -93,8 +93,7 @@ class PrepareNSXProTransferTool:
                     self.applyJurisdictionSpecies(param_geodatabase, table_name_prefix, spatial_input,
                                                   [row[table_name_prefix + 'Jurisdiction.JurisdictionAbbreviation']],
                                                   row[table_name_prefix + 'ESTH.SpeciesID'], None,
-                                                  row[table_name_prefix + 'ESTH.AllowedPrecisionSquareMiles'],
-                                                  count_dict, messages)
+                                                  count)
             if row:
                 del row
             del cursor
@@ -102,15 +101,13 @@ class PrepareNSXProTransferTool:
             # 3. NSC/CDC Canada-wide ESTHs
             EBARUtils.displayMessage(messages, 'Applying NSC/CDC Canada-wide ESTHs')
             row = None
-            with arcpy.da.SearchCursor('esth_view', [table_name_prefix + 'ESTH.SpeciesID',
-                                                     table_name_prefix + 'ESTH.AllowedPrecisionSquareMiles'],
+            with arcpy.da.SearchCursor('esth_view', [table_name_prefix + 'ESTH.SpeciesID'],
                                        table_name_prefix + "Jurisdiction.JurisdictionAbbreviation = 'CA' AND " +
                                        table_name_prefix + "ESTH.ObscuredForNSC = 'Y'") as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     self.applyJurisdictionSpecies(param_geodatabase, table_name_prefix, spatial_input, jurs,
                                                   row[table_name_prefix + 'ESTH.SpeciesID'], None,
-                                                  row[table_name_prefix + 'ESTH.AllowedPrecisionSquareMiles'],
-                                                  count_dict, messages)
+                                                  count)
             if row:
                 del row
             del cursor
@@ -119,7 +116,6 @@ class PrepareNSXProTransferTool:
             EBARUtils.displayMessage(messages, 'Applying NSC/CDC Jurisdictional ESTHs')
             row = None
             with arcpy.da.SearchCursor('esth_view', [table_name_prefix + 'ESTH.SpeciesID',
-                                                     table_name_prefix + 'ESTH.AllowedPrecisionSquareMiles',
                                                      table_name_prefix + 'Jurisdiction.JurisdictionAbbreviation'],
                                        table_name_prefix + "Jurisdiction.JurisdictionAbbreviation <> 'CA' AND " +
                                        table_name_prefix + "ESTH.ObscuredForNSC = 'Y'") as cursor:
@@ -127,8 +123,7 @@ class PrepareNSXProTransferTool:
                     self.applyJurisdictionSpecies(param_geodatabase, table_name_prefix, spatial_input,
                                                   [row[table_name_prefix + 'Jurisdiction.JurisdictionAbbreviation']],
                                                   row[table_name_prefix + 'ESTH.SpeciesID'], None,
-                                                  row[table_name_prefix + 'ESTH.AllowedPrecisionSquareMiles'],
-                                                  count_dict, messages)
+                                                  count)
             if row:
                 del row
             del cursor
@@ -139,10 +134,8 @@ class PrepareNSXProTransferTool:
             EBARUtils.displayMessage(messages, 'Applying EBAR provider permissions')
             row = None
             with arcpy.da.SearchCursor(param_geodatabase + '/DatasetSource',
-                                       ['DatasetSourceID', 'AllowedPrecisionSquareMiles'],
-                                       #"(NSXProTransfer = 'Y') OR (PermitAll = 'Y')") as cursor:
-                                       "(PermitNSXProTransfer = 'Y') OR (PermitAll = 'Y')") as cursor:
-                                       #"NSXProTransfer='Y'") as cursor:
+                                       ['DatasetSourceID'],
+                                       "(PermitNSXBiodiversityScience = 'Y') OR (PermitAll = 'Y')") as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     # get InputDatasetIDs
                     input_dataset_ids = []
@@ -156,30 +149,31 @@ class PrepareNSXProTransferTool:
                     del id_cursor
                     if len(input_dataset_ids) > 0:
                         self.applyJurisdictionSpecies(param_geodatabase, table_name_prefix, spatial_input, jurs, None,
-                                                      input_dataset_ids, row['AllowedPrecisionSquareMiles'], count_dict,
-                                                      messages)
+                                                      input_dataset_ids, count)
             if row:
                 del row
             del cursor
 
+            # index to help export performance
+            EBARUtils.displayMessage(messages, 'Indexing')
+            arcpy.AddIndex_management(param_geodatabase + '/' + spatial_input, ['PermitPCAPreciseTransfer'],
+                                      'pca_precise_index')
+
             # record counts
-            EBARUtils.displayMessage(messages, spatial_input + ' record counts:')
-            for allowed_prec in sorted(count_dict.keys()):
-                EBARUtils.displayMessage(messages,
-                                         str(allowed_prec) + ' sq. mile(s) - ' +str(count_dict[allowed_prec]))
+            EBARUtils.displayMessage(messages, spatial_input + ' record count: ' + str(count))
 
         # export to file geodatabase
         EBARUtils.displayMessage(messages, 'Exporting to File Geodatabase')
-        output_gdb = 'NSXProTransfer' + str(datetime.datetime.now().day) + datetime.datetime.now().strftime('%b') + \
-            str(datetime.datetime.now().year)
+        output_gdb = 'PCAPreciseTransfer' + str(datetime.datetime.now().day) + \
+            datetime.datetime.now().strftime('%b') + str(datetime.datetime.now().year)
         arcpy.CreateFileGDB_management(EBARUtils.temp_folder, output_gdb)
-        output_gdb_folder = EBARUtils.download_folder + '/' + output_gdb
-        arcpy.ExportFeatures_conversion(param_geodatabase + '/NSXProInputPoint',
-                                        output_gdb_folder + '/NSXProInputPoint')
-        arcpy.ExportFeatures_conversion(param_geodatabase + '/NSXProInputPolygon',
-                                        output_gdb_folder + '/NSXProInputPolygon')
-        arcpy.ExportTable_conversion(param_geodatabase + '/NSXProDatasetSource',
-                                     output_gdb_folder + '/NSXProDatasetSource')
+        output_gdb_folder = EBARUtils.temp_folder + '/' + output_gdb
+        arcpy.ExportFeatures_conversion(param_geodatabase + '/PCAPreciseInputPoint',
+                                        output_gdb_folder + '/PCAPreciseInputPoint')
+        arcpy.ExportFeatures_conversion(param_geodatabase + '/PCAPreciseInputPolygon',
+                                        output_gdb_folder + '/PCAPreciseInputPolygon')
+        arcpy.ExportTable_conversion(param_geodatabase + '/PCAPreciseDatasetSource',
+                                     output_gdb_folder + '/PCAPreciseDatasetSource')
 
         # zip and provide link
         EBARUtils.createZip(output_gdb_folder, EBARUtils.download_folder + '/' + output_gdb + '.zip')
@@ -194,11 +188,11 @@ class PrepareNSXProTransferTool:
 
 
     def applyJurisdictionSpecies(self, param_geodatabase, table_name_prefix, spatial_input, jurs, species_id,
-                                 input_dataset_ids, allowed_precision_sq_miles, count_dict, messages):
+                                 input_dataset_ids, count):
         """apply rules for a single step"""
         # SpeciesID is provided for ESTH rules, InputDatasetIDs for permissions
         if species_id:
-            where = 'SpeciesID = ' + str(species_id) # + ' AND NSXProTransfer IS NULL'
+            where = 'SpeciesID = ' + str(species_id)
         else:
             where = 'InputDatasetID IN (' + ','.join(map(str, input_dataset_ids)) + ')'
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/'+ spatial_input, 'input_lyr', where)
@@ -212,43 +206,25 @@ class PrepareNSXProTransferTool:
                                                 "'{0}'".format("','".join(jurs)) + ')')
         arcpy.SelectLayerByLocation_management('input_lyr', 'INTERSECT', 'jurbuffer_lyr')
         update_row = None
-        #with arcpy.da.UpdateCursor('input_lyr', ['NSXProTransfer', 'AllowedPrecisionSquareMiles']) as update_cursor:
-        with arcpy.da.UpdateCursor('input_lyr',
-                                   ['PermitNSXProTransfer', 'AllowedPrecisionSquareMiles']) as update_cursor:
+        with arcpy.da.UpdateCursor('input_lyr', ['PermitPCAPreciseTransfer', 'PCAPreciseSensitive']) as update_cursor:
             for update_row in EBARUtils.updateCursor(update_cursor):
                 update = False
-                nsx_pro_transfer = None
+                pca_precise_transfer = None
                 if species_id:
                     # ESTH rule
-                    if not update_row['AllowedPrecisionSquareMiles']:
-                        # no previous rule
+                    if not update_row['PCAPreciseSensitive']:
+                        # not previously set
                         update = True
-                        allowed_prec = allowed_precision_sq_miles
-                    elif allowed_precision_sq_miles > update_row['AllowedPrecisionSquareMiles']:
-                        # keep coarsest of all rules
-                        update = True
-                        allowed_prec = allowed_precision_sq_miles
+                        pca_precise_sensitive = 'Y'
                 else:
                     # Permission
                     update = True
-                    if update_row['AllowedPrecisionSquareMiles']:
-                        # ESTH rule set earlier
-                        allowed_prec = update_row['AllowedPrecisionSquareMiles']
-                        if allowed_precision_sq_miles > allowed_prec:
-                            # keep coarsest of all rules
-                            allowed_prec = allowed_precision_sq_miles
-                    else:
-                        # no ESTH rule set earlier
-                        allowed_prec = allowed_precision_sq_miles
-                    if  allowed_prec < 200000000: # NS magic number for exclude
-                        nsx_pro_transfer = 'Y'
+                    pca_precise_transfer = 'Y'
+                    pca_precise_sensitive = update_row['PCAPreciseSensitive']
                 if update:
-                    update_cursor.updateRow([nsx_pro_transfer, allowed_prec])
-                    if input_dataset_ids and allowed_prec < 200000000:
-                        # only count included records
-                        if allowed_prec not in count_dict:
-                            count_dict[allowed_prec] = 0
-                        count_dict[allowed_prec] += 1
+                    update_cursor.updateRow([pca_precise_transfer, pca_precise_sensitive])
+                    if input_dataset_ids:
+                        count += 1
         if update_row:
             del update_row
         del update_cursor
@@ -259,49 +235,9 @@ class PrepareNSXProTransferTool:
 
 # controlling process
 if __name__ == '__main__':
-    pnpt = PrepareNSXProTransferTool()
+    pppt = PreparePCAPreciseTransferTool()
     # hard code parameters for debugging
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde' #'C:/GIS/EBAR/NSXProDebug.gdb'
     parameters = [param_geodatabase]
-    pnpt.runPrepareNSXProTransferTool(parameters, None)
-
-    # # redirect output to file
-    # dtnow = datetime.datetime.utcnow()
-    # folder = 'C:/GIS/EBAR/LogFiles/'
-    # filename = 'PrepareNSXProTransferTool' + str(dtnow.year) + str(dtnow.month) + str(dtnow.day) + \
-    #     str(dtnow.hour) + str(dtnow.minute) + str(dtnow.second) + '.txt'
-    # logfile = open(folder + filename, 'w')
-    # sys.stdout = logfile
-
-    # # use try/except to flag errors that require email to be sent
-    # error = False
-    # try:
-    #     pnpt = PrepareNSXProTransferTool()
-    #     # hard code parameters for debugging
-    #     param_geodatabase = arcpy.Parameter()
-    #     #param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
-    #     param_geodatabase.value = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde'
-    #     parameters = [param_geodatabase]
-    #     pnpt.runPrepareNSXProTransferTool(parameters, None)
-    # except:
-    #     error = True
-    #     tb = sys.exc_info()[2]
-    #     tbinfo = ''
-    #     for tbitem in traceback.format_tb(tb):
-    #         tbinfo += tbitem
-    #     pymsgs = 'Python ERROR:\nTraceback info:\n' + tbinfo + 'Error Info:\n' + str(sys.exc_info()[1])
-    #     EBARUtils.displayMessage(None, pymsgs)
-    #     arcmsgs = 'ArcPy ERROR:\n' + arcpy.GetMessages(2)
-    #     EBARUtils.displayMessage(None, arcmsgs)
-    # finally:
-    #     logfile.close()
-    #     sys.stdout = sys.__stdout__
-    #     if error:
-    #         # email log file
-    #         EBARUtils.emailNoticeWithAttachment('Prepare NSX Pro Transfer tool error', folder, filename)
-    #         EBARUtils.displayMessage(None, 'Error')
-    #     else:
-    #         # email log file
-    #         EBARUtils.emailNoticeWithAttachment('Prepare NSX Pro Transfer tool success', folder, filename)
-    #         EBARUtils.displayMessage(None, 'Success')
+    pppt.runPreparePCAPreciseTransferTool(parameters, None)
