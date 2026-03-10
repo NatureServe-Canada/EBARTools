@@ -12,7 +12,7 @@ geodatabase = r'C:\GIS\EBAR\nsc-gis-ebarkba.sde'
 table_name_prefix = EBARUtils.getTableNamePrefix(geodatabase)
 # use dict for optional DatasetSourceName translations
 source_fr_dict = EBARUtils.readDatasetSourceTranslations(geodatabase)
-range_map_ids = [3850]
+range_map_ids = [3850, 2566]
 for range_map_id in range_map_ids:
     print('Translating ' + str(range_map_id))
     # RangeMap

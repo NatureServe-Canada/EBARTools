@@ -9,9 +9,9 @@
 
 
 range_map_scope_translation = {
-    'N': 'Canadien',
-    'A': 'Nord-américain',
-    'G': 'mondial',
+    'N': 'Canadienne',
+    'A': 'Nord-américaine',
+    'G': 'Mondiale',
     None: None}
 
 

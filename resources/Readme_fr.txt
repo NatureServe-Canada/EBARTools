@@ -85,8 +85,8 @@ JuriNomF - nom français de la juridiction
 
 Champs Ecoshape/EcoshapeApercu :
 FID - identifiant unique ArcGIS
-EcoshapeID - identifiant unique CAARBÉ
-IDEcoshape - clé étrangère CAARBÉ relative à l'enregistrement de la Juridiction appropriée
+IDEcoshape - identifiant unique CAARBÉ
+IDJuri - clé étrangère CAARBÉ relative à l'enregistrement de la Juridiction appropriée
 NomEco - nom de l'écoshape
 ParentEco - nom anglais de l'écorégion parentale
 ParentEcoF - nom français de l'écorégion parentale
