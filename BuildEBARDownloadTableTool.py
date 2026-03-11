@@ -159,8 +159,8 @@ class BuildEBARDownloadTableTool:
                 <td>''' + scope + '''</td>
                 <td>''' + status + '''</td>
                 <td><a href="https://gis.natureserve.ca/download/EBAR''' + element_global_id + \
-                    '''.pdf" target="_blank">PDF EN</a> <a href="https://gis.natureserve.ca/download/CAARBE''' + \
-                        element_global_id + '''.pdf" target="_blank">PDF FR</a></td>'''
+                    '''_FR.pdf" target="_blank">PDF EN</a> <a href="https://gis.natureserve.ca/download/EBAR''' + \
+                        element_global_id + '''.pdf_FR" target="_blank">PDF FR</a></td>'''
             html_fr += '''
             <tr>
                 <td>''' + row[2] + '''</td>
@@ -168,16 +168,16 @@ class BuildEBARDownloadTableTool:
                 <td>''' + french_name + '''</td>
                 <td>''' + scope_fr + '''</td>
                 <td>''' + status_fr + '''</td>
-                <td><a href="https://gis.natureserve.ca/download/CAARBE''' + element_global_id + \
+                <td><a href="https://gis.natureserve.ca/download/EBAR''' + element_global_id + \
                     '''.pdf" target="_blank">PDF FR</a> <a href="https://gis.natureserve.ca/download/EBAR''' + \
                         element_global_id + '''.pdf" target="_blank">PDF EN</a></td>'''
             if row[7] == 1:
                 html += '''
                 <td><a href="https://gis.natureserve.ca/download/EBAR''' + element_global_id + \
-                    '''.zip" target="_blank">GIS EN</a> <a href="https://gis.natureserve.ca/download/CAARBE''' + \
-                        element_global_id + '''.zip" target="_blank">SIG FR</a></td>'''
+                    '''_FR.zip" target="_blank">GIS EN</a> <a href="https://gis.natureserve.ca/download/EBAR''' + \
+                        element_global_id + '''_FR.zip" target="_blank">SIG FR</a></td>'''
                 html_fr += '''
-                <td><a href="https://gis.natureserve.ca/download/CAARBe''' + element_global_id + \
+                <td><a href="https://gis.natureserve.ca/download/EBAR''' + element_global_id + \
                     '''.zip" target="_blank">SIG FR</a> <a href="https://gis.natureserve.ca/download/EBAR''' + \
                         element_global_id + '''.zip" target="_blank">GIS EN</a></td>'''
             else:

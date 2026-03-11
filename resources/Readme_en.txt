@@ -38,7 +38,7 @@ RangeMetadata - numbers of input records by source, and count and details (if pu
 RangeMapNotes - details on the species name(s)
 RangeMapComments - additional notes
 SynonymsUsed - a list of the synonyms, if any, for the primary species under which the input data used was imported
-DifferentiateUsageType - 1 if the UsageType (Breeding, Possible Breeding, Migration) is differentiated per Ecoshape
+DifferentiateUsageType - 1 if the UsageType (Breeding, Possible Breeding) is differentiated per Ecoshape
 ELEMENT_NATIONAL_ID - NatureServe Biotics national unique identifier
 ELEMENT_GLOBAL_ID - NatureServe Biotics global unique identifier
 ELEMENT_CODE - NatureServe Biotics element identifier
@@ -70,7 +70,7 @@ objectid - ArcGIS unique identifier
 RangeMapID - EBAR foreign key relating to the appropriate RangeMap record
 EcoshapeID - EBAR foreign key relating to the appropriate Ecoshape/EcoshapeOverview record
 Presence - the category of species presence in the Ecoshape (P=Present, X=Presence Expected, H=Historical, NULL=Removed*, see metadata PDF for definitions)
-UsageType - the species usage type in the Ecoshape (B=Breeding, P=Possible Breeding, M=Migration, see metadata PDF for definitions)
+UsageType - the species usage type in the Ecoshape (B=Breeding, P=Possible Breeding, see metadata PDF for definitions)
 RangeMapEcoshapeNotes - numbers of input records by source and reviewer comments, if publishable
 MinDate - the earliest date for all input records that overlap the Ecoshape
 MaxDate - the latest date for all input records that overlap the Ecoshape

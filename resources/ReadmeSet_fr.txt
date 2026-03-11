@@ -1,22 +1,22 @@
-Fichiers compressés (ZIP) des aires de répartition des espèces sélectionnées extraites du projet de cartographie automatisée des aires de répartition basée sur les écosystèmes (CAARBÉ) pour une catégorie d'espèces/un groupe taxonomique sélectionné(e)
+Fichiers compressés (ZIP) des aires de répartition des espèces sélectionnées extraites du projet de cartographie automatisée des aires de répartition basée sur les écosystèmes (EBAR) pour une catégorie d'espèces/un groupe taxonomique sélectionné(e)
 © NatureServe Canada 2026 sous CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/deed.fr)
 
-Avertissement : Les versions anglaises des produits et documents CAARBÉ sont les versions officielles, car il n'existe pas toujours de traductions françaises officielles pour certains termes. Par exemple, il serait inapproprié de traduire certains noms et références de données d'entrée, car ceux-ci ont été fournis en anglais.
+Avertissement : Les versions anglaises des produits et documents EBAR sont les versions officielles, car il n'existe pas toujours de traductions françaises officielles pour certains termes et textes dans le base de donnée du projet EBAR.
 
 Ces fichiers compressés (ZIP) doivent contenir les fichiers suivants :
-- CAARBExxxxx.pdf (cartes et métadonnées de la CAARBÉ des espèces sélectionnées)
-- MethodsCAARBE.pdf (informations générales sur la production des cartes de répartition, les sources des écoshapes et les sujets connexes)
-- Ecoshape.* (fichiers comprenant des fichiers de forme (SHP) des tous les polygones précis des écoshapes de la CAARBÉ)
-- EcoshapeApercu.* (fichiers comprenant des fichiers de forme (SHP) des tous les polygones généralisés des écoshapes de la CAARBÉ)
-- CarteRepartition.csv (tableau des espèces et attributs de la CAARBÉ pour toutes les espèces au sein de la catégorie/groupe taxonomique)
-- CarteRepartitionEcoshape.csv (tableau des attributs par écoshape de la CAARBÉ pour toutes les espèces au sein de la catégorie/groupe taxonomique)
+- EBARxxxxx.pdf (cartes et métadonnées de la EBAR des espèces sélectionnées)
+- MethodsEBAR.pdf (informations générales sur la production des cartes de répartition, les sources des écoshapes et les sujets connexes)
+- Ecoshape.* (fichiers comprenant des fichiers de forme (SHP) des tous les polygones précis des écoshapes de la EBAR)
+- EcoshapeApercu.* (fichiers comprenant des fichiers de forme (SHP) des tous les polygones généralisés des écoshapes de la EBAR)
+- CarteRepartition.csv (tableau des espèces et attributs de la EBAR pour toutes les espèces au sein de la catégorie/groupe taxonomique)
+- CarteRepartitionEcoshape.csv (tableau des attributs par écoshape de la EBAR pour toutes les espèces au sein de la catégorie/groupe taxonomique)
 - Juridiction.csv (tableau des juridictions)
-- CAARBExxxxx.aprx (fichier du projet ArcGIS Pro référençant les fichiers de données ci-dessus, avec les jointures appropriées pour chaque espèce au sein de la catégorie/groupe taxonomique)
-- CAARBExxxxx.mapx (fichier de carte ArcGIS Pro référençant les fichiers de données ci-dessus, avec les jointures appropriées pour chaque espèce au sein de la catégorie/groupe taxonomique)
-- CAARBExxxxxEcoshape.lyrx (fichier de couche ArcGIS Pro, avec la symbologie suggérée et les jointures appropriées, référençant les écoshapes d'origine pour chaque espèce au sein de la catégorie/groupe taxonomique)
-- CAARBExxxxxEcoshapeApercu.lyrx (fichier de couche ArcGIS Pro, avec la symbologie suggérée et les jointures appropriées, référençant les écoshapes généralisés pour chaque espèce au sein de la catégorie/groupe taxonomique)
-- CAARBExxxxxEcoshapesSupprime.lyrx (fichier de couche ArcGIS Pro, avec les jointures appropriées, affichant uniquement les écoshapes qui ont été supprimées à la suite de l'examen par les experts, référençant les écoshapes généralisées pour chaque espèce au sein de la catégorie/groupe taxonomique)
-- CAARBExxxxxTypeUtilisation.lyrx (si applicable, fichier de couche ArcGIS Pro, avec la symbologie suggérée et les jointures appropriées, référençant le type d'utilisation des écoshapes généralisées pour chaque espèce au sein de la catégorie/groupe taxonomique)
+- EBARxxxxx.aprx (fichier du projet ArcGIS Pro référençant les fichiers de données ci-dessus, avec les jointures appropriées pour chaque espèce au sein de la catégorie/groupe taxonomique)
+- EBARxxxxx.mapx (fichier de carte ArcGIS Pro référençant les fichiers de données ci-dessus, avec les jointures appropriées pour chaque espèce au sein de la catégorie/groupe taxonomique)
+- EBARxxxxxEcoshape.lyrx (fichier de couche ArcGIS Pro, avec la symbologie suggérée et les jointures appropriées, référençant les écoshapes d'origine pour chaque espèce au sein de la catégorie/groupe taxonomique)
+- EBARxxxxxEcoshapeApercu.lyrx (fichier de couche ArcGIS Pro, avec la symbologie suggérée et les jointures appropriées, référençant les écoshapes généralisés pour chaque espèce au sein de la catégorie/groupe taxonomique)
+- EBARxxxxxEcoshapesSupprime.lyrx (fichier de couche ArcGIS Pro, avec les jointures appropriées, affichant uniquement les écoshapes qui ont été supprimées à la suite de l'examen par les experts, référençant les écoshapes généralisées pour chaque espèce au sein de la catégorie/groupe taxonomique)
+- EBARxxxxxTypeUtilisation.lyrx (si applicable, fichier de couche ArcGIS Pro, avec la symbologie suggérée et les jointures appropriées, référençant le type d'utilisation des écoshapes généralisées pour chaque espèce au sein de la catégorie/groupe taxonomique)
 [où xxxxx est l'ELEMENT_GLOBAL_ID de l'espèce sélectionnée]
 [où yyyyy correspond au nom de la catégorie/du groupe taxonomique]
 [les fichiers de projet ArcMap (.mxd) sont disponsible dans les fichiers ZIP anglais]
@@ -28,9 +28,9 @@ Juridiction <-1---M-> Ecoshape/EcoshapeApercu
 
 Champs CarteRepartition :
 objectid - identifiant unique ArcGIS
-IDCarteRepartition - identifiant unique CAARBÉ
-VersionRepartition - numéro de version CAARBÉ
-EtapeRepartition - étape CAARBÉ dans la version (par exemple, généré automatiquement, examiné par des experts)
+IDCarteRepartition - identifiant unique EBAR
+VersionRepartition - numéro de version EBAR
+EtapeRepartition - étape EBAR dans la version (par exemple, généré automatiquement, examiné par des experts)
 DateRepartition - date de génération
 PorteeCarteRepartition - portée géographique (par exemple, N = Canadien, A = Nord-américain, G = mondial)
 MetadonneesPortee - nombre d'enregistrements d'entrée par source, et nombre et détails (si publiables) des examens par des experts
@@ -66,8 +66,8 @@ STATUT_ESA - statut en vertu de la Loi Américaine sur les espèces menacées da
 
 Champs CarteRepartitionEcoshape :
 objectid - identifiant unique ArcGIS
-IDCarteRepartition - clé étrangère CAARBÉ relative à l'enregistrement CarteRepartition approprié
-IDEcoshape - clé étrangère CAARBÉ relative à l'enregistrement Ecoshape/EcoshapeApercu approprié
+IDCarteRepartition - clé étrangère EBAR relative à l'enregistrement CarteRepartition approprié
+IDEcoshape - clé étrangère EBAR relative à l'enregistrement Ecoshape/EcoshapeApercu approprié
 Presence - catégorie de présence de l'espèce dans l'écoshape (P = Présente, X = Présence attendue, H = Historique, NULL = Supprimée*, voir le PDF des métadonnées pour les définitions)
 TypeUtilisation - type d'utilisation de l'espèce dans l'écoshape (B = Reproduction, P = Reproduction possible, M = Migration, voir le PDF des métadonnées pour les définitions)
 NotesCarteRepartitionEcoshape - nombre d'enregistrements d'entrée par source et commentaires des réviseurs, s'ils peuvent être publiés
@@ -78,15 +78,15 @@ DateMax - date la plus récente pour tous les enregistrements d'entrée qui chev
 
 Champs Juridiction :
 objectid - identifiant unique ArcGIS
-IDJuri - identifiant unique CAARBÉ
+IDJuri - identifiant unique EBAR
 JuriAbbrev - code à deux lettres pour la juridiction
 JuriNomE - nom anglais de la juridiction
 JuriNomF - nom français de la juridiction
 
 Champs Ecoshape/EcoshapeApercu :
 FID - identifiant unique ArcGIS
-IDEcoshape - identifiant unique CAARBÉ
-IDJuri - clé étrangère CAARBÉ relative à l'enregistrement de la Juridiction appropriée
+IDEcoshape - identifiant unique EBAR
+IDJuri - clé étrangère EBAR relative à l'enregistrement de la Juridiction appropriée
 NomEco - nom de l'écoshape
 ParentEco - nom anglais de l'écorégion parentale
 ParentEcoF - nom français de l'écorégion parentale
@@ -97,10 +97,10 @@ SuperTerr - superficie terrestre en mètres carrés dérivée de la Commission d
 SuperTot - superficie totale en mètres carrés
 
 Avertissement :
-- Veuillez consulter notre document sur les méthodes à l'adresse https://1drv.ms/b/s!Ajv6BHSXrqqqm4xipeEOQ67IfH77IQ?e=dqM1FO avant d'utiliser CAARBÉ.
-- Les données CAARBÉ sont relativement grossières et conviennent à des fins de dépistage et d'éducation, mais ne sont pas destinées à tous les types d'applications et d'analyses.
+- Veuillez consulter notre document sur les méthodes à l'adresse https://1drv.ms/b/s!Ajv6BHSXrqqqm4xipeEOQ67IfH77IQ?e=dqM1FO avant d'utiliser EBAR.
+- Les données EBAR sont relativement grossières et conviennent à des fins de dépistage et d'éducation, mais ne sont pas destinées à tous les types d'applications et d'analyses.
 - L'absence de données dans une zone géographique ne signifie pas nécessairement qu'une espèce n'y est pas présente.
 - Un écoshape avec une valeur de présence ne signifie pas nécessairement qu'une espèce est présente dans toute la zone géographique.
 
-Citation de plusieurs espèces : NatureServe Canada, 2026. Cartographie automatisée des aires de répartition basée sur les écosystèmes (CAARBÉ). Ottawa, Canada. Consulté le [insérer la date] sur [insérer l'URL]
-Citation d'une seule espèce : NatureServe Canada, 2026. Cartographie automatisée des aires de répartition basée sur les écosystèmes (CAARBÉ) pour [insérer le nom de l'espèce, la version, la portée]. Ottawa, Canada. Extrait de [insérer l'URL] le [insérer la date]
+Citation de plusieurs espèces : NatureServe Canada, 2026. Cartographie automatisée des aires de répartition basée sur les écosystèmes (EBAR). Ottawa, Canada. Consulté le [insérer la date] sur [insérer l'URL]
+Citation d'une seule espèce : NatureServe Canada, 2026. Cartographie automatisée des aires de répartition basée sur les écosystèmes (EBAR) pour [insérer le nom de l'espèce, la version, la portée]. Ottawa, Canada. Extrait de [insérer l'URL] le [insérer la date]

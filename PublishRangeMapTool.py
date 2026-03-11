@@ -324,8 +324,8 @@ class PublishRangeMapTool:
                     append = ''
                     if range_map_scope == 'Canadian':
                         append = 'N'
-                    comment_fr += '<a href="' + EBARUtils.download_url + '/CAARBE' + element_global_id + append + \
-                        '.zip" target="_blank">Veuillez consulter les données spatiales pour les commentaires des ' + \
+                    comment_fr += '<a href="' + EBARUtils.download_url + '/EBAR' + element_global_id + append + \
+                        '_FR.zip" target="_blank">Veuillez consulter les données spatiales pour les commentaires des ' + \
                         'réviseurs au niveau d''Ecoshape</a>.'
                 # temporarily switch locale for date/time formatting
                 original_lc_time = locale.getlocale(locale.LC_TIME)
@@ -414,10 +414,10 @@ class PublishRangeMapTool:
                                         extent.YMax + y_buffer)
             map_frame.camera.setExtent(buffered_extent)
             if suffix == '_fr':
-                layout.exportToJPEG(EBARUtils.download_folder + '/CAARBE' + element_global_id + '.jpg', 300,
+                layout.exportToJPEG(EBARUtils.download_folder + '/EBAR' + element_global_id + '_FR.jpg', 300,
                                     clip_to_elements=False)
-                pdf_html_fr = pdf_html_fr.replace('[map_image]', EBARUtils.download_folder + '/CAARBE' +
-                                                  element_global_id + '.jpg')
+                pdf_html_fr = pdf_html_fr.replace('[map_image]', EBARUtils.download_folder + '/EBAR' +
+                                                  element_global_id + '_FR.jpg')
                 locale.setlocale(locale.LC_TIME, original_lc_time)
             else: # _en
                 layout.exportToJPEG(EBARUtils.download_folder + '/EBAR' + element_global_id + '.jpg', 300,
@@ -442,7 +442,7 @@ class PublishRangeMapTool:
             'enable-local-file-access': None
         }
         pdfkit.from_string(pdf_html_en, EBARUtils.download_folder + '/EBAR' + element_global_id + '.pdf', pdf_options)
-        pdfkit.from_string(pdf_html_fr, EBARUtils.download_folder + '/CAARBE' + element_global_id + '.pdf', pdf_options)
+        pdfkit.from_string(pdf_html_fr, EBARUtils.download_folder + '/EBAR' + element_global_id + '_FR.pdf', pdf_options)
 
         # generate zip
         if param_spatial == 'true':
@@ -507,9 +507,9 @@ class PublishRangeMapTool:
                     EBARUtils.displayMessage(messages, 'Generating metadata')
                     md = arcpy.metadata.Metadata()
                     md.tags = 'Répartition des Espèces, NatureServe Canada, ' + \
-                        'Cartographie automatisée des aires de répartissaient basée sur les écosystèmes'
-                    md.description = 'Voir CAARBE' + element_global_id + '.pdf pour la carte et les métadonnées ' + \
-                        'supplémentaires, et MethodsCAARBE.pdf pour plus de détails. <a href="' + nsx_url + \
+                        'Cartographie automatisée des aires de répartition basée sur les écosystèmes'
+                    md.description = 'Voir EBAR' + element_global_id + '_FR.pdf pour la carte et les métadonnées ' + \
+                        'supplémentaires, et MethodsEBAR.pdf pour plus de détails. <a href="' + nsx_url + \
                         '"> Rendez-vous sur NatureServe Explorer</a>  pour obtenir des informations sur les espèces.'
                     md.credits = '© NatureServe Canada ' + str(datetime.datetime.now().year)
                     md.accessConstraints = 'Partageable publiquement sous licence CC BY 4.0  (<a href=' + \
@@ -518,16 +518,16 @@ class PublishRangeMapTool:
 
                     # make folder, copy in static resources and EBAR pdf
                     EBARUtils.displayMessage(messages, 'Creating ZIP folder and copying files')
-                    EBARUtils.createReplaceFolder(EBARUtils.temp_folder + '/CAARBE' + element_global_id + suffix)
-                    zip_folder = EBARUtils.temp_folder + '/CAARBE' + element_global_id
+                    EBARUtils.createReplaceFolder(EBARUtils.temp_folder + '/EBAR' + element_global_id + suffix)
+                    zip_folder = EBARUtils.temp_folder + '/EBAR' + element_global_id + '_FR'
                     EBARUtils.createReplaceFolder(zip_folder)
                     shutil.copyfile(EBARUtils.resources_folder + '/Readme' + suffix + '.txt', zip_folder + '/Lisez-moi.txt')
-                    shutil.copyfile(EBARUtils.resources_folder + '/EBARMethods' + suffix +'.pdf', zip_folder + '/MethodsCAARBE.pdf')
-                    shutil.copyfile(EBARUtils.download_folder + '/CAARBE' + element_global_id + '.pdf',
-                                    zip_folder + '/CAARBE' + element_global_id + '.pdf')
+                    shutil.copyfile(EBARUtils.resources_folder + '/EBARMethods' + suffix +'.pdf', zip_folder + '/MethodsEBAR.pdf')
+                    shutil.copyfile(EBARUtils.download_folder + '/EBAR' + element_global_id + '_FR.pdf',
+                                    zip_folder + '/EBAR' + element_global_id + '_FR.pdf')
                     shutil.copyfile(EBARUtils.resources_folder + '/Juridiction.csv', zip_folder + '/Juridiction.csv')
                     jurisdiction_md = arcpy.metadata.Metadata(zip_folder + '/Juridiction.csv')
-                    md.title = 'Juridiction CAARBE.csv'
+                    md.title = 'Juridiction EBAR.csv'
                     md.summary = 'Tableau des juridictions'
                     jurisdiction_md.copy(md)
                     jurisdiction_md.save()
@@ -582,7 +582,7 @@ class PublishRangeMapTool:
                                         None)
                 else: # _fr
                     EBARUtils.createZip(zip_folder,
-                                        EBARUtils.download_folder + '/CAARBE' + element_global_id + '.zip',
+                                        EBARUtils.download_folder + '/EBAR' + element_global_id + '_FR.zip',
                                         None)
 
         # set publish date
@@ -595,18 +595,18 @@ class PublishRangeMapTool:
         EBARUtils.displayMessage(messages,
                                 'English Image: ' + EBARUtils.download_url + '/EBAR' + element_global_id + '.jpg')
         EBARUtils.displayMessage(messages,
-                                'French Image: ' + EBARUtils.download_url + '/CAARBE' + element_global_id + '.jpg')
+                                'French Image: ' + EBARUtils.download_url + '/EBAR' + element_global_id + '_FR.jpg')
         EBARUtils.displayMessage(messages,
                                 'English PDF: ' + EBARUtils.download_url + '/EBAR' + element_global_id + '.pdf')
         EBARUtils.displayMessage(messages,
-                                'French PDF: ' + EBARUtils.download_url + '/CAARBE' + element_global_id + '.pdf')
+                                'French PDF: ' + EBARUtils.download_url + '/EBAR' + element_global_id + '_FR.pdf')
         if param_spatial == 'true':
             EBARUtils.displayMessage(messages,
                                     'English GIS Data: ' + EBARUtils.download_url + '/EBAR' + element_global_id +
                                     '.zip')
             EBARUtils.displayMessage(messages,
-                                    'French GIS Data: ' + EBARUtils.download_url + '/CAARBE' + element_global_id +
-                                    '.zip')
+                                    'French GIS Data: ' + EBARUtils.download_url + '/EBAR' + element_global_id +
+                                    '_FR.zip')
 
         # cleanup
         arcpy.Delete_management('range_map_view')
@@ -626,7 +626,7 @@ if __name__ == '__main__':
     prm = PublishRangeMapTool()
     
     # #spatial_batch_ids = [2727,4282,4303,4308,4313,4314,4320,4321,4322,4323,4324,4325,4333,4335,4337,4338,4339,4340,4341,4347,4350,4358,4360,4361,4362,4363,4364,4366,4368,4369,4370,4371,4374,4376,4378,4383,4386,4389,4391,4408,4424,4430,4432,4439,4440,4441,4443,4445,4447,4448,4449,4450,4451,4452,4455,4456,4457,4459,4461,4463,4464,4465,4468,4472,4475,4477,4480,4481,4482,4486,4487,4494,4500,4504,4507,4508,4511,4512,4513,4514,4515,4516,4518,4519,4520,4521,4522,4523,4524,4526,4527,4528,4529,4530,4531,4532,4533,4534,4535,4536,4537,4538,4539,4540,4541,4545,4546,4547,4548,4549,4550,4551,4552,4553,4554,4556,4557,4558,4559,4561,4562,4563,4564,4566,4567,4568,4569,4570,4571,4572,4574,4575,4576,4577,4578,4587,4595,4599,4611,4615]
-    spatial_batch_ids = [2566] #[3850,4918,4949]
+    spatial_batch_ids = [4918] #[2566,3850,4918,4949]
     for id in spatial_batch_ids:
        # hard code parameters for debugging
        param_range_map_id = arcpy.Parameter()

@@ -70,9 +70,9 @@ class PublishRangeMapSetsTool:
                 EBARUtils.createZip(zip_folder, EBARUtils.download_folder + '/EBAR - ' + category_taxagroup + \
                                     ' - All Data - '  + cap_suffix + '.zip', None)
             else: # _fr
-                EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/CAARBE - ' + \
+                EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/EBAR - ' + \
                     category_taxagroup + ' - toutes les donnees.zip')
-                EBARUtils.createZip(zip_folder, EBARUtils.download_folder + '/CAARBE - ' + category_taxagroup + \
+                EBARUtils.createZip(zip_folder, EBARUtils.download_folder + '/EBAR - ' + category_taxagroup + \
                                     ' - toutes les donnees.zip', None)
 
         # create pdf zip
@@ -83,10 +83,10 @@ class PublishRangeMapSetsTool:
                                 EBARUtils.download_folder + '/EBAR - ' + category_taxagroup + ' - All PDFs.zip',
                                 '.pdf')
         else: # _fr
-            EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/CAARBE - ' + \
+            EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/EBAR - ' + \
                 category_taxagroup + ' - tous les PDFs.zip')
             EBARUtils.createZip(zip_folder,
-                                EBARUtils.download_folder + '/CAARBE - ' + category_taxagroup + ' - tous les PDFs.zip',
+                                EBARUtils.download_folder + '/EBAR - ' + category_taxagroup + ' - tous les PDFs.zip',
                                 '.pdf')
 
     def runPublishRangeMapSetsTool(self, parameters, messages):
@@ -121,9 +121,9 @@ class PublishRangeMapSetsTool:
                     '"https://creativecommons.org/licenses/by/4.0/">https://creativecommons.org/licenses/by/4.0/</a>)'
             else: #_fr
                 md.tags = 'Répartition des Espèces, NatureServe Canada, ' + \
-                    'Cartographie automatisée des aires de répartissaient basée sur les écosystèmes'
-                md.description = 'See CAARBExxxxx.pdf pour la carte et les métadonnées ' + \
-                    'supplémentaires, et MethodsCAARBE.pdf pour plus de détails. ' + \
+                    'Cartographie automatisée des aires de répartition basée sur les écosystèmes'
+                md.description = 'See EBARxxxxx_FR.pdf pour la carte et les métadonnées ' + \
+                    'supplémentaires, et MethodsEBAR.pdf pour plus de détails. ' + \
                     '<a href="https://explorer.natureserve.org/"> Rendez-vous sur NatureServe Explorer</a> ' + \
                     'pour obtenir des informations sur les espèces.'
                 md.credits = '© NatureServe Canada ' + str(datetime.datetime.now().year)
@@ -196,12 +196,12 @@ class PublishRangeMapSetsTool:
                         category_taxagroup = StaticTranslations.biotics_category_translation(row[0]) + ' - ' + \
                             StaticTranslations.biotics_taxa_group_translation(row[1])
                         EBARUtils.displayMessage(messages, 'Category - Taxa Group: ' + category_taxagroup)
-                        zip_folder = EBARUtils.temp_folder + '/CAARBE - ' + category_taxagroup
+                        zip_folder = EBARUtils.temp_folder + '/EBAR - ' + category_taxagroup
                         EBARUtils.createReplaceFolder(zip_folder)
 
                         # copy static resources
                         shutil.copyfile(EBARUtils.resources_folder + '/ReadmeSet_fr.txt', zip_folder + '/Lisez-moi.txt')
-                        shutil.copyfile(EBARUtils.resources_folder + '/EBARMethods.pdf', zip_folder + '/MethodsCAARBE.pdf')
+                        shutil.copyfile(EBARUtils.resources_folder + '/EBARMethods.pdf', zip_folder + '/MethodsEBAR.pdf')
                         shutil.copyfile(EBARUtils.resources_folder + '/Juridiction.csv', zip_folder + '/Juridiction.csv')
 
                 # copy pdf

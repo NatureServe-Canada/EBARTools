@@ -48,14 +48,15 @@ class PreparePCAPreciseTransferTool:
 
             # reset to NULLs in case rules/datasets have changed since last transfer
             EBARUtils.displayMessage(messages, 'Resetting transfer fields')
-            arcpy.AddIndex_management(param_geodatabase + '/' + spatial_input, ['PermitPCAPreciseTransfer'],
-                                      'pca_precise_index')
-            arcpy.AddIndex_management(param_geodatabase + '/' + spatial_input, ['PCAPreciseSensitive'],
-                                      'pca_sensitive_index')
+            # # can't add and remove indexes due to schema lock!
+            # arcpy.AddIndex_management(param_geodatabase + '/' + spatial_input, ['PermitPCAPreciseTransfer'],
+            #                           'pca_precise_index')
+            # arcpy.AddIndex_management(param_geodatabase + '/' + spatial_input, ['PCAPreciseSensitive'],
+            #                           'pca_sensitive_index')
             arcpy.MakeTableView_management(param_geodatabase + '/' + spatial_input, 'input_view',
                                            'PermitPCAPreciseTransfer IS NOT NULL OR PCAPreciseSensitive IS NOT NULL')
-            arcpy.RemoveIndex_management(param_geodatabase + '/' + spatial_input, 'pca_precise_index')
-            arcpy.RemoveIndex_management(param_geodatabase + '/' + spatial_input, 'pca_sensitive_index')
+            # arcpy.RemoveIndex_management(param_geodatabase + '/' + spatial_input, 'pca_precise_index')
+            # arcpy.RemoveIndex_management(param_geodatabase + '/' + spatial_input, 'pca_sensitive_index')
             arcpy.CalculateField_management('input_view', 'PermitPCAPreciseTransfer', 'None')
             arcpy.CalculateField_management('input_view', 'PCAPreciseSensitive', 'None')
             arcpy.Delete_management('input_view')
@@ -128,10 +129,10 @@ class PreparePCAPreciseTransferTool:
                 del row
             del cursor
 
-            # index to help export performance
-            EBARUtils.displayMessage(messages, 'Indexing')
-            arcpy.AddIndex_management(param_geodatabase + '/' + spatial_input, ['PermitPCAPreciseTransfer'],
-                                      'pca_precise_index')
+            # # index to help export performance
+            # EBARUtils.displayMessage(messages, 'Indexing')
+            # arcpy.AddIndex_management(param_geodatabase + '/' + spatial_input, ['PermitPCAPreciseTransfer'],
+            #                           'pca_precise_index')
 
             # record counts
             EBARUtils.displayMessage(messages, spatial_input + ' record count: ' + str(count))
