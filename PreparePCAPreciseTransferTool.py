@@ -10,8 +10,8 @@
 
 # Notes:
 # - Relies on views in server geodatabase, so not possible to use/debug with local file gdb
-# - Modeling after PrepareNSXProTransferTool.py, slightly simplifed because PCA is always provided precise and we just
-# need to set the Sensitive flag for ESTH and 
+# - Modeling after PrepareNSXProTransferTool.py, but slightly simplifed because PCA is always provided precise
+# therefore this tool just needs to set the Sensitive flag for ESTH
 
 # import Python packages
 import EBARUtils
@@ -20,7 +20,7 @@ import datetime
 
 
 class PreparePCAPreciseTransferTool:
-    """Set InputPoint/Polygon fields used by the NSXProTransfer service"""
+    """Set InputPoint/Polygon fields used for PCA Precise transfer"""
     def __init__(self):
         pass
 
@@ -46,18 +46,19 @@ class PreparePCAPreciseTransferTool:
             # record counts
             count = 0
 
-            # apply elements susceptible to harm (ESTH) rules then permissions
-            # # reset to NULLs in case rules/datasets have changed since last transfer
-            # EBARUtils.displayMessage(messages, 'Resetting transfer fields')
-            # arcpy.AddIndex_management(param_geodatabase + '/' + spatial_input, ['PCAPreciseSensitive'],
-            #                           'pca_sensitive_index')
-            # arcpy.MakeTableView_management(param_geodatabase + '/' + spatial_input, 'input_view',
-            #                                'PermitPCAPreciseTransfer IS NOT NULL OR PCAPreciseSensitive IS NOT NULL')
-            # arcpy.RemoveIndex_management(param_geodatabase + '/' + spatial_input, 'pca_precise_index')
-            # arcpy.RemoveIndex_management(param_geodatabase + '/' + spatial_input, 'pca_sensitive_index')
-            # arcpy.CalculateField_management('input_view', 'PermitPCAPreciseTransfer', 'None')
-            # arcpy.CalculateField_management('input_view', 'PCAPreciseSensitive', 'None')
-            # arcpy.Delete_management('input_view')
+            # reset to NULLs in case rules/datasets have changed since last transfer
+            EBARUtils.displayMessage(messages, 'Resetting transfer fields')
+            arcpy.AddIndex_management(param_geodatabase + '/' + spatial_input, ['PermitPCAPreciseTransfer'],
+                                      'pca_precise_index')
+            arcpy.AddIndex_management(param_geodatabase + '/' + spatial_input, ['PCAPreciseSensitive'],
+                                      'pca_sensitive_index')
+            arcpy.MakeTableView_management(param_geodatabase + '/' + spatial_input, 'input_view',
+                                           'PermitPCAPreciseTransfer IS NOT NULL OR PCAPreciseSensitive IS NOT NULL')
+            arcpy.RemoveIndex_management(param_geodatabase + '/' + spatial_input, 'pca_precise_index')
+            arcpy.RemoveIndex_management(param_geodatabase + '/' + spatial_input, 'pca_sensitive_index')
+            arcpy.CalculateField_management('input_view', 'PermitPCAPreciseTransfer', 'None')
+            arcpy.CalculateField_management('input_view', 'PCAPreciseSensitive', 'None')
+            arcpy.Delete_management('input_view')
 
             # jurisdiction-level rules are handled by prov/territory, with NF and LB separated
             jurs = ['BC', 'AB', 'SK', 'MB', 'ON', 'QC', 'NB', 'PE', 'NS', 'NF', 'LB', 'NU', 'NT', 'YT']
@@ -67,13 +68,15 @@ class PreparePCAPreciseTransferTool:
             arcpy.AddJoin_management('esth_view', 'JurisdictionID', param_geodatabase + '/Jurisdiction',
                                      'JurisdictionID', 'KEEP_COMMON')
 
-            # process rules in five steps, don't overrid previous sensitive
-            # 1. iNaturalist.ca Canada-wide ESTHs
-            EBARUtils.displayMessage(messages, 'Applying iNaturalist.ca Canada-wide ESTHs')
+            # apply elements susceptible to harm (ESTH) rules then permissions
+            # process rules in three steps, don't overrid previous sensitive
+            # 1. Canada-wide ESTHs
+            EBARUtils.displayMessage(messages, 'Applying Canada-wide ESTHs')
             row = None
             with arcpy.da.SearchCursor('esth_view', [table_name_prefix + 'ESTH.SpeciesID'],
-                                       table_name_prefix + "Jurisdiction.JurisdictionAbbreviation = 'CA' AND " +
-                                       table_name_prefix + "ESTH.ObscuredForiNatca = 'Y'") as cursor:
+                                       table_name_prefix + "Jurisdiction.JurisdictionAbbreviation = 'CA' AND (" +
+                                       table_name_prefix + "ESTH.ObscuredForiNatca = 'Y' OR " +
+                                       table_name_prefix + "ESTH.ObscuredForNSC = 'Y')") as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     self.applyJurisdictionSpecies(param_geodatabase, table_name_prefix, spatial_input, jurs,
                                                   row[table_name_prefix + 'ESTH.SpeciesID'], None,
@@ -82,43 +85,14 @@ class PreparePCAPreciseTransferTool:
                 del row
             del cursor
 
-            # 2. iNaturalist.ca by jurisdiction ESTHs
-            EBARUtils.displayMessage(messages, 'Applying iNaturalist.ca Jurisdictional ESTHs')
+            # 2. jurisdiction ESTHs
+            EBARUtils.displayMessage(messages, 'Applying Jurisdictional ESTHs')
             row = None
             with arcpy.da.SearchCursor('esth_view', [table_name_prefix + 'ESTH.SpeciesID',
                                                      table_name_prefix + 'Jurisdiction.JurisdictionAbbreviation'],
-                                       table_name_prefix + "Jurisdiction.JurisdictionAbbreviation <> 'CA' AND " +
-                                       table_name_prefix + "ESTH.ObscuredForiNatca = 'Y'") as cursor:
-                for row in EBARUtils.searchCursor(cursor):
-                    self.applyJurisdictionSpecies(param_geodatabase, table_name_prefix, spatial_input,
-                                                  [row[table_name_prefix + 'Jurisdiction.JurisdictionAbbreviation']],
-                                                  row[table_name_prefix + 'ESTH.SpeciesID'], None,
-                                                  count)
-            if row:
-                del row
-            del cursor
-
-            # 3. NSC/CDC Canada-wide ESTHs
-            EBARUtils.displayMessage(messages, 'Applying NSC/CDC Canada-wide ESTHs')
-            row = None
-            with arcpy.da.SearchCursor('esth_view', [table_name_prefix + 'ESTH.SpeciesID'],
-                                       table_name_prefix + "Jurisdiction.JurisdictionAbbreviation = 'CA' AND " +
-                                       table_name_prefix + "ESTH.ObscuredForNSC = 'Y'") as cursor:
-                for row in EBARUtils.searchCursor(cursor):
-                    self.applyJurisdictionSpecies(param_geodatabase, table_name_prefix, spatial_input, jurs,
-                                                  row[table_name_prefix + 'ESTH.SpeciesID'], None,
-                                                  count)
-            if row:
-                del row
-            del cursor
-
-            # 4. NSC/CDC by jurisdiction ESTHs
-            EBARUtils.displayMessage(messages, 'Applying NSC/CDC Jurisdictional ESTHs')
-            row = None
-            with arcpy.da.SearchCursor('esth_view', [table_name_prefix + 'ESTH.SpeciesID',
-                                                     table_name_prefix + 'Jurisdiction.JurisdictionAbbreviation'],
-                                       table_name_prefix + "Jurisdiction.JurisdictionAbbreviation <> 'CA' AND " +
-                                       table_name_prefix + "ESTH.ObscuredForNSC = 'Y'") as cursor:
+                                       table_name_prefix + "Jurisdiction.JurisdictionAbbreviation <> 'CA' AND ()" +
+                                       table_name_prefix + "ESTH.ObscuredForiNatca = 'Y' OR " +
+                                       table_name_prefix + "ESTH.ObscuredForNSC = 'Y')") as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     self.applyJurisdictionSpecies(param_geodatabase, table_name_prefix, spatial_input,
                                                   [row[table_name_prefix + 'Jurisdiction.JurisdictionAbbreviation']],
@@ -130,12 +104,12 @@ class PreparePCAPreciseTransferTool:
 
             arcpy.Delete_management('esth_view')
 
-            # 5. EBAR provider permissions
+            # 3. EBAR provider permissions
             EBARUtils.displayMessage(messages, 'Applying EBAR provider permissions')
             row = None
             with arcpy.da.SearchCursor(param_geodatabase + '/DatasetSource',
                                        ['DatasetSourceID'],
-                                       "(PermitNSXBiodiversityScience = 'Y') OR (PermitAll = 'Y')") as cursor:
+                                       "(PermitNSCBiodiversityScience = 'Y') OR (PermitAll = 'Y')") as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     # get InputDatasetIDs
                     input_dataset_ids = []
@@ -190,12 +164,20 @@ class PreparePCAPreciseTransferTool:
     def applyJurisdictionSpecies(self, param_geodatabase, table_name_prefix, spatial_input, jurs, species_id,
                                  input_dataset_ids, count):
         """apply rules for a single step"""
+        arcpy.MakeFeatureLayer_management(param_geodatabase + '/'+ spatial_input, 'input_lyr')
+        arcpy.AddJoin_management('input_lyr', 'InputDatasetID', param_geodatabase + '/InputDataset', 'InputDatasetID',
+                                 'KEEP_COMMON')
+        arcpy.AddJoin_management('input_lyr', 'DatasetSourceID', param_geodatabase + '/DatasetSource',
+                                 'DatasetSourceID', 'KEEP_COMMON')
+
+        # only incude non-CDC data
+        where = 'DatasetSource.CDCJurisdictionID IS NULL'
         # SpeciesID is provided for ESTH rules, InputDatasetIDs for permissions
         if species_id:
-            where = 'SpeciesID = ' + str(species_id)
+            where = 'AND SpeciesID = ' + str(species_id)
         else:
-            where = 'InputDatasetID IN (' + ','.join(map(str, input_dataset_ids)) + ')'
-        arcpy.MakeFeatureLayer_management(param_geodatabase + '/'+ spatial_input, 'input_lyr', where)
+            where = 'AND InputDatasetID IN (' + ','.join(map(str, input_dataset_ids)) + ')'
+        arcpy.SelectLayerByAttribute_management('input_lyr', 'NEW_SELECTION', where)
         
         # select by Location interesting jur(s) buffers
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/JurisdictionBufferFull', 'jurbuffer_lyr')
