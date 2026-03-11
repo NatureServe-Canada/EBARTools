@@ -5,6 +5,7 @@ import datetime
 
 
 # Only run this code for Range Maps that were run before Generate Range Map tool had translation!!!
+# Does not work with local file geodatabase
 
 
 start_time = datetime.datetime.now()
@@ -12,7 +13,7 @@ geodatabase = r'C:\GIS\EBAR\nsc-gis-ebarkba.sde'
 table_name_prefix = EBARUtils.getTableNamePrefix(geodatabase)
 # use dict for optional DatasetSourceName translations
 source_fr_dict = EBARUtils.readDatasetSourceTranslations(geodatabase)
-range_map_ids = [3850, 2566]
+range_map_ids = [4918] #[3850, 2566]
 for range_map_id in range_map_ids:
     print('Translating ' + str(range_map_id))
     # RangeMap
@@ -42,12 +43,17 @@ for range_map_id in range_map_ids:
                 arcpy.AddJoin_management('rmeid', 'DatasetSourceID', geodatabase + '/DatasetSource', 'DatasetSourceID')
                 rmeid_stats = geodatabase + '/TempRMEIDStats' + str(start_time.year) + str(start_time.month) + \
                     str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
-                arcpy.Statistics_analysis('rmeid', rmeid_stats, [['InputDataCount', 'SUM']],
+                arcpy.Statistics_analysis('rmeid', rmeid_stats,
+                                          [['InputDataCount', 'SUM'], ['MinDate', 'MIN'], ['MaxDate', 'MAX'],
+                                           ['MaxDate', 'MIN']],
                                           [table_name_prefix + 'DatasetSource.DatasetSourceName'])
                 search_row = None
                 with arcpy.da.SearchCursor(rmeid_stats,
                                            ['ebarkba_sde_datasetsource_datasetsourcename',
-                                            'sum_ebarkba_sde_rangemapecoshapeinputdataset_inputdatacount'],
+                                            'sum_ebarkba_sde_rangemapecoshapeinputdataset_inputdatacount',
+                                            'max_ebarkba_sde_rangemapecoshapeinputdataset_maxdate',
+                                            'min_ebarkba_sde_rangemapecoshapeinputdataset_maxdate',
+                                            'min_ebarkba_sde_rangemapecoshapeinputdataset_mindate'],
                                            sql_clause=[None, 'ORDER BY ebarkba_sde_datasetsource_datasetsourcename']
                                            ) as search_cursor:
                     for search_row in EBARUtils.searchCursor(search_cursor):
@@ -58,6 +64,19 @@ for range_map_id in range_map_ids:
                         input_records_fr += str(int(
                             search_row['sum_ebarkba_sde_rangemapecoshapeinputdataset_inputdatacount'])) + ' ' + \
                             source_fr_dict[search_row['ebarkba_sde_datasetsource_datasetsourcename']]
+                        if search_row['max_ebarkba_sde_rangemapecoshapeinputdataset_maxdate']:
+                            min_year = search_row['max_ebarkba_sde_rangemapecoshapeinputdataset_maxdate'].year
+                            max_year = search_row['max_ebarkba_sde_rangemapecoshapeinputdataset_maxdate'].year
+                            if search_row['min_ebarkba_sde_rangemapecoshapeinputdataset_maxdate']:
+                                if search_row['min_ebarkba_sde_rangemapecoshapeinputdataset_maxdate'].year < min_year:
+                                    min_year = search_row['min_ebarkba_sde_rangemapecoshapeinputdataset_maxdate'].year
+                            if search_row['min_ebarkba_sde_rangemapecoshapeinputdataset_maxdate']:
+                                if search_row['min_ebarkba_sde_rangemapecoshapeinputdataset_mindate'].year < min_year:
+                                    min_year = search_row['min_ebarkba_sde_rangemapecoshapeinputdataset_mindate'].year
+                            input_records_fr += ' ('
+                            if min_year < max_year:
+                                input_records_fr += str(min_year) + '-'
+                            input_records_fr += str(max_year) + ')'
                 if search_row:
                     del search_row
                 del search_cursor
@@ -121,12 +140,17 @@ for range_map_id in range_map_ids:
                 arcpy.AddJoin_management('rmeid2', 'DatasetSourceID', geodatabase + '/DatasetSource', 'DatasetSourceID')
                 rmeid2_stats = geodatabase + '/TempRMEID2Stats' + str(start_time.year) + str(start_time.month) + \
                     str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
-                arcpy.Statistics_analysis('rmeid2', rmeid2_stats, [['InputDataCount', 'SUM']],
+                arcpy.Statistics_analysis('rmeid2', rmeid2_stats,
+                                          [['InputDataCount', 'SUM'], ['MinDate', 'MIN'], ['MaxDate', 'MAX'],
+                                           ['MaxDate', 'MIN']],
                                           [table_name_prefix + 'DatasetSource.DatasetSourceName'])
                 search_row = None
                 with arcpy.da.SearchCursor(rmeid2_stats,
                                            ['ebarkba_sde_datasetsource_datasetsourcename',
-                                            'sum_ebarkba_sde_rangemapecoshapeinputdataset_inputdatacount'],
+                                            'sum_ebarkba_sde_rangemapecoshapeinputdataset_inputdatacount',
+                                            'max_ebarkba_sde_rangemapecoshapeinputdataset_maxdate',
+                                            'min_ebarkba_sde_rangemapecoshapeinputdataset_maxdate',
+                                            'min_ebarkba_sde_rangemapecoshapeinputdataset_mindate'],
                                            sql_clause=[None, 'ORDER BY ebarkba_sde_datasetsource_datasetsourcename']
                                            ) as search_cursor:
                     for search_row in EBARUtils.searchCursor(search_cursor):
@@ -137,6 +161,19 @@ for range_map_id in range_map_ids:
                         input_records_fr += str(int(
                             search_row['sum_ebarkba_sde_rangemapecoshapeinputdataset_inputdatacount'])) + ' ' + \
                             source_fr_dict[search_row['ebarkba_sde_datasetsource_datasetsourcename']]
+                        if search_row['max_ebarkba_sde_rangemapecoshapeinputdataset_maxdate']:
+                            min_year = search_row['max_ebarkba_sde_rangemapecoshapeinputdataset_maxdate'].year
+                            max_year = search_row['max_ebarkba_sde_rangemapecoshapeinputdataset_maxdate'].year
+                            if search_row['min_ebarkba_sde_rangemapecoshapeinputdataset_maxdate']:
+                                if search_row['min_ebarkba_sde_rangemapecoshapeinputdataset_maxdate'].year < min_year:
+                                    min_year = search_row['min_ebarkba_sde_rangemapecoshapeinputdataset_maxdate'].year
+                            if search_row['min_ebarkba_sde_rangemapecoshapeinputdataset_maxdate']:
+                                if search_row['min_ebarkba_sde_rangemapecoshapeinputdataset_mindate'].year < min_year:
+                                    min_year = search_row['min_ebarkba_sde_rangemapecoshapeinputdataset_mindate'].year
+                            input_records_fr += ' ('
+                            if min_year < max_year:
+                                input_records_fr += str(min_year) + '-'
+                            input_records_fr += str(max_year) + ')'
                 if search_row:
                     del search_row
                 del search_cursor
@@ -150,7 +187,9 @@ for range_map_id in range_map_ids:
                 # notes_fr = notes_fr.replace('Expert Ecoshape Review', "Avis d'experts écoshape")
                 notes_fr = input_records_fr
                 if 'Expert Ecoshape Review' in sections[0]:
-                    notes_fr += "; Avis d'experts écoshape"
+                    if len(notes_fr) > 0:
+                        notes_fr += '; '
+                    notes_fr += "Avis d'experts écoshape"
                 # each subsequent section is a reviewer comment
                 used_deepl = False
                 for section in sections[1:]:
@@ -158,7 +197,7 @@ for range_map_id in range_map_ids:
                     prefix = subsections[0]
                     prefix = prefix.replace('Reviewer Comment', 'Commentaire du réviseur')
                     prefix = prefix.replace('Anonymous', 'Anonyme')
-                    prefix = prefix.replace('Expert Ecoshape Review', "Avis d'experts écoshape")
+                    #prefix = prefix.replace('Expert Ecoshape Review', "Avis d'experts écoshape")
                     postfix = subsections[1]
                     if postfix == 'Unpublished':
                         postfix = 'Non publié'

@@ -46,20 +46,20 @@ class PreparePCAPreciseTransferTool:
             # record counts
             count = 0
 
-            # reset to NULLs in case rules/datasets have changed since last transfer
-            EBARUtils.displayMessage(messages, 'Resetting transfer fields')
-            # # can't add and remove indexes due to schema lock!
-            # arcpy.AddIndex_management(param_geodatabase + '/' + spatial_input, ['PermitPCAPreciseTransfer'],
-            #                           'pca_precise_index')
-            # arcpy.AddIndex_management(param_geodatabase + '/' + spatial_input, ['PCAPreciseSensitive'],
-            #                           'pca_sensitive_index')
-            arcpy.MakeTableView_management(param_geodatabase + '/' + spatial_input, 'input_view',
-                                           'PermitPCAPreciseTransfer IS NOT NULL OR PCAPreciseSensitive IS NOT NULL')
-            # arcpy.RemoveIndex_management(param_geodatabase + '/' + spatial_input, 'pca_precise_index')
-            # arcpy.RemoveIndex_management(param_geodatabase + '/' + spatial_input, 'pca_sensitive_index')
-            arcpy.CalculateField_management('input_view', 'PermitPCAPreciseTransfer', 'None')
-            arcpy.CalculateField_management('input_view', 'PCAPreciseSensitive', 'None')
-            arcpy.Delete_management('input_view')
+            # # reset to NULLs in case rules/datasets have changed since last transfer
+            # EBARUtils.displayMessage(messages, 'Resetting transfer fields')
+            # # # can't add and remove indexes due to schema lock!
+            # # arcpy.AddIndex_management(param_geodatabase + '/' + spatial_input, ['PermitPCAPreciseTransfer'],
+            # #                           'pca_precise_index')
+            # # arcpy.AddIndex_management(param_geodatabase + '/' + spatial_input, ['PCAPreciseSensitive'],
+            # #                           'pca_sensitive_index')
+            # arcpy.MakeTableView_management(param_geodatabase + '/' + spatial_input, 'input_view',
+            #                                'PermitPCAPreciseTransfer IS NOT NULL OR PCAPreciseSensitive IS NOT NULL')
+            # # arcpy.RemoveIndex_management(param_geodatabase + '/' + spatial_input, 'pca_precise_index')
+            # # arcpy.RemoveIndex_management(param_geodatabase + '/' + spatial_input, 'pca_sensitive_index')
+            # arcpy.CalculateField_management('input_view', 'PermitPCAPreciseTransfer', 'None')
+            # arcpy.CalculateField_management('input_view', 'PCAPreciseSensitive', 'None')
+            # arcpy.Delete_management('input_view')
 
             # jurisdiction-level rules are handled by prov/territory, with NF and LB separated
             jurs = ['BC', 'AB', 'SK', 'MB', 'ON', 'QC', 'NB', 'PE', 'NS', 'NF', 'LB', 'NU', 'NT', 'YT']
@@ -172,12 +172,12 @@ class PreparePCAPreciseTransferTool:
                                  'DatasetSourceID', 'KEEP_COMMON')
 
         # only incude non-CDC data
-        where = 'DatasetSource.CDCJurisdictionID IS NULL'
+        where = table_name_prefix + 'DatasetSource.CDCJurisdictionID IS NULL'
         # SpeciesID is provided for ESTH rules, InputDatasetIDs for permissions
         if species_id:
-            where = 'AND SpeciesID = ' + str(species_id)
+            where += ' AND ' + table_name_prefix + spatial_input + '.SpeciesID = ' + str(species_id)
         else:
-            where = 'AND InputDatasetID IN (' + ','.join(map(str, input_dataset_ids)) + ')'
+            where += ' AND InputDatasetID IN (' + ','.join(map(str, input_dataset_ids)) + ')'
         arcpy.SelectLayerByAttribute_management('input_lyr', 'NEW_SELECTION', where)
         
         # select by Location interesting jur(s) buffers
