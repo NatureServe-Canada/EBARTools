@@ -173,11 +173,12 @@ class PreparePCAPreciseTransferTool:
 
         # only incude non-CDC data
         where = table_name_prefix + 'DatasetSource.CDCJurisdictionID IS NULL'
-        # SpeciesID is provided for ESTH rules, InputDatasetIDs for permissions
+        # species_id is provided for ESTH rules, input_dataset_ids for permissions
         if species_id:
             where += ' AND ' + table_name_prefix + spatial_input + '.SpeciesID = ' + str(species_id)
         else:
-            where += ' AND InputDatasetID IN (' + ','.join(map(str, input_dataset_ids)) + ')'
+            where += ' AND ' + table_name_prefix + spatial_input + '.InputDatasetID IN (' + \
+                ','.join(map(str, input_dataset_ids)) + ')'
         arcpy.SelectLayerByAttribute_management('input_lyr', 'NEW_SELECTION', where)
         
         # select by Location interesting jur(s) buffers
@@ -188,29 +189,65 @@ class PreparePCAPreciseTransferTool:
                                                 table_name_prefix + 'Jurisdiction.JurisdictionAbbreviation IN (' +
                                                 "'{0}'".format("','".join(jurs)) + ')')
         arcpy.SelectLayerByLocation_management('input_lyr', 'INTERSECT', 'jurbuffer_lyr')
-        update_row = None
-        with arcpy.da.UpdateCursor('input_lyr', ['PermitPCAPreciseTransfer', 'PCAPreciseSensitive']) as update_cursor:
-            for update_row in EBARUtils.updateCursor(update_cursor):
+        search_row = None
+        # set PCAPreciseSensitive to "Y" and set PCAPreciseSensitiveCategory as follows:
+        # - to "Proprietary Data" if InputDataset.SensitiveEcologicalCat is Proprietary
+        # - to "Land Owner Restrictions" if InputDataset.SensitiveEcologicalCat is Private Lands or Indigenous Lands
+        # - to "Fragile Species or Habitat" if InputDataset.SensitiveEcologicalCat is any non-null value other than
+        #   list above, or if species in iNat.ca or NSC/CDC list of ESTH
+        # table_name_prefix + input_features + '.' + input_features + 'ID'
+        with arcpy.da.SearchCursor('input_lyr',
+                                   [table_name_prefix + spatial_input + '.' + spatial_input + 'ID',
+                                    table_name_prefix + spatial_input + '.PCAPreciseSensitive',
+                                    table_name_prefix + spatial_input + '.PCAPreciseSensitiveCategory',
+                                    table_name_prefix + 'InputDataset.SensitiveEcologicalDataCat']) as search_cursor:
+            for search_row in EBARUtils.searchCursor(search_cursor):
                 update = False
                 pca_precise_transfer = None
+                pca_precise_sensitive = None
+                pca_precise_sensitive_category = None
                 if species_id:
                     # ESTH rule
-                    if not update_row['PCAPreciseSensitive']:
+                    if not search_row[table_name_prefix + spatial_input + '.PCAPreciseSensitive']:
                         # not previously set
                         update = True
                         pca_precise_sensitive = 'Y'
+                        pca_precise_sensitive_category = 'Fragile Species or Habitat'
                 else:
                     # Permission
                     update = True
                     pca_precise_transfer = 'Y'
-                    pca_precise_sensitive = update_row['PCAPreciseSensitive']
+                    pca_precise_sensitive = search_row[table_name_prefix + spatial_input + '.PCAPreciseSensitive']
+                    pca_precise_sensitive_category = search_row[table_name_prefix + spatial_input +
+                                                                '.PCAPreciseSensitiveCategory']
+                    if search_row[table_name_prefix + 'InputDataset.SensitiveEcologicalDataCat'] == 'Proprietary':
+                        pca_precise_sensitive_category = 'Proprietary Data'
+                    elif search_row[table_name_prefix +
+                                    'InputDataset.SensitiveEcologicalDataCat'] in ('Private Lands', 'Indigenous Lands'):
+                        pca_precise_sensitive_category = 'Land Owner Restrictions'
+                    elif search_row[table_name_prefix + 'InputDataset.SensitiveEcologicalDataCat']:
+                        pca_precise_sensitive_category = 'Fragile Species or Habitat'
                 if update:
-                    update_cursor.updateRow([pca_precise_transfer, pca_precise_sensitive])
-                    if input_dataset_ids:
-                        count += 1
-        if update_row:
-            del update_row
-        del update_cursor
+                    update_row = None
+                    with arcpy.da.UpdateCursor(param_geodatabase + '/' + spatial_input,
+                                               ['PermitPCAPreciseTransfer',
+                                                'PCAPreciseSensitive',
+                                                'PCAPreciseSensitiveCategory'],
+                                                spatial_input + 'ID = ' +
+                                                str(search_row[table_name_prefix + spatial_input + '.' + spatial_input
+                                                               + 'ID'])) as update_cursor:
+                        for update_row in update_cursor:
+                            update_cursor.updateRow([pca_precise_transfer, pca_precise_sensitive,
+                                                     pca_precise_sensitive_category,
+                                                     search_row['SensitiveEcologicalDataCat']])
+                            if input_dataset_ids:
+                                count += 1
+                    if update_row:
+                        del update_row
+                    del update_cursor
+        if search_row:
+            del search_row
+        del search_cursor
 
         arcpy.Delete_management('jurbuffer_lyr')
         arcpy.Delete_management('input_lyr')
