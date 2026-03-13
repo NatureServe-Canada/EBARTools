@@ -600,7 +600,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                         "Username = '" + search_row[table_name_prefix +
                                                         'EcoshapeReview.Username'] + "'") as expert_cursor:
                                 summary += '; Expert Ecoshape Review'
-                                summary_fr += "; Avis d'experts écoshape"
+                                summary_fr += "; Avis d'experts ecoshape"
                                 for expert_row in EBARUtils.searchCursor(expert_cursor):
                                     if expert_row['PublishName']:
                                         expert_comment = expert_row['ExpertName']
@@ -683,7 +683,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                     'EcoshapeReview.Username'] + "'") as expert_cursor:
                             expert_comment = None
                             notes = 'Expert Ecoshape Review'
-                            notes_fr = "Avis d'experts écoshape"
+                            notes_fr = "Avis d'experts ecoshape"
                             for expert_row in EBARUtils.searchCursor(expert_cursor):
                                 if expert_row['PublishName']:
                                     expert_comment = expert_row['ExpertName']

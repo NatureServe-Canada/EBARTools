@@ -184,12 +184,12 @@ for range_map_id in range_map_ids:
                 sections = notes_fr.split('<br>')
                 # notes_fr = sections[0]
                 # notes_fr = notes_fr.replace('Input records', "Enregistrements d'entrée")
-                # notes_fr = notes_fr.replace('Expert Ecoshape Review', "Avis d'experts écoshape")
+                # notes_fr = notes_fr.replace('Expert Ecoshape Review', "Avis d'experts ecoshape")
                 notes_fr = input_records_fr
                 if 'Expert Ecoshape Review' in sections[0]:
                     if len(notes_fr) > 0:
                         notes_fr += '; '
-                    notes_fr += "Avis d'experts écoshape"
+                    notes_fr += "Avis d'experts ecoshape"
                 # each subsequent section is a reviewer comment
                 used_deepl = False
                 for section in sections[1:]:
@@ -197,7 +197,7 @@ for range_map_id in range_map_ids:
                     prefix = subsections[0]
                     prefix = prefix.replace('Reviewer Comment', 'Commentaire du réviseur')
                     prefix = prefix.replace('Anonymous', 'Anonyme')
-                    #prefix = prefix.replace('Expert Ecoshape Review', "Avis d'experts écoshape")
+                    #prefix = prefix.replace('Expert Ecoshape Review', "Avis d'experts ecoshape")
                     postfix = subsections[1]
                     if postfix == 'Unpublished':
                         postfix = 'Non publié'

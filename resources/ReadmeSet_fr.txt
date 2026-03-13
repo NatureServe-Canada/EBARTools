@@ -4,19 +4,19 @@ Fichiers compressés (ZIP) des aires de répartition des espèces sélectionnée
 Avertissement : Les versions anglaises des produits et documents EBAR sont les versions officielles, car il n'existe pas toujours de traductions françaises officielles pour certains termes et textes dans le base de donnée du projet EBAR.
 
 Ces fichiers compressés (ZIP) doivent contenir les fichiers suivants :
-- EBARxxxxx.pdf (cartes et métadonnées de la EBAR des espèces sélectionnées)
-- MethodsEBAR.pdf (informations générales sur la production des cartes de répartition, les sources des écoshapes et les sujets connexes)
-- Ecoshape.* (fichiers comprenant des fichiers de forme (SHP) des tous les polygones précis des écoshapes de la EBAR)
-- EcoshapeApercu.* (fichiers comprenant des fichiers de forme (SHP) des tous les polygones généralisés des écoshapes de la EBAR)
-- CarteRepartition.csv (tableau des espèces et attributs de la EBAR pour toutes les espèces au sein de la catégorie/groupe taxonomique)
-- CarteRepartitionEcoshape.csv (tableau des attributs par écoshape de la EBAR pour toutes les espèces au sein de la catégorie/groupe taxonomique)
+- EBARxxxxx.pdf (cartes et métadonnées des espèces sélectionnées)
+- MethodsEBAR.pdf (informations générales sur la production des cartes de répartition, les sources des ecoshapes et les sujets connexes)
+- Ecoshape.* (fichiers comprenant des fichiers de forme (SHP) des tous les polygones précis des ecoshapes)
+- EcoshapeApercu.* (fichiers comprenant des fichiers de forme (SHP) des tous les polygones généralisés des ecoshapes)
+- CarteRepartition.csv (tableau des espèces et attributs pour toutes les espèces au sein de la catégorie/groupe taxonomique)
+- CarteRepartitionEcoshape.csv (tableau des attributs par ecoshape pour toutes les espèces au sein de la catégorie/groupe taxonomique)
 - Juridiction.csv (tableau des juridictions)
 - EBARxxxxx.aprx (fichier du projet ArcGIS Pro référençant les fichiers de données ci-dessus, avec les jointures appropriées pour chaque espèce au sein de la catégorie/groupe taxonomique)
 - EBARxxxxx.mapx (fichier de carte ArcGIS Pro référençant les fichiers de données ci-dessus, avec les jointures appropriées pour chaque espèce au sein de la catégorie/groupe taxonomique)
-- EBARxxxxxEcoshape.lyrx (fichier de couche ArcGIS Pro, avec la symbologie suggérée et les jointures appropriées, référençant les écoshapes d'origine pour chaque espèce au sein de la catégorie/groupe taxonomique)
-- EBARxxxxxEcoshapeApercu.lyrx (fichier de couche ArcGIS Pro, avec la symbologie suggérée et les jointures appropriées, référençant les écoshapes généralisés pour chaque espèce au sein de la catégorie/groupe taxonomique)
-- EBARxxxxxEcoshapesSupprime.lyrx (fichier de couche ArcGIS Pro, avec les jointures appropriées, affichant uniquement les écoshapes qui ont été supprimées à la suite de l'examen par les experts, référençant les écoshapes généralisées pour chaque espèce au sein de la catégorie/groupe taxonomique)
-- EBARxxxxxTypeUtilisation.lyrx (si applicable, fichier de couche ArcGIS Pro, avec la symbologie suggérée et les jointures appropriées, référençant le type d'utilisation des écoshapes généralisées pour chaque espèce au sein de la catégorie/groupe taxonomique)
+- EBARxxxxxEcoshape.lyrx (fichier de couche ArcGIS Pro, avec la symbologie suggérée et les jointures appropriées, référençant les ecoshapes d'origine pour chaque espèce au sein de la catégorie/groupe taxonomique)
+- EBARxxxxxEcoshapeApercu.lyrx (fichier de couche ArcGIS Pro, avec la symbologie suggérée et les jointures appropriées, référençant les ecoshapes généralisés pour chaque espèce au sein de la catégorie/groupe taxonomique)
+- EBARxxxxxEcoshapesSupprime.lyrx (fichier de couche ArcGIS Pro, avec les jointures appropriées, affichant uniquement les ecoshapes qui ont été supprimées à la suite de l'examen par les experts, référençant les ecoshapes généralisées pour chaque espèce au sein de la catégorie/groupe taxonomique)
+- EBARxxxxxTypeUtilisation.lyrx (si applicable, fichier de couche ArcGIS Pro, avec la symbologie suggérée et les jointures appropriées, référençant le type d'utilisation des ecoshapes généralisées pour chaque espèce au sein de la catégorie/groupe taxonomique)
 [où xxxxx est l'ELEMENT_GLOBAL_ID de l'espèce sélectionnée]
 [où yyyyy correspond au nom de la catégorie/du groupe taxonomique]
 [les fichiers de projet ArcMap (.mxd) sont disponsible dans les fichiers ZIP anglais]
@@ -37,7 +37,7 @@ MetadonneesPortee - nombre d'enregistrements d'entrée par source, et nombre et 
 NotesCarteRepartition - détails sur le(s) nom(s) de l'espèce
 CommentairesCarteRepartition - notes supplémentaires
 SynonymesUtilisee - liste des synonymes, le cas échéant, pour l'espèce principale sous laquelle les données d'entrée utilisées ont été importées
-TypeUtilisationDifferencie - 1 si le type d'utilisation (reproduction, reproduction possible, migration) est différencié par écoshape
+TypeUtilisationDifferencie - 1 si le type d'utilisation (reproduction, reproduction possible) est différencié par ecoshape
 ID_ELEMENT_NATIONAL - identifiant unique national dans Biotics de NatureServe
 ID_ELEMENT_MONDIAL - identifiant unique mondial dans Biotics de NatureServe
 CODE_ELEMENT - identifiant de l'élément dans Biotics de NatureServe 
@@ -68,13 +68,13 @@ Champs CarteRepartitionEcoshape :
 objectid - identifiant unique ArcGIS
 IDCarteRepartition - clé étrangère EBAR relative à l'enregistrement CarteRepartition approprié
 IDEcoshape - clé étrangère EBAR relative à l'enregistrement Ecoshape/EcoshapeApercu approprié
-Presence - catégorie de présence de l'espèce dans l'écoshape (P = Présente, X = Présence attendue, H = Historique, NULL = Supprimée*, voir le PDF des métadonnées pour les définitions)
-TypeUtilisation - type d'utilisation de l'espèce dans l'écoshape (B = Reproduction, P = Reproduction possible, M = Migration, voir le PDF des métadonnées pour les définitions)
+Presence - catégorie de présence de l'espèce dans l'ecoshape (P = Présente, X = Présence attendue, H = Historique, NULL = Supprimée*, voir le PDF des métadonnées pour les définitions)
+TypeUtilisation - type d'utilisation de l'espèce dans l'ecoshape (B = Reproduction, P = Reproduction possible, voir le PDF des métadonnées pour les définitions)
 NotesCarteRepartitionEcoshape - nombre d'enregistrements d'entrée par source et commentaires des réviseurs, s'ils peuvent être publiés
-DateMin - date la plus ancienne pour tous les enregistrements d'entrée qui chevauchent l'écoshape
-DateMax - date la plus récente pour tous les enregistrements d'entrée qui chevauchent l'écoshape
+DateMin - date la plus ancienne pour tous les enregistrements d'entrée qui chevauchent l'ecoshape
+DateMax - date la plus récente pour tous les enregistrements d'entrée qui chevauchent l'ecoshape
 
-[*Les écoshapes supprimées au cours du processus de révision par des experts sont incluses avec Présence=NULL et le champ RangeMapEcoshapeNotes contenant les commentaires des réviseurs, s'ils peuvent être publiés.]
+[*Les ecoshapes supprimées au cours du processus de révision par des experts sont incluses avec Présence=NULL et le champ RangeMapEcoshapeNotes contenant les commentaires des réviseurs, s'ils peuvent être publiés.]
 
 Champs Juridiction :
 objectid - identifiant unique ArcGIS
@@ -87,12 +87,12 @@ Champs Ecoshape/EcoshapeApercu :
 FID - identifiant unique ArcGIS
 IDEcoshape - identifiant unique EBAR
 IDJuri - clé étrangère EBAR relative à l'enregistrement de la Juridiction appropriée
-NomEco - nom de l'écoshape
+NomEco - nom de l'ecoshape
 ParentEco - nom anglais de l'écorégion parentale
 ParentEcoF - nom français de l'écorégion parentale
 Ecozone - nom anglais de l'écozone
 EcozoneFR - nom français de l'écozone
-VerMosaiq - version de la mosaïque des écoshapes
+VerMosaiq - version de la mosaïque des ecoshapes
 SuperTerr - superficie terrestre en mètres carrés dérivée de la Commission de coopération écologique «Grands lacs et réservoirs d'Amérique du Nord»
 SuperTot - superficie totale en mètres carrés
 
@@ -100,7 +100,7 @@ Avertissement :
 - Veuillez consulter notre document sur les méthodes à l'adresse https://1drv.ms/b/s!Ajv6BHSXrqqqm4xipeEOQ67IfH77IQ?e=dqM1FO avant d'utiliser EBAR.
 - Les données EBAR sont relativement grossières et conviennent à des fins de dépistage et d'éducation, mais ne sont pas destinées à tous les types d'applications et d'analyses.
 - L'absence de données dans une zone géographique ne signifie pas nécessairement qu'une espèce n'y est pas présente.
-- Un écoshape avec une valeur de présence ne signifie pas nécessairement qu'une espèce est présente dans toute la zone géographique.
+- Ecoshape avec une valeur de présence ne signifie pas nécessairement qu'une espèce est présente dans toute la zone géographique.
 
 Citation de plusieurs espèces : NatureServe Canada, 2026. Cartographie automatisée des aires de répartition basée sur les écosystèmes (EBAR). Ottawa, Canada. Consulté le [insérer la date] sur [insérer l'URL]
 Citation d'une seule espèce : NatureServe Canada, 2026. Cartographie automatisée des aires de répartition basée sur les écosystèmes (EBAR) pour [insérer le nom de l'espèce, la version, la portée]. Ottawa, Canada. Extrait de [insérer l'URL] le [insérer la date]

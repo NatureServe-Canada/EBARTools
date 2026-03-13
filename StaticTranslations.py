@@ -33,7 +33,6 @@ presence_translation = {
 usage_type_translation = {
     'B': 'Reproduction',
     'P': 'Reproduction possible',
-    'M': 'Migration',
     None: None}
 
 

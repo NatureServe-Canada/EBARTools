@@ -800,7 +800,7 @@ def ExportRangeMapToCSV(range_map_view, range_map_ids, attributes_dict, output_f
     if suffix == '_en':
         metadata.summary = 'Table of species and range attributes for EBAR for selected species'
     else: # _fr
-        metadata.summary = 'Tableau des espèces et des attributs de répartition de la EBAR pour les espèces sélectionnées'
+        metadata.summary = 'Tableau des espèces et des attributs de répartition pour les espèces sélectionnées'
     range_map_md.copy(metadata)
     range_map_md.save()
 
@@ -840,7 +840,7 @@ def ExportRangeMapEcoshapesToCSV(range_map_ecoshape_view, range_map_ids, output_
     if suffix == '_en':
         metadata.summary = 'Table of per-ecoshape attributes for EBAR for selected species'
     else: # _fr
-        metadata.summary = 'Tableau des attributs par écoshape de la EBAR pour les espèces sélectionnées'
+        metadata.summary = 'Tableau des attributs par ecoshape pour les espèces sélectionnées'
     range_map_ecoshape_md.copy(metadata)
     range_map_ecoshape_md.save()
 
@@ -884,7 +884,7 @@ def ExportEcoshapesToShapefile(ecoshape_layer, range_map_ecoshape_view, output_f
     if suffix == '_en':
         metadata.summary = 'Polygons shapefile of original ecoshapes for EBAR for selected species'
     else: # _fr
-        metadata.summary = 'Fichier de forme (SHP) des polygones des écoshape précis de la EBAR pour les espèces sélectionnées'
+        metadata.summary = 'Fichier de forme (SHP) des polygones des ecoshape précis pour les espèces sélectionnées'
     ecoshape_md.copy(metadata)
     ecoshape_md.save()
 
@@ -947,7 +947,7 @@ def ExportEcoshapeOverviewsToShapefile(ecoshape_overview_layer, range_map_ecosha
     if suffix == '_en':
         metadata.summary = 'Polygons shapefile of generalized ecoshapes for EBAR for selected species'
     else: # _fr
-        metadata.summary = 'Fichier de forme (SHP) des polygones des écoshape généralisées de la EBAR pour les ' + \
+        metadata.summary = 'Fichier de forme (SHP) des polygones des ecoshape généralisées pour les ' + \
             'espèces sélectionnées'
     ecoshape_overview_md.copy(metadata)
     ecoshape_overview_md.save()
@@ -1448,8 +1448,8 @@ def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_i
         if differentiate_usage_type:
             usage_type_layer_md = usage_type_layer.metadata
             metadata.title = 'EBAR' + element_global_id + 'TypeUtilisation'
-            metadata.summary = "Fichier de forme (SHP) des polygones des types d'usages des écoshape généralisées " + \
-                'de la EBAR pour les espèces sélectionnées'
+            metadata.summary = "Fichier de forme (SHP) des polygones des types d'usages des ecoshape généralisées " + \
+                'pour les espèces sélectionnées'
             usage_type_layer_md.copy(metadata)
             usage_type_layer_md.save()
             usage_type_layer.name = 'EBAR' + element_global_id + 'TypeUtilisation'
@@ -1462,7 +1462,7 @@ def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_i
         ecoshape_overview_layer = map.listLayers('EBARTemplateEcoshapeApercu')[0]
         ecoshape_overview_layer_md = ecoshape_overview_layer.metadata
         metadata.title = 'EBAR' + element_global_id + 'EcoshapeApercu'
-        metadata.summary = 'Fichier de forme (SHP) des polygones des écoshape généralisées de la EBAR pour les ' + \
+        metadata.summary = 'Fichier de forme (SHP) des polygones des ecoshape généralisées pour les ' + \
             'espèces sélectionnées'
         ecoshape_overview_layer_md.copy(metadata)
         ecoshape_overview_layer_md.save()
@@ -1474,7 +1474,7 @@ def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_i
         ecoshape_overview_layer = map.listLayers('EBARTemplateEcoshapesSupprime')[0]
         ecoshape_overview_layer_md = ecoshape_overview_layer.metadata
         metadata.title = 'EBAR' + element_global_id + 'EcoshapesSupprime'
-        metadata.summary = 'Fichier de forme (SHP) des polygones des écoshape généralisées supprimées de la EBAR ' + \
+        metadata.summary = 'Fichier de forme (SHP) des polygones des ecoshape généralisées supprimées ' + \
             'pour les espèces sélectionnées'
         ecoshape_overview_layer_md.copy(metadata)
         ecoshape_overview_layer_md.save()
@@ -1487,7 +1487,7 @@ def updateArcGISProTemplate(zip_folder, element_global_id, metadata, range_map_i
         ecoshape_layer = map.listLayers('EBARTemplateEcoshape')[0]
         ecoshape_layer_md = ecoshape_overview_layer.metadata
         metadata.title = 'EBAR' + element_global_id + 'Ecoshape'
-        metadata.summary = 'Fichier de forme (SHP) des polygones des écoshape précis de la EBAR pour les espèces ' + \
+        metadata.summary = 'Fichier de forme (SHP) des polygones des ecoshape précis pour les espèces ' + \
             'sélectionnées'
         ecoshape_layer_md.copy(metadata)
         ecoshape_layer_md.save()
