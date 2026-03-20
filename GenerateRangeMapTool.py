@@ -1348,8 +1348,10 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                 for expert_comment in experts_comments:
                     if len(reviewer_comments) > 0:
                         reviewer_comments += '<br>'
-                        reviewer_comments_fr += '<br>'
                     reviewer_comments += expert_comment
+                for expert_comment_fr in experts_comments_fr:
+                    if len(reviewer_comments) > 0:
+                        reviewer_comments_fr += '<br>'
                     reviewer_comments_fr += expert_comment_fr
                 # Notes
                 notes = 'Primary Species - ' + param_species
@@ -1414,7 +1416,7 @@ if __name__ == '__main__':
     param_geodatabase = arcpy.Parameter()
     param_geodatabase.value = r'C:\GIS\EBAR\nsc-gis-ebarkba.sde' #'D:\GIS\EBAR\EBARDevJan2026.gdb'
     param_species = arcpy.Parameter()
-    param_species.value = 'Asclepias speciosa' #Triacanthella copelandi' #Marmota vancouverensis'
+    param_species.value = 'Chelydra serpentina' #'Asclepias speciosa' #Triacanthella copelandi' #Marmota vancouverensis'
     param_secondary = arcpy.Parameter()
     #param_secondary.value = "'Schistochilopsis incisa var. opacifolia'" #"'Dodia tarandus';'Dodia verticalis'"
     param_version = arcpy.Parameter()

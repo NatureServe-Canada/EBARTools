@@ -173,7 +173,7 @@ class PrepareNSXProTransferTool:
         output_gdb = 'NSXProTransfer' + str(datetime.datetime.now().day) + datetime.datetime.now().strftime('%b') + \
             str(datetime.datetime.now().year)
         arcpy.CreateFileGDB_management(EBARUtils.temp_folder, output_gdb)
-        output_gdb_folder = EBARUtils.download_folder + '/' + output_gdb
+        output_gdb_folder = EBARUtils.temp_folder + '/' + output_gdb
         arcpy.ExportFeatures_conversion(param_geodatabase + '/NSXProInputPoint',
                                         output_gdb_folder + '/NSXProInputPoint')
         arcpy.ExportFeatures_conversion(param_geodatabase + '/NSXProInputPolygon',

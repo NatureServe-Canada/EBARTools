@@ -53,14 +53,15 @@ class PreparePCAPreciseTransferTool:
         EBARUtils.displayMessage(messages, 'Made Feature Layer for PCAPreciseTemp at ' + str(datetime.datetime.now()))
 
         # process one prov/terr at a time and check both Cdn and P/T ESTHs
-        jur_ids = [1] #,2,3,4,5,6,7,8,9,10,11,12,18,19]
+        jur_ids = [1,2,3,4,5,6,7,8,9,10,11,12,18,19]
         for jur_id in jur_ids:
             # C. Select Layer by Location SUBSET intersect JurisdictionBufferFull for Canadian PTs
             arcpy.MakeFeatureLayer_management(param_geodatabase + '/JurisdictionBufferFull', 'jurbuffer_lyr')
             arcpy.SelectLayerByAttribute_management('jurbuffer_lyr', 'NEW_SELECTION', 'JurisdictionID = ' + str(jur_id))
             EBARUtils.displayMessage(messages,
                                      'Jurisdiction ' + str(jur_id) + ' selected at ' + str(datetime.datetime.now()))
-            arcpy.SelectLayerByLocation_management('input_lyr', 'INTERSECT', 'jurbuffer_lyr')
+            arcpy.SelectLayerByLocation_management('input_lyr', 'INTERSECT', 'jurbuffer_lyr',
+                                                   selection_type='NEW_SELECTION')
             point_count = arcpy.GetCount_management('input_lyr')[0]
             EBARUtils.displayMessage(messages, str(point_count) + ' points selected at ' + str(datetime.datetime.now()))
 
@@ -91,7 +92,7 @@ class PreparePCAPreciseTransferTool:
             if prov_terr_esth_species_ids:
                 del row
             del cursor
-            EBARUtils.displayMessage(messages, 'Retrieved CanadianESTHSpeciesIDs at ' + str(datetime.datetime.now()))
+            EBARUtils.displayMessage(messages, 'Retrieved ProvTerrESTHSpeciesIDs at ' + str(datetime.datetime.now()))
             where = table_name_prefix + 'InputPoint.SpeciesID IN (' + cdn_esth_species_ids + ') OR ' + \
                 table_name_prefix + 'InputPoint.SpeciesID IN (' + prov_terr_esth_species_ids + ') OR ' + \
                 table_name_prefix + 'InputDataset.SensitiveEcologicalDataCat IS NOT NULL'
@@ -105,28 +106,22 @@ class PreparePCAPreciseTransferTool:
 
             # G. Calculate PCAPreciseSensitiveCategory = [Python Code Block]
             code_block = '''
-    def GetCat(SensitiveEcologicalDataCat):
-        if SensitiveEcologicalDataCat' == 'Proprietary':
-            return 'Proprietary Data'
-        elif SensitiveEcologicalDataCat' in ('Private Lands', 'Indigenous Lands'):
-            return 'Land Owner Restrictions'
-        else:
-            return 'Fragile Species or Habitat'''
+def GetCat(SensitiveEcologicalDataCat):
+    if SensitiveEcologicalDataCat' == 'Proprietary':
+        return 'Proprietary Data'
+    elif SensitiveEcologicalDataCat' in ('Private Lands', 'Indigenous Lands'):
+        return 'Land Owner Restrictions'
+    else:
+        return 'Fragile Species or Habitat'''
             arcpy.CalculateField_management('input_lyr', table_name_prefix + 'InputPoint.PCAPreciseSensitiveCategory',
                                             'GetCat(!' + table_name_prefix + 'InputDataset.SensitiveEcologicalDataCat!)',
                                             'PYTHON3', code_block)
             EBARUtils.displayMessage(messages, 'PCAPreciseSensitiveCategory calculated at ' + str(datetime.datetime.now()))
 
-            # clean up
             arcpy.Delete_management('jurbuffer_lyr')
-            arcpy.Delete_management('input_lyr')
-            
-            # end time
-            end_time = datetime.datetime.now()
-            EBARUtils.displayMessage(messages, 'End time: ' + str(end_time))
-            elapsed_time = end_time - start_time
-            EBARUtils.displayMessage(messages, 'Elapsed time: ' + str(elapsed_time))
 
+        arcpy.Delete_management('input_lyr')
+        
         # # process points and polygons
         # for spatial_input in ['InputPoint', 'InputPolygon']:
         #     EBARUtils.displayMessage(messages, 'Processing ' + spatial_input)
@@ -225,30 +220,30 @@ class PreparePCAPreciseTransferTool:
         #     # record counts
         #     EBARUtils.displayMessage(messages, spatial_input + ' record count: ' + str(count))
 
-        # # export to file geodatabase
-        # # CONSIDER REQUEST FROM NS TO PREJOIN DATASET SOURCE!!!
-        # EBARUtils.displayMessage(messages, 'Exporting to File Geodatabase')
-        # output_gdb = 'PCAPreciseTransfer' + str(datetime.datetime.now().day) + \
-        #     datetime.datetime.now().strftime('%b') + str(datetime.datetime.now().year)
-        # arcpy.CreateFileGDB_management(EBARUtils.temp_folder, output_gdb)
-        # output_gdb_folder = EBARUtils.temp_folder + '/' + output_gdb
-        # arcpy.ExportFeatures_conversion(param_geodatabase + '/PCAPreciseInputPoint',
-        #                                 output_gdb_folder + '/PCAPreciseInputPoint')
-        # arcpy.ExportFeatures_conversion(param_geodatabase + '/PCAPreciseInputPolygon',
-        #                                 output_gdb_folder + '/PCAPreciseInputPolygon')
-        # arcpy.ExportTable_conversion(param_geodatabase + '/PCAPreciseDatasetSource',
-        #                              output_gdb_folder + '/PCAPreciseDatasetSource')
+        # export to file geodatabase
+        # CONSIDER REQUEST FROM NS TO PREJOIN DATASET SOURCE???
+        EBARUtils.displayMessage(messages, 'Exporting to File Geodatabase')
+        output_gdb = 'PCAPreciseTransfer' + str(datetime.datetime.now().day) + \
+            datetime.datetime.now().strftime('%b') + str(datetime.datetime.now().year)
+        arcpy.CreateFileGDB_management(EBARUtils.temp_folder, output_gdb)
+        output_gdb_folder = EBARUtils.temp_folder + '/' + output_gdb
+        arcpy.ExportFeatures_conversion(param_geodatabase + '/PCAPreciseInputPoint',
+                                        output_gdb_folder + '/PCAPreciseInputPoint')
+        arcpy.ExportFeatures_conversion(param_geodatabase + '/PCAPreciseInputPolygon',
+                                        output_gdb_folder + '/PCAPreciseInputPolygon')
+        arcpy.ExportTable_conversion(param_geodatabase + '/PCAPreciseDatasetSource',
+                                     output_gdb_folder + '/PCAPreciseDatasetSource')
 
-        # # zip and provide link
-        # EBARUtils.createZip(output_gdb_folder, EBARUtils.download_folder + '/' + output_gdb + '.zip')
-        # EBARUtils.displayMessage(messages,
-        #                          'Zipped file geodatabase: ' + EBARUtils.download_url + '/' + output_gdb + '.zip')
+        # zip and provide link
+        EBARUtils.createZip(output_gdb_folder, EBARUtils.download_folder + '/' + output_gdb + '.zip')
+        EBARUtils.displayMessage(messages,
+                                 'Zipped file geodatabase: ' + EBARUtils.download_url + '/' + output_gdb + '.zip')
 
-        # # end time
-        # end_time = datetime.datetime.now()
-        # EBARUtils.displayMessage(messages, 'End time: ' + str(end_time))
-        # elapsed_time = end_time - start_time
-        # EBARUtils.displayMessage(messages, 'Elapsed time: ' + str(elapsed_time))
+        # end time
+        end_time = datetime.datetime.now()
+        EBARUtils.displayMessage(messages, 'End time: ' + str(end_time))
+        elapsed_time = end_time - start_time
+        EBARUtils.displayMessage(messages, 'Elapsed time: ' + str(elapsed_time))
 
 
     # def applyJurisdictionSpecies(self, param_geodatabase, table_name_prefix, spatial_input, jurs, species_id,
