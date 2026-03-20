@@ -1012,11 +1012,11 @@ def ExportPublishedSARDistinctSpeciesToTable(geodatabase, output_folder, output_
         arcpy.Delete_management(output_folder + '/schema.ini')
     if arcpy.Exists(output_folder + '/info'):
         arcpy.Delete_management(output_folder + '/info')
-    species_md = arcpy.metadata.Metadata(output_folder + '/' + output_table)
-    metadata.title = 'EBAR ' + output_table
-    metadata.summary = 'Table of species/element attributes for EBAR from the BIOTICS database'
-    species_md.copy(metadata)
-    species_md.save()
+    # species_md = arcpy.metadata.Metadata(output_folder + '/' + output_table)
+    # metadata.title = 'EBAR ' + output_table
+    # metadata.summary = 'Table of species/element attributes for EBAR from the BIOTICS database'
+    # species_md.copy(metadata)
+    # species_md.save()
 
 
 def ExportPublishedSARRangeMapsToTable(geodatabase, output_folder, output_table, metadata):
@@ -1051,11 +1051,11 @@ def ExportPublishedSARRangeMapsToTable(geodatabase, output_folder, output_table,
         arcpy.Delete_management(output_folder + '/schema.ini')
     if arcpy.Exists(output_folder + '/info'):
         arcpy.Delete_management(output_folder + '/info')
-    range_map_md = arcpy.metadata.Metadata(output_folder + '/' + output_table)
-    metadata.title = 'EBAR ' + output_table
-    metadata.summary = 'Table of EBAR Range Maps'
-    range_map_md.copy(metadata)
-    range_map_md.save()
+    # range_map_md = arcpy.metadata.Metadata(output_folder + '/' + output_table)
+    # metadata.title = 'EBAR ' + output_table
+    # metadata.summary = 'Table of EBAR Range Maps'
+    # range_map_md.copy(metadata)
+    # range_map_md.save()
 
 
 def ExportPublishedSARRangeMapEcoshapesToTable(geodatabase, output_folder, output_table, metadata):
@@ -1082,11 +1082,11 @@ def ExportPublishedSARRangeMapEcoshapesToTable(geodatabase, output_folder, outpu
         arcpy.Delete_management(output_folder + '/schema.ini')
     if arcpy.Exists(output_folder + '/info'):
         arcpy.Delete_management(output_folder + '/info')
-    range_map_ecoshape_md = arcpy.metadata.Metadata(output_folder + '/' + output_table)
-    metadata.title = 'EBAR ' + output_table
-    metadata.summary = 'Table of EBAR Ecoshapes for each Range Map'
-    range_map_ecoshape_md.copy(metadata)
-    range_map_ecoshape_md.save()
+    # range_map_ecoshape_md = arcpy.metadata.Metadata(output_folder + '/' + output_table)
+    # metadata.title = 'EBAR ' + output_table
+    # metadata.summary = 'Table of EBAR Ecoshapes for each Range Map'
+    # range_map_ecoshape_md.copy(metadata)
+    # range_map_ecoshape_md.save()
 
 
 def ExportPublishedSARRangeCountToTable(geodatabase, output_folder, output_table, metadata):
@@ -1145,11 +1145,11 @@ def ExportCanadianEcoshapeOverviewsToShapefile(geodatabase, output_folder, outpu
     # field_mappings.addFieldMap(createFieldMap(input_fcpath, 'TotalArea', 'TotalArea', 'DOUBLE'))
     arcpy.FeatureClassToFeatureClass_conversion(input_fcpath, output_folder, output_shapefile,
                                                 field_mapping=field_mappings)
-    ecoshape_overview_md = arcpy.metadata.Metadata(output_folder + '/' + output_shapefile)
-    metadata.title = 'EBAR ' + output_shapefile
-    metadata.summary = 'Polygons shapefile of generalized EBAR Ecoshapes for heatmap species'
-    ecoshape_overview_md.copy(metadata)
-    ecoshape_overview_md.save()
+    # ecoshape_overview_md = arcpy.metadata.Metadata(output_folder + '/' + output_shapefile)
+    # metadata.title = 'EBAR ' + output_shapefile
+    # metadata.summary = 'Polygons shapefile of generalized EBAR Ecoshapes for heatmap species'
+    # ecoshape_overview_md.copy(metadata)
+    # ecoshape_overview_md.save()
 
 
 def ExportCanadianEcoshapeOverviewsToFC(geodatabase, filegdb, output_fc, metadata):
@@ -1168,11 +1168,11 @@ def ExportCanadianEcoshapeOverviewsToFC(geodatabase, filegdb, output_fc, metadat
     # field_mappings.addFieldMap(createFieldMap(input_fcpath, 'TerrestrialArea', 'TerrestrialArea', 'DOUBLE'))
     # field_mappings.addFieldMap(createFieldMap(input_fcpath, 'TotalArea', 'TotalArea', 'DOUBLE'))
     arcpy.FeatureClassToFeatureClass_conversion(input_fcpath, filegdb, output_fc, field_mapping=field_mappings)
-    ecoshape_overview_md = arcpy.metadata.Metadata(filegdb + '/' + output_fc)
-    metadata.title = 'EBAR ' + output_fc
-    metadata.summary = 'Polygons feature class of generalized EBAR Ecoshapes for heatmap species'
-    ecoshape_overview_md.copy(metadata)
-    ecoshape_overview_md.save()
+    # ecoshape_overview_md = arcpy.metadata.Metadata(filegdb + '/' + output_fc)
+    # metadata.title = 'EBAR ' + output_fc
+    # metadata.summary = 'Polygons feature class of generalized EBAR Ecoshapes for heatmap species'
+    # ecoshape_overview_md.copy(metadata)
+    # ecoshape_overview_md.save()
 
 
 def getTaxonAttributes(global_unique_id, element_global_id, range_map_id, messages):
