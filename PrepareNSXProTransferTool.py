@@ -182,7 +182,7 @@ class PrepareNSXProTransferTool:
                                      output_gdb_folder + '/NSXProDatasetSource')
 
         # zip and provide link
-        EBARUtils.createZip(output_gdb_folder, EBARUtils.download_folder + '/' + output_gdb + '.zip')
+        EBARUtils.createZip(output_gdb_folder, EBARUtils.download_folder + '/' + output_gdb + '.zip', None)
         EBARUtils.displayMessage(messages,
                                  'Zipped file geodatabase: ' + EBARUtils.download_url + '/' + output_gdb + '.zip')
 
