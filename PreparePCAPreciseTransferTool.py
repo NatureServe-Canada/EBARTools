@@ -41,12 +41,15 @@ class PreparePCAPreciseTransferTool:
 
         # new mixed approach to improve performance by avoiding so many steps with expensive joins and queries!
 
-        # A. done directly in batch/psql (using batch size of 50K took XXXX hours)
+        # A. done directly in batch/psql (using batch size of 50K took 2+ days)
         # A1. Reset PCAPreciseTemp, PermitPCAPreciseTransfer, PCAPreciseSensitive, PCAPreciseSensitiveCategory to NULL
+        # [not required first time; should probably also be done in batch]
         # A2. Calculate PCAPreciseTemp = 1 WHERE DatasetSource.DatasetType = 'Species Observations' AND
         # DatasetSource.JurisdictionID IS NOT NULL AND
         # (DatasetSource.PermitNSCBiodiversityScience = 'Y' OR DatasetSource.PermitAll = 'Y')
-		# XA3. Index PCAPreciseTemp (don't bother, not sufficiently selective due to high proportion of a single value)
+        # [see PCAPreciseWorker.sql and PCAPreciseController.bat at C:\Users\Public\Documents on server
+        #  or at OneDrive\EBAR\Requirements\NSX]
+		# XA3. Index PCAPreciseTemp [don't bother, not sufficiently selective due to high proportion of a single value]
 
         # B. Select Layer by Attribute WHERE PCAPreciseTemp = 1 (only points meet filter criteria in March 2026)
         arcpy.MakeFeatureLayer_management(param_geodatabase + '/InputPoint', 'input_lyr', 'PCAPreciseTemp = 1')
@@ -97,25 +100,26 @@ class PreparePCAPreciseTransferTool:
                 table_name_prefix + 'InputPoint.SpeciesID IN (' + prov_terr_esth_species_ids + ') OR ' + \
                 table_name_prefix + 'InputDataset.SensitiveEcologicalDataCat IS NOT NULL'
             arcpy.SelectLayerByAttribute_management('input_lyr', 'SUBSET_SELECTION', where)
-            arcpy.RemoveJoin_management('input_layer', table_name_prefix + 'InputDataset')
             EBARUtils.displayMessage(messages, 'Selected SUBSET Sensitive at ' + str(datetime.datetime.now()))
 
             # F. Calculate PCAPreciseSensitive = 'Y'
-            arcpy.CalculateField_management('input_lyr', 'InputPoint.PCAPreciseSensitive', "'Y'", 'PYTHON3')
+            arcpy.CalculateField_management('input_lyr', table_name_prefix + 'InputPoint.PCAPreciseSensitive', "'Y'",
+                                            'PYTHON3')
             EBARUtils.displayMessage(messages, 'PCAPreciseSensitive calculated at ' + str(datetime.datetime.now()))
 
             # G. Calculate PCAPreciseSensitiveCategory = [Python Code Block]
             code_block = '''
 def GetCat(SensitiveEcologicalDataCat):
-    if SensitiveEcologicalDataCat' == 'Proprietary':
-        return 'Proprietary Data'
-    elif SensitiveEcologicalDataCat' in ('Private Lands', 'Indigenous Lands'):
-        return 'Land Owner Restrictions'
-    else:
-        return 'Fragile Species or Habitat'''
+    ret = 'Fragile Species or Habitat'
+    if SensitiveEcologicalDataCat == 'Proprietary':
+        ret = 'Proprietary Data'
+    elif SensitiveEcologicalDataCat in ('Private Lands', 'Indigenous Lands'):
+        ret = 'Land Owner Restrictions'
+    return ret'''
             arcpy.CalculateField_management('input_lyr', table_name_prefix + 'InputPoint.PCAPreciseSensitiveCategory',
                                             'GetCat(!' + table_name_prefix + 'InputDataset.SensitiveEcologicalDataCat!)',
                                             'PYTHON3', code_block)
+            arcpy.RemoveJoin_management('input_lyr', table_name_prefix + 'InputDataset')
             EBARUtils.displayMessage(messages, 'PCAPreciseSensitiveCategory calculated at ' + str(datetime.datetime.now()))
 
             arcpy.Delete_management('jurbuffer_lyr')
@@ -226,16 +230,16 @@ def GetCat(SensitiveEcologicalDataCat):
         output_gdb = 'PCAPreciseTransfer' + str(datetime.datetime.now().day) + \
             datetime.datetime.now().strftime('%b') + str(datetime.datetime.now().year)
         arcpy.CreateFileGDB_management(EBARUtils.temp_folder, output_gdb)
-        output_gdb_folder = EBARUtils.temp_folder + '/' + output_gdb
+        output_gdb_folder = EBARUtils.temp_folder + '/' + output_gdb + '.gdb'
         arcpy.ExportFeatures_conversion(param_geodatabase + '/PCAPreciseInputPoint',
                                         output_gdb_folder + '/PCAPreciseInputPoint')
-        arcpy.ExportFeatures_conversion(param_geodatabase + '/PCAPreciseInputPolygon',
-                                        output_gdb_folder + '/PCAPreciseInputPolygon')
+        # arcpy.ExportFeatures_conversion(param_geodatabase + '/PCAPreciseInputPolygon',
+        #                                 output_gdb_folder + '/PCAPreciseInputPolygon')
         arcpy.ExportTable_conversion(param_geodatabase + '/PCAPreciseDatasetSource',
                                      output_gdb_folder + '/PCAPreciseDatasetSource')
 
         # zip and provide link
-        EBARUtils.createZip(output_gdb_folder, EBARUtils.download_folder + '/' + output_gdb + '.zip')
+        EBARUtils.createZip(output_gdb_folder, EBARUtils.download_folder + '/' + output_gdb + '.zip', None)
         EBARUtils.displayMessage(messages,
                                  'Zipped file geodatabase: ' + EBARUtils.download_url + '/' + output_gdb + '.zip')
 
