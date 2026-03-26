@@ -18,6 +18,7 @@ import shutil
 import arcpy
 import datetime
 import StaticTranslations
+import unidecode
 
 
 class PublishRangeMapSetsTool:
@@ -34,25 +35,44 @@ class PublishRangeMapSetsTool:
         if not only_deficient_partial:
             # export range map, with biotics/species additions
             EBARUtils.displayMessage(messages, 'Exporting RangeMap records to CSV')
-            EBARUtils.ExportRangeMapToCSV('range_map_view' + category_taxagroup, range_map_ids, attributes_dict,
-                                          zip_folder, 'RangeMap.csv', metadata, suffix)
+            if suffix == '_en':
+                EBARUtils.ExportRangeMapToCSV('range_map_view' + category_taxagroup, range_map_ids, attributes_dict,
+                                              zip_folder, 'RangeMap.csv', metadata, suffix)
+            else: # _fr
+                EBARUtils.ExportRangeMapToCSV('range_map_view' + category_taxagroup, range_map_ids, attributes_dict,
+                                              zip_folder, 'CarteRepartition.csv', metadata, suffix)
+                
+            arcpy.Delete_management('range_map_view' + category_taxagroup)
 
             # export range map ecoshapes
             EBARUtils.displayMessage(messages, 'Exporting RangeMapEcoshape records to CSV')
-            EBARUtils.ExportRangeMapEcoshapesToCSV('range_map_ecoshape_view' + category_taxagroup, range_map_ids,
-                                                   zip_folder, 'RangeMapEcoshape.csv', metadata, suffix)
+            if suffix == '_en':
+                EBARUtils.ExportRangeMapEcoshapesToCSV('range_map_ecoshape_view' + category_taxagroup, range_map_ids,
+                                                       zip_folder, 'RangeMapEcoshape.csv', metadata, suffix)
+            else: # _fr
+                EBARUtils.ExportRangeMapEcoshapesToCSV('range_map_ecoshape_view' + category_taxagroup, range_map_ids,
+                                                       zip_folder, 'CarteRepartitionEcoshape.csv', metadata, suffix)
 
             # export ecoshapes
             EBARUtils.displayMessage(messages, 'Exporting Ecoshape polygons to shapefile')
             EBARUtils.ExportEcoshapesToShapefile('ecoshape_layer' + category_taxagroup,
                                                  'range_map_ecoshape_view' + category_taxagroup, zip_folder, 
                                                  'Ecoshape.shp', metadata, False, suffix)
+            arcpy.Delete_management('ecoshape_layer' + category_taxagroup)
 
             # export overview ecoshapes
             EBARUtils.displayMessage(messages, 'Exporting EcoshapeOverview polygons to shapefile')
-            EBARUtils.ExportEcoshapeOverviewsToShapefile('ecoshape_overview_layer' + category_taxagroup,
-                                                         'range_map_ecoshape_view' + category_taxagroup, zip_folder,
-                                                         'EcoshapeOverview.shp', metadata, False, suffix)
+            if suffix == '_en':
+                EBARUtils.ExportEcoshapeOverviewsToShapefile('ecoshape_overview_layer' + category_taxagroup,
+                                                             'range_map_ecoshape_view' + category_taxagroup, zip_folder,
+                                                             'EcoshapeOverview.shp', metadata, False, suffix)
+            else: # _fr
+                EBARUtils.ExportEcoshapeOverviewsToShapefile('ecoshape_overview_layer' + category_taxagroup,
+                                                             'range_map_ecoshape_view' + category_taxagroup, zip_folder,
+                                                             'EcoshapeApercu.shp', metadata, False, suffix)
+            arcpy.Delete_management('range_map_ecoshape_view' + category_taxagroup)
+            arcpy.Delete_management('ecoshape_overview_layer' + category_taxagroup)
+
             if suffix == '_en':
                 # copy ArcMap template
                 EBARUtils.displayMessage(messages, 'Copying ArcMap template')
@@ -66,9 +86,9 @@ class PublishRangeMapSetsTool:
             # create spatial zip
             if suffix == '_en':
                 EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/EBAR - ' + \
-                    category_taxagroup + ' - All Data - '  + cap_suffix + '.zip')
+                    category_taxagroup + ' - All Data.zip')
                 EBARUtils.createZip(zip_folder, EBARUtils.download_folder + '/EBAR - ' + category_taxagroup + \
-                                    ' - All Data - '  + cap_suffix + '.zip', None)
+                                    ' - All Data.zip', None)
             else: # _fr
                 EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/EBAR - ' + \
                     category_taxagroup + ' - toutes les donnees.zip')
@@ -171,8 +191,12 @@ class PublishRangeMapSetsTool:
                     # new category_taxagroup
                     if category_taxagroup != '':
                         # previous category_taxagroup
-                        self.processCategoryTaxaGroup(messages, category_taxagroup, range_map_ids, attributes_dict,
-                                                      zip_folder, md, only_deficient_partial, suffix)
+                        if suffix == '_en':
+                            self.processCategoryTaxaGroup(messages, category_taxagroup, range_map_ids, attributes_dict,
+                                                          zip_folder, md, only_deficient_partial, suffix)
+                        else: # '_fr':
+                            self.processCategoryTaxaGroup(messages, category_taxagroup_fr, range_map_ids, attributes_dict,
+                                                          zip_folder, md, only_deficient_partial, suffix)
                     # if all range maps in group have no spatial data then exclude spatial download
                     only_deficient_partial = True
                     processed += 1
@@ -193,15 +217,16 @@ class PublishRangeMapSetsTool:
 
                     else: # _fr
                         # make zip folder
-                        category_taxagroup = StaticTranslations.biotics_category_translation(row[0]) + ' - ' + \
-                            StaticTranslations.biotics_taxa_group_translation(row[1])
-                        EBARUtils.displayMessage(messages, 'Category - Taxa Group: ' + category_taxagroup)
-                        zip_folder = EBARUtils.temp_folder + '/EBAR - ' + category_taxagroup
+                        category_taxagroup = row[0] + ' - ' + row[1]
+                        category_taxagroup_fr = unidecode.unidecode(StaticTranslations.biotics_category_translation[row[0]]) + \
+                             ' - ' + unidecode.unidecode(StaticTranslations.biotics_taxa_group_translation[row[1]])
+                        EBARUtils.displayMessage(messages, 'Category - Taxa Group: ' + category_taxagroup_fr)
+                        zip_folder = EBARUtils.temp_folder + '/EBAR - ' + category_taxagroup_fr
                         EBARUtils.createReplaceFolder(zip_folder)
 
                         # copy static resources
                         shutil.copyfile(EBARUtils.resources_folder + '/ReadmeSet_fr.txt', zip_folder + '/Lisez-moi.txt')
-                        shutil.copyfile(EBARUtils.resources_folder + '/EBARMethods.pdf', zip_folder + '/MethodsEBAR.pdf')
+                        shutil.copyfile(EBARUtils.resources_folder + '/EBARMethods_fr.pdf', zip_folder + '/MethodsEBAR.pdf')
                         shutil.copyfile(EBARUtils.resources_folder + '/Juridiction.csv', zip_folder + '/Juridiction.csv')
 
                 # copy pdf
@@ -209,8 +234,12 @@ class PublishRangeMapSetsTool:
                 element_global_id = str(row[5])
                 if row[7] == 'N':
                     element_global_id += 'N'
-                shutil.copyfile(EBARUtils.download_folder + '/EBAR' + element_global_id + '.pdf',
-                                zip_folder + '/EBAR' + element_global_id + '.pdf')
+                if suffix == '_en':
+                    shutil.copyfile(EBARUtils.download_folder + '/EBAR' + element_global_id + '.pdf',
+                                    zip_folder + '/EBAR' + element_global_id + '.pdf')
+                else: # _fr
+                    shutil.copyfile(EBARUtils.download_folder + '/EBAR' + element_global_id + '_FR.pdf',
+                                    zip_folder + '/EBAR' + element_global_id + '_FR.pdf')
 
                 # set range map attributes
                 range_map_ids.append(str(row[8]))
@@ -232,8 +261,15 @@ class PublishRangeMapSetsTool:
 
             if row:
                 # final category_taxagroup
-                self.processCategoryTaxaGroup(messages, category_taxagroup, range_map_ids, attributes_dict, zip_folder, md,
-                                              only_deficient_partial, suffix)
+                if suffix == '_en':
+                    self.processCategoryTaxaGroup(messages, category_taxagroup, range_map_ids, attributes_dict,
+                                                  zip_folder, md, only_deficient_partial, suffix)
+                else: # '_fr'
+                    self.processCategoryTaxaGroup(messages, category_taxagroup_fr, range_map_ids, attributes_dict,
+                                                  zip_folder, md, only_deficient_partial, suffix)
+                
+            arcpy.Delete_management('biotics_view')
+            arcpy.Delete_management('range_map_view')
 
         EBARUtils.displayMessage(messages, 'Processed ' + str(processed) + ' categories/taxa')
         return
@@ -243,10 +279,10 @@ class PublishRangeMapSetsTool:
 if __name__ == '__main__':
     prms = PublishRangeMapSetsTool()
     param_category = arcpy.Parameter()
-    param_category.value = 'Vertebrate Animal'
-    #param_category.value = None
+    #param_category.value = 'Vertebrate Animal'
+    param_category.value = None
     param_taxagroup = arcpy.Parameter()
-    param_taxagroup.value = 'Reptiles'
-    #param_taxagroup.value = None
+    #param_taxagroup.value = 'Reptiles'
+    param_taxagroup.value = None
     parameters = [param_category, param_taxagroup]
     prms.runPublishRangeMapSetsTool(parameters, None)
