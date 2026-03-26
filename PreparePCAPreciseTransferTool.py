@@ -45,7 +45,7 @@ class PreparePCAPreciseTransferTool:
         # A1. Reset PCAPreciseTemp, PermitPCAPreciseTransfer, PCAPreciseSensitive, PCAPreciseSensitiveCategory to NULL
         # [not required first time; should probably also be done in batch]
         # A2. Calculate PCAPreciseTemp = 1 WHERE DatasetSource.DatasetType = 'Species Observations' AND
-        # DatasetSource.JurisdictionID IS NOT NULL AND
+        # DatasetSource.JurisdictionID IS NULL AND
         # (DatasetSource.PermitNSCBiodiversityScience = 'Y' OR DatasetSource.PermitAll = 'Y')
         # [see PCAPreciseWorker.sql and PCAPreciseController.bat at C:\Users\Public\Documents on server
         #  or at OneDrive\EBAR\Requirements\NSX]
