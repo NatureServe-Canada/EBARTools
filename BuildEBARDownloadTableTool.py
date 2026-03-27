@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 # Project: Ecosytem-based Automated Range Mapping (EBAR)
-# Credits: Randal Greene, Christine Terwissen
+# Credits: Randal Greene, Christine Terwissen, Samantha Stefanoff
 # © NatureServe Canada 2026 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 # Program: BuildEBARDownloadTableTool.py
@@ -100,8 +100,8 @@ class BuildEBARDownloadTableTool:
         </tbody></table>'''
                 # table header
                 category_taxa = row[0] + ' - ' + row[1]
-                category_taxa_fr = StaticTranslations.biotics_category_translation(row[0]) + ' - ' + \
-                    StaticTranslations.biotics_taxa_group_translation(row[1])
+                category_taxa_fr = StaticTranslations.biotics_category_translation[row[0]] + ' - ' + \
+                    StaticTranslations.biotics_taxa_group_translation[row[1]]
                 EBARUtils.displayMessage(messages, category_taxa + ' table')
                 html += '''
         <h4>''' + category_taxa + '''</h4>
@@ -112,8 +112,8 @@ class BuildEBARDownloadTableTool:
                 <th>French Name</th>
                 <th>Scope</th>
                 <th>Status</th>
-                <th>PDF Link</th>
-                <th>GIS Data Link</th>
+                <th>PDF Links</th>
+                <th>GIS Data Links</th>
             </tr>'''
                 html_fr += '''
         <h4>''' + category_taxa_fr + '''</h4>
@@ -124,8 +124,8 @@ class BuildEBARDownloadTableTool:
                 <th>Nom français</th>
                 <th>Portée</th>
                 <th>État</th>
-                <th>Lien PDF</th>
-                <th>Lien de données SIG</th>
+                <th>Liens PDF</th>
+                <th>Liens de données SIG</th>
             </tr>'''
             # table row
             french_name = ''
@@ -136,7 +136,7 @@ class BuildEBARDownloadTableTool:
                 scope = 'Canadian'
             if row[6] == 'A':
                 scope = 'North American'
-            scope_fr = StaticTranslations.range_map_scope_translation(row[6])
+            scope_fr = StaticTranslations.range_map_scope_translation[row[6]]
             element_global_id = str(row[5])
             if scope == 'Canadian':
                 element_global_id += 'N'
@@ -159,8 +159,8 @@ class BuildEBARDownloadTableTool:
                 <td>''' + scope + '''</td>
                 <td>''' + status + '''</td>
                 <td><a href="https://gis.natureserve.ca/download/EBAR''' + element_global_id + \
-                    '''_FR.pdf" target="_blank">PDF EN</a> <a href="https://gis.natureserve.ca/download/EBAR''' + \
-                        element_global_id + '''.pdf_FR" target="_blank">PDF FR</a></td>'''
+                    '''.pdf" target="_blank">PDF EN</a><br><a href="https://gis.natureserve.ca/download/EBAR''' + \
+                    element_global_id + '''_FR.pdf" target="_blank">PDF FR</a></td>'''
             html_fr += '''
             <tr>
                 <td>''' + row[2] + '''</td>
@@ -169,17 +169,17 @@ class BuildEBARDownloadTableTool:
                 <td>''' + scope_fr + '''</td>
                 <td>''' + status_fr + '''</td>
                 <td><a href="https://gis.natureserve.ca/download/EBAR''' + element_global_id + \
-                    '''.pdf" target="_blank">PDF FR</a> <a href="https://gis.natureserve.ca/download/EBAR''' + \
-                        element_global_id + '''.pdf" target="_blank">PDF EN</a></td>'''
+                    '''.pdf" target="_blank">PDF EN</a><br><a href="https://gis.natureserve.ca/download/EBAR''' + \
+                    element_global_id + '''_FR.pdf" target="_blank">PDF FR</a></td>'''
             if row[7] == 1:
                 html += '''
                 <td><a href="https://gis.natureserve.ca/download/EBAR''' + element_global_id + \
-                    '''_FR.zip" target="_blank">GIS EN</a> <a href="https://gis.natureserve.ca/download/EBAR''' + \
-                        element_global_id + '''_FR.zip" target="_blank">SIG FR</a></td>'''
+                    '''.zip" target="_blank">GIS EN</a><br><a href="https://gis.natureserve.ca/download/EBAR''' + \
+                    element_global_id + '''_FR.zip" target="_blank">GIS FR</a></td>'''
                 html_fr += '''
                 <td><a href="https://gis.natureserve.ca/download/EBAR''' + element_global_id + \
-                    '''.zip" target="_blank">SIG FR</a> <a href="https://gis.natureserve.ca/download/EBAR''' + \
-                        element_global_id + '''.zip" target="_blank">GIS EN</a></td>'''
+                    '''.zip" target="_blank">SIG EN</a><br><a href="https://gis.natureserve.ca/download/EBAR''' + \
+                    element_global_id + '''_FR.zip" target="_blank">SIG FR</a></td>'''
             else:
                 html += '''
                 <td></td>'''
@@ -208,7 +208,7 @@ class BuildEBARDownloadTableTool:
         file_fr.close()
 
 
-# # controlling process
-# if __name__ == '__main__':
-#     bedt = BuildEBARDownloadTableTool()
-#     bedt.runBuildEBARDownloadTableTool(None, None)
+# controlling process
+if __name__ == '__main__':
+    bedt = BuildEBARDownloadTableTool()
+    bedt.runBuildEBARDownloadTableTool(None, None)

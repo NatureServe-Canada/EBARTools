@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 # Project: Ecosytem-based Automated Range Mapping (EBAR)
-# Credits: Randal Greene, Christine Terwissen
+# Credits: Randal Greene, Christine Terwissen, Samantha Stefanoff
 # © NatureServe Canada 2026 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 # Program: BuildBulkDownloadTableTool.py
@@ -18,6 +18,7 @@ import arcpy
 import datetime
 import StaticTranslations
 import locale
+import unidecode
 
 
 class BuildBulkDownloadTableTool:
@@ -26,20 +27,22 @@ class BuildBulkDownloadTableTool:
         pass
 
     def processCategoryTaxaGroup(self, category, taxagroup, category_taxagroup, only_deficient_partial):
+        category_taxagroup_fr_unidecode = unidecode.unidecode(StaticTranslations.biotics_category_translation[category]) + \
+            ' - ' + unidecode.unidecode(StaticTranslations.biotics_taxa_group_translation[taxagroup])
         html = '''
             <tr>
                 <td>''' + category + '''</td>
                 <td>''' + taxagroup + '''</td>
                 <td><a href="https://gis.natureserve.ca/download/EBAR - ''' + category_taxagroup + \
-                    ''' - All PDFs.zip" target="_blank">PDFs EN</a> <a href="https://gis.natureserve.ca/download/EBAR - ''' + \
-                        category_taxagroup + ''' - Tous les PDFs.zip" target="_blank">PDFs FR</a></td>'''
+                    ''' - All PDFs.zip" target="_blank">PDFs EN</a><br><a href="https://gis.natureserve.ca/download/EBAR - ''' + \
+                    category_taxagroup_fr_unidecode + ''' - Tous les PDFs.zip" target="_blank">PDFs FR</a></td>'''
         html_fr = '''
             <tr>
-                <td>''' + StaticTranslations.biotics_category_translation(category) + '''</td>
-                <td>''' + StaticTranslations.biotics_taxa_group_translation(taxagroup) + '''</td>
+                <td>''' + StaticTranslations.biotics_category_translation[category] + '''</td>
+                <td>''' + StaticTranslations.biotics_taxa_group_translation[taxagroup] + '''</td>
                 <td><a href="https://gis.natureserve.ca/download/EBAR - ''' + category_taxagroup + \
-                    ''' - Tous les PDFs.zip" target="_blank">PDFs Fr</a> <a href="https://gis.natureserve.ca/download/EBAR - ''' + \
-                        category_taxagroup + ''' - All PDFs.zip" target="_blank">PDFs EN</a></td>'''
+                    ''' - All PDFs.zip" target="_blank">PDFs EN</a><br><a href="https://gis.natureserve.ca/download/EBAR - ''' + \
+                    category_taxagroup_fr_unidecode + ''' - Tous les PDFs.zip" target="_blank">PDFs FR</a></td>'''
         if only_deficient_partial:
             html += '''
                 <td></td>'''
@@ -48,12 +51,12 @@ class BuildBulkDownloadTableTool:
         else:
             html +='''
                 <td><a href="https://gis.natureserve.ca/download/EBAR - ''' + category_taxagroup + \
-                    ''' - All Data.zip" target="_blank">GIS EN</a> <a href="https://gis.natureserve.ca/download/EBAR - ''' + \
-                        category_taxagroup + ''' - Toutes les donnees.zip" target="_blank">SIG FR</a></td>'''
+                    ''' - All Data.zip" target="_blank">GIS EN</a><br><a href="https://gis.natureserve.ca/download/EBAR - ''' + \
+                    category_taxagroup_fr_unidecode + ''' - Toutes les donnees.zip" target="_blank">GIS FR</a></td>'''
             html_fr +='''
                 <td><a href="https://gis.natureserve.ca/download/EBAR - ''' + category_taxagroup + \
-                    ''' - Toutes les donnees.zip" target="_blank">SIG FR</a> <a href="https://gis.natureserve.ca/download/EBAR - ''' + \
-                        category_taxagroup + ''' - All Data.zip" target="_blank">GIS EN</a></td>'''
+                    ''' - All Data.zip" target="_blank">SIG EN</a><br><a href="https://gis.natureserve.ca/download/EBAR - ''' + \
+                    category_taxagroup_fr_unidecode + ''' - Toutes les donnees.zip" target="_blank">SIG FR</a></td>'''
         html +='''
             </tr>'''
         html_fr +='''
@@ -115,8 +118,8 @@ class BuildBulkDownloadTableTool:
             <tr>
     	        <th>Category</th>
                 <th>Taxa Group</th>
-                <th>PDFs Link</th>
-                <th>GIS Data Link</th>
+                <th>PDF Links</th>
+                <th>GIS Data Links</th>
             </tr>'''
         original_lc_time = locale.getlocale(locale.LC_TIME)
         locale.setlocale(locale.LC_TIME, 'fr-ca')
@@ -126,8 +129,8 @@ class BuildBulkDownloadTableTool:
             <tr>
     	        <th>Categorie</th>
                 <th>Groupe taxonomique</th>
-                <th>Lien PDFs</th>
-                <th>Lien de données SIG</th>
+                <th>Liens PDFs</th>
+                <th>Liens de données SIG</th>
             </tr>'''
         locale.setlocale(locale.LC_TIME, original_lc_time)
 
@@ -146,8 +149,11 @@ class BuildBulkDownloadTableTool:
             if row[0] + ' - ' + row[1] != category_taxagroup:
                 # new category_taxagroup
                 if category_taxagroup != '':
-                    # table row for previous group
-                    html += self.processCategoryTaxaGroup(category, taxagroup, category_taxagroup, only_deficient_partial)
+                    category_taxagroup_html_en, category_taxagroup_html_fr = self.processCategoryTaxaGroup(category, taxagroup,
+                                                                                                           category_taxagroup,
+                                                                                                           only_deficient_partial)
+                    html += category_taxagroup_html_en
+                    html_fr += category_taxagroup_html_fr
                 # if all range maps in group have no spatial data then exclude spatial download
                 only_deficient_partial = True
                 category = row[0]
