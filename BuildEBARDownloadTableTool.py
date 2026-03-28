@@ -72,7 +72,7 @@ class BuildEBARDownloadTableTool:
         }
     </style>
 	<body>'''
-        html_fr = html
+        #html_fr = html
 
         # loop all RangeMap records where IncludeInDownloadTable is populated
         arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/11', 'range_map_view',
@@ -96,37 +96,46 @@ class BuildEBARDownloadTableTool:
                     # table footer for previous table
                     html += '''
         </tbody></table>'''
-                    html_fr += '''
-        </tbody></table>'''
+        #             html_fr += '''
+        # </tbody></table>'''
                 # table header
                 category_taxa = row[0] + ' - ' + row[1]
                 category_taxa_fr = StaticTranslations.biotics_category_translation[row[0]] + ' - ' + \
                     StaticTranslations.biotics_taxa_group_translation[row[1]]
                 EBARUtils.displayMessage(messages, category_taxa + ' table')
+                # combined bilingual
                 html += '''
-        <h4>''' + category_taxa + '''</h4>
+        <h4>''' + category_taxa + '''<br>
+            ''' + category_taxa_fr + '''</h4>
         <table><tbody>
             <tr>
-    	        <th>Scientific Name</th>
-                <th>English Name</th>
-                <th>French Name</th>
-                <th>Scope</th>
-                <th>Status</th>
-                <th>PDF Links</th>
-                <th>GIS Data Links</th>
+    	        <th>Scientific Name<br>
+                    Nom scientifique</th>
+                <th>English Name<br>
+                    Nom anglais</th>
+                <th>French Name<br>
+                    Nom français</th>
+                <th>Scope<br>
+                    Portée</th>
+                <th>Status<br>
+                    État</th>
+                <th>PDF Link<br>
+                    Lien PDF</th>
+                <th>GIS Data Link<br>
+                    Lien de données SIG</th>
             </tr>'''
-                html_fr += '''
-        <h4>''' + category_taxa_fr + '''</h4>
-        <table><tbody>
-            <tr>
-    	        <th>Nom scientifique</th>
-                <th>Nom anglais</th>
-                <th>Nom français</th>
-                <th>Portée</th>
-                <th>État</th>
-                <th>Liens PDF</th>
-                <th>Liens de données SIG</th>
-            </tr>'''
+        #         html_fr += '''
+        # <h4>''' + category_taxa_fr + '''</h4>
+        # <table><tbody>
+        #     <tr>
+    	#         <th>Nom scientifique</th>
+        #         <th>Nom anglais</th>
+        #         <th>Nom français</th>
+        #         <th>Portée</th>
+        #         <th>État</th>
+        #         <th>Liens PDF</th>
+        #         <th>Liens de données SIG</th>
+        #     </tr>'''
             # table row
             french_name = ''
             if row[4]:
@@ -151,61 +160,65 @@ class BuildEBARDownloadTableTool:
             if row[7] == 4:
                 status = 'Low Star Rating'
                 status_fr = "Faible nombre d'étoiles"
+            # combined bilingual
             html += '''
             <tr>
                 <td>''' + row[2] + '''</td>
                 <td>''' + row[3] + '''</td>
                 <td>''' + french_name + '''</td>
-                <td>''' + scope + '''</td>
-                <td>''' + status + '''</td>
+                <td>''' + scope + '''<br>
+                    ''' + scope_fr + '''</td>
+                <td>''' + status + '''<br>
+                    ''' + status_fr + '''</td>
                 <td><a href="https://gis.natureserve.ca/download/EBAR''' + element_global_id + \
                     '''.pdf" target="_blank">PDF EN</a><br><a href="https://gis.natureserve.ca/download/EBAR''' + \
                     element_global_id + '''_FR.pdf" target="_blank">PDF FR</a></td>'''
-            html_fr += '''
-            <tr>
-                <td>''' + row[2] + '''</td>
-                <td>''' + row[3] + '''</td>
-                <td>''' + french_name + '''</td>
-                <td>''' + scope_fr + '''</td>
-                <td>''' + status_fr + '''</td>
-                <td><a href="https://gis.natureserve.ca/download/EBAR''' + element_global_id + \
-                    '''.pdf" target="_blank">PDF EN</a><br><a href="https://gis.natureserve.ca/download/EBAR''' + \
-                    element_global_id + '''_FR.pdf" target="_blank">PDF FR</a></td>'''
+            # html_fr += '''
+            # <tr>
+            #     <td>''' + row[2] + '''</td>
+            #     <td>''' + row[3] + '''</td>
+            #     <td>''' + french_name + '''</td>
+            #     <td>''' + scope_fr + '''</td>
+            #     <td>''' + status_fr + '''</td>
+            #     <td><a href="https://gis.natureserve.ca/download/EBAR''' + element_global_id + \
+            #         '''.pdf" target="_blank">PDF EN</a><br><a href="https://gis.natureserve.ca/download/EBAR''' + \
+            #         element_global_id + '''_FR.pdf" target="_blank">PDF FR</a></td>'''
             if row[7] == 1:
+                # combined bilingual
                 html += '''
                 <td><a href="https://gis.natureserve.ca/download/EBAR''' + element_global_id + \
                     '''.zip" target="_blank">GIS EN</a><br><a href="https://gis.natureserve.ca/download/EBAR''' + \
-                    element_global_id + '''_FR.zip" target="_blank">GIS FR</a></td>'''
-                html_fr += '''
-                <td><a href="https://gis.natureserve.ca/download/EBAR''' + element_global_id + \
-                    '''.zip" target="_blank">SIG EN</a><br><a href="https://gis.natureserve.ca/download/EBAR''' + \
                     element_global_id + '''_FR.zip" target="_blank">SIG FR</a></td>'''
+                # html_fr += '''
+                # <td><a href="https://gis.natureserve.ca/download/EBAR''' + element_global_id + \
+                #     '''.zip" target="_blank">SIG EN</a><br><a href="https://gis.natureserve.ca/download/EBAR''' + \
+                #     element_global_id + '''_FR.zip" target="_blank">SIG FR</a></td>'''
             else:
                 html += '''
                 <td></td>'''
-                html_fr += '''
-                <td></td>'''
+                # html_fr += '''
+                # <td></td>'''
             html += '''
             </tr>'''
-            html_fr += '''
-            </tr>'''
+            # html_fr += '''
+            # </tr>'''
             EBARUtils.displayMessage(messages, element_global_id)
         # table footer for final table
         html += '''
 		</tbody></table>
 	</body>'''
-        html_fr += '''
-		</tbody></table>
-	</body>'''
+    #     html_fr += '''
+	# 	</tbody></table>
+	# </body>'''
                 
         # save
         EBARUtils.displayMessage(messages, 'Saving file')
         file = open(output_file, 'w')
         file.write(html)
         file.close()
-        file_fr = open(output_file_fr, 'w')
-        file_fr.write(html_fr)
-        file_fr.close()
+        # file_fr = open(output_file_fr, 'w')
+        # file_fr.write(html_fr)
+        # file_fr.close()
 
 
 # controlling process

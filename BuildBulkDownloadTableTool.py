@@ -29,39 +29,42 @@ class BuildBulkDownloadTableTool:
     def processCategoryTaxaGroup(self, category, taxagroup, category_taxagroup, only_deficient_partial):
         category_taxagroup_fr_unidecode = unidecode.unidecode(StaticTranslations.biotics_category_translation[category]) + \
             ' - ' + unidecode.unidecode(StaticTranslations.biotics_taxa_group_translation[taxagroup])
+        # combined bilingual
         html = '''
             <tr>
-                <td>''' + category + '''</td>
-                <td>''' + taxagroup + '''</td>
+                <td>''' + category + '''<br>
+                    ''' + StaticTranslations.biotics_category_translation[category] + '''</td>
+                <td>''' + taxagroup + '''<br>
+                    ''' + StaticTranslations.biotics_taxa_group_translation[taxagroup] + '''</td>
                 <td><a href="https://gis.natureserve.ca/download/EBAR - ''' + category_taxagroup + \
                     ''' - All PDFs.zip" target="_blank">PDFs EN</a><br><a href="https://gis.natureserve.ca/download/EBAR - ''' + \
                     category_taxagroup_fr_unidecode + ''' - Tous les PDFs.zip" target="_blank">PDFs FR</a></td>'''
-        html_fr = '''
-            <tr>
-                <td>''' + StaticTranslations.biotics_category_translation[category] + '''</td>
-                <td>''' + StaticTranslations.biotics_taxa_group_translation[taxagroup] + '''</td>
-                <td><a href="https://gis.natureserve.ca/download/EBAR - ''' + category_taxagroup + \
-                    ''' - All PDFs.zip" target="_blank">PDFs EN</a><br><a href="https://gis.natureserve.ca/download/EBAR - ''' + \
-                    category_taxagroup_fr_unidecode + ''' - Tous les PDFs.zip" target="_blank">PDFs FR</a></td>'''
+        # html_fr = '''
+        #     <tr>
+        #         <td>''' + StaticTranslations.biotics_category_translation[category] + '''</td>
+        #         <td>''' + StaticTranslations.biotics_taxa_group_translation[taxagroup] + '''</td>
+        #         <td><a href="https://gis.natureserve.ca/download/EBAR - ''' + category_taxagroup + \
+        #             ''' - All PDFs.zip" target="_blank">PDFs EN</a><br><a href="https://gis.natureserve.ca/download/EBAR - ''' + \
+        #             category_taxagroup_fr_unidecode + ''' - Tous les PDFs.zip" target="_blank">PDFs FR</a></td>'''
         if only_deficient_partial:
             html += '''
                 <td></td>'''
-            html_fr += '''
-                <td></td>'''
+            # html_fr += '''
+            #     <td></td>'''
         else:
             html +='''
                 <td><a href="https://gis.natureserve.ca/download/EBAR - ''' + category_taxagroup + \
                     ''' - All Data.zip" target="_blank">GIS EN</a><br><a href="https://gis.natureserve.ca/download/EBAR - ''' + \
-                    category_taxagroup_fr_unidecode + ''' - Toutes les donnees.zip" target="_blank">GIS FR</a></td>'''
-            html_fr +='''
-                <td><a href="https://gis.natureserve.ca/download/EBAR - ''' + category_taxagroup + \
-                    ''' - All Data.zip" target="_blank">SIG EN</a><br><a href="https://gis.natureserve.ca/download/EBAR - ''' + \
                     category_taxagroup_fr_unidecode + ''' - Toutes les donnees.zip" target="_blank">SIG FR</a></td>'''
+            # html_fr +='''
+            #     <td><a href="https://gis.natureserve.ca/download/EBAR - ''' + category_taxagroup + \
+            #         ''' - All Data.zip" target="_blank">SIG EN</a><br><a href="https://gis.natureserve.ca/download/EBAR - ''' + \
+            #         category_taxagroup_fr_unidecode + ''' - Toutes les donnees.zip" target="_blank">SIG FR</a></td>'''
         html +='''
             </tr>'''
-        html_fr +='''
-            </tr>'''
-        return html, html_fr
+        # html_fr +='''
+        #     </tr>'''
+        return html #, html_fr
 
     def runBuildBulkDownloadTableTool(self, parameters, messages):
         # start time
@@ -70,7 +73,7 @@ class BuildBulkDownloadTableTool:
 
         # settings
         output_file = EBARUtils.download_folder + '/CategoryTaxaDownloadTables.html'
-        output_file_fr = EBARUtils.download_folder + '/CategoryTaxaDownloadTables_FR.html'
+        #output_file_fr = EBARUtils.download_folder + '/CategoryTaxaDownloadTables_FR.html'
 
         # html header
         html = '''<!doctype html>
@@ -111,28 +114,38 @@ class BuildBulkDownloadTableTool:
         }
     </style>
 	<body>'''
-        html_fr = html
-        html += '''Last updated ''' + start_time.strftime('%B %d, %Y') + '''
-        <h4>Bulk Download by Category - Taxa Group</h4>
-        <table><tbody>
-            <tr>
-    	        <th>Category</th>
-                <th>Taxa Group</th>
-                <th>PDF Links</th>
-                <th>GIS Data Links</th>
-            </tr>'''
+        #html_fr = html
+        # combined bilingual
+        html += '''Last updated ''' + start_time.strftime('%B %d, %Y')
         original_lc_time = locale.getlocale(locale.LC_TIME)
         locale.setlocale(locale.LC_TIME, 'fr-ca')
-        html_fr += '''Dernière mise à jour : ''' + start_time.strftime('%B %d, %Y') + '''
-        <h4>Téléchargement en masse par categorie - groupe taxonomique</h4>
+        html += '''<br>Dernière mise à jour : ''' + start_time.strftime('%B %d, %Y')
+        locale.setlocale(locale.LC_TIME, original_lc_time)
+        html += '''<h4>Bulk Download by Category - Taxa Group<br>
+                       Téléchargement en masse par categorie - groupe taxonomique</h4>
         <table><tbody>
             <tr>
-    	        <th>Categorie</th>
-                <th>Groupe taxonomique</th>
-                <th>Liens PDFs</th>
-                <th>Liens de données SIG</th>
+    	        <th>Category<br>
+                    Categorie</th>
+                <th>Taxa Group<br>
+                    Groupe taxonomique</th>
+                <th>PDFs Link<br>
+                    Lien PDFs</th>
+                <th>GIS Data Link<br>
+                    Lien de données SIG</th>
             </tr>'''
-        locale.setlocale(locale.LC_TIME, original_lc_time)
+        # original_lc_time = locale.getlocale(locale.LC_TIME)
+        # locale.setlocale(locale.LC_TIME, 'fr-ca')
+        # html_fr += '''Dernière mise à jour : ''' + start_time.strftime('%B %d, %Y') + '''
+        # <h4>Téléchargement en masse par categorie - groupe taxonomique</h4>
+        # <table><tbody>
+        #     <tr>
+    	#         <th>Categorie</th>
+        #         <th>Groupe taxonomique</th>
+        #         <th>Liens PDFs</th>
+        #         <th>Liens de données SIG</th>
+        #     </tr>'''
+        # locale.setlocale(locale.LC_TIME, original_lc_time)
 
         # loop all RangeMap records where IncludeInDownloadTable is populated
         arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/11', 'range_map_view',
@@ -149,11 +162,13 @@ class BuildBulkDownloadTableTool:
             if row[0] + ' - ' + row[1] != category_taxagroup:
                 # new category_taxagroup
                 if category_taxagroup != '':
-                    category_taxagroup_html_en, category_taxagroup_html_fr = self.processCategoryTaxaGroup(category, taxagroup,
-                                                                                                           category_taxagroup,
-                                                                                                           only_deficient_partial)
-                    html += category_taxagroup_html_en
-                    html_fr += category_taxagroup_html_fr
+                    # combined bilingual
+                    html += self.processCategoryTaxaGroup(category, taxagroup, category_taxagroup, only_deficient_partial)
+                    # category_taxagroup_html_en, category_taxagroup_html_fr = self.processCategoryTaxaGroup(category, taxagroup,
+                    #                                                                                        category_taxagroup,
+                    #                                                                                        only_deficient_partial)
+                    # html += category_taxagroup_html_en
+                    # html_fr += category_taxagroup_html_fr
                 # if all range maps in group have no spatial data then exclude spatial download
                 only_deficient_partial = True
                 category = row[0]
@@ -164,27 +179,29 @@ class BuildBulkDownloadTableTool:
                 only_deficient_partial = False
 
         # table row for final group
-        category_taxagroup_html_en, category_taxagroup_html_fr = self.processCategoryTaxaGroup(category, taxagroup,
-                                                                                               category_taxagroup,
-                                                                                               only_deficient_partial)
-        html += category_taxagroup_html_en
-        html_fr += category_taxagroup_html_fr
+        # combined bilingual
+        html += self.processCategoryTaxaGroup(category, taxagroup, category_taxagroup, only_deficient_partial)
+        # category_taxagroup_html_en, category_taxagroup_html_fr = self.processCategoryTaxaGroup(category, taxagroup,
+        #                                                                                        category_taxagroup,
+        #                                                                                        only_deficient_partial)
+        #html += category_taxagroup_html_en
+        #html_fr += category_taxagroup_html_fr
         # footer
         html += '''
 		</tbody></table>
 	</body>'''
-        html_fr += '''
-		</tbody></table>
-	</body>'''
+    #     html_fr += '''
+	# 	</tbody></table>
+	# </body>'''
                 
         # save
         EBARUtils.displayMessage(messages, 'Saving file')
         file_en = open(output_file, 'w')
         file_en.write(html)
         file_en.close()
-        file_en = open(output_file_fr, 'w')
-        file_en.write(html_fr)
-        file_en.close()
+        # file_en = open(output_file_fr, 'w')
+        # file_en.write(html_fr)
+        # file_en.close()
 
 
 # controlling process
