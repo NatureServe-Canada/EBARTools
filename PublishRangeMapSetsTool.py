@@ -142,7 +142,7 @@ class PublishRangeMapSetsTool:
             else: #_fr
                 md.tags = 'Répartition des Espèces, NatureServe Canada, ' + \
                     'Cartographie automatisée des aires de répartition basée sur les écosystèmes'
-                md.description = 'See EBARxxxxx_FR.pdf pour la carte et les métadonnées ' + \
+                md.description = 'Voir EBARxxxxx_FR.pdf pour la carte et les métadonnées ' + \
                     'supplémentaires, et MethodsEBAR.pdf pour plus de détails. ' + \
                     '<a href="https://explorer.natureserve.org/"> Rendez-vous sur NatureServe Explorer</a> ' + \
                     'pour obtenir des informations sur les espèces.'
