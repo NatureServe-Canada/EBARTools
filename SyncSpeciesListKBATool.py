@@ -121,7 +121,6 @@ class SyncSpeciesListKBATool:
                           "KBANotes_INT",
                           "InvestigatedDate",
                           "RevisitDate",
-                          "KBAPotential_Rationale",
                           "EBAR_G_MapID",
                           "EBAR_NA_MapID",
                           "EBAR_N_MapID",
