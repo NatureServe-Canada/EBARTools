@@ -20,9 +20,12 @@ source_fr_dict = EBARUtils.readDatasetSourceTranslations(geodatabase)
 #range_map_ids = [3293,3289,3284,3286,3290,3291,3288] #864,2648
 #range_map_ids = [3896,3895,3967,3974,4094,4018,4001,4103,4115,3918,4463,3914,3977,3975,4068,4243,4242,4003,4241,4199,4034,3960,4027,2819,4069,3878,3961,4089,4220,4963,4216,4817,3551,3346,4248,4008,3328,3397,3582,3353,3866,3882,3973,4183,4132,4827,4792,3415,3990,3988,4790,3885,3904,3955,4217,3919,3411,3598,3357,4030,3434,3327,4945,4149,3921,4058,3437,4131,4244,3438,3379,4366,3693,3384,3350,4054,4096,4111,3430,3378,3330,4973,4974,4828,4840,4341,4303,4611,4314,4787]
 #4124,3933,3880,4267,3932,3542,3920,4004,3949,4029,4177,4173,4172,4200,4000,4186,4237,4145,3941,4107,4176,4139,3879,3980,4258,4273,3888,3897,3948,3922,3930,4255,4105,4031,4197,3957,4175,4002,3966,4088,4155,4246,4082,4127,3951,4141,4110,4091,4104,3870,4114,4140,4071,4163,3910,4259,3905,4222,4122,4229,3976,3984,4078,4165,3876,3808,3864,3909,4026,4016,4204,4257,3969,4154,4213,4250,4159,4136,4182,4266,3881,4184,4010,3979,4113,4032,4253,3934,3889,4169,3907,4048,4060,4128,4174,4156,4093,4162,4161,3997
-#range_map_ids = [4090,3938,4042,4263,4180,3954,4083,4269,4239,4215,3953,3883,3911,4166,3958,3944,4065,4098,3884,3877,3865,4061,3924,4024,4236,4260,4038,3894,4192,4073,4125,3917,4059,3901,3943,3923,3971,4195,4011,4055,4072,4153,3928,4017,4233,3982,4138,4118,3862,3926,4164,4271,4063,3906,4189,3931,4146,4142,4037,3890,4079,3913,4021,3987,4086,4009,4223,4129,4102,3915,4077,3898,4245,4044,4005,4157,3956,4181,4207,3962,4240,4064,4137,4235,3902]
+#range_map_ids = [4090,3938,4042,4263,4180,3954,4083,4269,4239,4215,3953,3883,3911,4166,3958,3944,4065,4098,3884,3877,3865,4061,3924,4024,4236,4260,4038,3894,4192,4073,4125,3917,4059,3901,3943,3923,3971,4195,4011,4055,4072,4153,3928,4017,4233,3982,4138,4118,3862,3926,4164,4271,4063,3906,4189,3931,4146,4142,4037,3890]
+#range_map_ids = [4079,3913,4021,3987,4086,4009,4223,4129,4102,3915,4077,3898,4245,4044,4005,4157,3956,4181,4207,3962,4240,4064,4137,4235,3902]
 #2900,2902,2355,4844,2766,3332,3940,3427,601,2700,3240,3013,3385,4339,311,4903,4221,326,3420,3534,3431,753,3335,3358,4946,4947,3352,3697,3606,3414,298,2816,3329,3617,1637,3600,3698,3586,4046,4130,4150,4954,4144,3989,4262,3668,4232,4160,2739,4025,3981,3548,3968,2742,4056,3970,4012,3541,4147,2748,3916,3820,4134,4230,4208,3965,3986,3912,3998,4148,4062,4116,4953,4959,4960,4219,2150,4337,4816,3442,3424,3351,3280,3609,4014,4218,4224,4971,4226,4961,3003,3004,3106,4013,3152,2740,3925,4970,4972,2595,4882,4874,4782,3009,4135,2823,4039,4151,4228,4022,4247,4191,4035,4170,4051,4225,3939,4070,3863,4264,4143,3860,4106,4080,3936,4006,3950,4214,4119,4087,4007,3942,3859,3952,4133,3959,4036,4033,4194,4117,3978,3972,4109,3947,4049,4234,4126,4101,4179,4152,4168,4198,4052,4108,3991,4261,4270,4256,4268,4252,4028,3887,3946,3985,4272,4167,4053,4075,3903,4050,3754,3886,4190,4185,4193,3935,3937,4188,4015,4227,4092,4120,3996,3999,4057,4123,4178,4249,3899,3929,3900,4121,3908,3983,4085,4067,3964,3945,3927,3873
-range_map_ids = [4202,4238]
+#range_map_ids = [4202,4238,
+#range_map_ids = [4439]
+range_map_ids = [236,670,1261,2442,2513,2635,2727,2891,2964,3076,3113,3192,3188,3225,3226,3233,3251,3253,3246,3276,3278,3302,3304,3478,3554,3568,3570,3571,3595,3567,3655,3706,3812,3794,4282,4320,4333,4361,4363,4364,4368,4369,4374,4376,4408,4424,4430,4440,4443,4445,4449,4451,4454,4456,4459,4461,4464,4468,4472,4477,4480,4502,4507,4508,4511,4512,4513,4457,4500,4514,4515,4516,4519,4521,4523,4524,4526,4527,4530,4531,4532,4533,4535,4540,4541,4546,4547,4549,4550,4551,4554,4557,4558,4559,4562,4563,4568,4569,4570,4571,4574,4575,4578,4595,4599,4684,4783,4784,4786,4791,4795,4797,4798,4799,4805,4807,4809,4810,4812,4814,4815,4820,4821,4822,4824,4825,4826,4829,4834,4835,4841,4863,4881,4887,4893,4895,4897,4899,4901,4904,4906,4908,4910,4926,4831,4839,4842,4850,4851,4852,4853,4857,4858,4859,4860,4862,4864,4865,4869,4870,4873,4875,4876,4880,4884,4885,4886,4888,4890,4891,4894,4900,4905,4907,4911,4933]
 for range_map_id in range_map_ids:
     # RangeMap
     print('Translating Range Map ' + str(range_map_id))
@@ -48,7 +51,8 @@ for range_map_id in range_map_ids:
             summary_fr = update_row['RangeMetadata']
             if summary_fr:
                 # build up DatasetSourceNames from RangeMapEcoshapeInputDataset
-                input_records_fr = ''
+                # input_records_fr = ''
+                input_records_fr = "Enregistrements d'entrée - "
                 where = 'RangeMapEcoshapeID IN (SELECT RangeMapEcoshapeID FROM RangeMapEcoshape WHERE RangeMapID = ' + \
                     str(range_map_id) + ')'
                 arcpy.MakeTableView_management(geodatabase + '/RangeMapEcoshapeInputDataset', 'rmeid')
@@ -72,9 +76,7 @@ for range_map_id in range_map_ids:
                                            ) as search_cursor:
                     for search_row in EBARUtils.searchCursor(search_cursor):
                         if search_row['sum_ebarkba_sde_rangemapecoshapeinputdataset_inputdatacount']:
-                            if len(input_records_fr) == 0:
-                                input_records_fr += "Enregistrements d'entrée - "
-                            else:
+                            if input_records_fr != "Enregistrements d'entrée - ":
                                 input_records_fr += ', '
                             input_records_fr += str(int(
                                 search_row['sum_ebarkba_sde_rangemapecoshapeinputdataset_inputdatacount'])) + ' ' + \
@@ -154,9 +156,26 @@ for range_map_id in range_map_ids:
 
     # RangeMapEcoshape
     print('Translating Range Map Ecoshapes ' + str(range_map_id))
-    # # DEBUG
-    # ecoshapes_start_time = datetime.datetime.now()
-    # ecoshapes_count = 0
+    # DEBUG
+    ecoshapes_start_time = datetime.datetime.now()
+    ecoshapes_count = 0
+
+    # do all the RangeMapEcoshapeInputDataset summary queries together
+    arcpy.MakeTableView_management(geodatabase + '/RangeMapEcoshape', 'rme', 'RangeMapID = ' + str(range_map_id))
+    arcpy.AddJoin_management('rme', 'RangeMapEcoshapeID', geodatabase + '/RangeMapEcoshapeInputDataset',
+                             'RangeMapEcoshapeID')
+    arcpy.AddJoin_management('rme', 'InputDatasetID', geodatabase + '/InputDataset', 'InputDatasetID')
+    arcpy.AddJoin_management('rme', 'DatasetSourceID', geodatabase + '/DatasetSource', 'DatasetSourceID')
+    rme_stats = geodatabase + '/TempRMEStats' + str(start_time.year) + str(start_time.month) + \
+        str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
+    arcpy.Statistics_analysis('rme', rme_stats,
+                              [[table_name_prefix + 'RangeMapEcoshapeInputDataset.InputDataCount', 'SUM'],
+                               [table_name_prefix + 'RangeMapEcoshapeInputDataset.MinDate', 'MIN'],
+                               [table_name_prefix + 'RangeMapEcoshapeInputDataset.MaxDate', 'MAX'],
+                               [table_name_prefix + 'RangeMapEcoshapeInputDataset.MaxDate', 'MIN']],
+                              [table_name_prefix + 'RangeMapEcoshape.RangeMapEcoshapeID',
+                               table_name_prefix + 'DatasetSource.DatasetSourceName'])
+
     # query_start_time = datetime.datetime.now()
     update_row = None
     with arcpy.da.UpdateCursor(geodatabase + '/RangeMapEcoshape',
@@ -172,37 +191,17 @@ for range_map_id in range_map_ids:
             if notes_fr:
                 # build up DatasetSourceNames from RangeMapEcoshapeInputDataset
                 input_records_fr = ''
-                where = 'RangeMapEcoshapeID = ' + str(update_row['RangeMapEcoshapeID'])
-                arcpy.MakeTableView_management(geodatabase + '/RangeMapEcoshapeInputDataset', 'rmeid2')
-                # # DEBUG
-                # stats_start_time = datetime.datetime.now()
-                arcpy.SelectLayerByAttribute_management('rmeid2', 'NEW_SELECTION', where)
-                arcpy.AddJoin_management('rmeid2', 'InputDatasetID', geodatabase + '/InputDataset', 'InputDatasetID')
-                arcpy.AddJoin_management('rmeid2', 'DatasetSourceID', geodatabase + '/DatasetSource', 'DatasetSourceID')
-                rmeid2_stats = geodatabase + '/TempRMEID2Stats' + str(start_time.year) + str(start_time.month) + \
-                    str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
-                arcpy.Statistics_analysis('rmeid2', rmeid2_stats,
-                                          [['InputDataCount', 'SUM'], ['MinDate', 'MIN'], ['MaxDate', 'MAX'],
-                                           ['MaxDate', 'MIN']],
-                                          [table_name_prefix + 'DatasetSource.DatasetSourceName'])
-                # # DEBUG
-                # stats_end_time = datetime.datetime.now()
-                # stats_elapsed_time = stats_end_time - stats_start_time
-                # print ('Stats took ' + str(stats_elapsed_time))
-                # query2_start_time = datetime.datetime.now()
+                where = 'ebarkba_sde_rangemapecoshape_rangemapecoshapeid = ' +  str(update_row['RangeMapEcoshapeID'])
                 search_row = None
-                with arcpy.da.SearchCursor(rmeid2_stats,
+                with arcpy.da.SearchCursor(rme_stats,
                                            ['ebarkba_sde_datasetsource_datasetsourcename',
                                             'sum_ebarkba_sde_rangemapecoshapeinputdataset_inputdatacount',
                                             'max_ebarkba_sde_rangemapecoshapeinputdataset_maxdate',
                                             'min_ebarkba_sde_rangemapecoshapeinputdataset_maxdate',
                                             'min_ebarkba_sde_rangemapecoshapeinputdataset_mindate'],
+                                           where,
                                            sql_clause=[None, 'ORDER BY ebarkba_sde_datasetsource_datasetsourcename']
                                            ) as search_cursor:
-                    # # DEBUG
-                    # query2_end_time = datetime.datetime.now()
-                    # query2_elapsed_time = query2_end_time - query2_start_time
-                    # print ('Ecoshapes Input Dataset query took ' + str(query2_elapsed_time))
                     for search_row in EBARUtils.searchCursor(search_cursor):
                         if search_row['sum_ebarkba_sde_rangemapecoshapeinputdataset_inputdatacount']:
                             if len(input_records_fr) == 0:
@@ -228,8 +227,67 @@ for range_map_id in range_map_ids:
                 if search_row:
                     del search_row
                 del search_cursor
-                arcpy.Delete_management(rmeid2_stats)
-                arcpy.Delete_management('rmeid2')
+
+                # # build up DatasetSourceNames from RangeMapEcoshapeInputDataset
+                # input_records_fr = ''
+                # where = 'RangeMapEcoshapeID = ' + str(update_row['RangeMapEcoshapeID'])
+                # arcpy.MakeTableView_management(geodatabase + '/RangeMapEcoshapeInputDataset', 'rmeid2')
+                # # # DEBUG
+                # # stats_start_time = datetime.datetime.now()
+                # arcpy.SelectLayerByAttribute_management('rmeid2', 'NEW_SELECTION', where)
+                # arcpy.AddJoin_management('rmeid2', 'InputDatasetID', geodatabase + '/InputDataset', 'InputDatasetID')
+                # arcpy.AddJoin_management('rmeid2', 'DatasetSourceID', geodatabase + '/DatasetSource', 'DatasetSourceID')
+                # rmeid2_stats = geodatabase + '/TempRMEID2Stats' + str(start_time.year) + str(start_time.month) + \
+                #     str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
+                # arcpy.Statistics_analysis('rmeid2', rmeid2_stats,
+                #                           [['InputDataCount', 'SUM'], ['MinDate', 'MIN'], ['MaxDate', 'MAX'],
+                #                            ['MaxDate', 'MIN']],
+                #                           [table_name_prefix + 'DatasetSource.DatasetSourceName'])
+                # # # DEBUG
+                # # stats_end_time = datetime.datetime.now()
+                # # stats_elapsed_time = stats_end_time - stats_start_time
+                # # print ('Stats took ' + str(stats_elapsed_time))
+                # # query2_start_time = datetime.datetime.now()
+                # search_row = None
+                # with arcpy.da.SearchCursor(rmeid2_stats,
+                #                            ['ebarkba_sde_datasetsource_datasetsourcename',
+                #                             'sum_ebarkba_sde_rangemapecoshapeinputdataset_inputdatacount',
+                #                             'max_ebarkba_sde_rangemapecoshapeinputdataset_maxdate',
+                #                             'min_ebarkba_sde_rangemapecoshapeinputdataset_maxdate',
+                #                             'min_ebarkba_sde_rangemapecoshapeinputdataset_mindate'],
+                #                            sql_clause=[None, 'ORDER BY ebarkba_sde_datasetsource_datasetsourcename']
+                #                            ) as search_cursor:
+                #     # # DEBUG
+                #     # query2_end_time = datetime.datetime.now()
+                #     # query2_elapsed_time = query2_end_time - query2_start_time
+                #     # print ('Ecoshapes Input Dataset query took ' + str(query2_elapsed_time))
+                #     for search_row in EBARUtils.searchCursor(search_cursor):
+                #         if search_row['sum_ebarkba_sde_rangemapecoshapeinputdataset_inputdatacount']:
+                #             if len(input_records_fr) == 0:
+                #                 input_records_fr += "Enregistrements d'entrée - "
+                #             else:
+                #                 input_records_fr += ', '
+                #             input_records_fr += str(int(
+                #                 search_row['sum_ebarkba_sde_rangemapecoshapeinputdataset_inputdatacount'])) + ' ' + \
+                #                 source_fr_dict[search_row['ebarkba_sde_datasetsource_datasetsourcename']]
+                #             if search_row['max_ebarkba_sde_rangemapecoshapeinputdataset_maxdate']:
+                #                 min_year = search_row['max_ebarkba_sde_rangemapecoshapeinputdataset_maxdate'].year
+                #                 max_year = search_row['max_ebarkba_sde_rangemapecoshapeinputdataset_maxdate'].year
+                #                 if search_row['min_ebarkba_sde_rangemapecoshapeinputdataset_maxdate']:
+                #                     if search_row['min_ebarkba_sde_rangemapecoshapeinputdataset_maxdate'].year < min_year:
+                #                         min_year = search_row['min_ebarkba_sde_rangemapecoshapeinputdataset_maxdate'].year
+                #                 if search_row['min_ebarkba_sde_rangemapecoshapeinputdataset_maxdate']:
+                #                     if search_row['min_ebarkba_sde_rangemapecoshapeinputdataset_mindate'].year < min_year:
+                #                         min_year = search_row['min_ebarkba_sde_rangemapecoshapeinputdataset_mindate'].year
+                #                 input_records_fr += ' ('
+                #                 if min_year < max_year:
+                #                     input_records_fr += str(min_year) + '-'
+                #                 input_records_fr += str(max_year) + ')'
+                # if search_row:
+                #     del search_row
+                # del search_cursor
+                # arcpy.Delete_management(rmeid2_stats)
+                # arcpy.Delete_management('rmeid2')
 
                 # assemble
                 sections = notes_fr.split('<br>')
@@ -268,8 +326,12 @@ for range_map_id in range_map_ids:
     if update_row:
         del update_row
     del update_cursor
-    # # DEBUG
-    # ecoshapes_end_time = datetime.datetime.now()
-    # ecoshapes_elapsed_time = ecoshapes_end_time - ecoshapes_start_time
-    # print('Range Map Ecoshapes ' + str(range_map_id) + ' took ' + str(ecoshapes_elapsed_time) + ' for ' +
-    #       str(ecoshapes_count))
+
+    arcpy.Delete_management(rme_stats)
+    arcpy.Delete_management('rme')
+
+    # DEBUG
+    ecoshapes_end_time = datetime.datetime.now()
+    ecoshapes_elapsed_time = ecoshapes_end_time - ecoshapes_start_time
+    print('Range Map Ecoshapes ' + str(range_map_id) + ' took ' + str(ecoshapes_elapsed_time) + ' for ' +
+          str(ecoshapes_count))
