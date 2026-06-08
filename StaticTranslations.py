@@ -16,12 +16,21 @@ range_map_scope_translation = {
 
 
 range_stage_translation = {
+    'Auto-generated': 'Généré automatiquement',
+    'Auto-generated (National)': 'Généré automatiquement (national)',
+    'Auto-generated - Pilot project': 'Généré automatiquement - projet pilote',
+    'Auto-generated - Pilot project (NT Telemetry Range Added)': 'Généré automatiquement - projet pilote (les aires de répartition de télémétrie T.N.-O. ajoutée)',
+    'Auto-generated (NT Telemetry Range Added)': 'Généré automatiquement (les aires de répartition de télémétrie T.N.-O. ajoutée)',
+    'BC Expert Reviewed': 'Examiné par des experts de la C.-B.',
     'Expert Reviewed': 'Examiné par des experts',
+    'Expert Reviewed (eBird Partially Reviewed - National)': "Examiné par des experts (examen partiel d'eBird - national)",
     'Expert Reviewed (Insufficient Data)': 'Examiné par des experts (données insuffisantes)',
     'Expert Reviewed (Low Star Rating - National)': "Examiné par des experts (faible nombre d'étoiles - national)",
     'Expert Reviewed (Low Star Rating)': "Examiné par des experts (faible nombre d'étoiles)",
     'Expert Reviewed (National)': 'Examiné par des experts (national)',
-    'Partially Reviewed': 'Examen partiel'}
+    'Expert Reviewed (Partially Reviewed - National)': 'Examiné par des experts (examen partiel - national)',
+    'Expert Reviewed (Partially Reviewed)': 'Examiné par des experts (examen partiel)',
+    'NT Telemetry Range Added': 'Les aires de répartition de télémétrie T.N.-O. ajoutée'}
 
 
 presence_translation = {

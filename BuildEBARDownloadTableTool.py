@@ -149,8 +149,11 @@ class BuildEBARDownloadTableTool:
             element_global_id = str(row[5])
             if scope == 'Canadian':
                 element_global_id += 'N'
-            status = 'Expert Reviewed'
-            status_fr = 'Examiné par des experts'
+            status = 'Not Reviewed'
+            status_fr = 'Pas examiné'
+            if row[7] == 1:
+                status = 'Expert Reviewed'
+                status_fr = 'Examiné par des experts'
             if row[7] == 2:
                 status = 'Insufficient Data'
                 status_fr = 'Données insuffisantes'
