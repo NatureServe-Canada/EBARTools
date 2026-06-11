@@ -27,13 +27,13 @@ class PackageECCCPrioritySpeciesTool:
     def processPackage(self, messages, range_map_ids, attributes_dict, zip_folder, metadata):
         # export range maps, with biotics/species additions
         EBARUtils.displayMessage(messages, 'Exporting RangeMap records to CSV')
-        EBARUtils.ExportRangeMapToCSV('range_map_view_pkg', range_map_ids, attributes_dict, zip_folder, 'RangeMap.csv',
-                                      metadata, '_fr')
+        EBARUtils.ExportRangeMapToCSV('range_map_view_pkg', range_map_ids, attributes_dict, zip_folder,
+                                      'CarteRepartition.csv', metadata, '_fr')
 
         # export range map ecoshapes
         EBARUtils.displayMessage(messages, 'Exporting RangeMapEcoshape records to CSV')
         EBARUtils.ExportRangeMapEcoshapesToCSV('range_map_ecoshape_view', range_map_ids, zip_folder,
-                                               'RangeMapEcoshape.csv', metadata, '_fr')
+                                               'CarteRepartitionEcoshape.csv', metadata, '_fr')
 
         # export ecoshapes
         EBARUtils.displayMessage(messages, 'Exporting Ecoshape polygons to shapefile')
@@ -42,22 +42,22 @@ class PackageECCCPrioritySpeciesTool:
 
         # export overview ecoshapes
         EBARUtils.displayMessage(messages, 'Exporting EcoshapeOverview polygons to shapefile')
-        EBARUtils.ExportEcoshapeOverviewsToShapefile('ecoshape_overview_layer', 'range_map_ecoshape_view', zip_folder, 
-                                                     'EcoshapeOverview.shp', metadata, True, '_fr')
+        EBARUtils.ExportEcoshapeOverviewsToShapefile('ecoshape_overview_layer', 'range_map_ecoshape_view', zip_folder,
+                                                     'EcoshapeApercu.shp', metadata, True, '_fr')
 
         # copy ArcMap template
         EBARUtils.displayMessage(messages, 'Copying ArcMap template')
         #shutil.copyfile(EBARUtils.resources_folder + '/EBAR.mxd', zip_folder + '/EBAR_ECCC_2025-26_Species.mxd')
         # shutil.copyfile(EBARUtils.resources_folder + '/EBAR.mxd', zip_folder + '/EBAR_ECCC_2022-23_Species.mxd')
-        shutil.copyfile(EBARUtils.resources_folder + '/UsageType.lyr', zip_folder + '/UsageType.lyr')
-        shutil.copyfile(EBARUtils.resources_folder + '/EcoshapeOverview.lyr', zip_folder + '/EcoshapeOverview.lyr')
-        shutil.copyfile(EBARUtils.resources_folder + '/Ecoshape.lyr', zip_folder + '/Ecoshape.lyr')
+        # shutil.copyfile(EBARUtils.resources_folder + '/UsageType.lyr', zip_folder + '/UsageType.lyr')
+        # shutil.copyfile(EBARUtils.resources_folder + '/EcoshapeOverview.lyr', zip_folder + '/EcoshapeOverview.lyr')
+        # shutil.copyfile(EBARUtils.resources_folder + '/Ecoshape.lyr', zip_folder + '/Ecoshape.lyr')
 
         # create spatial zip
         EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/' +
-                                 'EBAR_ECCC_2025-26_Species_All_Data.zip')
+                                 'EBAR_ECCC_2025-26_Species_All_Data_FR.zip')
         EBARUtils.createZip(zip_folder,
-                            EBARUtils.download_folder + '/EBAR_ECCC_2025-26_Species_All_Data.zip', None)
+                            EBARUtils.download_folder + '/EBAR_ECCC_2025-26_Species_All_Data_FR.zip', None)
         # EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/' +
         #                          'EBAR_ECCC_2022-23_Species_All_Data.zip')
         # EBARUtils.createZip(zip_folder,
@@ -65,9 +65,9 @@ class PackageECCCPrioritySpeciesTool:
 
         # create pdf zip
         EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/' +
-                                 'EBAR_ECCC_2025-26_Species_All_PDFs.zip')
+                                 'EBAR_ECCC_2025-26_Species_All_PDFs_FR.zip')
         EBARUtils.createZip(zip_folder,
-                            EBARUtils.download_folder + '/EBAR_ECCC_2025-26_Species_All_PDFs.zip','.pdf')
+                            EBARUtils.download_folder + '/EBAR_ECCC_2025-26_Species_All_PDFs_FR.zip','.pdf')
         # EBARUtils.displayMessage(messages, 'Creating ZIP: https://gis.natureserve.ca/download/' +
         #                          'EBAR_ECCC_2022-23_Species_All_PDFs.zip')
         # EBARUtils.createZip(zip_folder,
