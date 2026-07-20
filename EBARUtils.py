@@ -26,11 +26,12 @@ import locale
 
 
 # shared folders and addresses
-#resources_folder = 'C:/GIS/EBAR/EBARToolsTranslation/resources'
-resources_folder = 'D:/GIS/EBAR/EBARTools/resources'
-temp_folder = 'D:/GIS/EBAR/temp'
-download_folder = 'D:/GIS/EBAR/pub/download'
-#download_folder = 'F:/download'
+#resources_folder = 'D:/GIS/EBAR/EBARTools/resources'
+resources_folder = 'C:/GIS/EBAR/EBARToolsTranslation/resources'
+#temp_folder = 'D:/GIS/EBAR/temp'
+temp_folder = 'C:/GIS/EBAR/temp'
+#download_folder = 'D:/GIS/EBAR/pub/download'
+download_folder = 'F:/download'
 download_url = 'https://gis.natureserve.ca/download'
 #nsx_species_search_url = 'https://explorer.natureserve.org/api/data/search'
 nsx_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/'
@@ -234,14 +235,16 @@ def updateCursor(cursor):
 
 def insertCursor(cursor):
     """Enables named fields in an arcpy.da.InsertCursor"""
-    if isinstance(cursor, arcpy.da.InsertCursor):
+    #if isinstance(cursor, arcpy.da.InsertCursor):
+    if str(type(cursor)) == "<class 'da.InsertCursor'>":
         return MutableNamedTuple(zip(cursor.fields, [None for field in cursor.fields]))
 
 
 def _name_cursor(cursor):
     """Private generator to enable named fields in an arcpy.da cursor (search_cursor or update_cursor)"""
-    if (isinstance(cursor, arcpy.da.SearchCursor) or
-        isinstance(cursor, arcpy.da.UpdateCursor)):
+    # if (isinstance(cursor, arcpy.da.SearchCursor) or
+    #     isinstance(cursor, arcpy.da.UpdateCursor)):
+    if str(type(cursor)) in ("<class 'da.SearchCursor'>", "<class 'da.UpdateCursor'>"):
         for row in cursor:
             yield MutableNamedTuple(zip(cursor.fields, row))
 
