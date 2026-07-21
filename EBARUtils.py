@@ -37,18 +37,6 @@ download_url = 'https://gis.natureserve.ca/download'
 nsx_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/'
 # ebird_download_url = 'https://st-download.ebird.org/v1/fetch'
 log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
-#log_folder = 'D:/GIS/EBAR/temp'
-# # shared folders and addresses
-# resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
-# temp_folder = 'C:/GIS/EBAR/temp'
-# #download_folder = 'D:/GIS/EBAR/pub/download'
-# download_folder = 'F:/download'
-# download_url = 'https://gis.natureserve.ca/download'
-# #nsx_species_search_url = 'https://explorer.natureserve.org/api/data/search'
-# nsx_taxon_search_url = 'https://explorer.natureserve.org/api/data/taxon/'
-# # ebird_download_url = 'https://st-download.ebird.org/v1/fetch'
-# log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
-# #log_folder = 'D:/GIS/EBAR/temp'
 
 
 # various services

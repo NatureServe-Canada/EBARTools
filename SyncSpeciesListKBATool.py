@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 # Project: Key Biodiversity Areas (KBA) Canada
-# Credits: Meg Southee, Randal Greene
+# Credits: Zachary Moore, Meg Southee, Randal Greene
 # © WCS Canada / NatureServe Canada 2026 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 # Program: SyncSpeciesListKBATool.py
@@ -114,7 +114,11 @@ class SyncSpeciesListKBATool:
                           "ActiveEBAR",
                           "WDKBAID",
                           "KBAPotential",
-                          "KBAPotential_Rationale",
+                          "NeedsMoreInfo",
+                          "KBANotes_EXT",
+                          "KBANotes_INT",
+                          "InvestigatedDate",
+                          "RevisitDate",
                           "EBAR_G_MapID",
                           "EBAR_NA_MapID",
                           "EBAR_N_MapID",
