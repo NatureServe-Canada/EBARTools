@@ -239,7 +239,8 @@ class CreateExternalRangeReviewFromEbirdAbundanceTool:
                     else:
                         # insert row
                         with arcpy.da.InsertCursor(output_table,
-                                                    ['EcoshapeID', 'Presence', 'UsageType']) as insert_cursor:
+                                                   ['EcoshapeID', 'Presence', 'UsageType'],
+                                                   load_only=False) as insert_cursor:
                             insert_cursor.insertRow([ecoshape_row['EcoshapeID'], 'P', 'B'])
                         del insert_cursor
 

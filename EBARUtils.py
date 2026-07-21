@@ -1919,7 +1919,7 @@ def appendUsingCursor(append_from, append_to, field_dict=None, skip_fields_lower
             values = []
             for field in from_fields:
                 values.append(row[field])
-            with arcpy.da.InsertCursor(append_to, to_fields) as insert_cursor:
+            with arcpy.da.InsertCursor(append_to, to_fields, load_only=False) as insert_cursor:
                 insert_cursor.insertRow(values)
             del insert_cursor
     del cursor
