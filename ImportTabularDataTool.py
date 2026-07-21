@@ -2,7 +2,7 @@
 
 # Project: Ecosytem-based Automated Range Mapping (EBAR)
 # Credits: Randal Greene, Christine Terwissen
-# © NatureServe Canada 2019 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+# © NatureServe Canada 2026 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 # Program: ImportTabularDataTool.py
 # ArcGIS Python tool for importing tabular data into the
@@ -149,12 +149,12 @@ class ImportTabularDataTool:
             for file_line in reader:
                 # check/add point for current line
                 # input_point_id, status, max_date, bbc_bad = self.CheckAddPoint(id_dict, bad_dict, param_geodatabase,
-                object_id, status, max_date, bbc_bad = self.CheckAddPoint(id_dict, bad_dict, param_geodatabase,
-                                                                               input_dataset_id, species_dict,
-                                                                               synonym_dict, synonym_species_dict,
-                                                                               file_line, field_dict, no_match_list,
-                                                                               bbc_domain_values_lower, bad_bbcs_list,
-                                                                               messages)
+                status, max_date, bbc_bad = self.CheckAddPoint(id_dict, bad_dict, param_geodatabase,
+                                                                          input_dataset_id, species_dict,
+                                                                          synonym_dict, synonym_species_dict,
+                                                                          file_line, field_dict, no_match_list,
+                                                                          bbc_domain_values_lower, bad_bbcs_list,
+                                                                          messages)
                 # increment/report counts
                 count += 1
                 if count % 1000 == 0:
@@ -235,14 +235,14 @@ class ImportTabularDataTool:
             if '[None]' not in no_match_list:
                 no_match_list.append('[None]')
                 EBARUtils.displayMessage(messages, 'WARNING: No match for species [None]')
-            return None, 'no_species_match', None, bad_bbc
+            return 'no_species_match', None, bad_bbc
         if (file_line[field_dict['scientific_name']].lower() not in species_dict
                 and file_line[field_dict['scientific_name']].lower() not in synonym_dict):
             if file_line[field_dict['scientific_name']] not in no_match_list:
                 no_match_list.append(file_line[field_dict['scientific_name']])
                 EBARUtils.displayMessage(messages,
                                          'WARNING: No match for species ' + file_line[field_dict['scientific_name']])
-            return None, 'no_species_match', None, bad_bbc
+            return 'no_species_match', None, bad_bbc
         else:
             synonym_id = None
             if file_line[field_dict['scientific_name']].lower() in species_dict:
@@ -313,7 +313,7 @@ class ImportTabularDataTool:
                 arcpy.SpatialReference(EBARUtils.srs_dict['North America Albers Equal Area Conic']))
             output_point = output_geometry.lastPoint
         if not output_point:
-            return None, 'no_coords', None, bad_bbc
+            return 'no_coords', None, bad_bbc
 
         # Accuracy
         accuracy = None
@@ -329,7 +329,7 @@ class ImportTabularDataTool:
                         accuracy = None
             if accuracy:
                 if accuracy > EBARUtils.worst_accuracy:
-                    return None, 'inaccurate', None, bad_bbc
+                    return 'inaccurate', None, bad_bbc
         else:
             # provided accuracy is not relevant for obscured data, estimate based on 0.2 degree square
             accuracy = EBARUtils.estimateAccuracy(input_point.Y, 0.2)
@@ -345,30 +345,44 @@ class ImportTabularDataTool:
         if field_dict['date']:
             # date field
             max_date, partial = EBARUtils.extractDate(file_line[field_dict['date']])
+            # # DEBUG
+            # EBARUtils.displayMessage(messages, 'max_date: ' + str(max_date))
+            # EBARUtils.displayMessage(messages, 'partial: ' + str(partial))
         if not max_date:
             # separate ymd fields
+            partial = True
+            month = False
             if field_dict['year']:
                 if file_line[field_dict['year']] not in ('NA', ''):
-                    max_year = int(file_line[field_dict['year']])
+                    # first check for min-max range (i.e., yyyy-yyyy)
+                    if (len(file_line[field_dict['year']]) == 9) and ('-' in file_line[field_dict['year']]):
+                        max_year = int(file_line[field_dict['year']][-4:])
+                    else:
+                        max_year = int(file_line[field_dict['year']])
                     max_month = 1
                     if field_dict['month']:
                         if file_line[field_dict['month']] not in ('NA', ''):
                             max_month = int(file_line[field_dict['month']])
+                            month = True
                     max_day = 1
                     if field_dict['day']:
                         if file_line[field_dict['day']] not in ('NA', ''):
                             max_day = int(file_line[field_dict['day']])
+                            if month:
+                                partial = False
                     if max_year >= 1500:
                         if max_month <= 0 or max_month > 12:
                             max_month = 1
+                            partial = True
                         if max_day <= 0 or max_day > 31:
                             max_day = 1
+                            partial = True
                         max_date = datetime.datetime(max_year, max_month, max_day)
 
         # reject fossils records
         if field_dict['basis_of_record']:
             if file_line[field_dict['basis_of_record']].lower() in ('fossil_specimen', 'fossil', 'fossilspecimen'):
-                return None, 'fossil', None, bad_bbc
+                return 'fossil', None, bad_bbc
 
         # grade
         quality_grade = 'research'
@@ -377,12 +391,14 @@ class ImportTabularDataTool:
 
         # check for existing bad data with same unique_id within the dataset source
         if unique_id_species in bad_dict:
-            return None, 'bad_data', None, bad_bbc
+            return 'bad_data', None, bad_bbc
 
         # check for existing point with same unique_id within the dataset source
         delete = False
         update = False
         if unique_id_species in id_dict:
+            # # DEBUG
+            # EBARUtils.displayMessage(messages, 'Found unique_id_species : ' + str(unique_id_species))
             # already exists
             if quality_grade.lower() not in ('research', '1', 'true'):
                 # delete it because it has been downgraded
@@ -395,7 +411,7 @@ class ImportTabularDataTool:
                         cursor.deleteRow()
                     if row:
                         del row
-                    return id_dict[unique_id_species], 'deleted', None, bad_bbc
+                    return 'deleted', None, bad_bbc
             else:
                 update = True
             #if private_coords:
@@ -414,7 +430,7 @@ class ImportTabularDataTool:
 
         # don't add non research grade
         if quality_grade.lower() not in ('research', '1', 'true'):
-            return None, 'non-research', None, bad_bbc
+            return 'non-research', None, bad_bbc
         # ## NT perf debug
         # date_fossil_grade_time = datetime.datetime.now() - date_fossil_grade_start
         # EBARUtils.displayMessage(messages, 'Date, Fossil, Grade, Uniqueness: ' + str(date_fossil_grade_time))
@@ -437,14 +453,14 @@ class ImportTabularDataTool:
             if file_line[field_dict['individual_count']] not in ('NA', 'X', ''):
                 individual_count = int(file_line[field_dict['individual_count']])
         if individual_count == 0:
-            return None, 'individual_count_0', None, bad_bbc
+            return 'individual_count_0', None, bad_bbc
 
         # Geoprivacy
         geoprivacy = None
         if field_dict['geoprivacy']:
             geoprivacy = file_line[field_dict['geoprivacy']]
             if geoprivacy == 'private':
-                return None, 'private', None, bad_bbc
+                return 'private', None, bad_bbc
 
         # TaxonGeoprivacy
         taxon_geoprivacy = None
@@ -483,7 +499,9 @@ class ImportTabularDataTool:
         # save_start = datetime.datetime.now()
         # update or insert
         if update:
-            row = None
+            # # DEBUG
+            # EBARUtils.displayMessage(messages, 'Updating unique_id_species: ' + str(unique_id_species))
+            # EBARUtils.displayMessage(messages, 'Updating InputPointID: ' + str(id_dict[unique_id_species]))
             with arcpy.da.UpdateCursor(geodatabase + '/InputPoint', [
                     'SHAPE@XY', 'InputDatasetID', 'URI', 'License', 'SpeciesID', 'SynonymID', 'MaxDate',
                     'CoordinatesObscured', 'Accuracy', 'IndividualCount', 'Geoprivacy', 'TaxonGeoprivacy',
@@ -498,26 +516,30 @@ class ImportTabularDataTool:
                         output_point, input_dataset_id, uri, license, species_id, synonym_id, max_date,
                         coordinates_obscured, accuracy, individual_count, geoprivacy, taxon_geoprivacy, breeding_code,
                         original_institution_code, rightsholder, partial_text])
-            if row:
-                del row
-            del cursor
+                    # # DEBUG
+                    # EBARUtils.displayMessage(messages, 'Made it to Update!')
+                if row:
+                    del row
             # ## NT perf debug
             # save_insert_time = datetime.datetime.now() - save_start
             # EBARUtils.displayMessage(messages, 'Save update: ' + str(save_insert_time))
-            return id_dict[unique_id_species], 'updated', max_date, bad_bbc
+            return 'updated', max_date, bad_bbc
         else:
             # insert, set new id and return
             point_fields = [
                 'SHAPE@XY', 'InputDatasetID', 'DatasetSourceUniqueID', 'URI', 'License', 'SpeciesID', 'SynonymID',
                 'MaxDate', 'CoordinatesObscured', 'Accuracy', 'IndividualCount', 'Geoprivacy', 'TaxonGeoprivacy',
-                'BreedingAndBehaviourCode', 'OriginalInstitutionCode', 'Rightsholder'
+                'BreedingAndBehaviourCode', 'OriginalInstitutionCode', 'Rightsholder', 'PartialDate'
             ]
             with arcpy.da.InsertCursor(geodatabase + '/InputPoint', point_fields, load_only=False) as cursor:
+                partial_text = 'N'
+                if partial:
+                    partial_text = 'Y'
                 object_id = cursor.insertRow([
                     output_point, input_dataset_id,
                     str(file_line[field_dict['unique_id']]), uri, license, species_id, synonym_id, max_date,
                     coordinates_obscured, accuracy, individual_count, geoprivacy, taxon_geoprivacy, breeding_code,
-                    original_institution_code, rightsholder
+                    original_institution_code, rightsholder, partial_text
                 ])
             del cursor
             #input_point_id = EBARUtils.getUniqueID(geodatabase + '/InputPoint', 'InputPointID', object_id)
@@ -528,32 +550,34 @@ class ImportTabularDataTool:
             #id_dict[unique_id_species] = input_point_id
             id_dict[unique_id_species] = object_id
             # ## NT perf debug
-            # save_insert_time = datetime.datetime.now() - save_start
-            # EBARUtils.displayMessage(messages, 'Save insert: ' + str(save_insert_time))
-            #return input_point_id, 'new', max_date, bad_bbc
-            return object_id, 'new', max_date, bad_bbc
+            # save_time = datetime.datetime.now() - save_start
+            # EBARUtils.displayMessage(messages, 'Save: ' + str(save_time))
+            return 'new', max_date, bad_bbc
 
 
-# # controlling process
-# if __name__ == '__main__':
-#     itd = ImportTabularDataTool()
-#     # hard code parameters for debugging
-#     param_geodatabase = arcpy.Parameter()
-#     param_geodatabase.value = 'C:/GIS/EBAR/EBAR-KBA-Dev.gdb'
-#     param_raw_data_file = arcpy.Parameter()
-#     param_raw_data_file.value = 'C:/GIS/EBAR/BBA/QC Northern/naturecounts_data_test.csv'
-#     param_dataset_name = arcpy.Parameter()
-#     param_dataset_name.value = 'QC Northen BBA Test4'
-#     param_dataset_source = arcpy.Parameter()
-#     param_dataset_source.value = 'QC Breeding Bird Atlas'
-#     param_date_received = arcpy.Parameter()
-#     param_date_received.value = 'July 20, 2022'
-#     # param_restrictions = arcpy.Parameter()
-#     # param_restrictions.value = 'Non-restricted'
-#     param_sensitive_ecoogical_data_cat = arcpy.Parameter()
-#     param_sensitive_ecoogical_data_cat.value = 'Proprietary'
-#     param_dataset_citation = arcpy.Parameter()
-#     param_dataset_citation.value = 'Test Citation'
-#     parameters = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_source,
-#                   param_date_received, param_sensitive_ecoogical_data_cat, param_dataset_citation] # param_restrictions]
-#     itd.runImportTabularDataTool(parameters, None)
+# controlling process
+if __name__ == '__main__':
+    itd = ImportTabularDataTool()
+    # hard code parameters for debugging
+    param_geodatabase = arcpy.Parameter()
+    param_geodatabase.value = r'C:\GIS\EBAR\nsc-gis-ebarkba.sde' #'D:\GIS\EBAR\EBARDevJan2026.gdb'
+    param_raw_data_file = arcpy.Parameter()
+    param_raw_data_file.value = r'C:\Users\sstefanoff\Downloads\HBJBL_GBIF_forImport_Jan2026\HBJBL_GBIF_forImport_Jan2026\GBIF_test.csv' #'D:\GIS\EBAR\GBIF\GBIF_test.csv'  #'C:\Users\rgree\Downloads\c0082175251120083545085_GBIF_Clip_ExportTable.csv'
+    param_dataset_name = arcpy.Parameter()
+    param_dataset_name.value = 'GBIF_HBJBL_full_species' #'GBIF TEST'
+    param_dataset_source = arcpy.Parameter()
+    param_dataset_source.value = 'GBIF'
+    param_date_received = arcpy.Parameter()
+    param_date_received.value = 'January 8, 2026'
+    # param_restrictions = arcpy.Parameter()
+    # param_restrictions.value = 'Non-restricted'
+    param_sensitive_ecoogical_data_cat = arcpy.Parameter()
+    param_sensitive_ecoogical_data_cat.value = None # 'Proprietary'
+    param_dataset_citation = arcpy.Parameter()
+    param_dataset_citation.value = 'GBIF.org (8 January 2026) GBIF Occurrence Download https://doi.org/10.15468/dl.rb8yfk'
+    param_data_file_encoding = arcpy.Parameter()
+    param_data_file_encoding.value = 'UTF8'
+    parameters = [param_geodatabase, param_raw_data_file, param_dataset_name, param_dataset_source,
+                  param_date_received, param_sensitive_ecoogical_data_cat, param_dataset_citation,
+                  param_data_file_encoding] # param_restrictions]
+    itd.runImportTabularDataTool(parameters, None)

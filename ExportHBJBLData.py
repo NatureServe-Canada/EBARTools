@@ -2,7 +2,7 @@
 
 # Project: Ecosytem-based Automated Range Mapping (EBAR)
 # Credits: Randal Greene, Samantha Stefanoff
-# © NatureServe Canada 2024 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+# © NatureServe Canada 2026 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 # Program: ExportHBJBLData.py
 # Upublished ArcGIS Python tool for exporting InputPoint/Line/Polygon records for HBJBL
@@ -246,6 +246,6 @@ if __name__ == '__main__':
     param_custom_polygon = arcpy.Parameter()
     param_custom_polygon.value = 'C:/GIS/EBAR/HBJBL_Seal_Buffer_10.gdb/HBJBL_Seal_Buffer_10_Dissolve'
     param_output_zip = arcpy.Parameter()
-    param_output_zip.value = 'EBAR_HBJBLExport_July2025.zip'
+    param_output_zip.value = 'EBAR_HBJBLExport_March2026.zip'
     parameters = [param_geodatabase, param_custom_polygon, param_output_zip]
     ehd.runExportHBJBLDataTool(parameters, None)

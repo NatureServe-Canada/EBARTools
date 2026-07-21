@@ -1,6 +1,6 @@
 # Project: Ecosytem-based Automated Range Mapping (EBAR)
 # Credits: Randal Greene, Christine Terwissen, Meg Southee
-# © NatureServe Canada 2020 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+# © NatureServe Canada 2026 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 # Program: EBAR Tools.pyt
 # ArcGIS Python toolbox for importing species datasets and generating EBAR maps

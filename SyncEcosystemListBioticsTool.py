@@ -2,7 +2,7 @@
 
 # Project: Ecosytem-based Automated Range Mapping (EBAR)
 # Credits: Randal Greene, Chloe Debyser, Samantha Stefanoff
-# © NatureServe Canada 2023 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+# © NatureServe Canada 2026 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 # Program: SyncEcosystemListBioticsTool.py
 # ArcGIS Python tool for Synchronizing the BIOTICS_ECOSYSTEM and Ecosystem tables with Biotics
@@ -116,6 +116,10 @@ class SyncEcosystemListBioticsTool:
                 changed = False
                 # with arcpy.da.UpdateCursor(param_geodatabase + '/BIOTICS_ECOSYSTEM', regular_fields,
                 #                            'ELEMENT_GLOBAL_ID = ' + str(element_global_id)) as update_cursor:
+                # wrap updates overcome
+                # RuntimeError: Objects in this class cannot be updated outside an edit session [BIOTICS_ECOSYSTEM]
+                edit = arcpy.da.Editor(param_geodatabase)
+                edit.startEditing(with_undo=False, multiuser_mode=False)
                 with arcpy.da.UpdateCursor(param_geodatabase + '/BIOTICS_ECOSYSTEM', regular_fields,
                                            'ELEMENT_NATIONAL_ID = ' + str(element_national_id)) as update_cursor:
                     update_row = None
@@ -146,6 +150,11 @@ class SyncEcosystemListBioticsTool:
                             update_cursor.updateRow(update_values)
                     if update_row:
                         del update_row
+                # wrap updates overcome
+                # RuntimeError: Objects in this class cannot be updated outside an edit session [BIOTICS_ECOSYSTEM]
+                if changed:
+                    edit.stopOperation()
+                edit.stopEditing(save_changes=True)
             else:
                 # create new Ecosystem and BIOTICS_ECOSYSTEM records
                 # first check for existing scientific name
@@ -157,6 +166,10 @@ class SyncEcosystemListBioticsTool:
                     EBARUtils.displayMessage(messages, msg)
                     skipped += 1
                 else:
+                    # wrap updates overcome
+                    # RuntimeError: Objects in this class cannot be updated outside an edit session [Ecosystem]
+                    edit = arcpy.da.Editor(param_geodatabase)
+                    edit.startEditing(with_undo=False, multiuser_mode=False)
                     with arcpy.da.InsertCursor(param_geodatabase + '/Ecosystem',
                                                ['ActiveEBAR']) as insert_cursor:
                         object_id = insert_cursor.insertRow([1])
@@ -175,6 +188,11 @@ class SyncEcosystemListBioticsTool:
                         insert_cursor.insertRow(insert_values)
                     regular_fields.remove('EcosystemID')
                     added += 1
+                    # wrap updates overcome
+                    # RuntimeError: Objects in this class cannot be updated outside an edit session [Ecosystem]
+                    if changed:
+                        edit.stopOperation()
+                    edit.stopEditing(save_changes=True)
             count += 1
 
         # # calculate NSX_URL

@@ -2,7 +2,7 @@
 
 # Project: Ecosytem-based Automated Range Mapping (EBAR)
 # Credits: Randal Greene, Christine Terwissen
-# © NatureServe Canada 2019 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+# © NatureServe Canada 2026 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 # Program: GenerateRangeMapTool.py
 # ArcGIS Python tool for generating EBAR range maps from spatial data
@@ -20,6 +20,7 @@ from numpy import diff
 import EBARUtils
 import arcpy
 import datetime
+import StaticTranslations
 
 
 class GenerateRangeMapTool:
@@ -253,14 +254,21 @@ class GenerateRangeMapTool:
             arcpy.SelectLayerByAttribute_management('range_map_view', 'CLEAR_SELECTION')
             # create RangeMap record
             with arcpy.da.InsertCursor('range_map_view',
-                                       ['SpeciesID', 'RangeVersion', 'RangeStage', 'RangeDate', 'RangeMapNotes',
-                                        'IncludeInEBARReviewer', 'RangeMapScope', 'SynonymsUsed',
-                                        'DifferentiateUsageType']) as cursor:
+                                       ['SpeciesID', 'RangeVersion', 'RangeStage', 'RangeStage_FR', 'RangeDate',
+                                        'RangeMapNotes', 'RangeMapNotes_FR', 'IncludeInEBARReviewer', 'RangeMapScope',
+                                        'RangeMapScope_FR', 'SynonymsUsed', 'DifferentiateUsageType']) as cursor:
                 notes = 'Primary Species Name - ' + param_species
+                notes_fr = "Nom principal de l'espèce - " + param_species
+                stage_fr = None
+                if param_stage in StaticTranslations.range_stage_translation.keys():
+                    stage_fr = StaticTranslations.range_stage_translation[param_stage]
                 if len(secondary_names) > 0:
                     notes += '; Synonyms - ' + secondary_names
-                object_id = cursor.insertRow([species_id, param_version, param_stage, datetime.datetime.now(),
-                                              notes, 0, scope, synonyms_used, differentiate_usage_type])
+                    notes_fr += 'Synonymes - ' + secondary_names
+                object_id = cursor.insertRow([species_id, param_version, param_stage, stage_fr,
+                                              datetime.datetime.now(), notes, notes_fr, 0, scope,
+                                              StaticTranslations.range_map_scope_translation[scope], synonyms_used,
+                                              differentiate_usage_type])
             del cursor
             range_map_id = EBARUtils.getUniqueID(param_geodatabase + '/RangeMap', 'RangeMapID', object_id)
             EBARUtils.displayMessage(messages, 'Range Map record created')
@@ -295,10 +303,9 @@ class GenerateRangeMapTool:
         EBARUtils.displayMessage(messages, 'Merging Buffered Points and Lines and Input Polygons')
         temp_all_inputs = 'TempAllInputs' + str(start_time.year) + str(start_time.month) + \
             str(start_time.day) + str(start_time.hour) + str(start_time.minute) + str(start_time.second)
-        #arcpy.Merge_management([temp_point_buffer, temp_line_buffer, 'input_polygon_layer'], temp_all_inputs, None,
-        #                       'ADD_SOURCE_INFO')
-        arcpy.Merge_management([temp_point_buffer, temp_line_buffer, input_polygon_layer], temp_all_inputs, None,
-                               'ADD_SOURCE_INFO')
+        arcpy.Merge_management([temp_point_buffer, temp_line_buffer, input_polygon_layer], temp_all_inputs,
+                               add_source='ADD_SOURCE_INFO')
+        # arcpy.Merge_management([temp_point_buffer, input_polygon_layer], temp_all_inputs, add_source='ADD_SOURCE_INFO')
         EBARUtils.checkAddField(temp_all_inputs, 'RangeMapID', 'LONG')
         arcpy.CalculateField_management(temp_all_inputs, 'RangeMapID', range_map_id)
         EBARUtils.checkAddField(temp_all_inputs, 'OriginalGeometryType', 'TEXT')
@@ -386,7 +393,12 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
             field_names = [f.name for f in arcpy.ListFields(temp_ecoshape_max_polygon) if f.aliasName in
                            ['EcoshapeID', 'DatasetType',
                             'MAX_' + table_name_prefix + temp_pairwise_intersect + '.tempdate',
-                            'MAX_' + table_name_prefix + temp_pairwise_intersect + '.TempDate']]
+                            'MAX_' + table_name_prefix + temp_pairwise_intersect + '_tempdate',
+                            'max_ebarkba_sde_' + temp_pairwise_intersect.lower() + '_tempdate',
+                            'MAX_' + table_name_prefix + temp_pairwise_intersect + '.TempDate',
+                            'MAX_' + table_name_prefix + temp_pairwise_intersect + '_TempDate']]
+            # field_names.append([f.name for f in arcpy.ListFields(temp_ecoshape_max_polygon) if f.name in
+            #                     ['MAX_' + temp_pairwise_intersect + '_TempDate']])
             id_field_name = [f.name for f in arcpy.ListFields(temp_ecoshape_max_polygon) if f.aliasName ==
                              'EcoshapeID'][0]
             with arcpy.da.SearchCursor(temp_ecoshape_max_polygon, field_names,
@@ -441,10 +453,16 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                  param_geodatabase + '/InputDataset', 'InputDatasetID', 'KEEP_COMMON')
         arcpy.AddJoin_management('pairwise_intersect_layer', 'DatasetSourceID',
                                  param_geodatabase + '/DatasetSource', 'DatasetSourceID', 'KEEP_COMMON')
+        # arcpy.Statistics_analysis('pairwise_intersect_layer', temp_ecoshape_countby_source,
+        #                           [['InputPointID', 'COUNT'], ['MinDate', 'MIN'], ['MaxDate', 'MAX'],
+        #                            ['MaxDate', 'MIN']],
+        #                           ['EcoshapeID', table_name_prefix + 'DatasetSource.DatasetSourceName',
+        #                            table_name_prefix + 'DatasetSource.DatasetType'])
         arcpy.Statistics_analysis('pairwise_intersect_layer', temp_ecoshape_countby_source,
                                   [['InputPointID', 'COUNT'], ['MinDate', 'MIN'], ['MaxDate', 'MAX'],
                                    ['MaxDate', 'MIN']],
-                                  ['EcoshapeID', table_name_prefix + 'DatasetSource.DatasetSourceName',
+                                  [table_name_prefix + temp_pairwise_intersect + '.EcoshapeID',
+                                   table_name_prefix + 'DatasetSource.DatasetSourceName',
                                    table_name_prefix + 'DatasetSource.DatasetType'])
         arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'DatasetSource')
         arcpy.RemoveJoin_management('pairwise_intersect_layer', table_name_prefix + 'InputDataset')
@@ -462,7 +480,7 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         update_row = None
         with arcpy.da.UpdateCursor(param_geodatabase + '/RangeMapEcoshape',
                                    ['EcoshapeID', 'RangeMapEcoshapeID', 'RangeMapID', 'Presence',
-                                    'UsageType', 'RangeMapEcoshapeNotes', 'MigrantStatus'],
+                                    'UsageType', 'RangeMapEcoshapeNotes', 'RangeMapEcoshapeNotes_FR', 'MigrantStatus'],
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
             for update_row in EBARUtils.updateCursor(update_cursor):
                 # check for ecoshape "remove" reviews
@@ -491,13 +509,27 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                ['DatasetSourceName', 'DatasetType', 'FREQUENCY', 'frequency',
                                 'MIN_MinDate', 'min_mindate',
                                 'MIN_' + table_name_prefix + temp_pairwise_intersect + '.mindate',
+                                'MIN_' + table_name_prefix + temp_pairwise_intersect + '_mindate',
+                                'min_ebarkba_sde_' + temp_pairwise_intersect.lower() + '_mindate',
                                 'MAX_MaxDate', 'max_maxdate',
                                 'MAX_' + table_name_prefix + temp_pairwise_intersect + '.maxdate',
+                                'MAX_' + table_name_prefix + temp_pairwise_intersect + '_maxdate',
+                                'max_ebarkba_sde_' + temp_pairwise_intersect.lower() + '_maxdate',
                                 'MIN_MaxDate', 'min_maxdate',
-                                'MIN_' + table_name_prefix + temp_pairwise_intersect + '.maxdate']]
-                id_field_name = [f.name for f in arcpy.ListFields(temp_ecoshape_countby_source) if f.aliasName ==
-                                 'EcoshapeID'][0]
+                                'MIN_' + table_name_prefix + temp_pairwise_intersect + '.maxdate',
+                                'MIN_' + table_name_prefix + temp_pairwise_intersect + '_maxdate',
+                                'min_ebarkba_sde_' + temp_pairwise_intersect.lower() + '_maxdate']]
+                # id_field_name = [f.name for f in arcpy.ListFields(temp_ecoshape_countby_source) if f.aliasName ==
+                #                  'EcoshapeID'][0]
+                # id_field_name = [f.name for f in arcpy.ListFields(temp_ecoshape_countby_source) if f.aliasName ==
+                #                  table_name_prefix + temp_pairwise_intersect + '_ecoshapeid'][0]
+                id_field_name = [f.name for f in arcpy.ListFields(temp_ecoshape_countby_source) if f.aliasName in
+                                 [table_name_prefix + temp_pairwise_intersect + '_ecoshapeid',
+                                  'EcoshapeID']][0]
                 summary = ''
+                summary_fr = ''
+                # use dict for optional DatasetSourceName translations
+                source_fr_dict = EBARUtils.readDatasetSourceTranslations(param_geodatabase)
                 with arcpy.da.SearchCursor(temp_ecoshape_countby_source, field_names,
                                            id_field_name + ' = ' + str(update_row['EcoshapeID'])) as search_cursor:
                     presence = update_row['Presence']
@@ -510,7 +542,9 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     for search_row in EBARUtils.searchCursor(search_cursor):
                         if len(summary) > 0:
                             summary += ', '
+                            summary_fr += ', '
                         summary += str(search_row[field_names[2]]) + ' ' + search_row[field_names[0]]
+                        summary_fr += str(search_row[field_names[2]]) + ' ' + source_fr_dict[search_row[field_names[0]]]
                         if search_row[field_names[4]]:
                             min_year = search_row[field_names[4]].year
                             max_year = search_row[field_names[4]].year
@@ -520,13 +554,17 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                 if search_row[field_names[3]].year < min_year:
                                     min_year = search_row[field_names[3]].year
                             summary += ' ('
+                            summary_fr += ' ('
                             if min_year < max_year:
                                 summary += str(min_year) + '-'
+                                summary_fr += str(min_year) + '-'
                             summary += str(max_year) + ')'
+                            summary_fr += str(max_year) + ')'
                 if len(summary) > 0:
                     del search_row
                 del search_cursor
                 summary = 'Input records - ' + summary
+                summary_fr = "Enregistrements d'entrée - " + summary_fr
                 # check for ecoshape "update" reviews
                 if len(prev_range_map_ids) > 0:
                     search_row = None
@@ -556,31 +594,42 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                 usage_type = None
                             migrant_status = search_row[table_name_prefix + 'EcoshapeReview.MigrantStatus']
                             # get expert name and publish settings to populate reviewer comments
+                            expert_comment = None
                             with arcpy.da.SearchCursor(param_geodatabase + '/Expert',
                                                         ['ExpertName', 'PublishName', 'PublishComments'],
                                                         "Username = '" + search_row[table_name_prefix +
                                                         'EcoshapeReview.Username'] + "'") as expert_cursor:
-                                expert_comment = None
                                 summary += '; Expert Ecoshape Review'
+                                summary_fr += "; Avis d'experts ecoshape"
                                 for expert_row in EBARUtils.searchCursor(expert_cursor):
                                     if expert_row['PublishName']:
                                         expert_comment = expert_row['ExpertName']
+                                        expert_comment_fr = expert_row['ExpertName']
                                     else:
                                         expert_comment = 'Anonymous'
+                                        expert_comment_fr = 'Anonyme'
                                     expert_comment += ' Reviewer Comment - '
+                                    expert_comment_fr += ' Commentaire du réviseur - '
                                     if expert_row['PublishComments']:
                                         expert_comment += search_row[table_name_prefix + \
                                             'EcoshapeReview.EcoshapeReviewNotes']
+                                        expert_comment_fr += EBARUtils.translateENtoFRUsingDeepL(
+                                            search_row[table_name_prefix + 'EcoshapeReview.EcoshapeReviewNotes']) + \
+                                                ' (traduit par DeepL)'
                                     else:
                                         expert_comment += 'Unpublished'
+                                        expert_comment_fr += 'Non publié'
                                     summary += '<br>' + expert_comment
-                                if expert_comment:
-                                    del expert_row
+                                    summary_fr += '<br>' + expert_comment_fr
+                            del expert_cursor
+                            if expert_comment:
+                                del expert_row
                     if search_row:
                         del search_row
                     del search_cursor
                 update_cursor.updateRow([update_row['EcoshapeID'], update_row['RangeMapEcoshapeID'],
-                                         update_row['RangeMapID'], presence, usage_type, summary, migrant_status])
+                                         update_row['RangeMapID'], presence, usage_type, summary, summary_fr,
+                                         migrant_status])
         if update_row:
             del update_row
         del update_cursor
@@ -634,27 +683,37 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                                     'EcoshapeReview.Username'] + "'") as expert_cursor:
                             expert_comment = None
                             notes = 'Expert Ecoshape Review'
+                            notes_fr = "Avis d'experts ecoshape"
                             for expert_row in EBARUtils.searchCursor(expert_cursor):
                                 if expert_row['PublishName']:
                                     expert_comment = expert_row['ExpertName']
+                                    expert_comment_fr = expert_row['ExpertName']
                                 else:
                                     expert_comment = 'Anonymous'
+                                    expert_comment_fr = 'Anonyme'
                                 expert_comment += ' Reviewer Comment - '
+                                expert_comment_fr += ' Commentaire du réviseur - '
                                 if expert_row['PublishComments']:
                                     expert_comment += search_row[table_name_prefix + \
                                         'EcoshapeReview.EcoshapeReviewNotes']
+                                    expert_comment_fr += EBARUtils.translateENtoFRUsingDeepL(
+                                        search_row[table_name_prefix + 'EcoshapeReview.EcoshapeReviewNotes']) + \
+                                            ' (traduit par DeepL)'
                                 else:
                                     expert_comment += 'Unpublished'
+                                    expert_comment_fr += 'Non publié'
                                 notes += '<br>' + expert_comment
+                                notes_fr += '<br>' + expert_comment_fr
                             if expert_comment:
                                 del expert_row
                         with arcpy.da.InsertCursor(param_geodatabase + '/RangeMapEcoshape',
                                                    ['RangeMapID', 'EcoshapeID', 'Presence',
-                                                    'RangeMapEcoshapeNotes', 'MigrantStatus']) as insert_cursor:
+                                                    'RangeMapEcoshapeNotes', 'RangeMapEcoshapeNotes_FR',
+                                                    'MigrantStatus']) as insert_cursor:
                             insert_cursor.insertRow([range_map_id,
                                                      search_row[table_name_prefix + 'EcoshapeReview.EcoshapeID'],
                                                      search_row[table_name_prefix + 'EcoshapeReview.Markup'],
-                                                     notes,
+                                                     notes, notes_fr,
                                                      search_row[table_name_prefix + 'EcoshapeReview.MigrantStatus']])
                     del update_cursor
             if search_row:
@@ -902,9 +961,13 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                     # kludge because arc ends up with different field names under Enterprise gdb after joining
                     field_names = [f.name for f in arcpy.ListFields(temp_dissolve) if f.aliasName in
                                    ['FIRST_' + table_name_prefix + temp_pairwise_intersect + '.Accuracy',
+                                    'FIRST_' + table_name_prefix + temp_pairwise_intersect + '_accuracy',
                                     'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.accuracy',
+                                    'first_ebarkba_sde_' + temp_pairwise_intersect.lower() + '_accuracy',
                                     'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.OriginalGeometryType',                                    
-                                    'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.originalgeometrytype']]
+                                    'FIRST_' + table_name_prefix + temp_pairwise_intersect + '_originalgeometrytype',
+                                    'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.originalgeometrytype',
+                                    'first_ebarkba_sde_' + temp_pairwise_intersect.lower() + '_originalgeometrytype']]
                     arcpy.SelectLayerByAttribute_management('dissolve_layer', 'NEW_SELECTION',
                                                             'objectid > ' + str(batch_size * (batch_count - 1)) +
                                                             ' AND objectid <= ' + str(batch_size * batch_count) +
@@ -949,38 +1012,48 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                             field_names = [f.name for f in arcpy.ListFields(temp_batch) if f.aliasName in
                                            ['FIRST_' + table_name_prefix + temp_pairwise_intersect + '.RangeMapID',
                                             'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.rangemapid',
+                                            'first_ebarkba_sde_' + temp_pairwise_intersect.lower() + '_rangemapid',
                                             'FIRST_' + table_name_prefix + temp_pairwise_intersect +
                                             '.OriginalGeometryType',
                                             'FIRST_' + table_name_prefix + temp_pairwise_intersect +
                                             '.originalgeometrytype',
+                                            'first_ebarkba_sde_' + temp_pairwise_intersect.lower() +
+                                            '_originalgeometrytype',
                                             'FIRST_' + table_name_prefix +
                                             'BIOTICS_ELEMENT_NATIONAL.NATIONAL_SCIENTIFIC_NAME',
                                             'FIRST_' + table_name_prefix +
                                             'BIOTICS_ELEMENT_NATIONAL.national_scientific_name',
+                                            'first_ebarkba_sde_biotics_element_national_national_scientific_name',
                                             'FIRST_' + table_name_prefix + 'Synonym.SynonymName',
                                             'FIRST_' + table_name_prefix + 'Synonym.synonymname',
+                                            'first_ebarkba_sde_synonym_synonymname',
                                             'FIRST_' + table_name_prefix + 'DatasetSource.DatasetSourceName',
                                             'FIRST_' + table_name_prefix + 'DatasetSource.datasetsourcename',
+                                            'first_ebarkba_sde_datasetsource_datasetsourcename',
                                             'FIRST_' + table_name_prefix + 'DatasetSource.DatasetType',
                                             'FIRST_' + table_name_prefix + 'DatasetSource.datasettype',
+                                            'first_ebarkba_sde_datasetsource_datasettype',
                                             'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.Accuracy',
                                             'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.accuracy',
+                                            'first_ebarkba_sde_' + temp_pairwise_intersect.lower() + '_accuracy',
                                             'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.MaxDate',
                                             'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.maxdate',
+                                            'first_ebarkba_sde_' + temp_pairwise_intersect.lower() + '_maxdate',
                                             'FIRST_' + table_name_prefix + temp_pairwise_intersect +
                                             '.CoordinatesObscured',
                                             'FIRST_' + table_name_prefix + temp_pairwise_intersect +
                                             '.coordinatesobscured',
+                                            'first_ebarkba_sde_' + temp_pairwise_intersect.lower() +
+                                            '_coordinatesobscured',
                                             'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.EORank',
                                             'FIRST_' + table_name_prefix + temp_pairwise_intersect + '.eorank',
+                                            'first_ebarkba_sde_' + temp_pairwise_intersect.lower() + '_eorank',
                                             'FIRST_' + table_name_prefix + temp_pairwise_intersect +
                                             '.DatasetSourceUniqueID',
                                             'FIRST_' + table_name_prefix + temp_pairwise_intersect +
                                             '.datasetsourceuniqueid',
-                                            'FIRST_' + table_name_prefix + temp_pairwise_intersect +
-                                            '.BreedingAndBehaviourCode',
-                                            'FIRST_' + table_name_prefix + temp_pairwise_intersect +
-                                            '.breedingandbehaviourcode']]
+                                            'first_ebarkba_sde_' + temp_pairwise_intersect.lower() +
+                                            '_datasetsourceuniqueid']]
                             # for field_name in field_names:
                             #     EBARUtils.displayMessage(messages, field_name)
                             with arcpy.da.SearchCursor(temp_batch,
@@ -1132,6 +1205,8 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         #star_rating_sum = 0
         experts_comments = []
         experts = []
+        experts_comments_fr = []
+        experts_fr = []
         anonymous_count = 0
         if len(prev_range_map_ids) > 0:
             row = None
@@ -1152,18 +1227,27 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                         for expert_row in EBARUtils.searchCursor(expert_cursor):
                             if expert_row['PublishName']:
                                 expert_name =  expert_row['ExpertName']
+                                expert_name_fr =  expert_row['ExpertName']
                             else:
                                 expert_name = 'Anonymous'
+                                expert_name_fr = 'Anonyme'
                                 anonymous_count += 1
                             experts.append(expert_name)
+                            experts_fr.append(expert_name_fr)
                             expert_comment = expert_name
+                            expert_comment_fr = expert_name_fr
                             expert_comment += ' Reviewer Comment - '
+                            expert_comment_fr += ' Commentaire du réviseur - '
                             if expert_row['PublishComments']:
                                 if row['ReviewNotes']:
                                     expert_comment += row['ReviewNotes']
+                                    expert_comment_fr += EBARUtils.translateENtoFRUsingDeepL(row['ReviewNotes']) + \
+                                        ' (traduit par DeepL)'
                             else:
                                 expert_comment += 'Unpublished'
+                                expert_comment_fr += 'Non publié'
                             experts_comments.append(expert_comment)
+                            experts_comments_fr.append(expert_comment_fr)
                     if expert_comment:
                         del expert_row
                     del expert_cursor
@@ -1198,8 +1282,9 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
         EBARUtils.displayMessage(messages, 'Updating Range Map record with Overall Summary')
         update_row = None
         with arcpy.da.UpdateCursor('range_map_view',
-                                   ['RangeMetadata', 'RangeDate', 'RangeMapNotes', 'RangeMapScope', 'SynonymsUsed',
-                                    'ReviewerComments', 'DifferentiateUsageType'],
+                                   ['RangeMetadata', 'RangeMetadata_FR', 'RangeDate', 'RangeMapNotes',
+                                    'RangeMapNotes_FR', 'RangeMapScope', 'RangeMapScope_FR', 'SynonymsUsed',
+                                    'ReviewerComments', 'ReviewerComments_FR', 'DifferentiateUsageType'],
                                    'RangeMapID = ' + str(range_map_id)) as update_cursor:
             for update_row in update_cursor:
                 # Metadata
@@ -1208,17 +1293,26 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                 field_names = [f.name for f in arcpy.ListFields(temp_overall_countby_source) if f.aliasName in
                                ['DatasetSourceName', 'FREQUENCY', 'frequency',
                                 'MIN_MinDate', 'min_mindate',
+                                'MIN_' + table_name_prefix + temp_pairwise_intersect + '_mindate',
                                 'MIN_' + table_name_prefix + temp_pairwise_intersect + '.mindate',
+                                'min_ebarkba_sde_' + temp_pairwise_intersect.lower() + '_mindate',
                                 'MAX_MaxDate', 'max_maxdate',
+                                'MAX_' + table_name_prefix + temp_pairwise_intersect + '_maxdate',
                                 'MAX_' + table_name_prefix + temp_pairwise_intersect + '.maxdate',
+                                'max_ebarkba_sde_' + temp_pairwise_intersect.lower() + '_maxdate',
                                 'MIN_MaxDate', 'min_maxdate',
-                                'MIN_' + table_name_prefix + temp_pairwise_intersect + '.maxdate']]
+                                'MIN_' + table_name_prefix + temp_pairwise_intersect + '_maxdate',
+                                'MIN_' + table_name_prefix + temp_pairwise_intersect + '.maxdate',
+                                'min_ebarkba_sde_' + temp_pairwise_intersect.lower() + '_maxdate']]
                 summary = ''
+                summary_fr = ''
                 with arcpy.da.SearchCursor(temp_overall_countby_source, field_names) as search_cursor:
                     for search_row in EBARUtils.searchCursor(search_cursor):
                         if len(summary) > 0:
                             summary += ', '
+                            summary_fr += ', '
                         summary += str(search_row[field_names[1]]) + ' ' + search_row[field_names[0]]
+                        summary_fr += str(search_row[field_names[1]]) + ' ' + source_fr_dict[search_row[field_names[0]]]
                         if search_row[field_names[3]]:
                             min_year = search_row[field_names[3]].year
                             max_year = search_row[field_names[3]].year
@@ -1228,39 +1322,57 @@ def GetGeometryType(input_point_id, input_line_id, input_polygon_id):
                                 if search_row[field_names[2]].year < min_year:
                                     min_year = search_row[field_names[2]].year
                             summary += ' ('
+                            summary_fr += ' ('
                             if min_year < max_year:
                                 summary += str(min_year) + '-'
+                                summary_fr += str(min_year) + '-'
                             summary += str(max_year) + ')'
+                            summary_fr += str(max_year) + ')'
                 if len(summary) > 0:
                     del search_row
                 del search_cursor
                 summary = 'Input Records - ' + summary
+                summary_fr = "Enregistrements d'entrée - " + summary_fr
                 # expert reviews
                 summary += '; Expert Reviews - '
+                summary_fr += "; Avis d'experts - "
                 first = True
                 for expert_name in experts:
                     if expert_name != 'Anonymous':
                         if not first:
                             summary += ', '
+                            summary_fr += ', '
                         first = False
                         summary += expert_name
+                        summary_fr += expert_name
                 if anonymous_count > 0:
                     if not first:
                         summary += ', '
+                        summary_fr += ', '
                     summary += str(anonymous_count) + ' Anonymous'
+                    summary_fr += str(anonymous_count) + ' Anonyme'
                 reviewer_comments = ''
+                reviewer_comments_fr = ''
                 for expert_comment in experts_comments:
                     if len(reviewer_comments) > 0:
                         reviewer_comments += '<br>'
                     reviewer_comments += expert_comment
+                for expert_comment_fr in experts_comments_fr:
+                    if len(reviewer_comments) > 0:
+                        reviewer_comments_fr += '<br>'
+                    reviewer_comments_fr += expert_comment_fr
                 # Notes
                 notes = 'Primary Species - ' + param_species
+                notes_fr = 'Espèce primaire - ' + param_species
                 if len(secondary_names) > 0:
                     notes += '; Secondary Species - ' + secondary_names
+                    notes_fr += '; Espèces secondaires - ' + secondary_names
                 if len(synonym_authors) > 0:
                     notes += '; Synonyms - ' + synonym_authors
-                update_cursor.updateRow([summary, datetime.datetime.now(), notes, scope, synonyms_used,
-                                         reviewer_comments, differentiate_usage_type])
+                    notes_fr += '; Synonymes - ' + synonym_authors
+                update_cursor.updateRow([summary, summary_fr, datetime.datetime.now(), notes, notes_fr, scope,
+                                         StaticTranslations.range_map_scope_translation[scope], synonyms_used,
+                                         reviewer_comments, reviewer_comments_fr, differentiate_usage_type])
         if update_row:
             del update_row
         del update_cursor
@@ -1310,16 +1422,18 @@ if __name__ == '__main__':
     grm = GenerateRangeMapTool()
     # hard code parameters for debugging
     param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde'
+    param_geodatabase.value = r'C:\GIS\EBAR\nsc-gis-ebarkba.sde' #'D:\GIS\EBAR\EBARDevJan2026.gdb'
     param_species = arcpy.Parameter()
+    param_species.value = 'Asclepias speciosa' #Triacanthella copelandi' #Marmota vancouverensis'
     param_secondary = arcpy.Parameter()
-    #param_secondary.value = "'Schistochilopsis incisa var. opacifolia'" #"'Dodia tarandus';'Dodia verticalis'"
+    param_secondary.value = "'Schistochilopsis incisa var. opacifolia'" #"'Dodia tarandus';'Dodia verticalis'"
     param_version = arcpy.Parameter()
+    param_version.value = '0.1T'
     param_stage = arcpy.Parameter()
-    param_stage.value = 'eBird Abundance Auto-reviewed TEST' #'Auto-generated TEST'
+    param_stage.value = 'Auto-generated TEST' # 'Expert Reviewed (National)' #'Expert Reviewed (Low Star Rating)' #'Auto-generated Translation TEST' #'Expert reviewed TEST' 
     param_scope = arcpy.Parameter()
     #param_scope.value = None
-    param_scope.value = 'Canadian'
+    param_scope.value = 'Global' # 'Canadian'
     param_jurisdictions_covered = arcpy.Parameter()
     param_jurisdictions_covered.value = None
     #param_jurisdictions_covered.value = "'British Columbia'"
@@ -1327,33 +1441,38 @@ if __name__ == '__main__':
     param_custom_polygons_covered.value = None
     #param_custom_polygons_covered.value = 'C:/GIS/EBAR/EBARServer.gdb/Custom'
     param_differentiate_usage_type = arcpy.Parameter()
-    param_differentiate_usage_type.value = 'true'
+    param_differentiate_usage_type.value = 'true' #'false'
     param_save_range_map_inputs = arcpy.Parameter()
+    param_save_range_map_inputs.value = 'false'
+    parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
+                  param_jurisdictions_covered, param_custom_polygons_covered, param_differentiate_usage_type,
+                  param_save_range_map_inputs]
+    grm.runGenerateRangeMapTool(parameters, None)
 
-    for version in ['1.1', '1.2', '1.5']:
-    #    for species in ['Ardea herodias', 'Botaurus exilis', 'Branta canadensis', 'Centronyx henslowii', 'Charadrius melodus', 'Falco peregrinus', 'Melanerpes lewis', 'Setophaga cerulea', 'Tringa solitaria', 'Zonotrichia querula']:
-    #for version in ['1.2', '1.3']:
-        #for species in ['Charadrius melodus']:
-        #for species in ['Ardea herodias', 'Branta canadensis', 'Charadrius melodus', 'Melanerpes lewis']:
-        for species in ['Botaurus exilis', 'Branta canadensis', 'Centronyx henslowii', 'Charadrius melodus', 'Falco peregrinus', 'Melanerpes lewis', 'Setophaga cerulea', 'Tringa solitaria', 'Zonotrichia querula']:
-            param_version.value = version
-            param_species.value = species
-            if species == 'Ardea herodias':
-                param_secondary.value = "'Ardea herodias fannini';'Ardea herodias herodias'"
-            elif species == 'Branta canadensis':
-                param_secondary.value = "'Branta canadensis occidentalis'"
-            elif species == 'Charadrius melodus':
-                param_secondary.value = "'Charadrius melodus circumcinctus';'Charadrius melodus melodus'"
-            elif species == 'Melanerpes lewis':
-                param_secondary.value = "'Melanerpes lewis pop. 1'"
-            else:
-                param_secondary.value = None
-            #if version == '1.1':
-            #    param_save_range_map_inputs.value = 'true'
-            #else:
-            param_save_range_map_inputs.value = 'false'
-            parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
-                          param_jurisdictions_covered, param_custom_polygons_covered, param_differentiate_usage_type,
-                          param_save_range_map_inputs]
-            grm.runGenerateRangeMapTool(parameters, None)
+    # for version in ['1.1', '1.2', '1.5']:
+    # #    for species in ['Ardea herodias', 'Botaurus exilis', 'Branta canadensis', 'Centronyx henslowii', 'Charadrius melodus', 'Falco peregrinus', 'Melanerpes lewis', 'Setophaga cerulea', 'Tringa solitaria', 'Zonotrichia querula']:
+    # #for version in ['1.2', '1.3']:
+    #     #for species in ['Charadrius melodus']:
+    #     #for species in ['Ardea herodias', 'Branta canadensis', 'Charadrius melodus', 'Melanerpes lewis']:
+    #     for species in ['Botaurus exilis', 'Branta canadensis', 'Centronyx henslowii', 'Charadrius melodus', 'Falco peregrinus', 'Melanerpes lewis', 'Setophaga cerulea', 'Tringa solitaria', 'Zonotrichia querula']:
+    #         param_version.value = version
+    #         param_species.value = species
+    #         if species == 'Ardea herodias':
+    #             param_secondary.value = "'Ardea herodias fannini';'Ardea herodias herodias'"
+    #         elif species == 'Branta canadensis':
+    #             param_secondary.value = "'Branta canadensis occidentalis'"
+    #         elif species == 'Charadrius melodus':
+    #             param_secondary.value = "'Charadrius melodus circumcinctus';'Charadrius melodus melodus'"
+    #         elif species == 'Melanerpes lewis':
+    #             param_secondary.value = "'Melanerpes lewis pop. 1'"
+    #         else:
+    #             param_secondary.value = None
+    #         #if version == '1.1':
+    #         #    param_save_range_map_inputs.value = 'true'
+    #         #else:
+    #         param_save_range_map_inputs.value = 'false'
+    #         parameters = [param_geodatabase, param_species, param_secondary, param_version, param_stage, param_scope,
+    #                       param_jurisdictions_covered, param_custom_polygons_covered, param_differentiate_usage_type,
+    #                       param_save_range_map_inputs]
+    #         grm.runGenerateRangeMapTool(parameters, None)
     

@@ -2,11 +2,10 @@
 
 # Project: Ecosytem-based Automated Range Mapping (EBAR)
 # Credits: Randal Greene, Samantha Stefanoff
-# © NatureServe Canada 2023 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+# © NatureServe Canada 2026 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 # Program: PrepareNSXProTransferTool.py
 # ArcGIS Python tool for setting InputPoint/Polygon fields used by the NSXProTransfer service
-# Restricted records
 
 # Notes:
 # - Relies on views in server geodatabase, so not possible to use/debug with local file gdb
@@ -46,7 +45,7 @@ class PrepareNSXProTransferTool:
             # record counts
             count_dict = {}
 
-            # apply species susceptible to persecution and harm (STPH) rules then permissions
+            # apply elements susceptible to harm (ESTH) rules then permissions
             # reset to NULLs in case rules/datasets have changed since last transfer
             EBARUtils.displayMessage(messages, 'Resetting transfer fields')
             arcpy.MakeTableView_management(param_geodatabase + '/' + spatial_input, 'input_view',
@@ -60,81 +59,81 @@ class PrepareNSXProTransferTool:
             # jurisdiction-level rules are handled by prov/territory, with NF and LB separated
             jurs = ['BC', 'AB', 'SK', 'MB', 'ON', 'QC', 'NB', 'PE', 'NS', 'NF', 'LB', 'NU', 'NT', 'YT']
 
-            # join STPH table to jurisdiction
-            arcpy.MakeTableView_management(param_geodatabase + '/SpeciesSTPH', 'stph_view')
-            arcpy.AddJoin_management('stph_view', 'JurisdictionID', param_geodatabase + '/Jurisdiction',
+            # join ESTH table to jurisdiction
+            arcpy.MakeTableView_management(param_geodatabase + '/ESTH', 'esth_view')
+            arcpy.AddJoin_management('esth_view', 'JurisdictionID', param_geodatabase + '/Jurisdiction',
                                      'JurisdictionID', 'KEEP_COMMON')
 
-            # process rules in five steps, keep coarsest of all rules and don't overrid previous exclude
-            # 1. iNaturalist.ca Canada-wide STPHs
-            EBARUtils.displayMessage(messages, 'Applying iNaturalist.ca Canada-wide STPHs')
+            # process rules in five steps, keep coarsest of all rules and don't override previous exclude
+            # 1. iNaturalist.ca Canada-wide ESTHs
+            EBARUtils.displayMessage(messages, 'Applying iNaturalist.ca Canada-wide ESTHs')
             row = None
-            with arcpy.da.SearchCursor('stph_view', [table_name_prefix + 'SpeciesSTPH.SpeciesID',
-                                                     table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles'],
+            with arcpy.da.SearchCursor('esth_view', [table_name_prefix + 'ESTH.SpeciesID',
+                                                     table_name_prefix + 'ESTH.AllowedPrecisionSquareMiles'],
                                        table_name_prefix + "Jurisdiction.JurisdictionAbbreviation = 'CA' AND " +
-                                       table_name_prefix + "SpeciesSTPH.ObscuredForiNatca = 'Y'") as cursor:
+                                       table_name_prefix + "ESTH.ObscuredForiNatca = 'Y'") as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     self.applyJurisdictionSpecies(param_geodatabase, table_name_prefix, spatial_input, jurs,
-                                                  row[table_name_prefix + 'SpeciesSTPH.SpeciesID'], None,
-                                                  row[table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles'],
+                                                  row[table_name_prefix + 'ESTH.SpeciesID'], None,
+                                                  row[table_name_prefix + 'ESTH.AllowedPrecisionSquareMiles'],
                                                   count_dict, messages)
             if row:
                 del row
             del cursor
 
-            # 2. iNaturalist.ca by jurisdiction STPHs
-            EBARUtils.displayMessage(messages, 'Applying iNaturalist.ca Jurisdictional STPHs')
+            # 2. iNaturalist.ca by jurisdiction ESTHs
+            EBARUtils.displayMessage(messages, 'Applying iNaturalist.ca Jurisdictional ESTHs')
             row = None
-            with arcpy.da.SearchCursor('stph_view', [table_name_prefix + 'SpeciesSTPH.SpeciesID',
-                                                     table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles',
+            with arcpy.da.SearchCursor('esth_view', [table_name_prefix + 'ESTH.SpeciesID',
+                                                     table_name_prefix + 'ESTH.AllowedPrecisionSquareMiles',
                                                      table_name_prefix + 'Jurisdiction.JurisdictionAbbreviation'],
                                        table_name_prefix + "Jurisdiction.JurisdictionAbbreviation <> 'CA' AND " +
-                                       table_name_prefix + "SpeciesSTPH.ObscuredForiNatca = 'Y'") as cursor:
+                                       table_name_prefix + "ESTH.ObscuredForiNatca = 'Y'") as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     self.applyJurisdictionSpecies(param_geodatabase, table_name_prefix, spatial_input,
                                                   [row[table_name_prefix + 'Jurisdiction.JurisdictionAbbreviation']],
-                                                  row[table_name_prefix + 'SpeciesSTPH.SpeciesID'], None,
-                                                  row[table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles'],
+                                                  row[table_name_prefix + 'ESTH.SpeciesID'], None,
+                                                  row[table_name_prefix + 'ESTH.AllowedPrecisionSquareMiles'],
                                                   count_dict, messages)
             if row:
                 del row
             del cursor
 
-            # 3. NSC/CDC Canada-wide STPHs
-            EBARUtils.displayMessage(messages, 'Applying NSC/CDC Canada-wide STPHs')
+            # 3. NSC/CDC Canada-wide ESTHs
+            EBARUtils.displayMessage(messages, 'Applying NSC/CDC Canada-wide ESTHs')
             row = None
-            with arcpy.da.SearchCursor('stph_view', [table_name_prefix + 'SpeciesSTPH.SpeciesID',
-                                                     table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles'],
+            with arcpy.da.SearchCursor('esth_view', [table_name_prefix + 'ESTH.SpeciesID',
+                                                     table_name_prefix + 'ESTH.AllowedPrecisionSquareMiles'],
                                        table_name_prefix + "Jurisdiction.JurisdictionAbbreviation = 'CA' AND " +
-                                       table_name_prefix + "SpeciesSTPH.ObscuredForNSC = 'Y'") as cursor:
+                                       table_name_prefix + "ESTH.ObscuredForNSC = 'Y'") as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     self.applyJurisdictionSpecies(param_geodatabase, table_name_prefix, spatial_input, jurs,
-                                                  row[table_name_prefix + 'SpeciesSTPH.SpeciesID'], None,
-                                                  row[table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles'],
+                                                  row[table_name_prefix + 'ESTH.SpeciesID'], None,
+                                                  row[table_name_prefix + 'ESTH.AllowedPrecisionSquareMiles'],
                                                   count_dict, messages)
             if row:
                 del row
             del cursor
 
-            # 4. NSC/CDC by jurisdiction STPHs
-            EBARUtils.displayMessage(messages, 'Applying NSC/CDC Jurisdictional STPHs')
+            # 4. NSC/CDC by jurisdiction ESTHs
+            EBARUtils.displayMessage(messages, 'Applying NSC/CDC Jurisdictional ESTHs')
             row = None
-            with arcpy.da.SearchCursor('stph_view', [table_name_prefix + 'SpeciesSTPH.SpeciesID',
-                                                     table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles',
+            with arcpy.da.SearchCursor('esth_view', [table_name_prefix + 'ESTH.SpeciesID',
+                                                     table_name_prefix + 'ESTH.AllowedPrecisionSquareMiles',
                                                      table_name_prefix + 'Jurisdiction.JurisdictionAbbreviation'],
                                        table_name_prefix + "Jurisdiction.JurisdictionAbbreviation <> 'CA' AND " +
-                                       table_name_prefix + "SpeciesSTPH.ObscuredForNSC = 'Y'") as cursor:
+                                       table_name_prefix + "ESTH.ObscuredForNSC = 'Y'") as cursor:
                 for row in EBARUtils.searchCursor(cursor):
                     self.applyJurisdictionSpecies(param_geodatabase, table_name_prefix, spatial_input,
                                                   [row[table_name_prefix + 'Jurisdiction.JurisdictionAbbreviation']],
-                                                  row[table_name_prefix + 'SpeciesSTPH.SpeciesID'], None,
-                                                  row[table_name_prefix + 'SpeciesSTPH.AllowedPrecisionSquareMiles'],
+                                                  row[table_name_prefix + 'ESTH.SpeciesID'], None,
+                                                  row[table_name_prefix + 'ESTH.AllowedPrecisionSquareMiles'],
                                                   count_dict, messages)
             if row:
                 del row
             del cursor
 
-            arcpy.Delete_management('stph_view')
+            arcpy.Delete_management('esth_view')
 
             # 5. EBAR provider permissions
             EBARUtils.displayMessage(messages, 'Applying EBAR provider permissions')
@@ -157,7 +156,8 @@ class PrepareNSXProTransferTool:
                     del id_cursor
                     if len(input_dataset_ids) > 0:
                         self.applyJurisdictionSpecies(param_geodatabase, table_name_prefix, spatial_input, jurs, None,
-                                                      input_dataset_ids, row['AllowedPrecisionSquareMiles'], count_dict, messages)
+                                                      input_dataset_ids, row['AllowedPrecisionSquareMiles'], count_dict,
+                                                      messages)
             if row:
                 del row
             del cursor
@@ -165,14 +165,15 @@ class PrepareNSXProTransferTool:
             # record counts
             EBARUtils.displayMessage(messages, spatial_input + ' record counts:')
             for allowed_prec in sorted(count_dict.keys()):
-                EBARUtils.displayMessage(messages, str(allowed_prec) + ' sq. mile(s) - ' + str(count_dict[allowed_prec]))
+                EBARUtils.displayMessage(messages,
+                                         str(allowed_prec) + ' sq. mile(s) - ' +str(count_dict[allowed_prec]))
 
         # export to file geodatabase
         EBARUtils.displayMessage(messages, 'Exporting to File Geodatabase')
         output_gdb = 'NSXProTransfer' + str(datetime.datetime.now().day) + datetime.datetime.now().strftime('%b') + \
             str(datetime.datetime.now().year)
         arcpy.CreateFileGDB_management(EBARUtils.temp_folder, output_gdb)
-        output_gdb_folder = EBARUtils.download_folder + '/' + output_gdb
+        output_gdb_folder = EBARUtils.temp_folder + '/' + output_gdb
         arcpy.ExportFeatures_conversion(param_geodatabase + '/NSXProInputPoint',
                                         output_gdb_folder + '/NSXProInputPoint')
         arcpy.ExportFeatures_conversion(param_geodatabase + '/NSXProInputPolygon',
@@ -181,7 +182,7 @@ class PrepareNSXProTransferTool:
                                      output_gdb_folder + '/NSXProDatasetSource')
 
         # zip and provide link
-        EBARUtils.createZip(output_gdb_folder, EBARUtils.download_folder + '/' + output_gdb + '.zip')
+        EBARUtils.createZip(output_gdb_folder, EBARUtils.download_folder + '/' + output_gdb + '.zip', None)
         EBARUtils.displayMessage(messages,
                                  'Zipped file geodatabase: ' + EBARUtils.download_url + '/' + output_gdb + '.zip')
 
@@ -212,7 +213,8 @@ class PrepareNSXProTransferTool:
         arcpy.SelectLayerByLocation_management('input_lyr', 'INTERSECT', 'jurbuffer_lyr')
         update_row = None
         #with arcpy.da.UpdateCursor('input_lyr', ['NSXProTransfer', 'AllowedPrecisionSquareMiles']) as update_cursor:
-        with arcpy.da.UpdateCursor('input_lyr', ['PermitNSXProTransfer', 'AllowedPrecisionSquareMiles']) as update_cursor:
+        with arcpy.da.UpdateCursor('input_lyr',
+                                   ['PermitNSXProTransfer', 'AllowedPrecisionSquareMiles']) as update_cursor:
             for update_row in EBARUtils.updateCursor(update_cursor):
                 update = False
                 nsx_pro_transfer = None
@@ -255,14 +257,14 @@ class PrepareNSXProTransferTool:
         arcpy.Delete_management('input_lyr')
 
 
-# # controlling process
-# if __name__ == '__main__':
-#     pnpt = PrepareNSXProTransferTool()
-#     # hard code parameters for debugging
-#     param_geodatabase = arcpy.Parameter()
-#     param_geodatabase.value = 'C:/GIS/EBAR/NSXProDebug.gdb'
-#     parameters = [param_geodatabase]
-#     pnpt.runPrepareNSXProTransferTool(parameters, None)
+# controlling process
+if __name__ == '__main__':
+    pnpt = PrepareNSXProTransferTool()
+    # hard code parameters for debugging
+    param_geodatabase = arcpy.Parameter()
+    param_geodatabase.value = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde' #'C:/GIS/EBAR/NSXProDebug.gdb'
+    parameters = [param_geodatabase]
+    pnpt.runPrepareNSXProTransferTool(parameters, None)
 
     # # redirect output to file
     # dtnow = datetime.datetime.utcnow()

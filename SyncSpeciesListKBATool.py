@@ -1,8 +1,8 @@
 # encoding: utf-8
 
 # Project: Key Biodiversity Areas (KBA) Canada
-# Credits: Meg Southee, Randal Greene
-# © WCS Canada / NatureServe Canada 2020 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+# Credits: Zachary Moore, Meg Southee, Randal Greene
+# © WCS Canada / NatureServe Canada 2026 under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 # Program: SyncSpeciesListKBATool.py
 # ArcGIS Python tool to synchronize the Species table with KBA tracking information.
@@ -121,7 +121,6 @@ class SyncSpeciesListKBATool:
                           "KBANotes_INT",
                           "InvestigatedDate",
                           "RevisitDate",
-                          "KBAPotential_Rationale",
                           "EBAR_G_MapID",
                           "EBAR_NA_MapID",
                           "EBAR_N_MapID",

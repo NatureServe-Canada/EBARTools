@@ -45,7 +45,7 @@ class GenerateHeatmapTool:
 
         # settings
         arcpy.gp.overwriteOutput = True
-        arcgis_pro_project = EBARUtils.resources_folder + '/EBARMapLayoutsBackup.aprx'
+        arcgis_pro_project = EBARUtils.resources_folder + '/EBARMapLayoutsEN.aprx'
 
         # make variables for parms
         EBARUtils.displayMessage(messages, 'Processing parameters')
@@ -86,6 +86,18 @@ class GenerateHeatmapTool:
             for brk in renderer.classBreaks:
                 brk.symbol.outlineWidth = 0 #outlineColor = {'RGB' : [255, 255, 255, 0]}
             layer.symbology = symbology
+        # IMPLEMENT AND TEST THIS SECTION IF WE GET PAST STATIC LIST OF RANGES
+        # elif param_heatmap_type == 'Published SAR':
+        #     symbology = layer.symbology
+        #     if hasattr(symbology, "renderer") and symbology.renderer.type == "GraduatedColorsRenderer":
+        #         # Recalculate breaks using a classification method
+        #         symbology.updateRenderer(
+        #             renderer_type="GraduatedColorsRenderer",
+        #             classificationField="count",
+        #             classificationMethod="NaturalBreaks",
+        #             breakCount=8
+        #         )
+        #     layer.symbology = symbology
 
         # modify dynamic text
         date_text = layout.listElements('TEXT_ELEMENT', 'DateText')[0]
@@ -128,11 +140,11 @@ class GenerateHeatmapTool:
             # generate metadata
             EBARUtils.displayMessage(messages, 'Generating metadata')
             md = arcpy.metadata.Metadata()
-            md.tags = 'Species Range, NatureServe Canada, Ecosystem-based Automated Range, Heatmap'
-            md.description = 'Heatmap summarizing the number of published EBAR SAR ranges that intersect each Ecoshape'
-            md.credits = 'Copyright NatureServe Canada ' + str(datetime.datetime.now().year)
-            md.accessConstraints = 'Publicly shareable under CC BY 4.0 (<a href=' + \
-                '"https://creativecommons.org/licenses/by/4.0/">https://creativecommons.org/licenses/by/4.0/</a>)'
+            # md.tags = 'Species Range, NatureServe Canada, Ecosystem-based Automated Range, Heatmap'
+            # md.description = 'Heatmap summarizing the number of published EBAR SAR ranges that intersect each Ecoshape'
+            # md.credits = 'Copyright NatureServe Canada ' + str(datetime.datetime.now().year)
+            # md.accessConstraints = 'Publicly shareable under CC BY 4.0 (<a href=' + \
+            #     '"https://creativecommons.org/licenses/by/4.0/">https://creativecommons.org/licenses/by/4.0/</a>)'
 
             # make zip folder and copy existing outputs
             EBARUtils.displayMessage(messages, 'Creating ZIP folder and copying files')
