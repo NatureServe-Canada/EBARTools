@@ -74,13 +74,16 @@ class AddSynonymsTool:
                         author_name = None
                         if len(file_line['AUTHOR_NAME']) > 0:
                             author_name = file_line['AUTHOR_NAME']
+                        n_synonym_note = None
+                        if len(file_line['N_SYNONYM_NOTE']) > 0:
+                            n_synonym_note = file_line['N_SYNONYM_NOTE']
                         insert_cursor = arcpy.da.InsertCursor(param_geodatabase + '/Synonym',
                                                               ['SpeciesID', 'SynonymName', 'SHORT_CITATION_AUTHOR',
                                                                'SHORT_CITATION_YEAR', 'FORMATTED_FULL_CITATION',
-                                                               'AUTHOR_NAME'])
+                                                               'AUTHOR_NAME', 'N_SYNONYM_NOTE'])
                         insert_cursor.insertRow([element_species_dict[element_national_id], scientific_name,
                                                 short_citation_author, short_citation_year, formatted_full_citation,
-                                                author_name])
+                                                author_name, n_synonym_note])
                         del insert_cursor
                         added += 1
                 count += 1
