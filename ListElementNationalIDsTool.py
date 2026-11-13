@@ -40,10 +40,12 @@ class ListElementNationalIDsTool:
                                    [table_name_prefix + 'BIOTICS_ELEMENT_NATIONAL.ELEMENT_NATIONAL_ID'],
                                    table_name_prefix + 'Species.ActiveEBAR = 1') as cursor:
             IDs = []
+            All_IDs = []
             count = 0
             row = None
             for row in EBARUtils.searchCursor(cursor):
                 IDs.append(row[table_name_prefix + 'BIOTICS_ELEMENT_NATIONAL.ELEMENT_NATIONAL_ID'])
+                All_IDs.append(row[table_name_prefix + 'BIOTICS_ELEMENT_NATIONAL.ELEMENT_NATIONAL_ID'])
                 count += 1
                 if count % 1000 == 0:
                     EBARUtils.displayMessage(messages, str(count) + ':')
@@ -53,6 +55,10 @@ class ListElementNationalIDsTool:
                 del row
             EBARUtils.displayMessage(messages, str(count) + ':')
             EBARUtils.displayMessage(messages, ','.join(map(str, IDs)))
+            EBARUtils.displayMessage(messages, '')
+            EBARUtils.displayMessage(messages, 'All:')
+            EBARUtils.displayMessage(messages, ','.join(map(str, All_IDs)))
+            EBARUtils.displayMessage(messages, '')
             EBARUtils.displayMessage(messages, 'Listed ' + str(count) + ' ELEMENT_NATIONAL_ID values')
         return
 
