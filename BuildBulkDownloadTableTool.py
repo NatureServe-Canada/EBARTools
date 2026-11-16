@@ -148,10 +148,12 @@ class BuildBulkDownloadTableTool:
         # locale.setlocale(locale.LC_TIME, original_lc_time)
 
         # loop all RangeMap records where IncludeInDownloadTable is populated
-        arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/11', 'range_map_view',
+        #arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/11', 'range_map_view',
+        arcpy.MakeTableView_management(EBARUtils.ebar_map_service + '/11', 'range_map_view',
                                        'IncludeInDownloadTable IN (0, 1, 2, 3, 4) AND Publish = 1')
         # join BIOTICS_ELEMENT_NATIONAL to RangeMap
-        arcpy.AddJoin_management('range_map_view', 'SpeciesID', EBARUtils.ebar_feature_service + '/4', 'SpeciesID',
+        #arcpy.AddJoin_management('range_map_view', 'SpeciesID', EBARUtils.ebar_feature_service + '/4', 'SpeciesID',
+        arcpy.AddJoin_management('range_map_view', 'SpeciesID', EBARUtils.ebar_map_service + '/4', 'SpeciesID',
                                  'KEEP_COMMON')
         category_taxagroup = ''
         # use Python sorted (sql_clause ORDER BY doesn't work), which precludes use of EBARUtils.SearchCursor

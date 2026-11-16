@@ -152,13 +152,16 @@ class PublishRangeMapSetsTool:
                     'https://creativecommons.org/licenses/by/4.0/deed.fr</a>)'
 
             # use EBAR BIOTICS table if can't get taxon API
-            arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/4', 'biotics_view')
+            #arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/4', 'biotics_view')
+            arcpy.MakeTableView_management(EBARUtils.ebar_map_service + '/4', 'biotics_view')
 
             # loop all RangeMap records where IncludeInDownloadTable is populated and Publish=1
-            arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/11', 'range_map_view',
+            #arcpy.MakeTableView_management(EBARUtils.ebar_feature_service + '/11', 'range_map_view',
+            arcpy.MakeTableView_management(EBARUtils.ebar_map_service + '/11', 'range_map_view',
                                            'IncludeInDownloadTable IN (0, 1, 2, 3, 4) AND Publish = 1')
             # join BIOTICS_ELEMENT_NATIONAL to RangeMap
-            arcpy.AddJoin_management('range_map_view', 'SpeciesID', EBARUtils.ebar_feature_service + '/4', 'SpeciesID',
+            #arcpy.AddJoin_management('range_map_view', 'SpeciesID', EBARUtils.ebar_feature_service + '/4', 'SpeciesID',
+            arcpy.AddJoin_management('range_map_view', 'SpeciesID', EBARUtils.ebar_map_service + '/4', 'SpeciesID',
                                      'KEEP_COMMON')
             category_taxagroup = ''
             processed = 0
@@ -279,10 +282,10 @@ class PublishRangeMapSetsTool:
 if __name__ == '__main__':
     prms = PublishRangeMapSetsTool()
     param_category = arcpy.Parameter()
-    #param_category.value = 'Vertebrate Animal'
-    param_category.value = None
+    param_category.value = 'Invertebrate Animal'
+    #param_category.value = None
     param_taxagroup = arcpy.Parameter()
-    #param_taxagroup.value = 'Reptiles'
-    param_taxagroup.value = None
+    param_taxagroup.value = 'Amphipods'
+    #param_taxagroup.value = None
     parameters = [param_category, param_taxagroup]
     prms.runPublishRangeMapSetsTool(parameters, None)

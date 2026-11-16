@@ -200,7 +200,7 @@ class PublishRangeMapTool:
         input_references = ''
         input_references_fr = ''
         previous_dataset_source_name = ''
-        #arcpy.MakeTableView_management(EBARUtils.ebar_summary_service + '/7', 'citation_view',
+        #arcpy.MakeTableView_management(EBARUtils.ebar_summary_feature_service + '/7', 'citation_view',
         arcpy.MakeTableView_management(EBARUtils.ebar_summary_map_service + '/7', 'citation_view',
                                        'RangeMapID = ' + param_range_map_id)
         # Nov 2024 - could now be multiple citations per source because InputDataset can have one

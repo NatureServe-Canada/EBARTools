@@ -27,7 +27,7 @@ import locale
 
 # shared folders and addresses
 #resources_folder = 'D:/GIS/EBAR/EBARTools/resources'
-resources_folder = 'C:/GIS/EBAR/EBARToolsTranslation/resources'
+resources_folder = 'C:/GIS/EBAR/EBARTools/resources'
 #temp_folder = 'D:/GIS/EBAR/temp'
 temp_folder = 'C:/GIS/EBAR/temp'
 #download_folder = 'D:/GIS/EBAR/pub/download'
@@ -41,7 +41,9 @@ log_folder = 'C:/inetpub/logs/LogFiles/W3SVC1'
 
 # various services
 ebar_feature_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/EBAR/FeatureServer'
-ebar_summary_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/Summary/FeatureServer'
+ebar_map_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/EBAR/MapServer'
+ebar_summary_feature_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/Summary/FeatureServer'
+ebar_summary_map_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/Summary/MapServer'
 restricted_service = 'https://gis.natureserve.ca/arcgis/rest/services/EBAR-KBA/Restricted/FeatureServer'
 
 
@@ -628,9 +630,12 @@ def addToZip(zip_output_file, new_file):
 def ExportRangeMapToCSV(range_map_view, range_map_ids, attributes_dict, output_folder, output_csv, metadata, suffix):
     """create csv for range map, with appropriate joined data"""
     where_clause = 'RangeMapID IN (' + ','.join(range_map_ids) + ')'
-    arcpy.MakeTableView_management(ebar_feature_service + '/11', range_map_view, where_clause)
-    arcpy.AddJoin_management(range_map_view, 'SpeciesID', ebar_feature_service + '/4', 'SpeciesID', 'KEEP_COMMON')
-    arcpy.AddJoin_management(range_map_view, 'SpeciesID', ebar_feature_service + '/19', 'SpeciesID', 'KEEP_COMMON')
+    #arcpy.MakeTableView_management(ebar_feature_service + '/11', range_map_view, where_clause)
+    arcpy.MakeTableView_management(ebar_map_service + '/11', range_map_view, where_clause)
+    #arcpy.AddJoin_management(range_map_view, 'SpeciesID', ebar_feature_service + '/4', 'SpeciesID', 'KEEP_COMMON')
+    arcpy.AddJoin_management(range_map_view, 'SpeciesID', ebar_map_service + '/4', 'SpeciesID', 'KEEP_COMMON')
+    #arcpy.AddJoin_management(range_map_view, 'SpeciesID', ebar_feature_service + '/19', 'SpeciesID', 'KEEP_COMMON')
+    arcpy.AddJoin_management(range_map_view, 'SpeciesID', ebar_map_service + '/19', 'SpeciesID', 'KEEP_COMMON')
     field_mappings = arcpy.FieldMappings()
     if suffix == '_en':
         field_mappings.addFieldMap(createFieldMap(range_map_view, 'L11RangeMap.RangeMapID', 'RangeMapID', 'LONG'))
@@ -802,7 +807,8 @@ def ExportRangeMapEcoshapesToCSV(range_map_ecoshape_view, range_map_ids, output_
     where_clause = None
     if range_map_ids:
         where_clause = 'RangeMapID IN (' + ','.join(range_map_ids) + ')'
-    arcpy.MakeTableView_management(ebar_feature_service + '/12', range_map_ecoshape_view, where_clause)
+    #arcpy.MakeTableView_management(ebar_feature_service + '/12', range_map_ecoshape_view, where_clause)
+    arcpy.MakeTableView_management(ebar_map_service + '/12', range_map_ecoshape_view, where_clause)
     field_mappings = arcpy.FieldMappings()
     if suffix == '_en':
         field_mappings.addFieldMap(createFieldMap(range_map_ecoshape_view, 'RangeMapID', 'RangeMapID', 'LONG'))
@@ -884,7 +890,8 @@ def ExportEcoshapesToShapefile(ecoshape_layer, range_map_ecoshape_view, output_f
 def ExportEcoshapeOverviewsToShapefile(ecoshape_overview_layer, range_map_ecoshape_view, output_folder,
                                        output_shapefile, metadata, export_all, suffix):
     """create shapefile for overview ecoshapes"""
-    arcpy.MakeFeatureLayer_management(ebar_feature_service + '/22', ecoshape_overview_layer)
+    #arcpy.MakeFeatureLayer_management(ebar_feature_service + '/22', ecoshape_overview_layer)
+    arcpy.MakeFeatureLayer_management(ebar_map_service + '/22', ecoshape_overview_layer)
     prefix = ''
     if not export_all:
         arcpy.AddJoin_management(ecoshape_overview_layer, 'EcoshapeID', range_map_ecoshape_view, 'EcoshapeID')

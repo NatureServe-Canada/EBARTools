@@ -31,7 +31,7 @@ class GenerateHeatmapTool:
         EBARUtils.displayMessage(messages, 'Start time: ' + str(start_time))
 
         # # debug
-        # #desc = arcpy.Describe(EBARUtils.ebar_summary_service + '/22')
+        # #desc = arcpy.Describe(EBARUtils.ebar_summary_feature_service + '/22')
         # desc = arcpy.Describe(EBARUtils.ebar_feature_service + '/11')
         # EBARUtils.displayMessage(messages, desc.name)
         # return
@@ -63,10 +63,11 @@ class GenerateHeatmapTool:
 
         # change source of joined table and update symbology
         if param_heatmap_type != 'Published SAR':
-            arcpy.management.RemoveJoin(layer) #'L22EcoshapeOverview') #EBARUtils.ebar_summary_service + '/22') #'EcoshapeOverview')
+            arcpy.management.RemoveJoin(layer) #'L22EcoshapeOverview') #EBARUtils.ebar_summary_feature_service + '/22') #'EcoshapeOverview')
         if param_heatmap_type == 'Published All':
             # arcpy.management.AddJoin(layer, 'EcoshapeID', 'PublishedRangeCountByEcoshape', 'EcoshapeID',
-            arcpy.management.AddJoin(layer, 'EcoshapeID', EBARUtils.ebar_summary_service + '/16', 'ecoshapeid',
+            #arcpy.management.AddJoin(layer, 'EcoshapeID', EBARUtils.ebar_summary_feature_service + '/16', 'ecoshapeid',
+            arcpy.management.AddJoin(layer, 'EcoshapeID', EBARUtils.ebar_summary_map_service + '/16', 'ecoshapeid',
                                      'KEEP_COMMON')
             symbology = layer.symbology
             renderer = symbology.renderer
@@ -77,7 +78,8 @@ class GenerateHeatmapTool:
             layer.symbology = symbology
         elif param_heatmap_type == 'Published High Quality':
             # arcpy.management.AddJoin(layer, 'EcoshapeID', 'HighQualityRangeCountByEcoshape', 'EcoshapeID',
-            arcpy.management.AddJoin(layer, 'EcoshapeID', EBARUtils.ebar_summary_service + '/9', 'ecoshapeid',
+            #arcpy.management.AddJoin(layer, 'EcoshapeID', EBARUtils.ebar_summary_feature_service + '/9', 'ecoshapeid',
+            arcpy.management.AddJoin(layer, 'EcoshapeID', EBARUtils.ebar_summary_map_service + '/9', 'ecoshapeid',
                                      'KEEP_COMMON')
             symbology = layer.symbology
             renderer = symbology.renderer
@@ -265,7 +267,7 @@ if __name__ == '__main__':
     ghm = GenerateHeatmapTool()
     # hard code parameters for debugging
     param_geodatabase = arcpy.Parameter()
-    param_geodatabase.value = 'C:/GIS/EBAR/nsc-gis-ebarkba.sde' #'D:/GIS/EBAR/EBAR.gdb'
+    param_geodatabase.value = 'D:/GIS/EBAR/EBAR.gdb' #'C:/GIS/EBAR/nsc-gis-ebarkba.sde'
     param_heatmap_type = arcpy.Parameter()
     param_heatmap_type.value = 'Published SAR' # 'Published High Quality' # 'Published All' 
     parameters = [param_geodatabase, param_heatmap_type]
