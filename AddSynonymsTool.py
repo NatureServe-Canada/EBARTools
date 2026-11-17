@@ -34,7 +34,7 @@ class AddSynonymsTool:
         for param_csv in param_csvs:
             EBARUtils.displayMessage(messages, 'File: ' + param_csv)
             # try to open data file as a csv
-            infile = io.open(param_csv, 'r', encoding='mbcs') # mbcs encoding is Windows ANSI
+            infile = io.open(param_csv, 'r', encoding='utf-8-sig') #encoding='mbcs') # mbcs encoding is Windows ANSI
             reader = csv.DictReader(infile)
 
             # read existing Names into lists
@@ -48,14 +48,14 @@ class AddSynonymsTool:
             count = 0
             added = 0
             for file_line in reader:
-                scientific_name = file_line['SCIENTIFIC_NAME']
+                scientific_name = file_line['scientific_name']
                 if scientific_name.lower() in species_dict:
                     EBARUtils.displayMessage(messages, 'WARNING: ' + scientific_name + ' already has Species record')
                 elif scientific_name.lower() in synonym_dict:
                     EBARUtils.displayMessage(messages, 'WARNING: ' + scientific_name + ' already has Synonym record')
                 else:
                     # check element_national_id
-                    element_national_id = int(float(file_line['ELEMENT_NATIONAL_ID']))
+                    element_national_id = int(float(file_line['element_national_id']))
                     if element_national_id not in element_species_dict:
                         EBARUtils.displayMessage(messages,
                                                  'WARNING: ' + str(element_national_id) +
@@ -63,20 +63,20 @@ class AddSynonymsTool:
                     else:
                         # add
                         short_citation_author = None
-                        if len(file_line['SHORT_CITATION_AUTHOR']) > 0:
-                            short_citation_author = file_line['SHORT_CITATION_AUTHOR']
+                        if len(file_line['short_citation_author']) > 0:
+                            short_citation_author = file_line['short_citation_author']
                         short_citation_year = None
-                        if len(file_line['SHORT_CITATION_YEAR']) > 0:
-                            short_citation_year = file_line['SHORT_CITATION_YEAR']
+                        if len(file_line['short_citation_year']) > 0:
+                            short_citation_year = file_line['short_citation_year']
                         formatted_full_citation = None
-                        if len(file_line['FORMATTED_FULL_CITATION']) > 0:
-                            formatted_full_citation = file_line['FORMATTED_FULL_CITATION']
+                        if len(file_line['formatted_full_citation']) > 0:
+                            formatted_full_citation = file_line['formatted_full_citation']
                         author_name = None
-                        if len(file_line['AUTHOR_NAME']) > 0:
-                            author_name = file_line['AUTHOR_NAME']
+                        if len(file_line['author_name']) > 0:
+                            author_name = file_line['author_name']
                         n_synonym_note = None
-                        if len(file_line['N_SYNONYM_NOTE']) > 0:
-                            n_synonym_note = file_line['N_SYNONYM_NOTE']
+                        if len(file_line['n_synonym_note']) > 0:
+                            n_synonym_note = file_line['n_synonym_note']
                         insert_cursor = arcpy.da.InsertCursor(param_geodatabase + '/Synonym',
                                                               ['SpeciesID', 'SynonymName', 'SHORT_CITATION_AUTHOR',
                                                                'SHORT_CITATION_YEAR', 'FORMATTED_FULL_CITATION',

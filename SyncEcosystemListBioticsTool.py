@@ -31,7 +31,7 @@ class SyncEcosystemListBioticsTool:
         param_csv = parameters[1].valueAsText
 
         # try to open data file as a csv
-        infile = io.open(param_csv, 'r', encoding='mbcs') # mbcs encoding is Windows ANSI
+        infile = io.open(param_csv, 'r', encoding='utf-8-sig') #encoding='mbcs') # mbcs encoding is Windows ANSI
         reader = csv.DictReader(infile)
 
         # read existing IDs and scientific names into dicts
@@ -46,70 +46,70 @@ class SyncEcosystemListBioticsTool:
         added = 0
         skipped = 0
         # fields that are sync'd whenever changed, overwriting values on update
-        regular_fields = ['ELEMENT_NATIONAL_ID',
-                          'ELEMENT_GLOBAL_ID',
-                          'GLOBAL_UNIQUE_IDENTIFIER',
-                          'NSX_URL',
-                          'IVC_ELCODE',
-                          'CNVC_ELCODE',
-                          'IVC_SCIENTIFIC_NAME',
-                          'IVC_FORMATTED_SCIENTIFIC_NAME',
-                          'IVC_TRANSLATED_NAME',
-                          'IVC_NAME',
-                          'CNVC_ENGLISH_NAME',
-                          'CNVC_ONLY_ENGLISH_NAME',
-                          'CNVC_FRENCH_NAME',
-                          'IVC_STATUS',
-                          'CNVC_STATUS',
-                          'CA_DIST_CONFIDENCE',
-                          'CA_PRESENCE',
-                          'G_CLASSIFICATION_COM',
-                          'N_CLASSIFICATION_COM',
-                          'CLASSIFICATION_LEVEL_NAME',
-                          'IVC_CONCATENATED_CD',
-                          'CNVC_CONCATENATED_CD',
-                          'BIOME_KEY',
-                          'BIOME_NAME',
-                          'SUBBIOME_KEY',
-                          'SUBBIOME_NAME',
-                          'FORMATION_KEY',
-                          'FORMATION_NAME',
-                          'DIVISION_CODE',
-                          'DIVISION_KEY',
-                          'DIVISION_NAME',
-                          'MG_KEY',
-                          'IVC_MG_NAME',
-                          'CNVC_MG_ENGLISHNAME',
-                          'CNVC_ONLY_MG_ENGLISHNAME',
-                          'CNVC_MG_FRENCHNAME',
-                          'SUBMACROGROUP_CODE',
-                          'G_RANK',
-                          'ROUNDED_G_RANK',
-                          'G_RANK_REVIEW_DATE',
-                          'N_RANK',
-                          'ROUNDED_N_RANK',
-                          'N_RANK_REVIEW_DATE',
-                          'NATIONS',
-                          'CA_SUBNATIONS',
-                          'US_STATES',
-                          'N_CONCEPT_DATE',
-                          'N_CONCEPT_AUTHOR',
-                          'G_CONCEPT_REFERENCE',
-                          'G_CONCEPT_SENTENCE',
-                          'G_ELEMENT_SUMMARY',
-                          'N_ELEMENT_SUMMARY',
-                          'SORT',
-                          'IVC_GROUP_KEY',
-                          'CNVC_GROUP_KEY',
-                          'IVC_GROUP_NAME',
-                          'CNVC_GROUP_ENGLISHNAME',
-                          'CNVC_ONLY_GROUP_ENGLISHNAME',
-                          'CNVC_GROUP_FRENCHNAME']
+        regular_fields = ['element_national_id',
+                          'element_global_id',
+                          'global_unique_identifier',
+                          'nsx_url',
+                          'ivc_elcode',
+                          'cnvc_elcode',
+                          'ivc_scientific_name',
+                          'ivc_formatted_scientific_name',
+                          'ivc_translated_name',
+                          'ivc_name',
+                          'cnvc_english_name',
+                          'cnvc_only_english_name',
+                          'cnvc_french_name',
+                          'ivc_status',
+                          'cnvc_status',
+                          'ca_dist_confidence',
+                          'ca_presence',
+                          'g_classification_com',
+                          'n_classification_com',
+                          'classification_level_name',
+                          'ivc_concatenated_cd',
+                          'cnvc_concatenated_cd',
+                          'biome_key',
+                          'biome_name',
+                          'subbiome_key',
+                          'subbiome_name',
+                          'formation_key',
+                          'formation_name',
+                          'division_code',
+                          'division_key',
+                          'division_name',
+                          'mg_key',
+                          'ivc_mg_name',
+                          'cnvc_mg_englishname',
+                          'cnvc_only_mg_englishname',
+                          'cnvc_mg_frenchname',
+                          'submacrogroup_code',
+                          'g_rank',
+                          'rounded_g_rank',
+                          'g_rank_review_date',
+                          'n_rank',
+                          'rounded_n_rank',
+                          'n_rank_review_date',
+                          'nations',
+                          'ca_subnations',
+                          'us_states',
+                          'n_concept_date',
+                          'n_concept_author',
+                          'g_concept_reference',
+                          'g_concept_sentence',
+                          'g_element_summary',
+                          'n_element_summary',
+                          'sort',
+                          'ivc_group_key',
+                          'cnvc_group_key',
+                          'ivc_group_name',
+                          'cnvc_group_englishname',
+                          'cnvc_only_group_englishname',
+                          'cnvc_group_frenchname']
         for file_line in reader:
-            # element_global_id = int(float(file_line['ELEMENT_GLOBAL_ID']))
+            # element_global_id = int(float(file_line['element_global_id']))
             # EBARUtils.displayMessage(messages, 'ELEMENT_GLOBAL_ID: ' + str(element_global_id))
             # if element_global_id in element_ecosystem_dict:
-            element_national_id = int(float(file_line['ELEMENT_NATIONAL_ID']))
+            element_national_id = int(float(file_line['element_national_id']))
             EBARUtils.displayMessage(messages, 'ELEMENT_NATIONAL_ID: ' + str(element_national_id))
             if element_national_id in element_ecosystem_dict:
                 # update if changed
@@ -158,11 +158,11 @@ class SyncEcosystemListBioticsTool:
             else:
                 # create new Ecosystem and BIOTICS_ECOSYSTEM records
                 # first check for existing scientific name
-                if file_line['IVC_SCIENTIFIC_NAME'].lower() in ecosystems_dict:
+                if file_line['ivc_scientific_name'].lower() in ecosystems_dict:
                     #msg = 'WARNING: record with ELEMENT_GLOBAL_ID ' + str(element_global_id) + \
                     msg = 'WARNING: record with ELEMENT_NATIONAL_ID ' + str(element_national_id) + \
                         ' skipped because it would create duplicate IVC_SCIENTIFIC_NAME ' + \
-                        file_line['IVC_SCIENTIFIC_NAME']
+                        file_line['ivc_scientific_name']
                     EBARUtils.displayMessage(messages, msg)
                     skipped += 1
                 else:
